@@ -15,7 +15,7 @@ export default function DateFilterBar({ active, onChange }) {
           key={key}
           whileTap={{ scale: 0.95 }}
           onClick={() => onChange(active === key ? null : key)}
-          className="px-3 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0"
+          className="px-3 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 cursor-pointer"
           style={
             active === key
               ? { backgroundColor: '#1e293b', color: 'white' }

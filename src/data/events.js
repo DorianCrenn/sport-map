@@ -52,8 +52,12 @@ export const EVENTS = [
     lng: -4.4861,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Championnat de district - Division Honneur',
+    description: 'Choc du haut de tableau en Division Honneur Bretagne. L\'US Brest, dauphin du championnat, reçoit un FC Landivisiau accrocheur qui joue sa place dans le top 5.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'US Brest', rank: 2, points: 54, played: 28, wins: 17, draws: 3, losses: 8 },
+      away: { team: 'FC Landivisiau', rank: 5, points: 44, played: 28, wins: 13, draws: 5, losses: 10 },
+    },
   },
   {
     id: 2,
@@ -67,8 +71,12 @@ export const EVENTS = [
     lng: -3.5729,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Championnat de district - Promotion de Ligue',
+    description: 'Match de Promotion de Ligue entre deux équipes du centre-Finistère. L\'ASC Carhaix cherche à consolider sa 4e place face à Quimper qui lutte pour le maintien.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'ASC Carhaix', rank: 4, points: 38, played: 25, wins: 11, draws: 5, losses: 9 },
+      away: { team: 'Stade Quimperlois', rank: 11, points: 22, played: 25, wins: 6, draws: 4, losses: 15 },
+    },
   },
 
   // --- Weekend 9-10 mai ---
@@ -84,7 +92,7 @@ export const EVENTS = [
     lng: -4.5076,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Trail nature 22 km et 10 km dans les Abers',
+    description: 'Trail nature en bord de mer le long des Abers. Deux parcours : 22 km (D+ 450m) et 10 km (D+ 180m). Ravitaillement au km 11. Inscription sur place acceptée jusqu\'à 8h30.',
     level: 'Tout public',
   },
   {
@@ -99,8 +107,12 @@ export const EVENTS = [
     lng: -4.4958,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Championnat Régional N3 - Handball',
+    description: 'Derby brestois en Championnat Régional N3. HBC Brest, leader incontesté, reçoit son voisin guipavésien dans ce duel local à haute intensité.',
     level: 'Régional',
+    standings: {
+      home: { team: 'HBC Brest', rank: 1, points: 46, played: 22, wins: 15, draws: 1, losses: 6 },
+      away: { team: 'HBC Guipavas', rank: 6, points: 28, played: 22, wins: 8, draws: 4, losses: 10 },
+    },
   },
   {
     id: 5,
@@ -114,8 +126,12 @@ export const EVENTS = [
     lng: -4.4861,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Derby du Finistère - Division Honneur',
+    description: 'Le grand derby du Finistère ! US Brest accueille son rival historique de Quimper pour un match au sommet de la Division Honneur. Ambiance garantie dans ce stade mythique.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'US Brest', rank: 2, points: 54, played: 28, wins: 17, draws: 3, losses: 8 },
+      away: { team: 'Quimper Cornouaille FC', rank: 3, points: 50, played: 28, wins: 15, draws: 5, losses: 8 },
+    },
   },
   {
     id: 6,
@@ -129,12 +145,16 @@ export const EVENTS = [
     lng: -4.2504,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Pro B - Playoffs aller',
+    description: 'Match aller des playoffs Pro B. Landerneau Bretagne BB, habitué des hautes sphères, reçoit Quimper Basket dans une salle Kéroual qui s\'annonce électrique.',
     level: 'Pro',
+    standings: {
+      home: { team: 'Landerneau Bretagne BB', rank: 3, points: null, played: 30, wins: 18, draws: 0, losses: 12 },
+      away: { team: 'Quimper Basket', rank: 6, points: null, played: 30, wins: 15, draws: 0, losses: 15 },
+    },
   },
   {
     id: 7,
-    title: 'Cyclosportive des Monts d\'Arrée',
+    title: "Cyclosportive des Monts d'Arrée",
     sportGroup: 'endurance',
     sport: 'Cyclisme',
     date: '2026-05-10T08:30:00',
@@ -144,7 +164,7 @@ export const EVENTS = [
     lng: -4.0888,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: '80 km et 120 km dans les Monts d\'Arrée',
+    description: 'Cyclosportive en plein cœur des Monts d\'Arrée. Deux parcours : 80 km (D+ 950m) et 120 km (D+ 1450m). Passage par Brasparts, Huelgoat et le Roc\'h Trévezel.',
     level: 'Tout public',
   },
 
@@ -161,8 +181,12 @@ export const EVENTS = [
     lng: -3.8290,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Division Honneur Bretagne',
+    description: 'Morlaix FC reçoit Plabennec dans un match à enjeu en Division Honneur Bretagne. Les deux équipes se tiennent en 3 points et visent toutes deux le podium final.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Morlaix FC', rank: 4, points: 47, played: 28, wins: 14, draws: 5, losses: 9 },
+      away: { team: 'AS Plabennec', rank: 6, points: 44, played: 28, wins: 13, draws: 5, losses: 10 },
+    },
   },
   {
     id: 9,
@@ -176,8 +200,12 @@ export const EVENTS = [
     lng: -4.4621,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Fédérale 3 - Playoffs',
+    description: 'Demi-finale des playoffs Fédérale 3. RC Brest, impressionnant en phase régulière, accueille RC Quimper pour ce choc qui enverra le vainqueur en finale départementale.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Rugby Club Brestois', rank: 1, points: 72, played: 18, wins: 14, draws: 0, losses: 4 },
+      away: { team: 'RC Quimper', rank: 4, points: 55, played: 18, wins: 10, draws: 5, losses: 3 },
+    },
   },
 
   // --- Weekend 16-17 mai ---
@@ -193,7 +221,7 @@ export const EVENTS = [
     lng: -4.1020,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Semi-marathon officiel + 10 km et 5 km',
+    description: 'Semi-marathon officiel sur un parcours plat et rapide longeant l\'Odet. Accompagné d\'un 10 km et d\'un 5 km famille. Ravitaillement tous les 5 km. Plus de 1500 inscrits attendus.',
     level: 'Tout public',
   },
   {
@@ -208,12 +236,16 @@ export const EVENTS = [
     lng: -3.9206,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Championnat N3 Handball Bretagne',
+    description: 'Match capital en fin de saison N3. Concarneau joue sa qualification pour les playoffs, Morlaix lutte pour éviter la descente. Un match sous haute tension.',
     level: 'Régional',
+    standings: {
+      home: { team: 'HBC Concarneau', rank: 4, points: 30, played: 20, wins: 9, draws: 3, losses: 8 },
+      away: { team: 'Morlaix Handball', rank: 10, points: 18, played: 20, wins: 5, draws: 3, losses: 12 },
+    },
   },
   {
     id: 12,
-    title: 'Douarnenez FC vs US Pont-l\'Abbé',
+    title: "Douarnenez FC vs US Pont-l'Abbé",
     sportGroup: 'football',
     sport: 'Football',
     date: '2026-05-17T15:00:00',
@@ -223,8 +255,12 @@ export const EVENTS = [
     lng: -4.3285,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Division Honneur - Journée 28',
+    description: 'Match de milieu de tableau en Division Honneur. Douarnenez et Pont-l\'Abbé s\'affrontent dans un derby du Pays Bigouden, toujours animé par une belle rivalité locale.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Douarnenez FC', rank: 8, points: 38, played: 28, wins: 11, draws: 5, losses: 12 },
+      away: { team: "US Pont-l'Abbé", rank: 9, points: 36, played: 28, wins: 10, draws: 6, losses: 12 },
+    },
   },
   {
     id: 13,
@@ -238,8 +274,12 @@ export const EVENTS = [
     lng: -4.1080,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Division Honneur Bretagne',
+    description: 'Duel entre deux prétendants au titre en Division Honneur Bretagne. Quimper reçoit Morlaix dans un match qui pourrait redistribuer les cartes au classement à 3 journées de la fin.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Quimper Cornouaille FC', rank: 3, points: 50, played: 28, wins: 15, draws: 5, losses: 8 },
+      away: { team: 'Morlaix FC', rank: 4, points: 47, played: 28, wins: 14, draws: 5, losses: 9 },
+    },
   },
   {
     id: 14,
@@ -248,12 +288,12 @@ export const EVENTS = [
     sport: 'Cyclisme',
     date: '2026-05-16T09:00:00',
     city: 'Audierne',
-    venue: 'Départ Port d\'Audierne',
+    venue: "Départ Port d'Audierne",
     lat: 48.0248,
     lng: -4.5371,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'VTT loisir 30 km et 50 km sur le Cap Sizun',
+    description: 'Randonnée VTT non-compétitive sur les sentiers du Cap Sizun. Deux boucles : 30 km (accessible à tous) et 50 km (intermédiaire). Magnifique vue sur la baie d\'Audierne.',
     level: 'Tout public',
   },
 
@@ -270,8 +310,12 @@ export const EVENTS = [
     lng: -4.2504,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Pro B - Playoffs retour',
+    description: 'Match retour des playoffs Pro B. Après la victoire à l\'aller (78-65), Landerneau doit confirmer à domicile pour décrocher son billet pour la finale de conférence.',
     level: 'Pro',
+    standings: {
+      home: { team: 'Landerneau Bretagne BB', rank: 3, points: null, played: 31, wins: 19, draws: 0, losses: 12 },
+      away: { team: 'Brest Basket', rank: 6, points: null, played: 31, wins: 15, draws: 0, losses: 16 },
+    },
   },
   {
     id: 16,
@@ -285,8 +329,12 @@ export const EVENTS = [
     lng: -4.4163,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Division Honneur Bretagne - Journée 29',
+    description: 'AS Plabennec reçoit Douarnenez dans un match d\'importance en Division Honneur. Les Plabennecois ont besoin des 3 points pour rester dans la course au podium.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'AS Plabennec', rank: 6, points: 44, played: 29, wins: 13, draws: 5, losses: 11 },
+      away: { team: 'Douarnenez FC', rank: 8, points: 38, played: 29, wins: 11, draws: 5, losses: 13 },
+    },
   },
 
   // --- Weekend 23-24 mai ---
@@ -302,7 +350,7 @@ export const EVENTS = [
     lng: -4.4758,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Cyclosportive 60 km, 100 km et 150 km',
+    description: 'Grande cyclosportive au départ du Parc à Chaînes. 3 parcours : 60 km, 100 km et 150 km. Le 150 km passe par la presqu\'île de Crozon et les falaises de Camaret. Chronométrage officiel.',
     level: 'Tout public',
   },
   {
@@ -317,8 +365,12 @@ export const EVENTS = [
     lng: -3.9848,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Promotion de Ligue Bretagne',
+    description: 'Rencontre de Promotion de Ligue entre les Léonards et les Carhaisiens. Saint-Pol cherche à rejoindre la Division Honneur, Carhaix veut consolider sa place dans le top 5.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Saint-Pol-de-Léon FC', rank: 2, points: 52, played: 28, wins: 16, draws: 4, losses: 8 },
+      away: { team: 'ASC Carhaix', rank: 4, points: 42, played: 28, wins: 12, draws: 6, losses: 10 },
+    },
   },
   {
     id: 19,
@@ -332,8 +384,12 @@ export const EVENTS = [
     lng: -4.1024,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Fédérale 3 - Demi-finale',
+    description: 'Demi-finale Fédérale 3 - sens inverse. RC Quimper reçoit le RC Brest dans ce remake du derby finistérien. Le vainqueur rejoint la finale et rêve d\'une montée en Fédérale 2.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'RC Quimper', rank: 4, points: 55, played: 19, wins: 10, draws: 5, losses: 4 },
+      away: { team: 'Rugby Club Brestois', rank: 1, points: 72, played: 19, wins: 15, draws: 0, losses: 4 },
+    },
   },
   {
     id: 20,
@@ -347,7 +403,7 @@ export const EVENTS = [
     lng: -3.5729,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Trail nocturne et diurne 15 km, 30 km, 50 km',
+    description: 'Trail mythique dans les Monts d\'Arrée. 3 distances : 15 km, 30 km et 50 km avec un dénivelé important. Version nocturne disponible pour le 15 km le samedi soir (lampe frontale obligatoire).',
     level: 'Tout public',
   },
   {
@@ -362,23 +418,31 @@ export const EVENTS = [
     lng: -3.9206,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Championnat Régional - Finale',
+    description: 'Finale du Championnat Régional Bretagne de basket. Deux équipes séparées de seulement 2 points en saison régulière. Ce match unique décidera du champion de Bretagne.',
     level: 'Régional',
+    standings: {
+      home: { team: 'Concarneau Basket', rank: 1, points: null, played: 20, wins: 14, draws: 0, losses: 6 },
+      away: { team: 'Quimper Basket', rank: 2, points: null, played: 20, wins: 13, draws: 0, losses: 7 },
+    },
   },
   {
     id: 22,
-    title: 'US Pont-l\'Abbé vs Morlaix FC',
+    title: "US Pont-l'Abbé vs Morlaix FC",
     sportGroup: 'football',
     sport: 'Football',
     date: '2026-05-24T17:00:00',
-    city: 'Pont-l\'Abbé',
+    city: "Pont-l'Abbé",
     venue: 'Stade Langoz',
     lat: 47.8665,
     lng: -4.2215,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Division Honneur Bretagne - Journée 30',
+    description: 'Rencontre entre deux équipes aux profils opposés : Pont-l\'Abbé se bat pour sa survie en Division Honneur, Morlaix lutte encore pour le podium. Un match à rebondissements attendu.',
     level: 'Amateur',
+    standings: {
+      home: { team: "US Pont-l'Abbé", rank: 9, points: 36, played: 29, wins: 10, draws: 6, losses: 13 },
+      away: { team: 'Morlaix FC', rank: 4, points: 47, played: 29, wins: 14, draws: 5, losses: 10 },
+    },
   },
 
   // --- Semaine du 25 mai ---
@@ -394,8 +458,12 @@ export const EVENTS = [
     lng: -4.4958,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Championnat N3 - Dernière journée',
+    description: 'Dernière journée du Championnat N3. HBC Brest, déjà couronné champion, reçoit HBC Douarnenez dans un match de gala. L\'occasion pour les Brestois de fêter leur titre devant leur public.',
     level: 'Régional',
+    standings: {
+      home: { team: 'Brest Handball', rank: 1, points: 48, played: 22, wins: 16, draws: 0, losses: 6 },
+      away: { team: 'HBC Douarnenez', rank: 8, points: 24, played: 22, wins: 7, draws: 3, losses: 12 },
+    },
   },
   {
     id: 24,
@@ -409,8 +477,12 @@ export const EVENTS = [
     lng: -3.8290,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Division Honneur - Journée 31',
+    description: 'Avant-dernière journée de Division Honneur. Morlaix accueille Landivisiau dans un match que les deux équipes ont besoin de gagner pour leurs objectifs respectifs de fin de saison.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Morlaix FC', rank: 4, points: 47, played: 29, wins: 14, draws: 5, losses: 10 },
+      away: { team: 'FC Landivisiau', rank: 7, points: 40, played: 29, wins: 12, draws: 4, losses: 13 },
+    },
   },
 
   // --- Weekend 30-31 mai ---
@@ -426,7 +498,7 @@ export const EVENTS = [
     lng: -4.7255,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Course nature 10 km et 21 km en bord de mer',
+    description: 'Course nature spectaculaire sur les sentiers côtiers de la Pointe du Raz. 10 km et 21 km avec une vue imprenable sur la mer d\'Iroise. Parcours vallonné, chaussures trail recommandées.',
     level: 'Tout public',
   },
   {
@@ -441,8 +513,12 @@ export const EVENTS = [
     lng: -4.4861,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Division Honneur - Journée décisive',
+    description: 'Journée décisive pour le titre en Division Honneur Bretagne. US Brest peut décrocher le championnat en cas de victoire combinée à un faux-pas du leader. Stade Francis-Le Blé en feu.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'US Brest', rank: 2, points: 57, played: 30, wins: 18, draws: 3, losses: 9 },
+      away: { team: 'AS Plabennec', rank: 6, points: 44, played: 30, wins: 13, draws: 5, losses: 12 },
+    },
   },
   {
     id: 27,
@@ -456,7 +532,7 @@ export const EVENTS = [
     lng: -4.2504,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Tournoi inter-clubs U18 et Seniors - Journée complète',
+    description: 'Tournoi inter-clubs sur une journée complète. Catégories U18 (matin) et Seniors (après-midi). 8 équipes au programme. Entrée libre, restauration sur place. Finale prévue à 17h.',
     level: 'Amateur',
   },
   {
@@ -471,8 +547,12 @@ export const EVENTS = [
     lng: -4.1080,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Division Honneur - Barrage maintien',
+    description: 'Barrage maintien en Division Honneur. Douarnenez, en grande difficulté, se déplace à Quimper dans un match qui pourrait sceller son sort. Quimper de son côté assure sa place dans le top 5.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Quimper Cornouaille FC', rank: 3, points: 53, played: 30, wins: 16, draws: 5, losses: 9 },
+      away: { team: 'Douarnenez FC', rank: 13, points: 28, played: 30, wins: 8, draws: 4, losses: 18 },
+    },
   },
   {
     id: 29,
@@ -486,7 +566,7 @@ export const EVENTS = [
     lng: -4.5696,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Trail côtier 70 km, 45 km et 25 km - Presqu\'île de Crozon',
+    description: 'Le trail côtier le plus exigeant du Finistère. 3 formats : 25 km, 45 km et 70 km (Ultra). Dénivelé cumulé jusqu\'à 2800m sur le 70 km. Obligatoire : sac avec eau, coupe-vent et couverture de survie.',
     level: 'Tout public',
   },
   {
@@ -501,8 +581,12 @@ export const EVENTS = [
     lng: -4.4621,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Fédérale 3 - Finale départementale',
+    description: 'Finale départementale Fédérale 3 ! RC Brest accueille RC Concarneau pour le titre de champion du Finistère. Le vainqueur se qualifie pour les phases nationales de montée en Fédérale 2.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Rugby Club Brestois', rank: 1, points: 74, played: 20, wins: 15, draws: 0, losses: 5 },
+      away: { team: 'RC Concarneau', rank: 2, points: 68, played: 20, wins: 13, draws: 2, losses: 5 },
+    },
   },
 
   // --- Semaine du 1er juin ---
@@ -518,8 +602,12 @@ export const EVENTS = [
     lng: -3.8290,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Play-off Championnat N3',
+    description: 'Match aller des play-offs N3 entre Morlaix et le champion HBC Brest. Morlaix, surprenant outsider, tentera de créer l\'exploit face à des Brestois portés par leur titre de champion.',
     level: 'Régional',
+    standings: {
+      home: { team: 'Morlaix Handball', rank: 3, points: 36, played: 24, wins: 11, draws: 3, losses: 10 },
+      away: { team: 'HBC Brest', rank: 1, points: 50, played: 24, wins: 16, draws: 2, losses: 6 },
+    },
   },
   {
     id: 32,
@@ -533,8 +621,12 @@ export const EVENTS = [
     lng: -3.5729,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Promotion de Ligue - Barrage montée',
+    description: 'Barrage de montée en Promotion de Ligue. Le vainqueur de ce duel accédera à la Division Honneur Bretagne. Un match à élimination directe entre deux équipes qui ont tout joué cette saison.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'ASC Carhaix', rank: 3, points: 46, played: 30, wins: 13, draws: 7, losses: 10 },
+      away: { team: 'Saint-Pol-de-Léon FC', rank: 2, points: 55, played: 30, wins: 17, draws: 4, losses: 9 },
+    },
   },
 
   // --- Weekend 6-7 juin ---
@@ -550,7 +642,7 @@ export const EVENTS = [
     lng: -4.4198,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Triathlon S, M et XL - Natation en rade de Brest',
+    description: 'Triathlon officiel en rade de Brest. 3 formats : S (750m nage / 20km vélo / 5km cap), M (1,5km / 40km / 10km) et XL (3km / 80km / 20km). Eau à 16°C prévue, combinaison autorisée.',
     level: 'Tout public',
   },
   {
@@ -565,8 +657,12 @@ export const EVENTS = [
     lng: -4.0664,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Division Honneur - Dernière journée',
+    description: 'Dernière journée de la saison en Division Honneur Bretagne. Landivisiau reçoit Quimper dans un match sans enjeu pour les deux équipes, mais qui clôturera une belle saison.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Landivisiau FC', rank: 7, points: 40, played: 31, wins: 12, draws: 4, losses: 15 },
+      away: { team: 'Quimper Cornouaille FC', rank: 3, points: 53, played: 31, wins: 16, draws: 5, losses: 10 },
+    },
   },
   {
     id: 35,
@@ -580,7 +676,7 @@ export const EVENTS = [
     lng: -4.1080,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Course cycliste régionale Elite et Amateurs',
+    description: 'Course cycliste régionale avec engagement de coureurs Elite et Amateurs 1ère catégorie. Circuit de 8 km à réaliser 15 fois (120 km). Arrivée en peloton ou en solitaire au sprint final.',
     level: 'Régional',
   },
   {
@@ -595,8 +691,12 @@ export const EVENTS = [
     lng: -4.1125,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Play-off Championnat N3 - Aller',
+    description: 'Match aller de play-off N3 au Gymnase de Penhars. HBC Quimper, favori sur son terrain, doit prendre le large avant le retour à Concarneau. Ambiance attendue dans cette salle vite chauffée.',
     level: 'Régional',
+    standings: {
+      home: { team: 'HBC Quimper', rank: 2, points: 40, played: 24, wins: 13, draws: 1, losses: 10 },
+      away: { team: 'HBC Concarneau', rank: 4, points: 32, played: 24, wins: 10, draws: 2, losses: 12 },
+    },
   },
   {
     id: 37,
@@ -610,7 +710,7 @@ export const EVENTS = [
     lng: -3.9206,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Course urbaine 10 km autour de la ville close',
+    description: 'Course urbaine emblématique autour de la ville close de Concarneau. Parcours plat et rapide longeant le port de pêche. Ambiance festive, musique tout au long du parcours. Remise des prix à 12h.',
     level: 'Tout public',
   },
   {
@@ -625,12 +725,16 @@ export const EVENTS = [
     lng: -3.8290,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Fédérale 3 - Finale de promotion',
+    description: 'Finale de promotion Fédérale 3 entre Morlaix et Landerneau. Le gagnant accèdera à la Fédérale 2 la saison prochaine. Une finale inédite entre deux équipes du nord-Finistère !',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Rugby Club Morlaix', rank: 2, points: 65, played: 20, wins: 12, draws: 5, losses: 3 },
+      away: { team: 'RC Landerneau', rank: 3, points: 60, played: 20, wins: 11, draws: 3, losses: 6 },
+    },
   },
   {
     id: 39,
-    title: 'Châteaulin FC vs Pont-l\'Abbé FC',
+    title: "Châteaulin FC vs Pont-l'Abbé FC",
     sportGroup: 'football',
     sport: 'Football',
     date: '2026-06-07T16:00:00',
@@ -640,8 +744,12 @@ export const EVENTS = [
     lng: -4.0888,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Promotion de Ligue - Journée 32',
+    description: 'Avant-dernière journée de Promotion de Ligue. Châteaulin cherche à finir dans le top 3 synonyme de montée, Pont-l\'Abbé joue sa survie dans la division. Match à fort enjeu.',
     level: 'Amateur',
+    standings: {
+      home: { team: 'Châteaulin FC', rank: 3, points: 49, played: 30, wins: 15, draws: 4, losses: 11 },
+      away: { team: "Pont-l'Abbé FC", rank: 12, points: 24, played: 30, wins: 6, draws: 6, losses: 18 },
+    },
   },
   {
     id: 40,
@@ -655,7 +763,7 @@ export const EVENTS = [
     lng: -4.0888,
     departmentId: 'finistere',
     regionId: 'brittany',
-    description: 'Raid aventure : trail, VTT, kayak - Équipes de 2',
+    description: 'Raid aventure en équipes de 2 combinant trail (15 km), VTT (30 km) et kayak (8 km) sur l\'Aulne. Classement par temps cumulé. Départ toutes les 10 min de 8h à 10h. Remise des prix le soir.',
     level: 'Tout public',
   },
 ];

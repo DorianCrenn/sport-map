@@ -7,7 +7,7 @@ export default function SportFilterBar({ active, onChange }) {
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={() => onChange(null)}
-        className="px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
+        className="px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 cursor-pointer"
         style={
           active === null
             ? { backgroundColor: '#1e293b', color: 'white' }
@@ -22,7 +22,7 @@ export default function SportFilterBar({ active, onChange }) {
           key={group.id}
           whileTap={{ scale: 0.95 }}
           onClick={() => onChange(active === group.id ? null : group.id)}
-          className="px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 flex items-center gap-1.5"
+          className="px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 cursor-pointer"
           style={
             active === group.id
               ? { backgroundColor: group.color, color: 'white' }
