@@ -98,10 +98,10 @@ export default function EventFormModal({ event, onSave, onClose }) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 16 }}
           transition={{ duration: 0.2 }}
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
             <h2 className="text-lg font-bold text-gray-800">
               {isEdit ? 'Modifier l\'événement' : 'Ajouter un événement'}
             </h2>
@@ -113,7 +113,7 @@ export default function EventFormModal({ event, onSave, onClose }) {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
+          <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
 
             {/* Sport */}
             <div>
