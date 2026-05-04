@@ -11,7 +11,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function MapController({ activeDepartment, userCoords, onBoundsChange }) {
+function MapController({ activeDepartment, userCoords, onBoundsChange, selectedEvent }) {
   const map = useMap();
 
   const reportBounds = useCallback(() => {
@@ -29,11 +29,14 @@ function MapController({ activeDepartment, userCoords, onBoundsChange }) {
   useEffect(() => {
     if (userCoords) map.flyTo([userCoords.lat, userCoords.lng], 13, { duration: 1.2 });
   }, [userCoords, map]);
+  useEffect(() => {
+    if (selectedEvent) map.flyTo([selectedEvent.lat, selectedEvent.lng], 14, { duration: 0.8 });
+  }, [selectedEvent, map]);
 
   return null;
 }
 
-export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, onBoundsChange }) {
+export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, onBoundsChange, selectedEvent }) {
   const dept = DEPARTMENTS[activeDepartment] ?? DEPARTMENTS.finistere;
 
   // Grouper les événements par coordonnées exactes
@@ -58,7 +61,7 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapController activeDepartment={activeDepartment} userCoords={userCoords} onBoundsChange={onBoundsChange} />
+        <MapController activeDepartment={activeDepartment} userCoords={userCoords} onBoundsChange={onBoundsChange} selectedEvent={selectedEvent} />
 
         {groups.map((group) => {
           const pos = [group[0].lat, group[0].lng];

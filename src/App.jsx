@@ -30,6 +30,11 @@ export default function App() {
     departmentId: activeDepartment,
   });
 
+  const selectedEvent = useMemo(
+    () => allEvents.find((e) => e.id === selectedEventId) ?? null,
+    [allEvents, selectedEventId]
+  );
+
   // Sous-ensemble visible dans la viewport courante (pour la sidebar)
   const visibleEvents = useMemo(() => {
     if (!mapBounds) return filteredEvents;
@@ -71,6 +76,7 @@ export default function App() {
           activeDepartment={activeDepartment}
           userCoords={userCoords}
           onBoundsChange={handleBoundsChange}
+          selectedEvent={selectedEvent}
         />
         <EventSidebar
           events={visibleEvents}
