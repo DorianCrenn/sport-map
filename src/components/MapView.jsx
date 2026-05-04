@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useEffect, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvent } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { DEPARTMENTS, SPORT_GROUPS } from '../data/events.js';
@@ -12,26 +12,35 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function MapController({ activeDepartment, userCoords }) {
+function MapController({ activeDepartment, userCoords, onBoundsChange }) {
   const map = useMap();
+
+  const reportBounds = useCallback(() => {
+    onBoundsChange(map.getBounds());
+  }, [map, onBoundsChange]);
+
+  // Report bounds on every move/zoom end
+  useMapEvent('moveend', reportBounds);
+  useMapEvent('zoomend', reportBounds);
+
+  // Report initial bounds on mount
+  useEffect(() => {
+    reportBounds();
+  }, [reportBounds]);
 
   useEffect(() => {
     const dept = DEPARTMENTS[activeDepartment];
-    if (dept) {
-      map.flyTo(dept.center, dept.zoom, { duration: 1 });
-    }
+    if (dept) map.flyTo(dept.center, dept.zoom, { duration: 1 });
   }, [activeDepartment, map]);
 
   useEffect(() => {
-    if (userCoords) {
-      map.flyTo([userCoords.lat, userCoords.lng], 13, { duration: 1.2 });
-    }
+    if (userCoords) map.flyTo([userCoords.lat, userCoords.lng], 13, { duration: 1.2 });
   }, [userCoords, map]);
 
   return null;
 }
 
-export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords }) {
+export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, onBoundsChange }) {
   const dept = DEPARTMENTS[activeDepartment] ?? DEPARTMENTS.finistere;
 
   return (
@@ -47,7 +56,7 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <MapController activeDepartment={activeDepartment} userCoords={userCoords} />
+        <MapController activeDepartment={activeDepartment} userCoords={userCoords} onBoundsChange={onBoundsChange} />
 
         {events.map((event) => (
           <Marker

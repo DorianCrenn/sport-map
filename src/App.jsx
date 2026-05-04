@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { EVENTS } from './data/events.js';
 import { useFilteredEvents } from './hooks/useFilteredEvents.js';
 import { useGeolocation } from './hooks/useGeolocation.js';
@@ -15,19 +15,32 @@ export default function App() {
   const [sportGroupFilter, setSportGroupFilter] = useState(null);
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
   const [selectedEventId, setSelectedEventId] = useState(null);
-  const [modalEvent, setModalEvent] = useState(undefined); // undefined = fermé, null = ajout, event = édition
+  const [mapBounds, setMapBounds] = useState(null);
+  const [modalEvent, setModalEvent] = useState(undefined);
 
   const { coords: userCoords, loading: geoLoading, request: requestGeo } = useGeolocation();
   const { events: userEvents, addEvent, updateEvent, deleteEvent } = useLocalEvents();
 
   const allEvents = useMemo(() => [...EVENTS, ...userEvents], [userEvents]);
 
+  // Filtres sport / date / département
   const filteredEvents = useFilteredEvents(allEvents, {
     sportGroup: sportGroupFilter,
     dateRange: dateRangeFilter,
     departmentId: activeDepartment,
   });
 
+  // Sous-ensemble visible dans la viewport courante (pour la sidebar)
+  const visibleEvents = useMemo(() => {
+    if (!mapBounds) return filteredEvents;
+    return filteredEvents.filter((e) => mapBounds.contains([e.lat, e.lng]));
+  }, [filteredEvents, mapBounds]);
+
+  const handleBoundsChange = useCallback((bounds) => {
+    setMapBounds(bounds);
+  }, []);
+
+  // Désélectionner si l'événement sort du filtre
   useEffect(() => {
     if (selectedEventId !== null && !filteredEvents.find((e) => e.id === selectedEventId)) {
       setSelectedEventId(null);
@@ -57,9 +70,10 @@ export default function App() {
           onMarkerClick={setSelectedEventId}
           activeDepartment={activeDepartment}
           userCoords={userCoords}
+          onBoundsChange={handleBoundsChange}
         />
         <EventSidebar
-          events={filteredEvents}
+          events={visibleEvents}
           selectedEventId={selectedEventId}
           onEventSelect={(id) => setSelectedEventId((prev) => (prev === id ? null : id))}
           onGeolocate={requestGeo}

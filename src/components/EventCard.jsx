@@ -71,7 +71,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
               <div className="ml-auto flex gap-0.5 flex-shrink-0">
                 <button
                   onClick={(e) => { e.stopPropagation(); onEdit(event); }}
-                  className="p-1 rounded-md text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
+                  className="p-1 rounded-md text-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                   title="Modifier"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -81,7 +81,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); onDelete(event.id); }}
-                  className="p-1 rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                  className="p-1 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                   title="Supprimer"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
