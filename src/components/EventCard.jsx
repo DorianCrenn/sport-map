@@ -3,31 +3,32 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SPORT_GROUPS } from '../data/events.js';
 
 function StandingsRow({ team, rank, wins, draws, losses, points }) {
-  const played = wins + draws + losses;
+  const played = (wins ?? 0) + (draws ?? 0) + (losses ?? 0);
   return (
     <div className="flex items-center gap-2 text-xs py-1">
       <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 flex-shrink-0 text-[10px]">
         {rank}
       </span>
       <span className="flex-1 font-medium text-gray-700 truncate">{team}</span>
-      <span className="text-gray-400 w-5 text-center">{played}</span>
-      <span className="text-green-600 w-5 text-center font-medium">{wins}</span>
-      <span className="text-gray-400 w-5 text-center">{draws}</span>
-      <span className="text-red-500 w-5 text-center">{losses}</span>
-      {points !== null && (
+      <span className="text-gray-400 w-5 text-center">{played || '-'}</span>
+      <span className="text-green-600 w-5 text-center font-medium">{wins ?? '-'}</span>
+      <span className="text-gray-400 w-5 text-center">{draws ?? '-'}</span>
+      <span className="text-red-500 w-5 text-center">{losses ?? '-'}</span>
+      {points !== null && points !== undefined && (
         <span className="font-bold text-gray-800 w-6 text-center">{points}</span>
       )}
     </div>
   );
 }
 
-const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect }, ref) {
+const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete }, ref) {
   const group = SPORT_GROUPS[event.sportGroup];
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const isUserEvent = event.source === 'user';
   const hasStandings = !!event.standings;
-  const showPoints = event.standings?.home?.points !== null;
+  const showPoints = event.standings?.home?.points !== null && event.standings?.home?.points !== undefined;
 
   return (
     <motion.div
@@ -53,6 +54,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect },
           style={{ backgroundColor: group?.color, minHeight: '40px' }}
         />
         <div className="flex-1 min-w-0">
+          {/* Badges + actions */}
           <div className="flex items-center gap-1.5 mb-0.5">
             <span
               className="text-xs font-semibold px-1.5 py-0.5 rounded text-white flex-shrink-0"
@@ -61,6 +63,28 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect },
               {group?.emoji} {event.sport}
             </span>
             <span className="text-xs text-gray-400 flex-shrink-0">{event.level}</span>
+            {isUserEvent && (
+              <span className="text-[10px] text-blue-400 font-medium flex-shrink-0">✦ Club</span>
+            )}
+            {/* Boutons edit/delete visibles au hover sur la card */}
+            {isUserEvent && (
+              <div className="ml-auto flex gap-1 flex-shrink-0">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onEdit(event); }}
+                  className="text-gray-300 hover:text-blue-500 transition-colors p-0.5 cursor-pointer text-sm"
+                  title="Modifier"
+                >
+                  ✏️
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onDelete(event.id); }}
+                  className="text-gray-300 hover:text-red-500 transition-colors p-0.5 cursor-pointer text-sm"
+                  title="Supprimer"
+                >
+                  🗑️
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="font-semibold text-gray-800 text-sm leading-tight">{event.title}</div>
@@ -68,9 +92,9 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect },
           <div className="text-xs text-gray-500 mt-1">
             📅 {dateStr} · {timeStr}
           </div>
-          <div className="text-xs text-gray-400 mt-0.5 truncate">📍 {event.venue}, {event.city}</div>
+          <div className="text-xs text-gray-400 mt-0.5 truncate">📍 {event.venue || event.city}</div>
 
-          {/* Description et classement — visibles uniquement quand sélectionné */}
+          {/* Description + classement — visibles quand sélectionné */}
           <AnimatePresence>
             {isSelected && (
               <motion.div
