@@ -52,6 +52,8 @@ export function useFilteredEvents(events, { sport, dateRange, departmentId }) {
       result = result.filter(e => isThisWeekend(e.date));
     } else if (dateRange === 'week') {
       result = result.filter(e => isThisWeek(e.date));
+    } else if (dateRange) {
+      result = result.filter(e => e.date.slice(0, 10) === dateRange);
     }
 
     return result.sort((a, b) => new Date(a.date) - new Date(b.date));
