@@ -40,7 +40,7 @@ function MapController({ activeDepartment, userCoords, onBoundsChange, selectedE
   return null;
 }
 
-export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, onBoundsChange, selectedEvent, onMapClick }) {
+export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, onBoundsChange, selectedEvent, onMapClick, isFavorite }) {
   const dept = DEPARTMENTS[activeDepartment] ?? DEPARTMENTS.finistere;
 
   function clusterIcon(cluster) {
@@ -84,7 +84,7 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
             <Marker
               key={event.id}
               position={[event.lat, event.lng]}
-              icon={createSportMarker(event.sportGroup, event.id === selectedEventId)}
+              icon={createSportMarker(event.sportGroup, event.id === selectedEventId, isFavorite?.(event.id))}
               eventHandlers={{ click: () => onMarkerClick(event.id) }}
               title={event.sportGroup}
             />

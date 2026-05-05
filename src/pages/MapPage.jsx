@@ -73,6 +73,7 @@ export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpd
           userCoords={userCoords}
           onBoundsChange={handleBoundsChange}
           selectedEvent={selectedEvent}
+          isFavorite={isFavorite}
         />
 
         {/* Desktop sidebar — hidden on mobile */}
