@@ -64,14 +64,25 @@ function buildEvent(form) {
   };
 }
 
+function Field({ label, children }) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const inputCls = 'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:bg-white transition-colors';
+
 export default function EventFormModal({ event, onSave, onClose }) {
   const isEdit = !!event;
   const [form, setForm] = useState(() => toFormValues(event));
   const isTeamSport = ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport);
 
-  useEffect(() => {
-    setForm(toFormValues(event));
-  }, [event]);
+  useEffect(() => { setForm(toFormValues(event)); }, [event]);
 
   function set(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -85,205 +96,165 @@ export default function EventFormModal({ event, onSave, onClose }) {
 
   return (
     <AnimatePresence>
+      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[1000] flex items-center justify-center p-4"
-        style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
+        className="fixed inset-0 flex items-end md:items-center justify-center md:p-4"
+        style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 2000 }}
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
+        {/* Modal card */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 16 }}
-          transition={{ duration: 0.2 }}
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 60, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 340, damping: 34 }}
+          className="bg-white w-full md:max-w-lg flex flex-col overflow-hidden rounded-t-3xl md:rounded-2xl"
+          style={{ height: '92dvh', maxHeight: '92dvh' }}
+          onClick={(e) => e.stopPropagation()}
         >
+          {/* Drag handle — mobile only */}
+          <div className="md:hidden flex justify-center pt-3 pb-0 flex-shrink-0">
+            <div className="w-10 h-1 bg-gray-200 rounded-full" />
+          </div>
+
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-            <h2 className="text-lg font-bold text-gray-800">
+          <div className="flex items-center justify-between px-5 py-4 flex-shrink-0">
+            <h2 className="text-base font-bold text-gray-800">
               {isEdit ? 'Modifier l\'événement' : 'Ajouter un événement'}
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 text-xl leading-none cursor-pointer"
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
             >
-              ✕
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
-
-            {/* Sport */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                Type de sport *
-              </label>
-              <select
-                value={form.sport}
-                onChange={(e) => set('sport', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              >
-                {SPORT_OPTIONS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
+          {/* Scrollable fields */}
+          <form
+            id="event-form"
+            onSubmit={handleSubmit}
+            className="flex-1 overflow-y-auto px-5 pb-2 space-y-4"
+          >
+            <Field label="Type de sport *">
+              <select value={form.sport} onChange={(e) => set('sport', e.target.value)} className={inputCls}>
+                {SPORT_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-            </div>
+            </Field>
 
-            {/* Équipes (sports collectifs) */}
             {isTeamSport && (
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                    Équipe domicile
-                  </label>
+                <Field label="Domicile">
                   <input
                     type="text"
                     value={form.homeTeam}
                     onChange={(e) => set('homeTeam', e.target.value)}
                     placeholder="FC Brest"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    className={inputCls}
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                    Équipe visiteur
-                  </label>
+                </Field>
+                <Field label="Visiteur">
                   <input
                     type="text"
                     value={form.awayTeam}
                     onChange={(e) => set('awayTeam', e.target.value)}
                     placeholder="FC Quimper"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    className={inputCls}
                   />
-                </div>
+                </Field>
               </div>
             )}
 
-            {/* Titre (sports non-collectifs ou si pas d'équipes renseignées) */}
             {(!isTeamSport || (!form.homeTeam && !form.awayTeam)) && (
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                  Nom de l'événement *
-                </label>
+              <Field label="Nom de l'événement *">
                 <input
                   type="text"
                   required={!isTeamSport}
                   value={form.title}
                   onChange={(e) => set('title', e.target.value)}
                   placeholder="Trail des Abers, Tournoi de basket…"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className={inputCls}
                 />
-              </div>
+              </Field>
             )}
 
-            {/* Date + Heure */}
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                  Date *
-                </label>
+              <Field label="Date *">
                 <input
                   type="date"
                   required
                   value={form.date}
                   onChange={(e) => set('date', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+                  className={inputCls}
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                  Heure *
-                </label>
+              </Field>
+              <Field label="Heure *">
                 <input
                   type="time"
                   required
                   value={form.time}
                   onChange={(e) => set('time', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+                  className={inputCls}
                 />
-              </div>
+              </Field>
             </div>
 
-            {/* Ville */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                Ville *
-              </label>
-              <select
-                value={form.cityName}
-                onChange={(e) => set('cityName', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              >
-                {FINISTERE_CITIES.map((c) => (
-                  <option key={c.name} value={c.name}>{c.name}</option>
-                ))}
+            <Field label="Ville *">
+              <select value={form.cityName} onChange={(e) => set('cityName', e.target.value)} className={inputCls}>
+                {FINISTERE_CITIES.map((c) => <option key={c.name} value={c.name}>{c.name}</option>)}
               </select>
-            </div>
+            </Field>
 
-            {/* Lieu */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                Stade / Salle / Lieu
-              </label>
+            <Field label="Stade / Salle / Lieu">
               <input
                 type="text"
                 value={form.venue}
                 onChange={(e) => set('venue', e.target.value)}
                 placeholder="Stade municipal, Salle omnisports…"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className={inputCls}
               />
-            </div>
+            </Field>
 
-            {/* Niveau */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                Niveau
-              </label>
-              <select
-                value={form.level}
-                onChange={(e) => set('level', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              >
-                {LEVEL_OPTIONS.map((l) => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
+            <Field label="Niveau">
+              <select value={form.level} onChange={(e) => set('level', e.target.value)} className={inputCls}>
+                {LEVEL_OPTIONS.map((l) => <option key={l} value={l}>{l}</option>)}
               </select>
-            </div>
+            </Field>
 
-            {/* Description */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                Description
-              </label>
+            <Field label="Description">
               <textarea
                 value={form.description}
                 onChange={(e) => set('description', e.target.value)}
                 placeholder="Informations complémentaires : enjeu du match, parcours, règlement…"
                 rows={3}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
+                className={`${inputCls} resize-none`}
               />
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer"
-                style={{ backgroundColor: '#1e293b' }}
-              >
-                {isEdit ? 'Enregistrer' : 'Ajouter'}
-              </button>
-            </div>
+            </Field>
           </form>
+
+          {/* Footer buttons — fixed outside scroll */}
+          <div className="flex-shrink-0 px-5 py-4 border-t border-gray-100 flex gap-3 bg-white">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              form="event-form"
+              className="flex-1 py-3 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer"
+              style={{ backgroundColor: '#1e293b' }}
+            >
+              {isEdit ? 'Enregistrer' : 'Ajouter'}
+            </button>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
