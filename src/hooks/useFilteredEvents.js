@@ -1,5 +1,14 @@
 import { useMemo } from 'react';
 
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
+
 function getDatePart(dateStr) {
   return new Date(dateStr).toDateString();
 }
@@ -34,7 +43,7 @@ function isThisWeek(dateStr) {
   return d >= today && d <= endOfWeek;
 }
 
-export function useFilteredEvents(events, { sport, dateRange, departmentId }) {
+export function useFilteredEvents(events, { sport, dateRange, departmentId, nearbyCoords }) {
   return useMemo(() => {
     let result = events;
 
@@ -44,6 +53,10 @@ export function useFilteredEvents(events, { sport, dateRange, departmentId }) {
 
     if (sport) {
       result = result.filter(e => e.sport === sport);
+    }
+
+    if (nearbyCoords) {
+      result = result.filter(e => haversineKm(nearbyCoords.lat, nearbyCoords.lng, e.lat, e.lng) <= 20);
     }
 
     if (dateRange === 'today') {
@@ -57,5 +70,5 @@ export function useFilteredEvents(events, { sport, dateRange, departmentId }) {
     }
 
     return result.sort((a, b) => new Date(a.date) - new Date(b.date));
-  }, [events, sport, dateRange, departmentId]);
+  }, [events, sport, dateRange, departmentId, nearbyCoords]);
 }

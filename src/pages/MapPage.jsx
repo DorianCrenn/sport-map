@@ -12,16 +12,29 @@ import MobileEventSheet from '../components/MobileEventSheet.jsx';
 export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite }) {
   const [sportFilter, setSportFilter] = useState(null);
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
+  const [nearbyFilter, setNearbyFilter] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
   const [modalEvent, setModalEvent] = useState(undefined);
 
   const { coords: userCoords, loading: geoLoading, request: requestGeo } = useGeolocation();
 
+  function handleNearbyToggle() {
+    if (!nearbyFilter) {
+      requestGeo();
+      setNearbyFilter(true);
+    } else {
+      setNearbyFilter(false);
+    }
+  }
+
+  const nearbyCoords = nearbyFilter && userCoords ? userCoords : null;
+
   const filteredEvents = useFilteredEvents(allEvents, {
     sport: sportFilter,
     dateRange: dateRangeFilter,
     departmentId: activeDepartment,
+    nearbyCoords,
   });
 
   const selectedEvent = useMemo(
@@ -59,7 +72,13 @@ export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpd
 
   return (
     <div className="flex flex-col h-full">
-      <SportFilterBar active={sportFilter} onChange={setSportFilter} />
+      <SportFilterBar
+        active={sportFilter}
+        onChange={setSportFilter}
+        nearbyActive={nearbyFilter}
+        onNearbyToggle={handleNearbyToggle}
+        geoLoading={geoLoading}
+      />
       <DateFilterBar active={dateRangeFilter} onChange={setDateRangeFilter} />
 
       <div className="flex flex-1 min-h-0 relative">
