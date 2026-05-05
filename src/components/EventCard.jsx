@@ -9,7 +9,7 @@ function StandingsRow({ team, rank, wins, draws, losses, points }) {
       <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 flex-shrink-0 text-[10px]">
         {rank}
       </span>
-      <span className="flex-1 font-medium text-gray-700 truncate">{team}</span>
+      <span className="flex-1 font-medium text-gray-700 truncate font-oswald tracking-wide">{team}</span>
       <span className="text-gray-400 w-5 text-center">{played || '-'}</span>
       <span className="text-green-600 w-5 text-center font-medium">{wins ?? '-'}</span>
       <span className="text-gray-400 w-5 text-center">{draws ?? '-'}</span>
@@ -58,12 +58,12 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
           {/* Badges + actions */}
           <div className="flex items-center gap-1.5 mb-0.5">
             <span
-              className="text-xs font-semibold px-1.5 py-0.5 rounded text-white flex-shrink-0"
+              className="text-xs font-semibold px-1.5 py-0.5 rounded text-white flex-shrink-0 font-inter"
               style={{ backgroundColor: group?.color }}
             >
               {group?.emoji} {event.sport}
             </span>
-            <span className="text-xs text-gray-400 flex-shrink-0">{event.level}</span>
+            <span className="text-xs text-gray-400 flex-shrink-0 font-inter">{event.level}</span>
             {isUserEvent && (
               <span className="text-[10px] text-blue-400 font-medium flex-shrink-0">✦ Club</span>
             )}
@@ -96,12 +96,12 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
             )}
           </div>
 
-          <div className="font-semibold text-gray-800 text-sm leading-tight">{event.title}</div>
+          <div className="font-semibold text-gray-800 text-sm leading-tight font-oswald tracking-wide">{event.title}</div>
 
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-gray-500 mt-1 font-oswald">
             📅 {dateStr} · {timeStr}
           </div>
-          <div className="text-xs text-gray-400 mt-0.5 truncate">📍 {event.venue || event.city}</div>
+          <div className="text-xs text-gray-400 mt-0.5 truncate font-inter">📍 {event.venue || event.city}</div>
 
           {/* Description + classement — visibles quand sélectionné */}
           <AnimatePresence>

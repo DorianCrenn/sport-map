@@ -54,12 +54,12 @@ export default function MobileEventSheet({ event, onClose, onEdit, onDelete, isF
             </div>
           </div>
 
-          <h2 className="font-bold text-gray-800 text-base leading-tight mb-3">{event.title}</h2>
+          <h2 className="font-bold text-gray-800 text-lg leading-tight mb-3 font-oswald tracking-wide">{event.title}</h2>
 
-          <div className="space-y-1.5 mb-3">
+          <div className="space-y-1.5 mb-3 font-inter">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>📅</span>
-              <span>{dateStr} à {timeStr}</span>
+              <span className="font-oswald">{dateStr} à {timeStr}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <span>📍</span>
@@ -96,7 +96,7 @@ export default function MobileEventSheet({ event, onClose, onEdit, onDelete, isF
                 return (
                   <div key={team.team} className="flex items-center gap-2 text-sm py-1.5 border-b border-gray-50 last:border-0">
                     <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500 flex-shrink-0">{team.rank}</span>
-                    <span className="flex-1 font-medium text-gray-700 text-xs truncate">{team.team}</span>
+                    <span className="flex-1 font-medium text-gray-700 text-xs truncate font-oswald tracking-wide">{team.team}</span>
                     <span className="text-gray-400 text-xs w-6 text-center">{p || '-'}</span>
                     <span className="text-green-600 text-xs w-5 text-center font-medium">{team.wins ?? '-'}</span>
                     <span className="text-gray-400 text-xs w-5 text-center">{team.draws ?? '-'}</span>

@@ -23,10 +23,10 @@ function FavoriteCard({ event, onToggleFavorite }) {
             {group?.emoji}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold mb-0.5" style={{ color: group?.color }}>{event.sport}</div>
-            <div className="font-semibold text-gray-800 text-sm leading-tight">{event.title}</div>
-            <div className="text-xs text-gray-500 mt-1">📅 {dateStr} · {timeStr}</div>
-            <div className="text-xs text-gray-400 mt-0.5 truncate">📍 {event.venue || event.city}</div>
+            <div className="text-xs font-semibold mb-0.5 font-inter" style={{ color: group?.color }}>{event.sport}</div>
+            <div className="font-semibold text-gray-800 text-sm leading-tight font-oswald tracking-wide">{event.title}</div>
+            <div className="text-xs text-gray-500 mt-1 font-oswald">📅 {dateStr} · {timeStr}</div>
+            <div className="text-xs text-gray-400 mt-0.5 truncate font-inter">📍 {event.venue || event.city}</div>
           </div>
         </div>
         <button

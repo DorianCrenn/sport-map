@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
-:root {
-  --sport-football: #22c55e;
-  --sport-team: #f97316;
-  --sport-endurance: #3b82f6;
+@theme {
+  --font-oswald:  'Oswald', sans-serif;
+  --font-inter:   'Inter', sans-serif;
+  --font-manrope: 'Manrope', sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
 }
 
 #root {
@@ -21,6 +21,7 @@ body {
 .leaflet-popup-content-wrapper {
   border-radius: 12px !important;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+  font-family: 'Manrope', sans-serif;
 }
 
 .leaflet-popup-tip-container {

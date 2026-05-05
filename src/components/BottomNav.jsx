@@ -78,7 +78,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
               />
             )}
             {tab.icon(active)}
-            <span className="text-[10px] font-medium">{tab.label}</span>
+            <span className="text-[10px] font-medium font-inter">{tab.label}</span>
           </motion.button>
         );
       })}
