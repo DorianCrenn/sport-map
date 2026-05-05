@@ -16,7 +16,7 @@ export function createClusterMarker(count, color = '#64748b', icon = null) {
   const size = 38;
 
   const inner = icon
-    ? `<g transform="translate(14,14) scale(0.583)">${icon}</g>
+    ? `<g transform="translate(14,14) scale(0.583)" style="color:${color}">${icon}</g>
        <circle cx="33" cy="9" r="7" fill="white" stroke="${color}" stroke-width="1.5"/>
        <text x="33" y="12.5" text-anchor="middle" font-size="10" font-weight="800" font-family="system-ui,sans-serif" fill="${color}">${count}</text>`
     : `<text x="21" y="26.5" text-anchor="middle" font-size="${count > 9 ? 11 : 13}" font-weight="700" font-family="system-ui,sans-serif" fill="${color}">${count}</text>`;
@@ -51,7 +51,7 @@ export function createSportMarker(sport, isSelected = false, isFavorite = false)
   const tx = Math.round(18 - 12 * scale);
   const ty = Math.round(17 - 12 * scale);
   const iconEl = icon
-    ? `<g transform="translate(${tx},${ty}) scale(${scale})">${icon}</g>`
+    ? `<g transform="translate(${tx},${ty}) scale(${scale})" style="color:${color}">${icon}</g>`
     : `<circle cx="18" cy="17" r="5" fill="${color}"/>`;
 
   const heartBadge = isFavorite

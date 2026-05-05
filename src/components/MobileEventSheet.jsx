@@ -1,5 +1,29 @@
 import { motion } from 'framer-motion';
 import { SPORTS } from '../data/events.js';
+import SportIcon from './SportIcon.jsx';
+
+const CalendarSvg = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <rect x="3" y="4" width="18" height="18" rx="2"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/>
+    <line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+
+const PinSvg = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+    <circle cx="12" cy="10" r="3"/>
+  </svg>
+);
+
+const MedalSvg = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <circle cx="12" cy="15" r="5"/>
+    <path d="M8.56 2.75l4.13 4.13 4.14-4.14"/>
+  </svg>
+);
 
 export default function MobileEventSheet({ event, onClose, onEdit, onDelete, isFavorite, onToggleFavorite }) {
   const group = SPORTS[event.sport];
@@ -7,7 +31,6 @@ export default function MobileEventSheet({ event, onClose, onEdit, onDelete, isF
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  const played = (event.standings?.home?.wins ?? 0) + (event.standings?.home?.draws ?? 0) + (event.standings?.home?.losses ?? 0);
 
   return (
     <motion.div
@@ -18,18 +41,17 @@ export default function MobileEventSheet({ event, onClose, onEdit, onDelete, isF
       className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl md:hidden overflow-hidden"
       style={{ maxHeight: '65vh', zIndex: 1100, boxShadow: '0 -8px 40px rgba(0,0,0,0.18)' }}
     >
-      {/* Drag handle */}
       <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
         <div className="w-10 h-1 bg-gray-200 rounded-full" />
       </div>
 
       <div className="overflow-y-auto" style={{ maxHeight: 'calc(65vh - 28px)' }}>
         <div className="px-4 pb-8">
-          {/* Top row: sport badge + fav + close */}
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold px-2.5 py-1 rounded-full text-white"
+            <span className="text-sm font-semibold px-2.5 py-1 rounded-full text-white flex items-center gap-1.5"
               style={{ backgroundColor: group?.color }}>
-              {group?.emoji} {event.sport}
+              <SportIcon sport={event.sport} size={14} color="white" />
+              {event.sport}
             </span>
             <div className="flex items-center gap-1">
               {onToggleFavorite && (
@@ -58,16 +80,16 @@ export default function MobileEventSheet({ event, onClose, onEdit, onDelete, isF
 
           <div className="space-y-1.5 mb-3 font-inter">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>📅</span>
+              <CalendarSvg />
               <span className="font-oswald">{dateStr} à {timeStr}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
-              <span>📍</span>
+              <PinSvg />
               <span>{event.venue || event.city}</span>
             </div>
             {event.level && (
               <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span>🏅</span>
+                <MedalSvg />
                 <span>{event.level}</span>
               </div>
             )}

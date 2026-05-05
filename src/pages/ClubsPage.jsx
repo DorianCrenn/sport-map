@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { SPORTS } from '../data/events.js';
+import SportIcon from '../components/SportIcon.jsx';
 
 const CLUBS = [
   { id: 1,  name: 'US Brest Football',       sport: 'Football',   city: 'Brest',      members: 320, level: 'Division Honneur',      contact: 'usbrest29@gmail.com' },
@@ -64,12 +65,13 @@ export default function ClubsPage() {
             <button
               key={sport.id}
               onClick={() => setSportFilter(sportFilter === sport.id ? null : sport.id)}
-              className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1 cursor-pointer transition-colors"
+              className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 cursor-pointer transition-colors"
               style={sportFilter === sport.id
                 ? { backgroundColor: sport.color, color: 'white' }
                 : { backgroundColor: '#f1f5f9', color: '#64748b' }}
             >
-              {sport.emoji} {sport.label}
+              <SportIcon sport={sport.id} size={13} color={sportFilter === sport.id ? 'white' : sport.color} />
+              {sport.label}
             </button>
           ))}
         </div>

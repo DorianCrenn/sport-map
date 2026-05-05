@@ -1,5 +1,13 @@
 import { motion } from 'framer-motion';
 import { SPORTS } from '../data/events.js';
+import SportIcon from './SportIcon.jsx';
+
+const LocateSvg = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+    <circle cx="12" cy="10" r="3"/>
+  </svg>
+);
 
 export default function SportFilterBar({ active, onChange, nearbyActive, onNearbyToggle, geoLoading }) {
   return (
@@ -24,14 +32,14 @@ export default function SportFilterBar({ active, onChange, nearbyActive, onNearb
             key={sport.id}
             whileTap={{ scale: 0.95 }}
             onClick={() => onChange(isActive ? null : sport.id)}
-            className="px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 flex items-center gap-1 cursor-pointer"
+            className="px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 cursor-pointer"
             style={
               isActive
                 ? { backgroundColor: sport.color, color: 'white' }
                 : { backgroundColor: '#f1f5f9', color: '#64748b' }
             }
           >
-            <span>{sport.emoji}</span>
+            <SportIcon sport={sport.id} size={14} color={isActive ? 'white' : sport.color} />
             {sport.label}
           </motion.button>
         );
@@ -42,14 +50,21 @@ export default function SportFilterBar({ active, onChange, nearbyActive, onNearb
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={onNearbyToggle}
-        className="px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1 cursor-pointer transition-colors"
+        className="px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 cursor-pointer transition-colors"
         style={
           nearbyActive
             ? { backgroundColor: '#3b82f6', color: 'white' }
             : { backgroundColor: '#f1f5f9', color: '#64748b' }
         }
       >
-        {geoLoading ? '⏳' : '📍'} Autour de moi
+        {geoLoading ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="animate-spin" style={{ flexShrink: 0 }}>
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+          </svg>
+        ) : (
+          <LocateSvg />
+        )}
+        Autour de moi
       </motion.button>
     </div>
   );

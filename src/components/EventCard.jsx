@@ -1,6 +1,23 @@
 import { forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SPORTS } from '../data/events.js';
+import SportIcon from './SportIcon.jsx';
+
+const CalendarSvg = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <rect x="3" y="4" width="18" height="18" rx="2"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/>
+    <line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+
+const PinSvg = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+    <circle cx="12" cy="10" r="3"/>
+  </svg>
+);
 
 function StandingsRow({ team, rank, wins, draws, losses, points }) {
   const played = (wins ?? 0) + (draws ?? 0) + (losses ?? 0);
@@ -55,19 +72,18 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
           style={{ backgroundColor: group?.color, minHeight: '40px' }}
         />
         <div className="flex-1 min-w-0">
-          {/* Badges + actions */}
           <div className="flex items-center gap-1.5 mb-0.5">
             <span
-              className="text-xs font-semibold px-1.5 py-0.5 rounded text-white flex-shrink-0 font-inter"
+              className="text-xs font-semibold px-1.5 py-0.5 rounded text-white flex-shrink-0 font-inter flex items-center gap-1"
               style={{ backgroundColor: group?.color }}
             >
-              {group?.emoji} {event.sport}
+              <SportIcon sport={event.sport} size={11} color="white" />
+              {event.sport}
             </span>
             <span className="text-xs text-gray-400 flex-shrink-0 font-inter">{event.level}</span>
             {isUserEvent && (
               <span className="text-[10px] text-blue-400 font-medium flex-shrink-0">✦ Club</span>
             )}
-            {/* Boutons edit/delete visibles au hover sur la card */}
             {isUserEvent && (
               <div className="ml-auto flex gap-0.5 flex-shrink-0">
                 <button
@@ -98,12 +114,15 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
 
           <div className="font-semibold text-gray-800 text-sm leading-tight font-oswald tracking-wide">{event.title}</div>
 
-          <div className="text-xs text-gray-500 mt-1 font-oswald">
-            📅 {dateStr} · {timeStr}
+          <div className="flex items-center gap-1 text-xs text-gray-500 mt-1 font-oswald">
+            <CalendarSvg />
+            <span>{dateStr} · {timeStr}</span>
           </div>
-          <div className="text-xs text-gray-400 mt-0.5 truncate font-inter">📍 {event.venue || event.city}</div>
+          <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5 font-inter">
+            <PinSvg />
+            <span className="truncate">{event.venue || event.city}</span>
+          </div>
 
-          {/* Description + classement — visibles quand sélectionné */}
           <AnimatePresence>
             {isSelected && (
               <motion.div

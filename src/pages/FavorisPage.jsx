@@ -1,5 +1,22 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { SPORTS } from '../data/events.js';
+import SportIcon from '../components/SportIcon.jsx';
+
+const CalendarSvg = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <rect x="3" y="4" width="18" height="18" rx="2"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/>
+    <line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+
+const PinSvg = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+    <circle cx="12" cy="10" r="3"/>
+  </svg>
+);
 
 function FavoriteCard({ event, onToggleFavorite }) {
   const group = SPORTS[event.sport];
@@ -18,15 +35,21 @@ function FavoriteCard({ event, onToggleFavorite }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: `${group?.color}18` }}>
-            {group?.emoji}
+            <SportIcon sport={event.sport} size={22} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-xs font-semibold mb-0.5 font-inter" style={{ color: group?.color }}>{event.sport}</div>
             <div className="font-semibold text-gray-800 text-sm leading-tight font-oswald tracking-wide">{event.title}</div>
-            <div className="text-xs text-gray-500 mt-1 font-oswald">📅 {dateStr} · {timeStr}</div>
-            <div className="text-xs text-gray-400 mt-0.5 truncate font-inter">📍 {event.venue || event.city}</div>
+            <div className="flex items-center gap-1 text-xs text-gray-500 mt-1 font-oswald">
+              <CalendarSvg />
+              <span>{dateStr} · {timeStr}</span>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5 font-inter">
+              <PinSvg />
+              <span className="truncate">{event.venue || event.city}</span>
+            </div>
           </div>
         </div>
         <button
@@ -63,9 +86,13 @@ export default function FavorisPage({ allEvents, favorites, onToggleFavorite }) 
               animate={{ opacity: 1 }}
               className="text-center mt-20"
             >
-              <div className="text-5xl mb-4">🤍</div>
+              <div className="flex justify-center mb-4">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </div>
               <p className="text-gray-500 font-medium">Aucun favori pour l'instant</p>
-              <p className="text-gray-400 text-sm mt-1">Appuyez sur ♥ sur un événement pour l'ajouter ici</p>
+              <p className="text-gray-400 text-sm mt-1">Appuyez sur le cœur d'un événement pour l'ajouter ici</p>
             </motion.div>
           ) : (
             favoriteEvents.map((event) => (

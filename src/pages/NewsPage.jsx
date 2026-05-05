@@ -1,65 +1,54 @@
 import { motion } from 'framer-motion';
+import SportIcon from '../components/SportIcon.jsx';
 
 const NEWS = [
   {
     id: 1,
     category: 'Football',
-    categoryColor: '#22c55e',
-    emoji: '⚽',
+    categoryColor: '#16a34a',
     title: 'Division Honneur : l\'US Brest en route vers le titre',
     summary: 'Avec 54 points après 28 journées, les Brestois semblent bien partis pour décrocher le titre de champion de Division Honneur Bretagne cette saison.',
     time: 'Il y a 2h',
-    image: '🏟️',
   },
   {
     id: 2,
     category: 'Running',
-    categoryColor: '#3b82f6',
-    emoji: '🏃',
+    categoryColor: '#2563eb',
     title: 'Semi-marathon de Quimper : plus de 1 500 dossards déjà vendus',
     summary: 'L\'édition 2026 du semi-marathon de Quimper s\'annonce record. Le départ est prévu le 17 mai depuis la Place de la Résistance.',
     time: 'Il y a 5h',
-    image: '🏅',
   },
   {
     id: 3,
     category: 'Basketball',
-    categoryColor: '#f97316',
-    emoji: '🏀',
+    categoryColor: '#eab308',
     title: 'Landerneau Bretagne BB : les playoffs démarrent fort',
     summary: 'Victoire 78-65 en match aller des playoffs Pro B. Le club finistérien confirme son statut de favori pour la montée.',
     time: 'Hier',
-    image: '🏀',
   },
   {
     id: 4,
     category: 'Trail',
-    categoryColor: '#3b82f6',
-    emoji: '🚵',
+    categoryColor: '#06b6d4',
     title: 'Trail des Abers : les inscriptions ferment vendredi',
     summary: 'Il reste quelques places disponibles pour le Trail des Abers du 9 mai. Les deux parcours (10 km et 22 km) longent les estuaires des Abers Wrac\'h et Benoît.',
     time: 'Hier',
-    image: '🌊',
   },
   {
     id: 5,
     category: 'Rugby',
-    categoryColor: '#f97316',
-    emoji: '🏉',
+    categoryColor: '#dc2626',
     title: 'Fédérale 3 : RC Brest qualifié pour la finale',
     summary: 'Le Rugby Club Brestois a validé son ticket pour la finale départementale après sa victoire en demi-finale. Rendez-vous le 31 mai au Stade du Bouguen.',
     time: 'Il y a 2 jours',
-    image: '🏉',
   },
   {
     id: 6,
     category: 'Cyclisme',
-    categoryColor: '#3b82f6',
-    emoji: '🚴',
+    categoryColor: '#7c3aed',
     title: 'Cyclosportive du Pays de Brest : un parcours renouvelé',
     summary: 'Pour sa 12e édition, la Cyclosportive du Pays de Brest propose un nouveau tracé pour le 150 km incluant la traversée de la presqu\'île de Crozon.',
     time: 'Il y a 3 jours',
-    image: '⛰️',
   },
 ];
 
@@ -81,15 +70,16 @@ export default function NewsPage() {
             className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100 cursor-pointer active:scale-[0.99] transition-transform"
           >
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl"
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: `${article.categoryColor}15` }}>
-                {article.image}
+                <SportIcon sport={article.category} size={26} color={article.categoryColor} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white flex items-center gap-1"
                     style={{ backgroundColor: article.categoryColor }}>
-                    {article.emoji} {article.category}
+                    <SportIcon sport={article.category} size={10} color="white" />
+                    {article.category}
                   </span>
                   <span className="text-[10px] text-gray-400">{article.time}</span>
                 </div>
