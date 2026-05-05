@@ -21,9 +21,7 @@ export default function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
-      {activeTab === 'map' && (
-        <Header activeDepartment={activeDepartment} onDepartmentChange={setActiveDepartment} />
-      )}
+      {activeTab === 'map' && <Header />}
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {activeTab === 'map' && (
