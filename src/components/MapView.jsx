@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvent } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvent } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function MapController({ activeDepartment, userCoords, onBoundsChange, selectedEvent }) {
+function MapController({ activeDepartment, userCoords, onBoundsChange, selectedEvent, onMapClick }) {
   const map = useMap();
 
   const reportBounds = useCallback(() => {
@@ -23,6 +23,7 @@ function MapController({ activeDepartment, userCoords, onBoundsChange, selectedE
 
   useMapEvent('moveend', reportBounds);
   useMapEvent('zoomend', reportBounds);
+  useMapEvent('click', () => { onMapClick?.(); });
 
   useEffect(() => { reportBounds(); }, [reportBounds]);
   useEffect(() => {
@@ -39,7 +40,7 @@ function MapController({ activeDepartment, userCoords, onBoundsChange, selectedE
   return null;
 }
 
-export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, onBoundsChange, selectedEvent }) {
+export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, onBoundsChange, selectedEvent, onMapClick }) {
   const dept = DEPARTMENTS[activeDepartment] ?? DEPARTMENTS.finistere;
 
   function clusterIcon(cluster) {
@@ -68,6 +69,7 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
           userCoords={userCoords}
           onBoundsChange={onBoundsChange}
           selectedEvent={selectedEvent}
+          onMapClick={onMapClick}
         />
 
         <MarkerClusterGroup
@@ -85,24 +87,7 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
               icon={createSportMarker(event.sportGroup, event.id === selectedEventId)}
               eventHandlers={{ click: () => onMarkerClick(event.id) }}
               title={event.sportGroup}
-            >
-              <Popup>
-                <div className="text-sm min-w-[180px]">
-                  <div className="font-bold text-gray-800">{event.title}</div>
-                  <div
-                    className="text-xs font-medium mt-1 px-2 py-0.5 rounded-full inline-block text-white"
-                    style={{ backgroundColor: SPORT_GROUPS[event.sportGroup]?.color }}
-                  >
-                    {SPORT_GROUPS[event.sportGroup]?.emoji} {event.sport}
-                  </div>
-                  <div className="text-gray-500 mt-1 text-xs">
-                    📅 {new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
-                    {' '}à {new Date(event.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                  <div className="text-gray-500 text-xs">📍 {event.venue}, {event.city}</div>
-                </div>
-              </Popup>
-            </Marker>
+            />
           ))}
         </MarkerClusterGroup>
 
