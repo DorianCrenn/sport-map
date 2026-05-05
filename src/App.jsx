@@ -33,6 +33,8 @@ export default function App() {
             onDeleteEvent={deleteEvent}
             isFavorite={isFavorite}
             onToggleFavorite={toggleFavorite}
+            favoritesCount={favorites.size}
+            onGoToFavoris={() => setActiveTab('favoris')}
           />
         )}
         {activeTab === 'favoris' && (

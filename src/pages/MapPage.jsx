@@ -9,7 +9,7 @@ import EventSidebar from '../components/EventSidebar.jsx';
 import EventFormModal from '../components/EventFormModal.jsx';
 import MobileEventSheet from '../components/MobileEventSheet.jsx';
 
-export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite }) {
+export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite, favoritesCount, onGoToFavoris }) {
   const [sportFilter, setSportFilter] = useState(null);
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
   const [nearbyFilter, setNearbyFilter] = useState(false);
@@ -111,16 +111,27 @@ export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpd
           />
         </div>
 
-        {/* Mobile: floating action buttons (always visible, covered by sheet when open) */}
+        {/* Mobile: floating action buttons */}
         <div className="md:hidden absolute bottom-4 left-4 right-4 flex justify-between items-end pointer-events-none" style={{ zIndex: 999 }}>
+          {/* Favoris FAB — bottom left */}
           <button
-            onClick={requestGeo}
-            disabled={geoLoading}
-            className="pointer-events-auto flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-white text-blue-600 disabled:opacity-50 cursor-pointer"
-            style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.15)' }}
+            onClick={onGoToFavoris}
+            className="pointer-events-auto relative flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-white cursor-pointer"
+            style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.15)', color: '#ef4444' }}
           >
-            {geoLoading ? '⏳' : '📍'} Autour de moi
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            Favoris
+            {favoritesCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white"
+                style={{ backgroundColor: '#ef4444' }}>
+                {favoritesCount > 9 ? '9+' : favoritesCount}
+              </span>
+            )}
           </button>
+
+          {/* Ajouter FAB — bottom right */}
           <button
             onClick={() => setModalEvent(null)}
             className="pointer-events-auto flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white cursor-pointer"
