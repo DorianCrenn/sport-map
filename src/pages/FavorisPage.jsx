@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { SPORT_GROUPS } from '../data/events.js';
+import { SPORTS } from '../data/events.js';
 
 function FavoriteCard({ event, onToggleFavorite }) {
-  const group = SPORT_GROUPS[event.sportGroup];
+  const group = SPORTS[event.sport];
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });

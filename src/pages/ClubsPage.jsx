@@ -1,33 +1,26 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { SPORT_GROUPS } from '../data/events.js';
+import { SPORTS } from '../data/events.js';
 
 const CLUBS = [
-  { id: 1, name: 'US Brest Football', sport: 'Football', sportGroup: 'football', city: 'Brest', members: 320, level: 'Division Honneur', contact: 'usbrest29@gmail.com' },
-  { id: 2, name: 'Quimper Cornouaille FC', sport: 'Football', sportGroup: 'football', city: 'Quimper', members: 280, level: 'Division Honneur', contact: 'qcfc29@gmail.com' },
-  { id: 3, name: 'Morlaix FC', sport: 'Football', sportGroup: 'football', city: 'Morlaix', members: 210, level: 'Division Honneur', contact: 'morlaixfc@gmail.com' },
-  { id: 4, name: 'ASC Carhaix', sport: 'Football', sportGroup: 'football', city: 'Carhaix', members: 180, level: 'Promotion de Ligue', contact: 'asccarhaix@gmail.com' },
-  { id: 5, name: 'AS Plabennec', sport: 'Football', sportGroup: 'football', city: 'Plabennec', members: 195, level: 'Division Honneur', contact: 'asplabennec@gmail.com' },
-  { id: 6, name: 'HBC Brest', sport: 'Handball', sportGroup: 'team', city: 'Brest', members: 150, level: 'N3 Régional', contact: 'hbcbrest@gmail.com' },
-  { id: 7, name: 'HBC Concarneau', sport: 'Handball', sportGroup: 'team', city: 'Concarneau', members: 120, level: 'N3 Régional', contact: 'hbcconcarneau@gmail.com' },
-  { id: 8, name: 'Morlaix Handball', sport: 'Handball', sportGroup: 'team', city: 'Morlaix', members: 95, level: 'N3 Régional', contact: 'morlaixhb@gmail.com' },
-  { id: 9, name: 'Landerneau Bretagne BB', sport: 'Basketball', sportGroup: 'team', city: 'Landerneau', members: 200, level: 'Pro B', contact: 'lbb29@gmail.com' },
-  { id: 10, name: 'Quimper Basket', sport: 'Basketball', sportGroup: 'team', city: 'Quimper', members: 175, level: 'Pro B', contact: 'quimperbasket@gmail.com' },
-  { id: 11, name: 'Concarneau Basket', sport: 'Basketball', sportGroup: 'team', city: 'Concarneau', members: 130, level: 'Régional', contact: 'concbask@gmail.com' },
-  { id: 12, name: 'Rugby Club Brestois', sport: 'Rugby', sportGroup: 'team', city: 'Brest', members: 160, level: 'Fédérale 3', contact: 'rcb29@gmail.com' },
-  { id: 13, name: 'RC Quimper', sport: 'Rugby', sportGroup: 'team', city: 'Quimper', members: 140, level: 'Fédérale 3', contact: 'rcquimper@gmail.com' },
-  { id: 14, name: 'Brest Atlético Club', sport: 'Running', sportGroup: 'endurance', city: 'Brest', members: 420, level: 'Loisir / Compétition', contact: 'bac29@gmail.com' },
-  { id: 15, name: 'Quimper Athlétisme', sport: 'Running', sportGroup: 'endurance', city: 'Quimper', members: 310, level: 'Loisir / Compétition', contact: 'qa29@gmail.com' },
-  { id: 16, name: 'Trail Côtier Finistère', sport: 'Trail', sportGroup: 'endurance', city: 'Brest', members: 180, level: 'Tout public', contact: 'tcf29@gmail.com' },
-  { id: 17, name: 'Vélo Club Brestois', sport: 'Cyclisme', sportGroup: 'endurance', city: 'Brest', members: 260, level: 'Loisir / Compétition', contact: 'vcb29@gmail.com' },
-  { id: 18, name: 'Cyclisme Cornouaille', sport: 'Cyclisme', sportGroup: 'endurance', city: 'Quimper', members: 195, level: 'Loisir / Compétition', contact: 'cyclcorn@gmail.com' },
-];
-
-const SPORT_FILTERS = [
-  { key: null, label: 'Tous' },
-  { key: 'football', label: '⚽ Football' },
-  { key: 'team', label: '🏀 Collectifs' },
-  { key: 'endurance', label: '🚴 Endurance' },
+  { id: 1,  name: 'US Brest Football',       sport: 'Football',   city: 'Brest',      members: 320, level: 'Division Honneur',      contact: 'usbrest29@gmail.com' },
+  { id: 2,  name: 'Quimper Cornouaille FC',  sport: 'Football',   city: 'Quimper',    members: 280, level: 'Division Honneur',      contact: 'qcfc29@gmail.com' },
+  { id: 3,  name: 'Morlaix FC',              sport: 'Football',   city: 'Morlaix',    members: 210, level: 'Division Honneur',      contact: 'morlaixfc@gmail.com' },
+  { id: 4,  name: 'ASC Carhaix',             sport: 'Football',   city: 'Carhaix',    members: 180, level: 'Promotion de Ligue',    contact: 'asccarhaix@gmail.com' },
+  { id: 5,  name: 'AS Plabennec',            sport: 'Football',   city: 'Plabennec',  members: 195, level: 'Division Honneur',      contact: 'asplabennec@gmail.com' },
+  { id: 6,  name: 'HBC Brest',              sport: 'Handball',   city: 'Brest',      members: 150, level: 'N3 Régional',           contact: 'hbcbrest@gmail.com' },
+  { id: 7,  name: 'HBC Concarneau',         sport: 'Handball',   city: 'Concarneau', members: 120, level: 'N3 Régional',           contact: 'hbcconcarneau@gmail.com' },
+  { id: 8,  name: 'Morlaix Handball',       sport: 'Handball',   city: 'Morlaix',    members: 95,  level: 'N3 Régional',           contact: 'morlaixhb@gmail.com' },
+  { id: 9,  name: 'Landerneau Bretagne BB', sport: 'Basketball', city: 'Landerneau', members: 200, level: 'Pro B',                 contact: 'lbb29@gmail.com' },
+  { id: 10, name: 'Quimper Basket',         sport: 'Basketball', city: 'Quimper',    members: 175, level: 'Pro B',                 contact: 'quimperbasket@gmail.com' },
+  { id: 11, name: 'Concarneau Basket',      sport: 'Basketball', city: 'Concarneau', members: 130, level: 'Régional',              contact: 'concbask@gmail.com' },
+  { id: 12, name: 'Rugby Club Brestois',    sport: 'Rugby',      city: 'Brest',      members: 160, level: 'Fédérale 3',            contact: 'rcb29@gmail.com' },
+  { id: 13, name: 'RC Quimper',             sport: 'Rugby',      city: 'Quimper',    members: 140, level: 'Fédérale 3',            contact: 'rcquimper@gmail.com' },
+  { id: 14, name: 'Brest Atlético Club',    sport: 'Running',    city: 'Brest',      members: 420, level: 'Loisir / Compétition',  contact: 'bac29@gmail.com' },
+  { id: 15, name: 'Quimper Athlétisme',     sport: 'Running',    city: 'Quimper',    members: 310, level: 'Loisir / Compétition',  contact: 'qa29@gmail.com' },
+  { id: 16, name: 'Trail Côtier Finistère', sport: 'Trail',      city: 'Brest',      members: 180, level: 'Tout public',           contact: 'tcf29@gmail.com' },
+  { id: 17, name: 'Vélo Club Brestois',     sport: 'Cyclisme',   city: 'Brest',      members: 260, level: 'Loisir / Compétition',  contact: 'vcb29@gmail.com' },
+  { id: 18, name: 'Cyclisme Cornouaille',   sport: 'Cyclisme',   city: 'Quimper',    members: 195, level: 'Loisir / Compétition',  contact: 'cyclcorn@gmail.com' },
 ];
 
 export default function ClubsPage() {
@@ -37,7 +30,7 @@ export default function ClubsPage() {
   const filtered = CLUBS.filter((c) => {
     const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.city.toLowerCase().includes(search.toLowerCase());
-    const matchSport = !sportFilter || c.sportGroup === sportFilter;
+    const matchSport = !sportFilter || c.sport === sportFilter;
     return matchSearch && matchSport;
   });
 
@@ -58,16 +51,25 @@ export default function ClubsPage() {
           />
         </div>
         <div className="flex gap-2 overflow-x-auto">
-          {SPORT_FILTERS.map(({ key, label }) => (
+          <button
+            onClick={() => setSportFilter(null)}
+            className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer transition-colors"
+            style={sportFilter === null
+              ? { backgroundColor: '#1e293b', color: 'white' }
+              : { backgroundColor: '#f1f5f9', color: '#64748b' }}
+          >
+            Tous
+          </button>
+          {Object.values(SPORTS).map((sport) => (
             <button
-              key={String(key)}
-              onClick={() => setSportFilter(key)}
-              className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer transition-colors"
-              style={sportFilter === key
-                ? { backgroundColor: '#1e293b', color: 'white' }
+              key={sport.id}
+              onClick={() => setSportFilter(sportFilter === sport.id ? null : sport.id)}
+              className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1 cursor-pointer transition-colors"
+              style={sportFilter === sport.id
+                ? { backgroundColor: sport.color, color: 'white' }
                 : { backgroundColor: '#f1f5f9', color: '#64748b' }}
             >
-              {label}
+              {sport.emoji} {sport.label}
             </button>
           ))}
         </div>
@@ -77,7 +79,7 @@ export default function ClubsPage() {
       <div className="flex-1 overflow-y-auto px-4 py-3">
         <p className="text-xs text-gray-400 mb-3">{filtered.length} club{filtered.length !== 1 ? 's' : ''}</p>
         {filtered.map((club, i) => {
-          const group = SPORT_GROUPS[club.sportGroup];
+          const sport = SPORTS[club.sport];
           return (
             <motion.div
               key={club.id}
@@ -88,8 +90,8 @@ export default function ClubsPage() {
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
-                  style={{ backgroundColor: `${group?.color}15` }}>
-                  {group?.emoji}
+                  style={{ backgroundColor: `${sport?.color}18` }}>
+                  {sport?.emoji}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-gray-800 text-sm">{club.name}</div>
@@ -100,7 +102,7 @@ export default function ClubsPage() {
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[10px] px-1.5 py-0.5 rounded font-medium text-white"
-                      style={{ backgroundColor: group?.color }}>
+                      style={{ backgroundColor: sport?.color }}>
                       {club.sport}
                     </span>
                     <span className="text-[10px] text-gray-400">{club.level}</span>

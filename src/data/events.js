@@ -1,7 +1,11 @@
-export const SPORT_GROUPS = {
-  football: { id: 'football', label: 'Football', color: '#22c55e', emoji: '⚽' },
-  team: { id: 'team', label: 'Handball / Basket / Rugby', color: '#f97316', emoji: '🏀' },
-  endurance: { id: 'endurance', label: 'Running / Trail / Cyclo', color: '#3b82f6', emoji: '🚴' },
+export const SPORTS = {
+  Football:   { id: 'Football',   label: 'Football',   color: '#16a34a', emoji: '⚽' },
+  Handball:   { id: 'Handball',   label: 'Handball',   color: '#f97316', emoji: '🤾' },
+  Basketball: { id: 'Basketball', label: 'Basketball', color: '#eab308', emoji: '🏀' },
+  Rugby:      { id: 'Rugby',      label: 'Rugby',      color: '#dc2626', emoji: '🏉' },
+  Running:    { id: 'Running',    label: 'Running',    color: '#2563eb', emoji: '🏃' },
+  Trail:      { id: 'Trail',      label: 'Trail',      color: '#06b6d4', emoji: '🚵' },
+  Cyclisme:   { id: 'Cyclisme',   label: 'Cyclisme',   color: '#7c3aed', emoji: '🚴' },
 };
 
 export const DEPARTMENTS = {

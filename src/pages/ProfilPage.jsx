@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { SPORT_GROUPS } from '../data/events.js';
+import { SPORTS } from '../data/events.js';
 
 export default function ProfilPage({ favorites, userEvents }) {
   const favCount = favorites.size;
@@ -24,7 +24,7 @@ export default function ProfilPage({ favorites, userEvents }) {
           {[
             { label: 'Favoris', value: favCount, emoji: '❤️' },
             { label: 'Ajoutés', value: eventCount, emoji: '➕' },
-            { label: 'Sports', value: Object.keys(SPORT_GROUPS).length, emoji: '🏅' },
+            { label: 'Sports', value: Object.keys(SPORTS).length, emoji: '🏅' },
           ].map(({ label, value, emoji }) => (
             <motion.div key={label} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="text-center">
               <div className="text-2xl">{emoji}</div>
@@ -41,13 +41,13 @@ export default function ProfilPage({ favorites, userEvents }) {
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <h3 className="font-semibold text-gray-700 text-sm mb-3">Sports disponibles</h3>
           <div className="space-y-2">
-            {Object.values(SPORT_GROUPS).map((group) => (
-              <div key={group.id} className="flex items-center justify-between">
+            {Object.values(SPORTS).map((sport) => (
+              <div key={sport.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">{group.emoji}</span>
-                  <span className="text-sm text-gray-700">{group.label}</span>
+                  <span className="text-lg">{sport.emoji}</span>
+                  <span className="text-sm text-gray-700">{sport.label}</span>
                 </div>
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: group.color }} />
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: sport.color }} />
               </div>
             ))}
           </div>

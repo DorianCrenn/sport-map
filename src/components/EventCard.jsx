@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SPORT_GROUPS } from '../data/events.js';
+import { SPORTS } from '../data/events.js';
 
 function StandingsRow({ team, rank, wins, draws, losses, points }) {
   const played = (wins ?? 0) + (draws ?? 0) + (losses ?? 0);
@@ -22,7 +22,7 @@ function StandingsRow({ team, rank, wins, draws, losses, points }) {
 }
 
 const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, isFavorite, onToggleFavorite }, ref) {
-  const group = SPORT_GROUPS[event.sportGroup];
+  const group = SPORTS[event.sport];
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });

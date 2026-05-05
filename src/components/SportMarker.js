@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import { SPORT_GROUPS } from '../data/events.js';
+import { SPORTS } from '../data/events.js';
 
 function toPastel(hex) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -28,8 +28,8 @@ export function createClusterMarker(count, color = '#64748b') {
   });
 }
 
-export function createSportMarker(sportGroup, isSelected = false, isFavorite = false) {
-  const color = SPORT_GROUPS[sportGroup]?.color ?? '#6b7280';
+export function createSportMarker(sport, isSelected = false, isFavorite = false) {
+  const color = SPORTS[sport]?.color ?? '#6b7280';
   const fill = toPastel(color);
   const size = isSelected ? 38 : 30;
   const tipH = isSelected ? 14 : 11;

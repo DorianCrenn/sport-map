@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.Default.css';
 import L from 'leaflet';
-import { DEPARTMENTS, SPORT_GROUPS } from '../data/events.js';
+import { DEPARTMENTS, SPORTS } from '../data/events.js';
 import { createSportMarker, createClusterMarker } from './SportMarker.js';
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -47,9 +47,9 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
     const count = cluster.getChildCount();
     // title est stocké dans options.title par Leaflet — on l'utilise pour le sport
     const markers = cluster.getAllChildMarkers();
-    const sportGroups = markers.map((m) => m.options.title).filter(Boolean);
-    const allSame = sportGroups.length > 0 && sportGroups.every((s) => s === sportGroups[0]);
-    const color = allSame ? (SPORT_GROUPS[sportGroups[0]]?.color ?? '#64748b') : '#64748b';
+    const sports = markers.map((m) => m.options.title).filter(Boolean);
+    const allSame = sports.length > 0 && sports.every((s) => s === sports[0]);
+    const color = allSame ? (SPORTS[sports[0]]?.color ?? '#64748b') : '#64748b';
     return createClusterMarker(count, color);
   }
 
@@ -84,9 +84,9 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
             <Marker
               key={event.id}
               position={[event.lat, event.lng]}
-              icon={createSportMarker(event.sportGroup, event.id === selectedEventId, isFavorite?.(event.id))}
+              icon={createSportMarker(event.sport, event.id === selectedEventId, isFavorite?.(event.id))}
               eventHandlers={{ click: () => onMarkerClick(event.id) }}
-              title={event.sportGroup}
+              title={event.sport}
             />
           ))}
         </MarkerClusterGroup>
