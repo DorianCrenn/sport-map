@@ -7,6 +7,7 @@ import 'react-leaflet-cluster/dist/assets/MarkerCluster.Default.css';
 import L from 'leaflet';
 import { DEPARTMENTS, SPORTS } from '../data/events.js';
 import { createSportMarker, createClusterMarker } from './SportMarker.js';
+import { SPORT_ICONS } from './sportIcons.js';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -50,8 +51,8 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
     const sports = markers.map((m) => m.options.title).filter(Boolean);
     const allSame = sports.length > 0 && sports.every((s) => s === sports[0]);
     const color = allSame ? (SPORTS[sports[0]]?.color ?? '#64748b') : '#64748b';
-    const emoji = allSame ? (SPORTS[sports[0]]?.emoji ?? null) : null;
-    return createClusterMarker(count, color, emoji);
+    const icon = allSame ? (SPORT_ICONS[sports[0]] ?? null) : null;
+    return createClusterMarker(count, color, icon);
   }
 
   return (
