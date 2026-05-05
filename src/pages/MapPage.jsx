@@ -10,7 +10,7 @@ import EventFormModal from '../components/EventFormModal.jsx';
 import MobileEventSheet from '../components/MobileEventSheet.jsx';
 
 export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite }) {
-  const [sportGroupFilter, setSportGroupFilter] = useState(null);
+  const [sportFilter, setSportFilter] = useState(null);
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
@@ -19,7 +19,7 @@ export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpd
   const { coords: userCoords, loading: geoLoading, request: requestGeo } = useGeolocation();
 
   const filteredEvents = useFilteredEvents(allEvents, {
-    sportGroup: sportGroupFilter,
+    sport: sportFilter,
     dateRange: dateRangeFilter,
     departmentId: activeDepartment,
   });
@@ -59,7 +59,7 @@ export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpd
 
   return (
     <div className="flex flex-col h-full">
-      <SportFilterBar active={sportGroupFilter} onChange={setSportGroupFilter} />
+      <SportFilterBar active={sportFilter} onChange={setSportFilter} />
       <DateFilterBar active={dateRangeFilter} onChange={setDateRangeFilter} />
 
       <div className="flex flex-1 min-h-0 relative">
