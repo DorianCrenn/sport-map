@@ -1,0 +1,127 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { SPORT_GROUPS } from '../data/events.js';
+
+const CLUBS = [
+  { id: 1, name: 'US Brest Football', sport: 'Football', sportGroup: 'football', city: 'Brest', members: 320, level: 'Division Honneur', contact: 'usbrest29@gmail.com' },
+  { id: 2, name: 'Quimper Cornouaille FC', sport: 'Football', sportGroup: 'football', city: 'Quimper', members: 280, level: 'Division Honneur', contact: 'qcfc29@gmail.com' },
+  { id: 3, name: 'Morlaix FC', sport: 'Football', sportGroup: 'football', city: 'Morlaix', members: 210, level: 'Division Honneur', contact: 'morlaixfc@gmail.com' },
+  { id: 4, name: 'ASC Carhaix', sport: 'Football', sportGroup: 'football', city: 'Carhaix', members: 180, level: 'Promotion de Ligue', contact: 'asccarhaix@gmail.com' },
+  { id: 5, name: 'AS Plabennec', sport: 'Football', sportGroup: 'football', city: 'Plabennec', members: 195, level: 'Division Honneur', contact: 'asplabennec@gmail.com' },
+  { id: 6, name: 'HBC Brest', sport: 'Handball', sportGroup: 'team', city: 'Brest', members: 150, level: 'N3 Régional', contact: 'hbcbrest@gmail.com' },
+  { id: 7, name: 'HBC Concarneau', sport: 'Handball', sportGroup: 'team', city: 'Concarneau', members: 120, level: 'N3 Régional', contact: 'hbcconcarneau@gmail.com' },
+  { id: 8, name: 'Morlaix Handball', sport: 'Handball', sportGroup: 'team', city: 'Morlaix', members: 95, level: 'N3 Régional', contact: 'morlaixhb@gmail.com' },
+  { id: 9, name: 'Landerneau Bretagne BB', sport: 'Basketball', sportGroup: 'team', city: 'Landerneau', members: 200, level: 'Pro B', contact: 'lbb29@gmail.com' },
+  { id: 10, name: 'Quimper Basket', sport: 'Basketball', sportGroup: 'team', city: 'Quimper', members: 175, level: 'Pro B', contact: 'quimperbasket@gmail.com' },
+  { id: 11, name: 'Concarneau Basket', sport: 'Basketball', sportGroup: 'team', city: 'Concarneau', members: 130, level: 'Régional', contact: 'concbask@gmail.com' },
+  { id: 12, name: 'Rugby Club Brestois', sport: 'Rugby', sportGroup: 'team', city: 'Brest', members: 160, level: 'Fédérale 3', contact: 'rcb29@gmail.com' },
+  { id: 13, name: 'RC Quimper', sport: 'Rugby', sportGroup: 'team', city: 'Quimper', members: 140, level: 'Fédérale 3', contact: 'rcquimper@gmail.com' },
+  { id: 14, name: 'Brest Atlético Club', sport: 'Running', sportGroup: 'endurance', city: 'Brest', members: 420, level: 'Loisir / Compétition', contact: 'bac29@gmail.com' },
+  { id: 15, name: 'Quimper Athlétisme', sport: 'Running', sportGroup: 'endurance', city: 'Quimper', members: 310, level: 'Loisir / Compétition', contact: 'qa29@gmail.com' },
+  { id: 16, name: 'Trail Côtier Finistère', sport: 'Trail', sportGroup: 'endurance', city: 'Brest', members: 180, level: 'Tout public', contact: 'tcf29@gmail.com' },
+  { id: 17, name: 'Vélo Club Brestois', sport: 'Cyclisme', sportGroup: 'endurance', city: 'Brest', members: 260, level: 'Loisir / Compétition', contact: 'vcb29@gmail.com' },
+  { id: 18, name: 'Cyclisme Cornouaille', sport: 'Cyclisme', sportGroup: 'endurance', city: 'Quimper', members: 195, level: 'Loisir / Compétition', contact: 'cyclcorn@gmail.com' },
+];
+
+const SPORT_FILTERS = [
+  { key: null, label: 'Tous' },
+  { key: 'football', label: '⚽ Football' },
+  { key: 'team', label: '🏀 Collectifs' },
+  { key: 'endurance', label: '🚴 Endurance' },
+];
+
+export default function ClubsPage() {
+  const [search, setSearch] = useState('');
+  const [sportFilter, setSportFilter] = useState(null);
+
+  const filtered = CLUBS.filter((c) => {
+    const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.city.toLowerCase().includes(search.toLowerCase());
+    const matchSport = !sportFilter || c.sportGroup === sportFilter;
+    return matchSearch && matchSport;
+  });
+
+  return (
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* Search + Filters */}
+      <div className="bg-white px-4 pt-4 pb-3 border-b border-gray-100 flex-shrink-0">
+        <div className="relative mb-3">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Rechercher un club ou une ville…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+          />
+        </div>
+        <div className="flex gap-2 overflow-x-auto">
+          {SPORT_FILTERS.map(({ key, label }) => (
+            <button
+              key={String(key)}
+              onClick={() => setSportFilter(key)}
+              className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer transition-colors"
+              style={sportFilter === key
+                ? { backgroundColor: '#1e293b', color: 'white' }
+                : { backgroundColor: '#f1f5f9', color: '#64748b' }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Club list */}
+      <div className="flex-1 overflow-y-auto px-4 py-3">
+        <p className="text-xs text-gray-400 mb-3">{filtered.length} club{filtered.length !== 1 ? 's' : ''}</p>
+        {filtered.map((club, i) => {
+          const group = SPORT_GROUPS[club.sportGroup];
+          return (
+            <motion.div
+              key={club.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03, duration: 0.15 }}
+              className="bg-white rounded-2xl p-4 mb-2.5 shadow-sm border border-gray-100"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+                  style={{ backgroundColor: `${group?.color}15` }}>
+                  {group?.emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-gray-800 text-sm">{club.name}</div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-gray-500">📍 {club.city}</span>
+                    <span className="text-gray-300">·</span>
+                    <span className="text-xs text-gray-500">👥 {club.members} membres</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium text-white"
+                      style={{ backgroundColor: group?.color }}>
+                      {club.sport}
+                    </span>
+                    <span className="text-[10px] text-gray-400">{club.level}</span>
+                  </div>
+                </div>
+                <a
+                  href={`mailto:${club.contact}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex-shrink-0"
+                  title="Contacter"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </a>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

@@ -21,7 +21,7 @@ function StandingsRow({ team, rank, wins, draws, losses, points }) {
   );
 }
 
-const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete }, ref) {
+const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, isFavorite, onToggleFavorite }, ref) {
   const group = SPORT_GROUPS[event.sportGroup];
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -29,6 +29,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
   const isUserEvent = event.source === 'user';
   const hasStandings = !!event.standings;
   const showPoints = event.standings?.home?.points !== null && event.standings?.home?.points !== undefined;
+  const fav = isFavorite?.(event.id) ?? false;
 
   return (
     <motion.div
@@ -140,6 +141,19 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
             )}
           </AnimatePresence>
         </div>
+
+        {onToggleFavorite && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(event.id); }}
+            className="p-1.5 rounded-xl transition-colors cursor-pointer flex-shrink-0 self-start mt-0.5"
+            style={fav ? { color: '#ef4444', backgroundColor: '#fef2f2' } : { color: '#cbd5e1' }}
+            title={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        )}
       </div>
     </motion.div>
   );

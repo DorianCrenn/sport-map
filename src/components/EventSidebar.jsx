@@ -11,6 +11,8 @@ export default function EventSidebar({
   onAddEvent,
   onEditEvent,
   onDeleteEvent,
+  isFavorite,
+  onToggleFavorite,
 }) {
   const cardRefs = useRef({});
 
@@ -73,6 +75,8 @@ export default function EventSidebar({
                 onSelect={() => onEventSelect(event.id)}
                 onEdit={onEditEvent}
                 onDelete={onDeleteEvent}
+                isFavorite={isFavorite}
+                onToggleFavorite={onToggleFavorite}
               />
             ))}
           </AnimatePresence>

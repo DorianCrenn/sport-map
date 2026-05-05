@@ -1,105 +1,51 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { EVENTS } from './data/events.js';
-import { useFilteredEvents } from './hooks/useFilteredEvents.js';
-import { useGeolocation } from './hooks/useGeolocation.js';
 import { useLocalEvents } from './hooks/useLocalEvents.js';
+import { useFavorites } from './hooks/useFavorites.js';
 import Header from './components/Header.jsx';
-import SportFilterBar from './components/SportFilterBar.jsx';
-import DateFilterBar from './components/DateFilterBar.jsx';
-import MapView from './components/MapView.jsx';
-import EventSidebar from './components/EventSidebar.jsx';
-import EventFormModal from './components/EventFormModal.jsx';
+import BottomNav from './components/BottomNav.jsx';
+import MapPage from './pages/MapPage.jsx';
+import FavorisPage from './pages/FavorisPage.jsx';
+import NewsPage from './pages/NewsPage.jsx';
+import ClubsPage from './pages/ClubsPage.jsx';
+import ProfilPage from './pages/ProfilPage.jsx';
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState('map');
   const [activeDepartment, setActiveDepartment] = useState('finistere');
-  const [sportGroupFilter, setSportGroupFilter] = useState(null);
-  const [dateRangeFilter, setDateRangeFilter] = useState(null);
-  const [selectedEventId, setSelectedEventId] = useState(null);
-  const [mapBounds, setMapBounds] = useState(null);
-  const [modalEvent, setModalEvent] = useState(undefined);
 
-  const { coords: userCoords, loading: geoLoading, request: requestGeo } = useGeolocation();
   const { events: userEvents, addEvent, updateEvent, deleteEvent } = useLocalEvents();
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
   const allEvents = useMemo(() => [...EVENTS, ...userEvents], [userEvents]);
 
-  // Filtres sport / date / département
-  const filteredEvents = useFilteredEvents(allEvents, {
-    sportGroup: sportGroupFilter,
-    dateRange: dateRangeFilter,
-    departmentId: activeDepartment,
-  });
-
-  const selectedEvent = useMemo(
-    () => allEvents.find((e) => e.id === selectedEventId) ?? null,
-    [allEvents, selectedEventId]
-  );
-
-  // Sous-ensemble visible dans la viewport courante (pour la sidebar)
-  const visibleEvents = useMemo(() => {
-    if (!mapBounds) return filteredEvents;
-    return filteredEvents.filter((e) => mapBounds.contains([e.lat, e.lng]));
-  }, [filteredEvents, mapBounds]);
-
-  const handleBoundsChange = useCallback((bounds) => {
-    setMapBounds(bounds);
-  }, []);
-
-  // Désélectionner si l'événement sort du filtre
-  useEffect(() => {
-    if (selectedEventId !== null && !filteredEvents.find((e) => e.id === selectedEventId)) {
-      setSelectedEventId(null);
-    }
-  }, [filteredEvents, selectedEventId]);
-
-  function handleSave(formData) {
-    if (modalEvent === null) {
-      const created = addEvent(formData);
-      setSelectedEventId(created.id);
-    } else {
-      updateEvent(modalEvent.id, formData);
-    }
-    setModalEvent(undefined);
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
-      <Header activeDepartment={activeDepartment} onDepartmentChange={setActiveDepartment} />
-      <SportFilterBar active={sportGroupFilter} onChange={setSportGroupFilter} />
-      <DateFilterBar active={dateRangeFilter} onChange={setDateRangeFilter} />
+      {activeTab === 'map' && (
+        <Header activeDepartment={activeDepartment} onDepartmentChange={setActiveDepartment} />
+      )}
 
-      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-        <MapView
-          events={filteredEvents}
-          selectedEventId={selectedEventId}
-          onMarkerClick={setSelectedEventId}
-          activeDepartment={activeDepartment}
-          userCoords={userCoords}
-          onBoundsChange={handleBoundsChange}
-          selectedEvent={selectedEvent}
-        />
-        <EventSidebar
-          events={visibleEvents}
-          selectedEventId={selectedEventId}
-          onEventSelect={(id) => setSelectedEventId((prev) => (prev === id ? null : id))}
-          onGeolocate={requestGeo}
-          geoLoading={geoLoading}
-          onAddEvent={() => setModalEvent(null)}
-          onEditEvent={(event) => setModalEvent(event)}
-          onDeleteEvent={(id) => {
-            deleteEvent(id);
-            if (selectedEventId === id) setSelectedEventId(null);
-          }}
-        />
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {activeTab === 'map' && (
+          <MapPage
+            allEvents={allEvents}
+            activeDepartment={activeDepartment}
+            onAddEvent={addEvent}
+            onUpdateEvent={updateEvent}
+            onDeleteEvent={deleteEvent}
+            isFavorite={isFavorite}
+            onToggleFavorite={toggleFavorite}
+          />
+        )}
+        {activeTab === 'favoris' && (
+          <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} />
+        )}
+        {activeTab === 'news' && <NewsPage />}
+        {activeTab === 'clubs' && <ClubsPage />}
+        {activeTab === 'profil' && <ProfilPage favorites={favorites} userEvents={userEvents} />}
       </div>
 
-      {modalEvent !== undefined && (
-        <EventFormModal
-          event={modalEvent}
-          onSave={handleSave}
-          onClose={() => setModalEvent(undefined)}
-        />
-      )}
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }
