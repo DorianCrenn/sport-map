@@ -89,9 +89,9 @@ export default function ClubsPage() {
               className="bg-white rounded-2xl p-4 mb-2.5 shadow-sm border border-gray-100"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
-                  style={{ backgroundColor: `${sport?.color}18` }}>
-                  {sport?.emoji}
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-white text-sm font-oswald tracking-wide select-none"
+                  style={{ backgroundColor: sport?.color ?? '#64748b' }}>
+                  {club.name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase().slice(0, 3)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-gray-800 text-sm">{club.name}</div>

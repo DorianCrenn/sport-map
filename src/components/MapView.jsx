@@ -50,7 +50,8 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
     const sports = markers.map((m) => m.options.title).filter(Boolean);
     const allSame = sports.length > 0 && sports.every((s) => s === sports[0]);
     const color = allSame ? (SPORTS[sports[0]]?.color ?? '#64748b') : '#64748b';
-    return createClusterMarker(count, color);
+    const emoji = allSame ? (SPORTS[sports[0]]?.emoji ?? null) : null;
+    return createClusterMarker(count, color, emoji);
   }
 
   return (
