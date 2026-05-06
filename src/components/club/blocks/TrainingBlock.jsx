@@ -116,7 +116,7 @@ function MonthCalendar({ sessions }) {
 
   function getSessionsForDay(dayNum) {
     const jsDay = new Date(year, month, dayNum).getDay();
-    return sessions.filter(s => s.recurring && DAY_TO_JS[s.day] === jsDay);
+    return sessions.filter(s => DAY_TO_JS[s.day] === jsDay);
   }
 
   const firstDow = new Date(year, month, 1).getDay();
