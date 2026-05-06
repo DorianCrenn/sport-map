@@ -38,7 +38,7 @@ export default function ClubsPage({ allEvents }) {
   });
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 relative overflow-hidden">
+    <div className="h-full flex flex-col bg-[#F1F5F9] relative overflow-hidden">
       <AnimatePresence>
         {selectedClub && (
           <ClubPageView
@@ -50,7 +50,8 @@ export default function ClubsPage({ allEvents }) {
         )}
       </AnimatePresence>
       {/* Search + Filters */}
-      <div className="bg-white px-4 pt-4 pb-3 border-b border-gray-100 flex-shrink-0">
+      <div className="bg-white px-4 pt-5 pb-3 border-b border-gray-100 flex-shrink-0">
+        <h1 className="text-xl font-bold font-poppins mb-3" style={{ color: '#0F1E3A' }}>Clubs</h1>
         <div className="relative mb-3">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -68,7 +69,7 @@ export default function ClubsPage({ allEvents }) {
             onClick={() => setSportFilter(null)}
             className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer transition-colors"
             style={sportFilter === null
-              ? { backgroundColor: '#1e293b', color: 'white' }
+              ? { backgroundColor: '#0F1E3A', color: 'white' }
               : { backgroundColor: '#f1f5f9', color: '#64748b' }}
           >
             Tous
@@ -91,7 +92,7 @@ export default function ClubsPage({ allEvents }) {
 
       {/* Club list */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
-        <p className="text-xs text-gray-400 mb-3">{filtered.length} club{filtered.length !== 1 ? 's' : ''}</p>
+        <p className="text-xs text-gray-400 mb-3 font-medium">{filtered.length} club{filtered.length !== 1 ? 's' : ''} trouvé{filtered.length !== 1 ? 's' : ''}</p>
         {filtered.map((club, i) => {
           const sport = SPORTS[club.sport];
           return (
@@ -140,8 +141,8 @@ export default function ClubsPage({ allEvents }) {
                 <div className="w-px bg-gray-100" />
                 <button
                   onClick={() => setSelectedClub(club)}
-                  className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold transition-colors"
-                  style={{ color: sport?.color ?? '#1e293b' }}
+                  className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold transition-colors font-poppins"
+                  style={{ color: sport?.color ?? '#0F1E3A' }}
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/>

@@ -1,14 +1,18 @@
 @import "tailwindcss";
 
 @theme {
+  --font-poppins: 'Poppins', sans-serif;
   --font-oswald:  'Oswald', sans-serif;
   --font-inter:   'Inter', sans-serif;
-  --font-manrope: 'Manrope', sans-serif;
+
+  --color-brand:       #0F1E3A;
+  --color-brand-green: #22C55E;
+  --color-brand-blue:  #3B82F6;
 }
 
 body {
   margin: 0;
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
 }
 
 #root {
@@ -19,9 +23,9 @@ body {
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: 12px !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
-  font-family: 'Manrope', sans-serif;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14) !important;
+  font-family: 'Poppins', sans-serif;
 }
 
 .leaflet-popup-tip-container {

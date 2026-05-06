@@ -4,6 +4,7 @@ import { useLocalEvents } from './hooks/useLocalEvents.js';
 import { useFavorites } from './hooks/useFavorites.js';
 import Header from './components/Header.jsx';
 import BottomNav from './components/BottomNav.jsx';
+import HomePage from './pages/HomePage.jsx';
 import MapPage from './pages/MapPage.jsx';
 import FavorisPage from './pages/FavorisPage.jsx';
 import NewsPage from './pages/NewsPage.jsx';
@@ -11,7 +12,7 @@ import ClubsPage from './pages/ClubsPage.jsx';
 import ProfilPage from './pages/ProfilPage.jsx';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('map');
+  const [activeTab, setActiveTab] = useState('home');
   const [activeDepartment, setActiveDepartment] = useState('finistere');
 
   const { events: userEvents, addEvent, updateEvent, deleteEvent } = useLocalEvents();
@@ -24,6 +25,9 @@ export default function App() {
       {activeTab === 'map' && <Header />}
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {activeTab === 'home' && (
+          <HomePage onNavigate={setActiveTab} />
+        )}
         {activeTab === 'map' && (
           <MapPage
             allEvents={allEvents}
@@ -42,7 +46,9 @@ export default function App() {
         )}
         {activeTab === 'news' && <NewsPage />}
         {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} />}
-        {activeTab === 'profil' && <ProfilPage favorites={favorites} userEvents={userEvents} />}
+        {activeTab === 'profil' && (
+          <ProfilPage favorites={favorites} userEvents={userEvents} onNavigate={setActiveTab} />
+        )}
       </div>
 
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
