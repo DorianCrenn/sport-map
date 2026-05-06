@@ -344,11 +344,6 @@ export default function ClubPageView({ club, allEvents, onBack }) {
                 <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">{club.level}</span>
               )}
               <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">{club.members} membres</span>
-              {club.contact && (
-                <a href={`mailto:${club.contact}`} className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full hover:bg-slate-600 transition-colors">
-                  Contacter
-                </a>
-              )}
               {stats.played > 0 && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
                   style={{ backgroundColor: '#1e3a5f', color: '#94a3b8' }}>
@@ -361,6 +356,21 @@ export default function ClubPageView({ club, allEvents, onBack }) {
               )}
             </div>
           </div>
+
+          {/* Contact button */}
+          {club.contact && (
+            <a href={`mailto:${club.contact}`}
+              className="flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors group"
+              title={`Contacter ${club.name}`}>
+              <div className="w-9 h-9 rounded-xl bg-slate-700 group-hover:bg-slate-600 flex items-center justify-center transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
+              <span className="text-[9px] text-slate-400 font-medium leading-tight text-center">Contacter<br/>le club</span>
+            </a>
+          )}
         </div>
 
         {isEditing && (
