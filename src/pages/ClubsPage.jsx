@@ -209,9 +209,11 @@ export default function ClubsPage({ allEvents }) {
             >
               <div className="flex items-center gap-3 px-4 pt-4 pb-3">
                 {/* Avatar */}
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-white text-sm font-oswald tracking-wide select-none"
-                  style={{ backgroundColor: sport?.color ?? '#64748b' }}>
-                  {club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
+                <div className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 font-bold text-white text-sm font-oswald tracking-wide select-none"
+                  style={{ backgroundColor: club.logo ? 'transparent' : (sport?.color ?? '#64748b') }}>
+                  {club.logo
+                    ? <img src={club.logo} alt={club.name} className="w-full h-full object-cover" />
+                    : club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
                 </div>
 
                 <div className="flex-1 min-w-0">

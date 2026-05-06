@@ -312,9 +312,11 @@ export default function ClubPageView({ club, allEvents, onBack }) {
         </div>
 
         <div className="px-4 pb-5 flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-white text-base font-oswald flex-shrink-0"
-            style={{ backgroundColor: sportData?.color ?? '#64748b' }}>
-            {club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
+          <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-base font-oswald flex-shrink-0"
+            style={{ backgroundColor: club.logo ? 'transparent' : (sportData?.color ?? '#64748b') }}>
+            {club.logo
+              ? <img src={club.logo} alt={club.name} className="w-full h-full object-cover" />
+              : club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold font-oswald tracking-wide leading-tight">{club.name}</h1>

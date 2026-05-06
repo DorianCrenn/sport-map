@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SPORTS } from '../../data/events.js';
 import SportIcon from '../SportIcon.jsx';
@@ -32,6 +32,57 @@ function Field({ label, children }) {
 
 const inputCls = 'w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-slate-200 font-poppins';
 const selectCls = 'text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none font-medium';
+
+// ── Logo upload ───────────────────────────────────────────────────────────────
+function LogoUpload({ logo, name, sport, onChange }) {
+  const ref = useRef();
+  const sportColor = SPORTS[sport]?.color ?? '#64748b';
+  const initials = (name || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3);
+
+  function handleFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert('Image trop grande (max 2 Mo)'); return; }
+    const reader = new FileReader();
+    reader.onload = ev => onChange(ev.target.result);
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative" onClick={() => ref.current?.click()} style={{ cursor: 'pointer' }}>
+        <div className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-lg font-oswald select-none shadow-md"
+          style={{ backgroundColor: logo ? 'transparent' : sportColor }}>
+          {logo
+            ? <img src={logo} alt="logo" className="w-full h-full object-cover" />
+            : initials}
+        </div>
+        {/* Camera overlay */}
+        <div className="absolute inset-0 rounded-2xl flex items-center justify-center transition-opacity opacity-0 hover:opacity-100"
+          style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => ref.current?.click()}
+          className="text-xs font-semibold text-slate-600 hover:text-slate-800 transition-colors">
+          {logo ? 'Changer le logo' : 'Ajouter un logo'}
+        </button>
+        {logo && (
+          <button type="button" onClick={() => onChange(null)}
+            className="text-xs text-red-400 hover:text-red-600 transition-colors">
+            Supprimer
+          </button>
+        )}
+      </div>
+      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+    </div>
+  );
+}
 
 // ── Category block ────────────────────────────────────────────────────────────
 function CategoryBlock({ cat, onAddTeam, onUpdateTeam, onRemoveTeam, onRemoveCat }) {
@@ -98,6 +149,7 @@ export default function ClubFormModal({ club, onSave, onClose }) {
     members:    club?.members    ?? 50,
     contact:    club?.contact    ?? '',
     categories: club?.categories ?? [],
+    logo:       club?.logo       ?? null,
   });
   const [errors, setErrors]         = useState({});
   const [showCatPicker, setShowCatPicker] = useState(false);
@@ -209,6 +261,14 @@ export default function ClubFormModal({ club, onSave, onClose }) {
 
         {/* Form */}
         <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
+
+          {/* Logo */}
+          <LogoUpload
+            logo={form.logo}
+            name={form.name}
+            sport={form.sport}
+            onChange={val => set('logo', val)}
+          />
 
           {/* Sport */}
           <Field label="Sport *">
