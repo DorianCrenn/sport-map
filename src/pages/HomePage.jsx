@@ -170,7 +170,7 @@ export default function HomePage({ onNavigate }) {
       </div>
 
       {/* Hero */}
-      <div className="relative flex items-start px-4 pt-6 pb-4" style={{ zIndex: 1 }}>
+      <div className="relative flex items-start px-4 pt-6 pb-4 mx-auto w-full" style={{ zIndex: 1, maxWidth: 480 }}>
 
         {/* LEFT — 46% */}
         <motion.div
@@ -258,7 +258,7 @@ export default function HomePage({ onNavigate }) {
           initial={{ opacity: 0, x: 20, y: 12 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ delay: 0.12, type: 'spring', stiffness: 160, damping: 20 }}
-          style={{ width: '42%', flexShrink: 0 }}
+          style={{ width: '42%', maxWidth: 160, flexShrink: 0 }}
         >
           <PhoneMockup />
         </motion.div>
