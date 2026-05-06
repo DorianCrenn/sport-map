@@ -32,6 +32,7 @@ function defaultData(type, club) {
     case 'title': return { text: 'Nouvelle section', level: 'h2' };
     case 'text': return { content: 'Ajoutez votre texte ici…' };
     case 'upcoming-events': return { sport: club.sport, maxItems: 5 };
+    case 'training': return { sessions: [] };
     default: return {};
   }
 }

@@ -6,12 +6,14 @@ import SportIcon from '../SportIcon.jsx';
 import TitleBlock from './blocks/TitleBlock.jsx';
 import TextBlock from './blocks/TextBlock.jsx';
 import UpcomingEventsBlock from './blocks/UpcomingEventsBlock.jsx';
+import TrainingBlock from './blocks/TrainingBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 
 const BLOCK_LABELS = {
   title: 'Titre',
   text: 'Texte',
   'upcoming-events': 'Événements',
+  training: 'Entraînements',
 };
 
 // ── Icônes contrôles ──────────────────────────────────────────────────────────
@@ -241,6 +243,9 @@ export default function ClubPageView({ club, allEvents, onBack }) {
                 )}
                 {block.type === 'upcoming-events' && (
                   <UpcomingEventsBlock data={block.data} allEvents={allEvents} isEditing={isEditing} onUpdate={p => updateBlock(block.id, p)} />
+                )}
+                {block.type === 'training' && (
+                  <TrainingBlock data={block.data} isEditing={isEditing} onUpdate={p => updateBlock(block.id, p)} />
                 )}
               </BlockWrapper>
 
