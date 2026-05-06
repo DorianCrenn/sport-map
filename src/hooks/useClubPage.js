@@ -18,6 +18,7 @@ function defaultData(type, club) {
     case 'upcoming-events': return { sport: club?.sport ?? '', maxItems: 5 };
     case 'training':        return { sessions: [] };
     case 'image':           return { src: '', caption: '', fit: 'cover', ratio: '16/9' };
+    case 'matches':         return { matches: [] };
     default:                return {};
   }
 }

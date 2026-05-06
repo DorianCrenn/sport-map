@@ -8,11 +8,13 @@ import TextBlock from './blocks/TextBlock.jsx';
 import UpcomingEventsBlock from './blocks/UpcomingEventsBlock.jsx';
 import TrainingBlock from './blocks/TrainingBlock.jsx';
 import ImageBlock from './blocks/ImageBlock.jsx';
+import MatchesBlock from './blocks/MatchesBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
-  'upcoming-events': 'Événements', training: 'Entraînements', image: 'Image',
+  'upcoming-events': 'Événements', training: 'Entraînements',
+  image: 'Image', matches: 'Matchs',
 };
 
 // ── Span helpers ──────────────────────────────────────────────────────────────
@@ -85,7 +87,7 @@ const DragDots = () => (
 );
 
 // ── Block content renderer ────────────────────────────────────────────────────
-function BlockContent({ block, isEditing, onUpdate, allEvents }) {
+function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
   return (
     <>
       {block.type === 'title'           && <TitleBlock           data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
@@ -93,12 +95,13 @@ function BlockContent({ block, isEditing, onUpdate, allEvents }) {
       {block.type === 'upcoming-events' && <UpcomingEventsBlock  data={block.data} allEvents={allEvents} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'training'        && <TrainingBlock        data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'image'           && <ImageBlock           data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
+      {block.type === 'matches'         && <MatchesBlock         data={block.data} isEditing={isEditing} onUpdate={onUpdate} club={club} />}
     </>
   );
 }
 
 // ── Single block in edit mode ─────────────────────────────────────────────────
-function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onToggle, onSetSpan, onMoveLeft, onMoveRight, allEvents }) {
+function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onToggle, onSetSpan, onMoveLeft, onMoveRight, allEvents, club }) {
   const usedByOthers = rowBlocks.filter(b => b.id !== block.id).reduce((s, b) => s + (b.span ?? 12), 0);
 
   return (
@@ -154,7 +157,7 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
 
       {/* Content */}
       <div className="p-4 flex-1">
-        <BlockContent block={block} isEditing={true} onUpdate={onUpdate} allEvents={allEvents} />
+        <BlockContent block={block} isEditing={true} onUpdate={onUpdate} allEvents={allEvents} club={club} />
       </div>
     </div>
   );
@@ -185,7 +188,7 @@ function EmptySlot({ remaining, onAdd }) {
 }
 
 // ── Draggable row ─────────────────────────────────────────────────────────────
-function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan, onMoveLeft, onMoveRight, onAddToRow, allEvents }) {
+function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan, onMoveLeft, onMoveRight, onAddToRow, allEvents, club }) {
   const dragControls = useDragControls();
 
   const usedSpan   = row.blocks.reduce((s, b) => s + (b.span ?? 12), 0);
@@ -225,10 +228,11 @@ function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan,
               onMoveLeft={() => onMoveLeft(block.id)}
               onMoveRight={() => onMoveRight(block.id)}
               allEvents={allEvents}
+              club={club}
             />
           ) : block.enabled ? (
             <div key={block.id} style={{ flex: spanToFlex(block.span ?? 12), minWidth: 0, marginBottom: 0 }}>
-              <BlockContent block={block} isEditing={false} onUpdate={() => {}} allEvents={allEvents} />
+              <BlockContent block={block} isEditing={false} onUpdate={() => {}} allEvents={allEvents} club={club} />
             </div>
           ) : null
         ))}
@@ -240,6 +244,21 @@ function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan,
       </div>
     </Reorder.Item>
   );
+}
+
+function useMatchStats(blocks) {
+  const matches = blocks
+    .filter(b => b.type === 'matches')
+    .flatMap(b => b.data?.matches ?? []);
+  const played = matches.filter(m => m.date && new Date(m.date + 'T23:59:59') < new Date() && m.scoreHome !== null && m.scoreHome !== undefined);
+  let W = 0, D = 0, L = 0;
+  for (const m of played) {
+    const h = Number(m.scoreHome), a = Number(m.scoreAway);
+    if (h === a) { D++; continue; }
+    const won = m.isHome ? h > a : a > h;
+    won ? W++ : L++;
+  }
+  return { W, D, L, played: played.length };
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -254,6 +273,7 @@ export default function ClubPageView({ club, allEvents, onBack }) {
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
   const sportData = SPORTS[club.sport];
   const rows = getRows(blocks);
+  const stats = useMatchStats(blocks);
 
   function handleAddBlock(type, afterRowId) {
     // Find the last block of that row to insert after
@@ -312,6 +332,16 @@ export default function ClubPageView({ club, allEvents, onBack }) {
                   Contacter
                 </a>
               )}
+              {stats.played > 0 && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
+                  style={{ backgroundColor: '#1e3a5f', color: '#94a3b8' }}>
+                  <span style={{ color: '#22C55E' }}>{stats.W}V</span>
+                  <span>·</span>
+                  <span style={{ color: '#f59e0b' }}>{stats.D}N</span>
+                  <span>·</span>
+                  <span style={{ color: '#ef4444' }}>{stats.L}D</span>
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -347,6 +377,7 @@ export default function ClubPageView({ club, allEvents, onBack }) {
                 onMoveRight={id => moveBlockInRow(id, 'right')}
                 onAddToRow={addBlockToRow}
                 allEvents={allEvents ?? []}
+                club={club}
               />
 
               {/* Add new row after this one */}

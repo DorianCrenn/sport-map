@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { EVENTS } from './data/events.js';
 import { useLocalEvents } from './hooks/useLocalEvents.js';
 import { useFavorites } from './hooks/useFavorites.js';
+import { useClubMatches } from './hooks/useClubMatches.js';
 import Header from './components/Header.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import HomePage from './pages/HomePage.jsx';
@@ -17,8 +18,12 @@ export default function App() {
 
   const { events: userEvents, addEvent, updateEvent, deleteEvent } = useLocalEvents();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const clubMatchEvents = useClubMatches();
 
-  const allEvents = useMemo(() => [...EVENTS, ...userEvents], [userEvents]);
+  const allEvents = useMemo(
+    () => [...EVENTS, ...userEvents, ...clubMatchEvents],
+    [userEvents, clubMatchEvents]
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
