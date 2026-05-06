@@ -5,19 +5,23 @@ const DAY_COLORS = {
   Lundi: '#6366f1', Mardi: '#8b5cf6', Mercredi: '#ec4899',
   Jeudi: '#f97316', Vendredi: '#eab308', Samedi: '#22c55e', Dimanche: '#ef4444',
 };
-const AGE_CATEGORIES = ['U7', 'U9', 'U11', 'U13', 'U15', 'U17', 'U19', 'Seniors', 'Vétérans', 'Loisir', 'Tous'];
+const AGE_CATEGORIES = [
+  'U7', 'U7F', 'U9', 'U9F', 'U11', 'U11F', 'U13', 'U13F',
+  'U15', 'U15F', 'U17', 'U17F', 'U19', 'U19F',
+  'Seniors', 'Seniors F', 'Vétérans', 'Vétérans F', 'Loisir', 'Loisir F', 'Tous',
+];
 const CATEGORY_COLORS = {
-  'U7':       '#f43f5e',
-  'U9':       '#a855f7',
-  'U11':      '#6366f1',
-  'U13':      '#3b82f6',
-  'U15':      '#06b6d4',
-  'U17':      '#14b8a6',
-  'U19':      '#22c55e',
-  'Seniors':  '#f97316',
-  'Vétérans': '#ef4444',
-  'Loisir':   '#eab308',
-  'Tous':     '#64748b',
+  'U7':        '#f43f5e',  'U7F':        '#fb7185',
+  'U9':        '#a855f7',  'U9F':        '#c084fc',
+  'U11':       '#6366f1',  'U11F':       '#818cf8',
+  'U13':       '#3b82f6',  'U13F':       '#60a5fa',
+  'U15':       '#06b6d4',  'U15F':       '#22d3ee',
+  'U17':       '#14b8a6',  'U17F':       '#2dd4bf',
+  'U19':       '#22c55e',  'U19F':       '#4ade80',
+  'Seniors':   '#f97316',  'Seniors F':  '#fb923c',
+  'Vétérans':  '#ef4444',  'Vétérans F': '#f87171',
+  'Loisir':    '#eab308',  'Loisir F':   '#facc15',
+  'Tous':      '#64748b',
 };
 const MONTH_NAMES = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const DAY_TO_JS = { Lundi:1, Mardi:2, Mercredi:3, Jeudi:4, Vendredi:5, Samedi:6, Dimanche:0 };

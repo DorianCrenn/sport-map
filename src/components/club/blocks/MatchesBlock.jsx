@@ -3,7 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function uid() { return `m_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`; }
 
-const AGE_CATS = ['U7', 'U9', 'U11', 'U13', 'U15', 'U17', 'U19', 'Seniors', 'Vétérans', 'Loisir'];
+const AGE_CATS = [
+  'U7', 'U7F', 'U9', 'U9F', 'U11', 'U11F', 'U13', 'U13F',
+  'U15', 'U15F', 'U17', 'U17F', 'U19', 'U19F',
+  'Seniors', 'Seniors F', 'Vétérans', 'Vétérans F', 'Loisir', 'Loisir F',
+];
 
 const BLANK = { id: '', date: '', time: '15:00', opponent: '', isHome: true, competition: '', category: 'Seniors', scoreHome: '', scoreAway: '' };
 

@@ -3,7 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SPORTS } from '../../data/events.js';
 import SportIcon from '../SportIcon.jsx';
 
-const AGE_CATEGORIES = ['U7', 'U9', 'U11', 'U13', 'U15', 'U17', 'U19', 'Seniors', 'Vétérans', 'Loisir'];
+const AGE_CATEGORIES = [
+  'U7', 'U7F', 'U9', 'U9F', 'U11', 'U11F', 'U13', 'U13F',
+  'U15', 'U15F', 'U17', 'U17F', 'U19', 'U19F',
+  'Seniors', 'Seniors F', 'Vétérans', 'Vétérans F', 'Loisir', 'Loisir F',
+];
 
 const LEVELS = [
   'D4', 'D3', 'D2', 'D1',
