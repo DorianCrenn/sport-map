@@ -177,7 +177,7 @@ export default function HomePage({ onNavigate }) {
           initial={{ opacity: 0, x: -16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.45 }}
-          style={{ width: '46%', paddingRight: 10, paddingTop: 4 }}
+          style={{ width: '58%', paddingRight: 10, paddingTop: 4 }}
         >
           {/* Badge */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 border"
@@ -258,7 +258,7 @@ export default function HomePage({ onNavigate }) {
           initial={{ opacity: 0, x: 20, y: 12 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ delay: 0.12, type: 'spring', stiffness: 160, damping: 20 }}
-          style={{ width: '54%', flexShrink: 0 }}
+          style={{ width: '42%', flexShrink: 0 }}
         >
           <PhoneMockup />
         </motion.div>
