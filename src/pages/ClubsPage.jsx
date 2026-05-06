@@ -231,12 +231,28 @@ export default function ClubsPage({ allEvents }) {
                     <span className="text-gray-300">·</span>
                     <span className="text-xs text-gray-500">{club.members} membres</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium text-white"
+                  <div className="flex flex-wrap items-center gap-1 mt-1">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium text-white flex-shrink-0"
                       style={{ backgroundColor: sport?.color }}>
                       {club.sport}
                     </span>
-                    <span className="text-[10px] text-gray-400">{club.level}</span>
+                    {club.categories?.length > 0 ? (
+                      <>
+                        {club.categories.slice(0, 5).map(cat => (
+                          <span key={cat.id}
+                            className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-gray-100 text-gray-500 flex-shrink-0">
+                            {cat.name}
+                          </span>
+                        ))}
+                        {club.categories.length > 5 && (
+                          <span className="text-[10px] text-gray-400 flex-shrink-0">
+                            +{club.categories.length - 5}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-[10px] text-gray-400">{club.level}</span>
+                    )}
                   </div>
                 </div>
               </div>
