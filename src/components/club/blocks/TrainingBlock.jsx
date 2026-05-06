@@ -193,33 +193,34 @@ function MonthCalendar({ sessions }) {
                 {d}
               </div>
 
-              {/* Sessions: time + category color */}
-              <div className="flex flex-col items-center gap-0.5 w-full px-0.5">
-                {daySessions.slice(0, 3).map((s, si) => {
+              {/* Sessions: time badges side by side */}
+              <div className="flex flex-wrap justify-center gap-0.5 w-full px-0.5">
+                {daySessions.slice(0, 4).map((s, si) => {
                   const catColor = CATEGORY_COLORS[s.category ?? 'Tous'] ?? '#64748b';
                   const shortTime = s.time.replace('h00', 'h').replace('h0', 'h');
                   return (
                     <div key={si}
-                      className="w-full flex items-center justify-center rounded"
+                      className="flex items-center justify-center rounded"
                       style={{
-                        backgroundColor: selected ? `${catColor}30` : `${catColor}18`,
-                        padding: '1px 2px',
+                        backgroundColor: selected ? `${catColor}35` : `${catColor}20`,
+                        padding: '1px 3px',
                       }}>
                       <span style={{
-                        fontSize: 8,
+                        fontSize: 7,
                         fontWeight: 700,
                         color: selected ? 'rgba(255,255,255,0.9)' : catColor,
-                        lineHeight: 1.2,
+                        lineHeight: 1.3,
                         fontFamily: 'Poppins, sans-serif',
+                        whiteSpace: 'nowrap',
                       }}>
                         {shortTime}
                       </span>
                     </div>
                   );
                 })}
-                {daySessions.length > 3 && (
-                  <span style={{ fontSize: 8, color: selected ? 'rgba(255,255,255,0.6)' : '#94a3b8' }}>
-                    +{daySessions.length - 3}
+                {daySessions.length > 4 && (
+                  <span style={{ fontSize: 7, color: selected ? 'rgba(255,255,255,0.6)' : '#94a3b8', lineHeight: 1.3 }}>
+                    +{daySessions.length - 4}
                   </span>
                 )}
               </div>
