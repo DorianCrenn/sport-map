@@ -238,7 +238,7 @@ export default function ClubFormModal({ club, onSave, onClose }) {
       <motion.div
         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 320, damping: 34 }}
-        className="mt-auto bg-white rounded-t-3xl flex flex-col"
+        className="mt-auto bg-white rounded-t-3xl flex flex-col overflow-hidden"
         style={{ maxHeight: '94dvh' }}
       >
         {/* Header */}
@@ -260,7 +260,7 @@ export default function ClubFormModal({ club, onSave, onClose }) {
         </div>
 
         {/* Form */}
-        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
+        <div className="overflow-y-auto flex-1 min-h-0 px-5 py-4 space-y-5">
 
           {/* Logo */}
           <LogoUpload
