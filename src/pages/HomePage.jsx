@@ -71,17 +71,14 @@ export default function HomePage({ onNavigate }) {
           transition={{ duration: 0.5 }}
           className="relative"
         >
-          {/* Logo + name */}
-          <div className="flex items-center gap-3 mb-6">
-            <SportLinkLogo size={44} />
-            <div>
-              <div className="text-2xl font-bold tracking-tight leading-none font-poppins">SportLink</div>
-              <div className="text-xs text-green-400 font-medium mt-0.5">Le sport près de toi</div>
-            </div>
+          {/* Logo */}
+          <div className="mb-6">
+            <SportLinkLogo size={72} variant="icon" />
+            <div className="text-xs mt-2 font-medium" style={{ color: '#22C55E' }}>Le sport près de toi</div>
           </div>
 
           <h1 className="text-3xl font-extrabold leading-tight mb-3 font-poppins">
-            Votre sport,<br />
+            Votre sport,<br/>
             <span style={{ color: '#22C55E' }}>votre territoire.</span>
           </h1>
           <p className="text-slate-300 text-sm leading-relaxed mb-8 max-w-xs">

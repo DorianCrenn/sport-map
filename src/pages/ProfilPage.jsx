@@ -123,9 +123,8 @@ export default function ProfilPage({ favorites, userEvents, onNavigate }) {
 
         {/* About */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-2 mb-3">
-            <SportLinkLogo size={24} />
-            <span className="font-bold text-sm font-poppins" style={{ color: '#0F1E3A' }}>SportLink</span>
+          <div className="flex justify-center mb-3">
+            <SportLinkLogo size={120} variant="full" />
           </div>
           <p className="text-xs text-gray-500 leading-relaxed">
             Application communautaire pour trouver les clubs et événements sportifs du Finistère. Les données sont enrichies par les clubs locaux.
