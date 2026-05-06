@@ -4,9 +4,12 @@ import { SPORTS } from '../../data/events.js';
 import SportIcon from '../SportIcon.jsx';
 
 const LEVELS = [
-  'Loisir', 'Tout public', 'Débutant / Initiation',
-  'Régional', 'Promotion de Ligue', 'Division Honneur',
-  'N3 Régional', 'Fédérale 3', 'Pro B', 'Loisir / Compétition',
+  'Loisir', 'Tout public', 'Débutant / Initiation', 'Loisir / Compétition',
+  'D4', 'D3', 'D2', 'D1',
+  'R3', 'R2', 'R1',
+  'N3', 'N2', 'N1',
+  'Promotion de Ligue', 'Division Honneur', 'N3 Régional',
+  'Fédérale 3', 'Pro B',
 ];
 
 function Field({ label, children }) {
