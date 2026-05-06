@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SPORTS } from '../data/events.js';
 import SportIcon from '../components/SportIcon.jsx';
+import ClubPageView from '../components/club/ClubPageView.jsx';
 
 const CLUBS = [
   { id: 1,  name: 'US Brest Football',       sport: 'Football',   city: 'Brest',      members: 320, level: 'Division Honneur',      contact: 'usbrest29@gmail.com' },
@@ -24,9 +25,10 @@ const CLUBS = [
   { id: 18, name: 'Cyclisme Cornouaille',   sport: 'Cyclisme',   city: 'Quimper',    members: 195, level: 'Loisir / Compétition',  contact: 'cyclcorn@gmail.com' },
 ];
 
-export default function ClubsPage() {
+export default function ClubsPage({ allEvents }) {
   const [search, setSearch] = useState('');
   const [sportFilter, setSportFilter] = useState(null);
+  const [selectedClub, setSelectedClub] = useState(null);
 
   const filtered = CLUBS.filter((c) => {
     const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -36,7 +38,17 @@ export default function ClubsPage() {
   });
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-gray-50 relative overflow-hidden">
+      <AnimatePresence>
+        {selectedClub && (
+          <ClubPageView
+            key={selectedClub.id}
+            club={selectedClub}
+            allEvents={allEvents ?? []}
+            onBack={() => setSelectedClub(null)}
+          />
+        )}
+      </AnimatePresence>
       {/* Search + Filters */}
       <div className="bg-white px-4 pt-4 pb-3 border-b border-gray-100 flex-shrink-0">
         <div className="relative mb-3">
@@ -88,9 +100,10 @@ export default function ClubsPage() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03, duration: 0.15 }}
-              className="bg-white rounded-2xl p-4 mb-2.5 shadow-sm border border-gray-100"
+              className="bg-white rounded-2xl mb-2.5 shadow-sm border border-gray-100 overflow-hidden"
             >
-              <div className="flex items-center gap-3">
+              {/* Infos club */}
+              <div className="flex items-center gap-3 px-4 pt-4 pb-3">
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-white text-sm font-oswald tracking-wide select-none"
                   style={{ backgroundColor: sport?.color ?? '#64748b' }}>
                   {club.name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase().slice(0, 3)}
@@ -98,9 +111,9 @@ export default function ClubsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-gray-800 text-sm">{club.name}</div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-gray-500">📍 {club.city}</span>
+                    <span className="text-xs text-gray-500">{club.city}</span>
                     <span className="text-gray-300">·</span>
-                    <span className="text-xs text-gray-500">👥 {club.members} membres</span>
+                    <span className="text-xs text-gray-500">{club.members} membres</span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[10px] px-1.5 py-0.5 rounded font-medium text-white"
@@ -110,17 +123,32 @@ export default function ClubsPage() {
                     <span className="text-[10px] text-gray-400">{club.level}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex border-t border-gray-100">
                 <a
                   href={`mailto:${club.contact}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer flex-shrink-0"
-                  title="Contacter"
+                  className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                     <polyline points="22,6 12,13 2,6"/>
                   </svg>
+                  Contacter
                 </a>
+                <div className="w-px bg-gray-100" />
+                <button
+                  onClick={() => setSelectedClub(club)}
+                  className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold transition-colors"
+                  style={{ color: sport?.color ?? '#1e293b' }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  Voir la page
+                </button>
               </div>
             </motion.div>
           );

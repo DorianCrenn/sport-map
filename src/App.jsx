@@ -41,7 +41,7 @@ export default function App() {
           <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} />
         )}
         {activeTab === 'news' && <NewsPage />}
-        {activeTab === 'clubs' && <ClubsPage />}
+        {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} />}
         {activeTab === 'profil' && <ProfilPage favorites={favorites} userEvents={userEvents} />}
       </div>
 
