@@ -327,7 +327,22 @@ export default function ClubPageView({ club, allEvents, onBack }) {
               <span>{club.city}</span>
             </div>
             <div className="flex flex-wrap gap-1.5 mt-2">
-              <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">{club.level}</span>
+              {club.categories?.length > 0 ? (
+                <>
+                  {club.categories.slice(0, 6).map(cat => (
+                    <span key={cat.id} className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">
+                      {cat.name}
+                    </span>
+                  ))}
+                  {club.categories.length > 6 && (
+                    <span className="text-[10px] bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full">
+                      +{club.categories.length - 6}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">{club.level}</span>
+              )}
               <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">{club.members} membres</span>
               {club.contact && (
                 <a href={`mailto:${club.contact}`} className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full hover:bg-slate-600 transition-colors">
