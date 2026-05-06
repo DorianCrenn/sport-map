@@ -6,6 +6,19 @@ const DAY_COLORS = {
   Jeudi: '#f97316', Vendredi: '#eab308', Samedi: '#22c55e', Dimanche: '#ef4444',
 };
 const AGE_CATEGORIES = ['U7', 'U9', 'U11', 'U13', 'U15', 'U17', 'U19', 'Seniors', 'Vétérans', 'Loisir', 'Tous'];
+const CATEGORY_COLORS = {
+  'U7':       '#f43f5e',
+  'U9':       '#a855f7',
+  'U11':      '#6366f1',
+  'U13':      '#3b82f6',
+  'U15':      '#06b6d4',
+  'U17':      '#14b8a6',
+  'U19':      '#22c55e',
+  'Seniors':  '#f97316',
+  'Vétérans': '#ef4444',
+  'Loisir':   '#eab308',
+  'Tous':     '#64748b',
+};
 const MONTH_NAMES = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const DAY_TO_JS = { Lundi:1, Mardi:2, Mercredi:3, Jeudi:4, Vendredi:5, Samedi:6, Dimanche:0 };
 const DAY_LABELS = ['Lu','Ma','Me','Je','Ve','Sa','Di'];
@@ -102,12 +115,10 @@ function MonthCalendar({ sessions }) {
   }
 
   function getSessionsForDay(dayNum) {
-    const date = new Date(year, month, dayNum);
-    const jsDay = date.getDay();
+    const jsDay = new Date(year, month, dayNum).getDay();
     return sessions.filter(s => s.recurring && DAY_TO_JS[s.day] === jsDay);
   }
 
-  // Build calendar grid (Monday-first)
   const firstDow = new Date(year, month, 1).getDay();
   const offset = firstDow === 0 ? 6 : firstDow - 1;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -122,10 +133,13 @@ function MonthCalendar({ sessions }) {
 
   const selectedSessions = selectedDate ? getSessionsForDay(selectedDate) : [];
 
+  // Categories actually used in sessions
+  const usedCats = [...new Set(sessions.map(s => s.category ?? 'Tous'))];
+
   return (
     <div>
       {/* Month nav */}
-      <div className="flex items-center justify-between mb-4 px-1">
+      <div className="flex items-center justify-between mb-3 px-1">
         <button onClick={prevMonth}
           className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-500">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -150,7 +164,7 @@ function MonthCalendar({ sessions }) {
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-y-1">
+      <div className="grid grid-cols-7 gap-y-0.5">
         {cells.map((d, i) => {
           if (!d) return <div key={i} />;
           const daySessions = getSessionsForDay(d);
@@ -162,41 +176,61 @@ function MonthCalendar({ sessions }) {
           return (
             <div key={i}
               onClick={() => hasSessions && setSelectedDate(selected ? null : d)}
-              className="flex flex-col items-center py-1 rounded-xl transition-colors"
+              className="flex flex-col items-center py-1 rounded-xl transition-all"
               style={{
                 cursor: hasSessions ? 'pointer' : 'default',
                 backgroundColor: selected ? '#0F1E3A' : 'transparent',
+                minHeight: 52,
               }}>
               {/* Date number */}
-              <div
-                className="w-7 h-7 flex items-center justify-center rounded-full text-xs font-semibold font-poppins"
+              <div className="w-6 h-6 flex items-center justify-center rounded-full mb-0.5"
                 style={{
                   backgroundColor: tod && !selected ? '#22C55E' : 'transparent',
-                  color: selected ? 'white' : tod ? 'white' : isWeekend ? '#ef4444' : '#374151',
+                  fontSize: 11,
                   fontWeight: hasSessions ? 700 : 400,
+                  color: selected ? 'white' : tod ? 'white' : isWeekend ? '#ef4444' : '#374151',
                 }}>
                 {d}
               </div>
 
-              {/* Session dots */}
-              {hasSessions && (
-                <div className="flex gap-0.5 mt-0.5">
-                  {daySessions.slice(0, 3).map((s, si) => (
-                    <div key={si} style={{
-                      width: 4, height: 4, borderRadius: '50%',
-                      backgroundColor: selected ? 'rgba(255,255,255,0.7)' : DAY_COLORS[s.day],
-                    }} />
-                  ))}
-                </div>
-              )}
+              {/* Sessions: time + category color */}
+              <div className="flex flex-col items-center gap-0.5 w-full px-0.5">
+                {daySessions.slice(0, 3).map((s, si) => {
+                  const catColor = CATEGORY_COLORS[s.category ?? 'Tous'] ?? '#64748b';
+                  const shortTime = s.time.replace('h00', 'h').replace('h0', 'h');
+                  return (
+                    <div key={si}
+                      className="w-full flex items-center justify-center rounded"
+                      style={{
+                        backgroundColor: selected ? `${catColor}30` : `${catColor}18`,
+                        padding: '1px 2px',
+                      }}>
+                      <span style={{
+                        fontSize: 8,
+                        fontWeight: 700,
+                        color: selected ? 'rgba(255,255,255,0.9)' : catColor,
+                        lineHeight: 1.2,
+                        fontFamily: 'Poppins, sans-serif',
+                      }}>
+                        {shortTime}
+                      </span>
+                    </div>
+                  );
+                })}
+                {daySessions.length > 3 && (
+                  <span style={{ fontSize: 8, color: selected ? 'rgba(255,255,255,0.6)' : '#94a3b8' }}>
+                    +{daySessions.length - 3}
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Selected day sessions */}
+      {/* Selected day detail */}
       {selectedDate && (
-        <div className="mt-4 rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="mt-3 rounded-2xl border border-gray-100 overflow-hidden">
           <div className="px-4 py-2.5 flex items-center justify-between"
             style={{ backgroundColor: '#0F1E3A' }}>
             <span className="text-white text-sm font-semibold font-poppins">
@@ -207,48 +241,56 @@ function MonthCalendar({ sessions }) {
             </span>
           </div>
           <div className="divide-y divide-gray-50">
-            {selectedSessions.map(s => (
-              <div key={s.id} className="flex items-center gap-3 px-4 py-3">
-                <div className="w-2 h-full self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: DAY_COLORS[s.day], minHeight: 36, width: 3 }} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-sm font-poppins" style={{ color: '#0F1E3A' }}>
-                    {s.time}
-                    <span className="font-normal text-gray-400 text-xs ml-1.5">· {s.duration} min</span>
+            {selectedSessions.map(s => {
+              const catColor = CATEGORY_COLORS[s.category ?? 'Tous'] ?? '#64748b';
+              return (
+                <div key={s.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="flex-shrink-0 rounded-full" style={{ width: 3, alignSelf: 'stretch', backgroundColor: catColor, minHeight: 36 }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm font-poppins" style={{ color: '#0F1E3A' }}>
+                      {s.time}
+                      <span className="font-normal text-gray-400 text-xs ml-1.5">· {s.duration} min</span>
+                    </div>
+                    {s.location && <div className="text-xs text-gray-500 mt-0.5">{s.location}</div>}
                   </div>
-                  {s.location && <div className="text-xs text-gray-500 mt-0.5">{s.location}</div>}
+                  <div className="flex flex-col items-end gap-1">
+                    {s.category && s.category !== 'Tous' && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                        style={{ backgroundColor: `${catColor}18`, color: catColor }}>
+                        {s.category}
+                      </span>
+                    )}
+                    {s.recurring && (
+                      <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                        <RecurIcon /> Récurrent
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  {s.category && s.category !== 'Tous' && (
-                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold">{s.category}</span>
-                  )}
-                  {s.recurring && (
-                    <span className="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
-                      <RecurIcon /> Récurrent
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Legend: days that have sessions this month */}
-      {(() => {
-        const activeDays = [...new Set(sessions.filter(s => s.recurring).map(s => s.day))];
-        if (!activeDays.length) return null;
-        return (
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {activeDays.map(day => (
-              <div key={day} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
-                style={{ backgroundColor: `${DAY_COLORS[day]}18`, color: DAY_COLORS[day] }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: DAY_COLORS[day] }} />
-                {day}
-              </div>
-            ))}
+      {/* Legend: categories */}
+      {usedCats.length > 0 && (
+        <div className="mt-4">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Légende</p>
+          <div className="flex flex-wrap gap-2">
+            {usedCats.map(cat => {
+              const color = CATEGORY_COLORS[cat] ?? '#64748b';
+              return (
+                <div key={cat} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                  style={{ backgroundColor: `${color}18` }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: color }} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color }}>{cat}</span>
+                </div>
+              );
+            })}
           </div>
-        );
-      })()}
+        </div>
+      )}
     </div>
   );
 }
@@ -261,10 +303,9 @@ function ListView({ sessions }) {
   });
 
   if (!sorted.length) return (
-    <p className="text-sm text-gray-400 italic py-3 text-center">Aucun créneau pour cette catégorie.</p>
+    <p className="text-sm text-gray-400 italic py-3 text-center">Aucun créneau renseigné.</p>
   );
 
-  // Group by day
   const byDay = DAYS.reduce((acc, day) => {
     const ds = sorted.filter(s => s.day === day);
     if (ds.length) acc[day] = ds;
@@ -280,23 +321,29 @@ function ListView({ sessions }) {
             <div className="text-[10px] font-bold uppercase leading-none">{day.slice(0, 3)}</div>
           </div>
           <div className="flex flex-col gap-1.5 flex-1">
-            {ds.map(s => (
-              <div key={s.id} className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 flex-wrap">
-                <span className="font-bold text-sm text-gray-800">{s.time}</span>
-                <span className="text-xs text-gray-400">· {s.duration} min</span>
-                {s.location && <span className="text-xs text-gray-500 truncate">{s.location}</span>}
-                <div className="ml-auto flex gap-1.5 flex-wrap justify-end">
-                  {s.category && s.category !== 'Tous' && (
-                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold">{s.category}</span>
-                  )}
-                  {s.recurring && (
-                    <span className="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
-                      <RecurIcon /> Récurrent
-                    </span>
-                  )}
+            {ds.map(s => {
+              const catColor = CATEGORY_COLORS[s.category ?? 'Tous'] ?? '#64748b';
+              return (
+                <div key={s.id} className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 flex-wrap">
+                  <span className="font-bold text-sm text-gray-800">{s.time}</span>
+                  <span className="text-xs text-gray-400">· {s.duration} min</span>
+                  {s.location && <span className="text-xs text-gray-500 truncate">{s.location}</span>}
+                  <div className="ml-auto flex gap-1.5 flex-wrap justify-end">
+                    {s.category && s.category !== 'Tous' && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                        style={{ backgroundColor: `${catColor}18`, color: catColor }}>
+                        {s.category}
+                      </span>
+                    )}
+                    {s.recurring && (
+                      <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                        <RecurIcon /> Récurrent
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ))}
@@ -308,7 +355,6 @@ function ListView({ sessions }) {
 export default function TrainingBlock({ data, isEditing, onUpdate }) {
   const sessions = data.sessions ?? [];
   const [viewMode, setViewMode] = useState('calendar');
-  const [activeCategory, setActiveCategory] = useState('Tous');
 
   if (isEditing) return <EditView sessions={sessions} onUpdate={onUpdate} />;
 
@@ -316,31 +362,8 @@ export default function TrainingBlock({ data, isEditing, onUpdate }) {
     <p className="text-sm text-gray-400 italic py-3 text-center">Aucun créneau d'entraînement renseigné.</p>
   );
 
-  const usedCats = ['Tous', ...new Set(
-    sessions.map(s => s.category).filter(c => c && c !== 'Tous')
-  )];
-
-  const filtered = activeCategory === 'Tous'
-    ? sessions
-    : sessions.filter(s => (s.category ?? 'Tous') === activeCategory);
-
   return (
     <div>
-      {/* Category tabs */}
-      {usedCats.length > 1 && (
-        <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3">
-          {usedCats.map(cat => (
-            <button key={cat} onClick={() => setActiveCategory(cat)}
-              className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-colors"
-              style={activeCategory === cat
-                ? { backgroundColor: '#0F1E3A', color: 'white' }
-                : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
-              {cat}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* View toggle */}
       <div className="flex gap-1 mb-4 p-1 bg-gray-100 rounded-xl w-fit">
         {[{ id:'calendar', label:'Calendrier' }, { id:'list', label:'Liste' }].map(({ id, label }) => (
@@ -355,8 +378,8 @@ export default function TrainingBlock({ data, isEditing, onUpdate }) {
       </div>
 
       {viewMode === 'calendar'
-        ? <MonthCalendar sessions={filtered} />
-        : <ListView sessions={filtered} />
+        ? <MonthCalendar sessions={sessions} />
+        : <ListView sessions={sessions} />
       }
     </div>
   );
