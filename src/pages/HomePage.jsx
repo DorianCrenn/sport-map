@@ -74,7 +74,7 @@ function PhoneMockup() {
 
   return (
     <div style={{
-      width: 185, flexShrink: 0,
+      width: '100%', flexShrink: 0,
       borderRadius: 32,
       border: '4px solid #0F1E3A',
       backgroundColor: 'white',
@@ -203,30 +203,30 @@ export default function HomePage({ onNavigate }) {
         </motion.div>
 
         {/* Hero: text left + phone right */}
-        <div className="flex items-start gap-2 px-4 pt-3 pb-2">
+        <div className="flex items-start px-4 pt-3 pb-2">
 
           {/* Left text */}
-          <div className="flex-1 min-w-0">
+          <div style={{ width: '50%', paddingRight: 12 }}>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-3 border"
               style={{ backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}
             >
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span className="text-[10px] font-semibold font-poppins" style={{ color: '#16a34a' }}>La plateforme sportive locale</span>
+              <span className="text-xs font-semibold font-poppins" style={{ color: '#16a34a' }}>La plateforme sportive locale</span>
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
               className="font-extrabold leading-tight mb-2 font-poppins"
-              style={{ color: '#0F1E3A', fontSize: 28 }}
+              style={{ color: '#0F1E3A', fontSize: 34 }}
             >
               Le sport<br />près de <span style={{ color: '#22C55E' }}>toi</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.16 }}
-              className="text-xs leading-relaxed mb-4"
+              className="text-sm leading-relaxed mb-4"
               style={{ color: '#64748b' }}
             >
               SportLink te permet de trouver des clubs, des événements et des actualités sportives autour de toi.
@@ -242,11 +242,11 @@ export default function HomePage({ onNavigate }) {
                     {icon}
                   </div>
                   <div>
-                    <div className="text-xs font-poppins leading-tight">
+                    <div className="text-sm font-poppins leading-tight">
                       <span className="font-bold" style={{ color:'#0F1E3A' }}>{label}</span>
                       <span className="font-medium" style={{ color:'#0F1E3A' }}>{suffix}</span>
                     </div>
-                    <div className="text-[10px] mt-0.5" style={{ color:'#94a3b8' }}>{desc}</div>
+                    <div className="text-xs mt-0.5" style={{ color:'#94a3b8' }}>{desc}</div>
                   </div>
                 </div>
               ))}
@@ -259,7 +259,7 @@ export default function HomePage({ onNavigate }) {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => onNavigate('map')}
-                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm text-white font-poppins"
+                className="flex items-center justify-center gap-2 py-2 rounded-xl font-bold text-xs text-white font-poppins"
                 style={{ backgroundColor: '#22C55E' }}
               >
                 Découvrir la carte
@@ -268,7 +268,7 @@ export default function HomePage({ onNavigate }) {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => onNavigate('clubs')}
-                className="flex items-center justify-center py-3.5 rounded-2xl font-semibold text-sm font-poppins border-2"
+                className="flex items-center justify-center py-2 rounded-xl font-semibold text-xs font-poppins border-2"
                 style={{ borderColor: '#e2e8f0', color: '#0F1E3A' }}
               >
                 Explorer les clubs
@@ -281,7 +281,7 @@ export default function HomePage({ onNavigate }) {
             initial={{ opacity: 0, x: 24, y: 12 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             transition={{ delay: 0.14, type: 'spring', stiffness: 180, damping: 22 }}
-            style={{ paddingTop: 4 }}
+            style={{ width: '50%', flexShrink: 0, paddingTop: 4 }}
           >
             <PhoneMockup />
           </motion.div>
