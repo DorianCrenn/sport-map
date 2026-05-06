@@ -33,6 +33,102 @@ function Field({ label, children }) {
 const inputCls = 'w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-slate-200 font-poppins';
 const selectCls = 'text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none font-medium';
 
+// ── City autocomplete with geo.api.gouv.fr ────────────────────────────────────
+function CityField({ value, onChange, onValidChange, error }) {
+  const [suggestions, setSuggestions] = useState([]);
+  const [status, setStatus] = useState(null); // null | 'checking' | 'valid' | 'invalid'
+  const [open, setOpen] = useState(false);
+  const debounce = useRef(null);
+
+  function handleInput(val) {
+    onChange(val);
+    setStatus(null);
+    clearTimeout(debounce.current);
+    if (val.trim().length < 2) { setSuggestions([]); setOpen(false); return; }
+    setStatus('checking');
+    debounce.current = setTimeout(async () => {
+      try {
+        const res  = await fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(val.trim())}&limit=6&boost=population&fields=nom,codeDepartement`);
+        const data = await res.json();
+        setSuggestions(data);
+        setOpen(data.length > 0);
+        const exact = data.some(c => c.nom.toLowerCase() === val.trim().toLowerCase());
+        const st = data.length === 0 ? 'invalid' : exact ? 'valid' : 'partial';
+        setStatus(st);
+        onValidChange(st === 'valid');
+      } catch { setStatus(null); }
+    }, 380);
+  }
+
+  function pick(commune) {
+    onChange(commune.nom);
+    setSuggestions([]);
+    setOpen(false);
+    setStatus('valid');
+    onValidChange(true);
+  }
+
+  return (
+    <div className="relative">
+      <div className="relative">
+        <input type="text" value={value}
+          onChange={e => handleInput(e.target.value)}
+          onFocus={() => suggestions.length > 0 && setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 160)}
+          placeholder="ex. Brest"
+          className={`${inputCls} pr-8`} />
+        {/* Status icon */}
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          {status === 'checking' && (
+            <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+          )}
+          {status === 'valid' && (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          )}
+          {status === 'invalid' && (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          )}
+        </span>
+      </div>
+
+      {/* Suggestions dropdown */}
+      <AnimatePresence>
+        {open && suggestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.12 }}
+            className="absolute z-30 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
+          >
+            {suggestions.map(c => (
+              <button key={c.code} type="button" onMouseDown={() => pick(c)}
+                className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 text-left transition-colors">
+                <span className="text-sm font-medium text-gray-800">{c.nom}</span>
+                <span className="text-xs text-gray-400 flex-shrink-0 ml-2">dép. {c.codeDepartement}</span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {status === 'invalid' && (
+        <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
+          Commune introuvable en France — vérifiez l'orthographe
+        </p>
+      )}
+      {status === 'partial' && suggestions.length > 0 && (
+        <p className="text-xs text-gray-400 mt-1">Sélectionnez une commune dans la liste</p>
+      )}
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+    </div>
+  );
+}
+
 // ── Logo upload ───────────────────────────────────────────────────────────────
 function LogoUpload({ logo, name, sport, onChange }) {
   const ref = useRef();
@@ -151,7 +247,8 @@ export default function ClubFormModal({ club, onSave, onClose }) {
     categories: club?.categories ?? [],
     logo:       club?.logo       ?? null,
   });
-  const [errors, setErrors]         = useState({});
+  const [errors, setErrors]             = useState({});
+  const [cityValid, setCityValid]       = useState(!!club?.city);
   const [showCatPicker, setShowCatPicker] = useState(false);
 
   function set(key, val) {
@@ -214,6 +311,7 @@ export default function ClubFormModal({ club, onSave, onClose }) {
     const e = {};
     if (!form.name.trim())    e.name    = 'Nom requis';
     if (!form.city.trim())    e.city    = 'Ville requise';
+    else if (!cityValid)      e.city    = 'Sélectionnez une commune valide dans la liste';
     if (!form.contact.trim()) e.contact = 'Email requis';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact)) e.contact = 'Email invalide';
     setErrors(e);
@@ -297,9 +395,12 @@ export default function ClubFormModal({ club, onSave, onClose }) {
           {/* Ville + Membres */}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Ville *">
-              <input type="text" value={form.city} onChange={e => set('city', e.target.value)}
-                placeholder="ex. Brest" className={inputCls} />
-              {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
+              <CityField
+                value={form.city}
+                onChange={val => { set('city', val); setCityValid(false); }}
+                onValidChange={setCityValid}
+                error={errors.city}
+              />
             </Field>
             <Field label="Membres">
               <input type="number" value={form.members} onChange={e => set('members', e.target.value)}
