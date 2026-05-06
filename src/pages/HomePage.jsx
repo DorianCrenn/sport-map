@@ -170,30 +170,30 @@ export default function HomePage({ onNavigate }) {
       </div>
 
       {/* Hero */}
-      <div className="relative flex items-start px-4 pt-6 pb-4 mx-auto w-full" style={{ zIndex: 1, maxWidth: 480 }}>
+      <div className="relative flex items-start px-5 pt-6 pb-4 w-full" style={{ zIndex: 1 }}>
 
         {/* LEFT — 46% */}
         <motion.div
           initial={{ opacity: 0, x: -16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.45 }}
-          style={{ width: '58%', paddingRight: 10, paddingTop: 4 }}
+          style={{ flex: 1, minWidth: 0, paddingRight: 14, paddingTop: 4 }}
         >
           {/* Badge */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 border"
             style={{ backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span className="font-semibold font-poppins" style={{ fontSize: 11, color: '#16a34a' }}>La plateforme sportive locale</span>
+            <span className="font-semibold font-poppins" style={{ fontSize: 13, color: '#16a34a' }}>La plateforme sportive locale</span>
           </div>
 
           {/* Headline */}
-          <h1 className="font-extrabold leading-none mb-3 font-poppins" style={{ color: '#0F1E3A', fontSize: 38, lineHeight: 1.08 }}>
+          <h1 className="font-extrabold leading-none mb-3 font-poppins" style={{ color: '#0F1E3A', fontSize: 44, lineHeight: 1.05 }}>
             Le sport<br />
             près de <span style={{ color: '#22C55E' }}>toi</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="mb-5 leading-relaxed font-poppins" style={{ fontSize: 12, color: '#64748b' }}>
+          <p className="mb-5 leading-relaxed font-poppins" style={{ fontSize: 14, color: '#64748b' }}>
             SportLink te permet de trouver des clubs, des événements et des actualités sportives autour de toi.
           </p>
 
@@ -221,11 +221,11 @@ export default function HomePage({ onNavigate }) {
                   {icon}
                 </div>
                 <div>
-                  <div className="font-poppins" style={{ fontSize:12, lineHeight:'1.3' }}>
+                  <div className="font-poppins" style={{ fontSize:14, lineHeight:'1.3' }}>
                     <span className="font-bold" style={{ color:'#0F1E3A' }}>{label}</span>
                     <span className="font-medium" style={{ color:'#0F1E3A' }}>{suffix}</span>
                   </div>
-                  <div style={{ fontSize:10, color:'#94a3b8', marginTop:1 }}>{desc}</div>
+                  <div style={{ fontSize:12, color:'#94a3b8', marginTop:2 }}>{desc}</div>
                 </div>
               </div>
             ))}
@@ -258,7 +258,7 @@ export default function HomePage({ onNavigate }) {
           initial={{ opacity: 0, x: 20, y: 12 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ delay: 0.12, type: 'spring', stiffness: 160, damping: 20 }}
-          style={{ width: '42%', maxWidth: 160, flexShrink: 0 }}
+          style={{ width: 175, flexShrink: 0 }}
         >
           <PhoneMockup />
         </motion.div>
