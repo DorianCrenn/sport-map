@@ -81,7 +81,7 @@ function AppInner() {
           <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} />
         )}
         {activeTab === 'news' && <NewsPage />}
-        {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} />}
+        {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} />}
         {activeTab === 'profil' && (
           <ProfilPage
             favorites={favorites}

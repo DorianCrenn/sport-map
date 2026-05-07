@@ -30,7 +30,7 @@ const STATIC_CLUBS = [
   { id: 18, name: 'Cyclisme Cornouaille',   sport: 'Cyclisme',   city: 'Quimper',    members: 195, level: 'Loisir / Compétition',  contact: 'cyclcorn@gmail.com' },
 ];
 
-export default function ClubsPage({ allEvents }) {
+export default function ClubsPage({ allEvents, onShowAuth }) {
   const { userClubs, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
   const { currentUser, isAdmin, isClubAdmin } = useAuth();
@@ -262,13 +262,11 @@ export default function ClubsPage({ allEvents }) {
                   <div className="text-xs text-green-600">Faites une demande pour gérer votre page.</div>
                 </div>
                 <button
-                  onClick={() => currentUser ? setShowRequestModal(true) : null}
-                  disabled={!currentUser}
+                  onClick={() => currentUser ? setShowRequestModal(true) : onShowAuth?.()}
                   className="text-xs font-bold text-white px-3 py-1.5 rounded-xl flex-shrink-0 transition-opacity"
-                  style={{ backgroundColor: '#22C55E', opacity: currentUser ? 1 : 0.5 }}
-                  title={!currentUser ? 'Connectez-vous pour faire une demande' : undefined}
+                  style={{ backgroundColor: '#22C55E' }}
                 >
-                  Demander
+                  {currentUser ? 'Demander' : 'Se connecter'}
                 </button>
               </motion.div>
             ) : (
