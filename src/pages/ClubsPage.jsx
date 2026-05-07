@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SPORTS } from '../data/events.js';
 import { useClubs } from '../hooks/useClubs.js';
+import { useClubRequests } from '../hooks/useClubRequests.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import ClubPageView from '../components/club/ClubPageView.jsx';
 import ClubFormModal from '../components/club/ClubFormModal.jsx';
+import ClubRequestModal from '../components/club/ClubRequestModal.jsx';
 
 const STATIC_CLUBS = [
   { id: 1,  name: 'US Brest Football',       sport: 'Football',   city: 'Brest',      members: 320, level: 'Division Honneur',      contact: 'usbrest29@gmail.com' },
@@ -29,13 +32,17 @@ const STATIC_CLUBS = [
 
 export default function ClubsPage({ allEvents }) {
   const { userClubs, addClub, updateClub, deleteClub } = useClubs();
+  const { requests, submitRequest } = useClubRequests();
+  const { currentUser, isAdmin, isClubAdmin } = useAuth();
 
-  const [search, setSearch]           = useState('');
-  const [sportFilter, setSportFilter] = useState(null);
-  const [selectedClub, setSelectedClub] = useState(null);  // page view
-  const [formClub, setFormClub]         = useState(null);  // null=closed, false=create, club=edit
+  const [search, setSearch]             = useState('');
+  const [sportFilter, setSportFilter]   = useState(null);
+  const [selectedClub, setSelectedClub] = useState(null);
+  const [formClub, setFormClub]         = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
+  // All clubs visible in the list
   const allClubs = [...userClubs, ...STATIC_CLUBS];
 
   const filtered = allClubs.filter(c => {
@@ -45,12 +52,21 @@ export default function ClubsPage({ allEvents }) {
     return matchSearch && matchSport;
   });
 
+  // Club admin's own club
+  const myClub = isClubAdmin && currentUser?.clubId
+    ? userClubs.find(c => c.id === currentUser.clubId)
+    : null;
+
+  // Has the current user already sent a request?
+  const myRequest = currentUser
+    ? requests.find(r => r.userId === currentUser.id)
+    : null;
+
   function handleSave(data) {
     if (formClub && formClub !== true) {
       updateClub(formClub.id, data);
     } else {
       const created = addClub(data);
-      // Open the page editor right after creation
       setSelectedClub(created);
     }
     setFormClub(null);
@@ -62,10 +78,28 @@ export default function ClubsPage({ allEvents }) {
     if (selectedClub?.id === club.id) setSelectedClub(null);
   }
 
+  function handleRequest(form) {
+    if (!currentUser) return;
+    submitRequest({
+      userId: currentUser.id,
+      userName: currentUser.name,
+      clubName: form.clubName,
+      sport: form.sport,
+      city: form.city,
+      description: form.description,
+    });
+  }
+
+  function isOwnClub(club) {
+    if (isAdmin) return club.isUserCreated;
+    if (currentUser && club.ownerId) return club.ownerId === currentUser.id;
+    return false;
+  }
+
   return (
     <div className="h-full flex flex-col bg-[#F1F5F9] relative overflow-hidden">
 
-      {/* Club page view overlay */}
+      {/* Club page overlay */}
       <AnimatePresence>
         {selectedClub && (
           <ClubPageView
@@ -77,13 +111,23 @@ export default function ClubsPage({ allEvents }) {
         )}
       </AnimatePresence>
 
-      {/* Create / edit form */}
+      {/* Edit form (admin only) */}
       <AnimatePresence>
         {formClub !== null && (
           <ClubFormModal
             club={formClub === true ? null : formClub}
             onSave={handleSave}
             onClose={() => setFormClub(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Club request modal */}
+      <AnimatePresence>
+        {showRequestModal && (
+          <ClubRequestModal
+            onSubmit={handleRequest}
+            onClose={() => setShowRequestModal(false)}
           />
         )}
       </AnimatePresence>
@@ -106,11 +150,11 @@ export default function ClubsPage({ allEvents }) {
               <p className="text-sm text-gray-500 mb-5">Cette action supprimera <strong>{confirmDelete.name}</strong> et sa page définitivement.</p>
               <div className="flex gap-3">
                 <button onClick={() => setConfirmDelete(null)}
-                  className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
+                  className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50">
                   Annuler
                 </button>
                 <button onClick={() => handleDelete(confirmDelete)}
-                  className="flex-1 py-3 rounded-2xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors">
+                  className="flex-1 py-3 rounded-2xl bg-red-500 text-white text-sm font-bold hover:bg-red-600">
                   Supprimer
                 </button>
               </div>
@@ -123,16 +167,18 @@ export default function ClubsPage({ allEvents }) {
       <div className="bg-white px-4 pt-5 pb-3 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold font-poppins" style={{ color: '#0F1E3A' }}>Clubs</h1>
-          <button
-            onClick={() => setFormClub(true)}
-            className="flex items-center gap-1.5 text-xs font-bold font-poppins text-white px-3 py-2 rounded-xl transition-colors"
-            style={{ backgroundColor: '#22C55E' }}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Créer mon club
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setFormClub(true)}
+              className="flex items-center gap-1.5 text-xs font-bold font-poppins text-white px-3 py-2 rounded-xl transition-colors"
+              style={{ backgroundColor: '#22C55E' }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Ajouter
+            </button>
+          )}
         </div>
 
         <div className="relative mb-3">
@@ -148,7 +194,7 @@ export default function ClubsPage({ allEvents }) {
           />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex gap-2 overflow-x-auto pb-0.5">
           <button onClick={() => setSportFilter(null)}
             className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors"
             style={sportFilter === null ? { backgroundColor: '#0F1E3A', color: 'white' } : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
@@ -165,47 +211,114 @@ export default function ClubsPage({ allEvents }) {
         </div>
       </div>
 
-      {/* Club list */}
+      {/* List */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
         <p className="text-xs text-gray-400 mb-3 font-medium">
           {filtered.length} club{filtered.length !== 1 ? 's' : ''} trouvé{filtered.length !== 1 ? 's' : ''}
         </p>
 
-        {/* User clubs banner */}
-        {userClubs.length === 0 && (
+        {/* Club admin: My Club banner */}
+        {myClub && (
           <motion.div
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
             className="mb-3 rounded-2xl p-4 flex items-center gap-3 border"
-            style={{ background: 'linear-gradient(135deg, #F0FDF4, #ECFDF5)', borderColor: '#BBF7D0' }}
+            style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderColor: '#fde68a' }}
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#22C55E' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#f59e0b' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
             </div>
-            <div className="flex-1">
-              <div className="font-bold text-sm font-poppins" style={{ color: '#15803d' }}>Vous représentez un club ?</div>
-              <div className="text-xs text-green-600">Créez votre page club et gérez vos entraînements.</div>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-sm font-poppins truncate" style={{ color: '#92400e' }}>{myClub.name}</div>
+              <div className="text-xs" style={{ color: '#b45309' }}>Votre club · {myClub.city}</div>
             </div>
-            <button onClick={() => setFormClub(true)}
+            <button
+              onClick={() => setSelectedClub(myClub)}
               className="text-xs font-bold text-white px-3 py-1.5 rounded-xl flex-shrink-0"
-              style={{ backgroundColor: '#22C55E' }}>
-              Créer
+              style={{ backgroundColor: '#f59e0b' }}>
+              Gérer
             </button>
           </motion.div>
         )}
 
+        {/* Regular user: request banner (not logged in, or logged in but no club and no request) */}
+        {!isClubAdmin && !isAdmin && (
+          <>
+            {!myRequest ? (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                className="mb-3 rounded-2xl p-4 flex items-center gap-3 border"
+                style={{ background: 'linear-gradient(135deg, #F0FDF4, #ECFDF5)', borderColor: '#BBF7D0' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#22C55E' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="font-bold text-sm font-poppins" style={{ color: '#15803d' }}>Vous représentez un club ?</div>
+                  <div className="text-xs text-green-600">Faites une demande pour gérer votre page.</div>
+                </div>
+                <button
+                  onClick={() => currentUser ? setShowRequestModal(true) : null}
+                  disabled={!currentUser}
+                  className="text-xs font-bold text-white px-3 py-1.5 rounded-xl flex-shrink-0 transition-opacity"
+                  style={{ backgroundColor: '#22C55E', opacity: currentUser ? 1 : 0.5 }}
+                  title={!currentUser ? 'Connectez-vous pour faire une demande' : undefined}
+                >
+                  Demander
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                className="mb-3 rounded-2xl p-4 flex items-center gap-3 border"
+                style={{
+                  background: myRequest.status === 'pending' ? 'linear-gradient(135deg, #fffbeb, #fef3c7)' : 'linear-gradient(135deg, #fef2f2, #fee2e2)',
+                  borderColor: myRequest.status === 'pending' ? '#fde68a' : '#fecaca',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: myRequest.status === 'pending' ? '#f59e0b' : '#ef4444' }}>
+                  {myRequest.status === 'pending' ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm font-poppins"
+                    style={{ color: myRequest.status === 'pending' ? '#92400e' : '#991b1b' }}>
+                    {myRequest.status === 'pending' ? 'Demande en cours d\'examen' : 'Demande refusée'}
+                  </div>
+                  <div className="text-xs truncate"
+                    style={{ color: myRequest.status === 'pending' ? '#b45309' : '#b91c1c' }}>
+                    {myRequest.clubName}
+                    {myRequest.reviewNote && ` · ${myRequest.reviewNote}`}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </>
+        )}
+
+        {/* Clubs list */}
         {filtered.map((club, i) => {
-          const sport    = SPORTS[club.sport];
-          const isOwn    = !!club.isUserCreated;
+          const sport = SPORTS[club.sport];
+          const own   = isOwnClub(club);
 
           return (
             <motion.div key={club.id}
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, duration: 0.15 }}
+              transition={{ delay: i * 0.025, duration: 0.15 }}
               className="bg-white rounded-2xl mb-2.5 shadow-sm border overflow-hidden"
-              style={{ borderColor: isOwn ? '#BBF7D0' : '#f1f5f9' }}
+              style={{ borderColor: own ? '#BBF7D0' : '#f1f5f9' }}
             >
               <div className="flex items-center gap-3 px-4 pt-4 pb-3">
                 {/* Avatar */}
@@ -219,17 +332,19 @@ export default function ClubsPage({ allEvents }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <div className="font-semibold text-gray-800 text-sm truncate">{club.name}</div>
-                    {isOwn && (
+                    {own && (
                       <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: '#F0FDF4', color: '#16a34a' }}>
-                        Mon club
+                        {isAdmin ? 'Géré' : 'Mon club'}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-xs text-gray-500">{club.city}</span>
-                    <span className="text-gray-300">·</span>
-                    <span className="text-xs text-gray-500">{club.members} membres</span>
+                    {club.members > 0 && <>
+                      <span className="text-gray-300">·</span>
+                      <span className="text-xs text-gray-500">{club.members} membres</span>
+                    </>}
                   </div>
                   <div className="flex flex-wrap items-center gap-1 mt-1">
                     <span className="text-[10px] px-1.5 py-0.5 rounded font-medium text-white flex-shrink-0"
@@ -245,21 +360,19 @@ export default function ClubsPage({ allEvents }) {
                           </span>
                         ))}
                         {club.categories.length > 5 && (
-                          <span className="text-[10px] text-gray-400 flex-shrink-0">
-                            +{club.categories.length - 5}
-                          </span>
+                          <span className="text-[10px] text-gray-400 flex-shrink-0">+{club.categories.length - 5}</span>
                         )}
                       </>
-                    ) : (
+                    ) : club.level ? (
                       <span className="text-[10px] text-gray-400">{club.level}</span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex border-t border-gray-100">
-                {isOwn ? (
+                {own ? (
                   <>
                     <button onClick={() => setFormClub(club)}
                       className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs text-gray-500 hover:bg-gray-50 transition-colors">
@@ -267,7 +380,7 @@ export default function ClubsPage({ allEvents }) {
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
                       </svg>
-                      Éditer les infos
+                      Éditer
                     </button>
                     <div className="w-px bg-gray-100" />
                     <button onClick={() => setSelectedClub(club)}
@@ -288,15 +401,19 @@ export default function ClubsPage({ allEvents }) {
                   </>
                 ) : (
                   <>
-                    <a href={`mailto:${club.contact}`}
-                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs text-gray-500 hover:bg-gray-50 transition-colors">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                        <polyline points="22,6 12,13 2,6"/>
-                      </svg>
-                      Contacter
-                    </a>
-                    <div className="w-px bg-gray-100" />
+                    {club.contact && (
+                      <>
+                        <a href={`mailto:${club.contact}`}
+                          className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs text-gray-500 hover:bg-gray-50 transition-colors">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                          </svg>
+                          Contacter
+                        </a>
+                        <div className="w-px bg-gray-100" />
+                      </>
+                    )}
                     <button onClick={() => setSelectedClub(club)}
                       className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold transition-colors font-poppins"
                       style={{ color: sport?.color ?? '#0F1E3A' }}>

@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { EVENTS } from './data/events.js';
 import { useLocalEvents } from './hooks/useLocalEvents.js';
 import { useFavorites } from './hooks/useFavorites.js';
@@ -11,10 +13,15 @@ import FavorisPage from './pages/FavorisPage.jsx';
 import NewsPage from './pages/NewsPage.jsx';
 import ClubsPage from './pages/ClubsPage.jsx';
 import ProfilPage from './pages/ProfilPage.jsx';
+import AdminPage from './pages/AdminPage.jsx';
+import AuthPage from './pages/AuthPage.jsx';
+import OnboardingPage from './pages/OnboardingPage.jsx';
 
-export default function App() {
+function AppInner() {
+  const { currentUser, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [activeDepartment, setActiveDepartment] = useState('finistere');
+  const [showAuth, setShowAuth] = useState(false);
 
   const { events: userEvents, addEvent, updateEvent, deleteEvent } = useLocalEvents();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
@@ -24,6 +31,30 @@ export default function App() {
     () => [...EVENTS, ...userEvents, ...clubMatchEvents],
     [userEvents, clubMatchEvents]
   );
+
+  const shouldShowOnboarding = !!currentUser && !currentUser.onboardingDone && !showAuth;
+
+  function handleTabChange(tab) {
+    if (tab === 'profil' && !currentUser) {
+      setShowAuth(true);
+      return;
+    }
+    if (tab === 'admin' && !isAdmin) return;
+    setActiveTab(tab);
+  }
+
+  function handleAuthClose() {
+    setShowAuth(false);
+  }
+
+  function handleNeedOnboarding() {
+    setShowAuth(false);
+  }
+
+  function handleOnboardingDone() {
+    // onboardingDone is set inside OnboardingPage via updateProfile
+    // shouldShowOnboarding will become false automatically
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
@@ -52,11 +83,41 @@ export default function App() {
         {activeTab === 'news' && <NewsPage />}
         {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} />}
         {activeTab === 'profil' && (
-          <ProfilPage favorites={favorites} userEvents={userEvents} onNavigate={setActiveTab} />
+          <ProfilPage
+            favorites={favorites}
+            userEvents={userEvents}
+            onNavigate={handleTabChange}
+            onShowAuth={() => setShowAuth(true)}
+          />
         )}
+        {activeTab === 'admin' && isAdmin && <AdminPage />}
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+
+      <AnimatePresence>
+        {showAuth && (
+          <AuthPage
+            key="auth"
+            onClose={handleAuthClose}
+            onNeedOnboarding={handleNeedOnboarding}
+          />
+        )}
+        {shouldShowOnboarding && (
+          <OnboardingPage
+            key="onboarding"
+            onDone={handleOnboardingDone}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppInner />
+    </AuthProvider>
   );
 }

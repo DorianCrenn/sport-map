@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
-const TABS = [
+const BASE_TABS = [
   {
     id: 'home',
     label: 'Accueil',
@@ -14,7 +15,7 @@ const TABS = [
   {
     id: 'map',
     label: 'Carte',
-    icon: (active) => (
+    icon: () => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
         <line x1="9" y1="3" x2="9" y2="18"/>
@@ -25,7 +26,7 @@ const TABS = [
   {
     id: 'news',
     label: 'Actus',
-    icon: (active) => (
+    icon: () => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
         <path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/>
@@ -35,7 +36,7 @@ const TABS = [
   {
     id: 'clubs',
     label: 'Clubs',
-    icon: (active) => (
+    icon: () => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
         <circle cx="9" cy="7" r="4"/>
@@ -56,37 +57,55 @@ const TABS = [
   },
 ];
 
+const ADMIN_TAB = {
+  id: 'admin',
+  label: 'Admin',
+  icon: (active) => (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  ),
+};
+
 const ACTIVE_COLOR = '#22C55E';
 const INACTIVE_COLOR = '#94a3b8';
+const ADMIN_COLOR = '#3b82f6';
 
 export default function BottomNav({ activeTab, onTabChange }) {
+  const { isAdmin } = useAuth();
+  const tabs = isAdmin ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS;
+
   return (
     <nav
       className="flex-shrink-0 bg-white flex items-stretch"
       style={{ boxShadow: '0 -1px 0 #e2e8f0, 0 -4px 20px rgba(0,0,0,0.05)' }}
     >
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const active = activeTab === tab.id;
+        const isAdminTab = tab.id === 'admin';
+        const activeColor = isAdminTab ? ADMIN_COLOR : ACTIVE_COLOR;
+        const color = active ? activeColor : INACTIVE_COLOR;
+
         return (
           <motion.button
             key={tab.id}
-            whileTap={{ scale: 0.9 }}
+            whileTap={{ scale: 0.88 }}
             onClick={() => onTabChange(tab.id)}
             className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 cursor-pointer transition-colors relative"
-            style={{ color: active ? ACTIVE_COLOR : INACTIVE_COLOR }}
+            style={{ color }}
           >
             {active && (
               <motion.div
                 layoutId="nav-indicator"
                 className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full"
-                style={{ backgroundColor: ACTIVE_COLOR }}
+                style={{ backgroundColor: activeColor }}
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
               />
             )}
             {tab.icon(active)}
             <span
               className="text-[10px] font-semibold font-poppins"
-              style={{ color: active ? ACTIVE_COLOR : INACTIVE_COLOR }}
+              style={{ color }}
             >
               {tab.label}
             </span>
