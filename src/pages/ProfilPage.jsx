@@ -15,26 +15,28 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
       <div className="h-full flex flex-col bg-[#F1F5F9] overflow-y-auto">
         {/* Hero */}
         <div
-          className="flex-shrink-0 px-6 pt-10 pb-14 text-white relative overflow-hidden"
+          className="flex-shrink-0 px-5 py-4 text-white relative overflow-hidden"
           style={{ background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 100%)' }}
         >
           <div className="absolute top-0 right-0 w-56 h-56 rounded-full pointer-events-none"
             style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
-          <div className="text-center relative">
+          <div className="flex items-center gap-3 relative">
             <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 border-2"
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border"
               style={{ backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' }}
             >
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
             </div>
-            <h2 className="text-xl font-bold font-poppins mb-1">Mon profil</h2>
-            <p className="text-sm" style={{ color: '#64748b' }}>Connectez-vous pour accéder à votre espace</p>
+            <div>
+              <h2 className="text-base font-bold font-poppins leading-tight">Mon profil</h2>
+              <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>Connectez-vous pour accéder à votre espace</p>
+            </div>
           </div>
         </div>
 
-        <div className="px-5 -mt-6 space-y-3 pb-8">
+        <div className="px-4 pt-3 space-y-3 pb-8">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#F0FDF4' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -78,38 +80,41 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
     <div className="h-full flex flex-col bg-[#F1F5F9] overflow-y-auto">
       {/* Hero */}
       <div
-        className="flex-shrink-0 px-6 pt-10 pb-14 text-white relative overflow-hidden"
+        className="flex-shrink-0 px-6 pt-6 pb-6 text-white relative overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 100%)' }}
       >
         <div className="absolute top-0 right-0 w-56 h-56 rounded-full pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
-        <div className="text-center relative">
+        <div className="flex items-center gap-4 relative">
           {currentUser.avatar ? (
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
-              className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4"
+              className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
               style={{ boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)' }}
             />
           ) : (
             <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 font-bold text-2xl font-oswald"
+              className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-xl font-oswald"
               style={{ backgroundColor: '#22C55E', color: 'white', boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)' }}
             >
               {currentUser.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'}
             </div>
           )}
-          <h2 className="text-xl font-bold font-poppins mb-1.5">{currentUser.name}</h2>
-          <span
-            className="text-[11px] font-bold px-3 py-1 rounded-full"
-            style={{ backgroundColor: roleBadge.bg, color: roleBadge.color }}
-          >
-            {roleBadge.label}
-          </span>
+          <div>
+            <h2 className="text-lg font-bold font-poppins leading-tight">{currentUser.name}</h2>
+            <p className="text-xs mb-2" style={{ color: '#64748b' }}>{currentUser.email}</p>
+            <span
+              className="text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+              style={{ backgroundColor: roleBadge.bg, color: roleBadge.color }}
+            >
+              {roleBadge.label}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="px-4 -mt-6 space-y-3 pb-8">
+      <div className="px-4 pt-3 space-y-3 pb-8">
         {/* Stats */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 grid grid-cols-3 gap-3">
           {[
