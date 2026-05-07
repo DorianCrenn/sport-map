@@ -88,13 +88,13 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
-              className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4 border-2"
-              style={{ borderColor: 'rgba(255,255,255,0.2)' }}
+              className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4"
+              style={{ boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)' }}
             />
           ) : (
             <div
               className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 font-bold text-2xl font-oswald"
-              style={{ backgroundColor: '#22C55E', color: 'white' }}
+              style={{ backgroundColor: '#22C55E', color: 'white', boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)' }}
             >
               {currentUser.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'}
             </div>

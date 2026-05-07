@@ -148,8 +148,8 @@ function LogoUpload({ logo, name, sport, onChange }) {
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="relative" onClick={() => ref.current?.click()} style={{ cursor: 'pointer' }}>
-        <div className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-lg font-oswald select-none shadow-md"
-          style={{ backgroundColor: logo ? 'transparent' : sportColor }}>
+        <div className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-lg font-oswald select-none"
+          style={{ backgroundColor: logo ? 'transparent' : sportColor, boxShadow: '0 0 0 2px white, 0 0 0 3.5px rgba(0,0,0,0.08)' }}>
           {logo
             ? <img src={logo} alt="logo" className="w-full h-full object-cover" />
             : initials}

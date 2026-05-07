@@ -313,7 +313,7 @@ export default function ClubPageView({ club, allEvents, onBack }) {
 
         <div className="px-4 pb-5 flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-base font-oswald flex-shrink-0"
-            style={{ backgroundColor: club.logo ? 'transparent' : (sportData?.color ?? '#64748b') }}>
+            style={{ backgroundColor: club.logo ? 'transparent' : (sportData?.color ?? '#64748b'), boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)' }}>
             {club.logo
               ? <img src={club.logo} alt={club.name} className="w-full h-full object-cover" />
               : club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}

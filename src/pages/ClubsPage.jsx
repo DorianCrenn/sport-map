@@ -321,7 +321,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
               <div className="flex items-center gap-3 px-4 pt-4 pb-3">
                 {/* Avatar */}
                 <div className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 font-bold text-white text-sm font-oswald tracking-wide select-none"
-                  style={{ backgroundColor: club.logo ? 'transparent' : (sport?.color ?? '#64748b') }}>
+                  style={{ backgroundColor: club.logo ? 'transparent' : (sport?.color ?? '#64748b'), boxShadow: '0 0 0 2px white, 0 0 0 3.5px rgba(0,0,0,0.08)' }}>
                   {club.logo
                     ? <img src={club.logo} alt={club.name} className="w-full h-full object-cover" />
                     : club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
