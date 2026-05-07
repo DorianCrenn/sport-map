@@ -33,11 +33,8 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
         if (form.password.length < 6) throw new Error('Mot de passe : 6 caractères minimum');
         if (form.password !== form.confirm) throw new Error('Les mots de passe ne correspondent pas');
         const user = register({ name: form.name.trim(), email: form.email.trim(), password: form.password });
-        if (!user.onboardingDone) {
-          onNeedOnboarding?.();
-        } else {
-          onClose();
-        }
+        if (!user.onboardingDone) onNeedOnboarding?.();
+        else onClose();
       }
     } catch (err) {
       setError(err.message);
@@ -47,43 +44,55 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
   }
 
   const inputClass = 'w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow';
-  const inputStyle = { backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' };
+  const inputStyle = { backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 40 }}
-      transition={{ duration: 0.22, ease: 'easeOut' }}
-      className="fixed inset-0 z-50 flex flex-col overflow-y-auto"
-      style={{ background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 65%, #0e2a1a 100%)' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-50 flex flex-col justify-end"
+      style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
+      onClick={e => e.target === e.currentTarget && onClose()}
     >
-      {/* Decorative blobs */}
-      <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
-      <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)', transform: 'translate(-30%,30%)' }} />
-
-      {/* Close */}
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-white transition-colors z-10"
-        style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 320, damping: 34 }}
+        className="flex flex-col rounded-t-3xl overflow-hidden"
+        style={{
+          background: 'linear-gradient(175deg, #0F1E3A 0%, #1a3460 60%, #0e2a1a 100%)',
+          maxHeight: '94dvh',
+        }}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
+        {/* Decorative blobs */}
+        <div className="absolute top-0 right-0 w-56 h-56 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
 
-      <div className="flex flex-col items-center justify-center min-h-full px-5 py-14">
-        {/* Logo */}
-        <div className="mb-10">
-          <SportLinkLogo size={130} variant="full" />
+        {/* Handle bar */}
+        <div className="flex-shrink-0 flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }} />
         </div>
 
-        <div className="w-full max-w-sm">
-          {/* Tab switcher */}
-          <div className="flex rounded-2xl p-1 mb-7" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}>
+        {/* Header */}
+        <div className="flex-shrink-0 flex items-center justify-between px-5 pt-2 pb-4">
+          <SportLinkLogo size={100} variant="full" />
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl text-slate-400 hover:text-white transition-colors"
+            style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Tab switcher */}
+        <div className="flex-shrink-0 px-5 mb-5">
+          <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}>
             {[['login', 'Connexion'], ['register', "S'inscrire"]].map(([id, label]) => (
               <button
                 key={id}
@@ -97,15 +106,17 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
               </button>
             ))}
           </div>
+        </div>
 
-          {/* Form */}
+        {/* Scrollable form area */}
+        <div className="flex-1 overflow-y-auto px-5 pb-8 min-h-0">
           <AnimatePresence mode="wait">
             <motion.form
               key={mode}
-              initial={{ opacity: 0, x: mode === 'login' ? -16 : 16 }}
+              initial={{ opacity: 0, x: mode === 'login' ? -14 : 14 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: mode === 'login' ? 16 : -16 }}
-              transition={{ duration: 0.18 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.16 }}
               onSubmit={handleSubmit}
               className="space-y-3.5"
             >
@@ -156,7 +167,7 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 rounded-2xl font-bold font-poppins text-sm text-white mt-1 transition-all"
+                className="w-full py-3.5 rounded-2xl font-bold font-poppins text-sm text-white transition-all"
                 style={{
                   backgroundColor: '#22C55E',
                   opacity: loading ? 0.7 : 1,
@@ -177,7 +188,7 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
             </motion.form>
           </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

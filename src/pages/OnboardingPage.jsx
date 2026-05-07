@@ -29,13 +29,13 @@ export default function OnboardingPage({ onDone }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 30 }}
       transition={{ duration: 0.25 }}
-      className="fixed inset-0 z-50 flex flex-col overflow-y-auto"
+      className="fixed inset-0 z-50 flex flex-col"
       style={{ background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 100%)' }}
     >
       <div className="absolute top-0 right-0 w-72 h-72 rounded-full pointer-events-none"
         style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
 
-      <div className="flex flex-col min-h-full px-5 pt-12 pb-8">
+      <div className="flex flex-col flex-1 overflow-y-auto px-5 pt-12 pb-8 min-h-0">
         {/* Header */}
         <div className="mb-8 text-center">
           <motion.div
