@@ -80,7 +80,7 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
 
         {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 pt-3 pb-4 md:pt-5">
-          <SportLinkLogo size={100} variant="full" />
+          <SportLinkLogo size={100} onDark />
           <button
             onClick={onClose}
             className="p-2 rounded-xl text-slate-400 hover:text-white transition-colors"

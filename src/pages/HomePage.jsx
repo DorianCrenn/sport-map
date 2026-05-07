@@ -176,7 +176,7 @@ export default function HomePage({ onNavigate }) {
 
           <motion.div className="flex items-center justify-center gap-2 mb-6"
             initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }}>
-            <SportLinkLogo size={32} />
+            <SportLinkLogo size={32} onDark />
             <span className="font-extrabold font-poppins text-white" style={{ fontSize:21, letterSpacing:'-0.3px' }}>SportLink</span>
           </motion.div>
 
@@ -244,7 +244,7 @@ export default function HomePage({ onNavigate }) {
 
             {/* Logo */}
             <div className="flex items-center gap-3 mb-8">
-              <SportLinkLogo size={40} />
+              <SportLinkLogo size={40} onDark />
               <span className="font-extrabold font-poppins text-white" style={{ fontSize:26, letterSpacing:'-0.5px' }}>SportLink</span>
             </div>
 
