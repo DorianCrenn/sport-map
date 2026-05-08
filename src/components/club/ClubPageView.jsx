@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useClubPage } from '../../hooks/useClubPage.js';
@@ -197,7 +197,6 @@ function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan,
   return (
     <Reorder.Item value={row} dragListener={false} dragControls={dragControls} as="div" className="mb-4">
       {isEditing && (
-        /* Row drag handle */
         <div className="flex items-center gap-2 mb-1.5 px-1">
           <div
             onPointerDown={e => { e.preventDefault(); dragControls.start(e); }}
@@ -211,7 +210,6 @@ function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan,
         </div>
       )}
 
-      {/* Blocks side by side */}
       <div className="flex gap-3 items-stretch flex-wrap">
         {row.blocks.map((block, blockIdx) => (
           isEditing ? (
@@ -237,12 +235,173 @@ function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan,
           ) : null
         ))}
 
-        {/* Empty slot(s) when space remains */}
         {isEditing && remaining > 0 && remaining < 12 && (
           <EmptySlot remaining={remaining} onAdd={type => onAddToRow(row.rowId, type)} />
         )}
       </div>
     </Reorder.Item>
+  );
+}
+
+// ── Team training section ─────────────────────────────────────────────────────
+const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+const BLANK_TR = { id: '', day: 'Lundi', time: '18:00', location: '' };
+
+function TeamTrainingSection({ sessions, isEditing, onChange }) {
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState(BLANK_TR);
+  function setF(k, v) { setForm(p => ({ ...p, [k]: v })); }
+
+  function add() {
+    if (!form.location.trim()) return;
+    onChange([...sessions, { ...form, id: `tr_${Date.now()}` }]);
+    setForm(BLANK_TR);
+    setShowForm(false);
+  }
+
+  function remove(id) {
+    onChange(sessions.filter(s => s.id !== id));
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Entraînements</span>
+        {sessions.length > 0 && (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#EFF6FF', color: '#1d4ed8' }}>
+            {sessions.length}
+          </span>
+        )}
+      </div>
+
+      {sessions.length === 0 && !showForm && (
+        <p className="text-xs text-gray-400 italic text-center py-4 border-2 border-dashed border-gray-200 rounded-xl mb-3">
+          {isEditing ? "Ajoutez les créneaux d'entraînement" : 'Aucun entraînement planifié'}
+        </p>
+      )}
+
+      {sessions.length > 0 && (
+        <div className="space-y-2 mb-3">
+          {sessions.map(s => (
+            <div key={s.id} className="bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-2.5 flex items-center gap-3">
+              <div className="w-10 text-center flex-shrink-0">
+                <div className="text-[9px] font-bold text-gray-400 uppercase leading-none">{s.day.slice(0, 3)}</div>
+                <div className="text-xs font-bold text-gray-700 mt-0.5">{s.time}</div>
+              </div>
+              <div className="w-px h-8 bg-gray-100 flex-shrink-0" />
+              <div className="flex-1 text-sm text-gray-700 truncate">{s.location}</div>
+              {isEditing && (
+                <button onClick={() => remove(s.id)}
+                  className="p-1.5 text-gray-300 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <AnimatePresence>
+        {isEditing && showForm && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15 }}
+            className="rounded-2xl border border-blue-100 bg-blue-50/50 p-3 space-y-2 mb-3"
+          >
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs font-semibold text-gray-500 block mb-1">Jour</label>
+                <select value={form.day} onChange={e => setF('day', e.target.value)}
+                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none">
+                  {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 block mb-1">Heure</label>
+                <input type="time" value={form.time} onChange={e => setF('time', e.target.value)}
+                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200" />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 block mb-1">Lieu *</label>
+              <input type="text" value={form.location} onChange={e => setF('location', e.target.value)}
+                placeholder="ex. Gymnase Jean Macé"
+                className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200" />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => { setShowForm(false); setForm(BLANK_TR); }}
+                className="flex-1 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-500 hover:bg-gray-100 bg-white transition-colors">
+                Annuler
+              </button>
+              <button onClick={add}
+                className="flex-1 py-2 rounded-xl text-xs font-bold text-white transition-colors"
+                style={{ backgroundColor: '#3b82f6' }}>
+                Ajouter
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {isEditing && !showForm && (
+        <button onClick={() => setShowForm(true)}
+          className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-xs font-medium text-gray-400 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50 transition-colors">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Ajouter un créneau
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Team view ─────────────────────────────────────────────────────────────────
+function TeamView({ team, blocks, isEditing, updateBlock, addBlock, club, trainings, onUpdateTrainings }) {
+  const matchesBlock = blocks.find(b => b.type === 'matches');
+  const teamSessions = trainings[team.id] ?? [];
+
+  function updateSessions(sessions) {
+    onUpdateTrainings({ ...trainings, [team.id]: sessions });
+  }
+
+  return (
+    <div className="px-4 py-5 space-y-6">
+      <TeamTrainingSection
+        sessions={teamSessions}
+        isEditing={isEditing}
+        onChange={updateSessions}
+      />
+
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Matchs</span>
+        </div>
+        {matchesBlock ? (
+          <MatchesBlock
+            data={matchesBlock.data}
+            isEditing={isEditing}
+            onUpdate={patch => updateBlock(matchesBlock.id, patch)}
+            club={club}
+            filterTeamId={team.id}
+          />
+        ) : isEditing ? (
+          <button onClick={() => addBlock('matches', null)}
+            className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-xs text-gray-400 hover:border-green-300 hover:text-green-500 hover:bg-green-50 transition-colors">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Activer les matchs pour ce club
+          </button>
+        ) : (
+          <p className="text-xs text-gray-400 italic text-center py-6 border-2 border-dashed border-gray-200 rounded-2xl">
+            Aucun match enregistré
+          </p>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -272,12 +431,31 @@ export default function ClubPageView({ club, allEvents, onBack }) {
   } = useClubPage(club);
 
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
+  const [activeTeamId, setActiveTeamId] = useState(null);
+
+  const [teamTrainings, setTeamTrainings] = useState(() => {
+    try {
+      const raw = localStorage.getItem(`club-trainings-${club.id}`);
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(`club-trainings-${club.id}`, JSON.stringify(teamTrainings));
+  }, [teamTrainings, club.id]);
+
+  const allTeams = useMemo(
+    () => (club.categories ?? []).flatMap(c => c.teams ?? []),
+    [club.categories]
+  );
+
+  const activeTeam = allTeams.find(t => t.id === activeTeamId) ?? null;
+
   const sportData = SPORTS[club.sport];
   const rows = getRows(blocks);
   const stats = useMatchStats(blocks);
 
   function handleAddBlock(type, afterRowId) {
-    // Find the last block of that row to insert after
     const rowBlocks = blocks.filter(b => b.rowId === afterRowId);
     const lastId    = rowBlocks[rowBlocks.length - 1]?.id ?? null;
     addBlock(type, lastId);
@@ -358,7 +536,6 @@ export default function ClubPageView({ club, allEvents, onBack }) {
             </div>
           </div>
 
-          {/* Contact button */}
           {club.contact && (
             <a href={`mailto:${club.contact}`}
               className="flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors group"
@@ -382,87 +559,126 @@ export default function ClubPageView({ club, allEvents, onBack }) {
         )}
       </div>
 
-      {/* ── Content ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-5">
-
-        {/* Rows */}
-        <Reorder.Group
-          axis="y"
-          values={rows}
-          onReorder={reorderRows}
-          as="div"
-        >
-          {rows.map(row => (
-            <div key={row.rowId}>
-              <DraggableRow
-                row={row}
-                isEditing={isEditing}
-                onUpdate={updateBlock}
-                onDelete={deleteBlock}
-                onToggle={toggleBlock}
-                onSetSpan={setBlockSpan}
-                onMoveLeft={id => moveBlockInRow(id, 'left')}
-                onMoveRight={id => moveBlockInRow(id, 'right')}
-                onAddToRow={addBlockToRow}
-                allEvents={allEvents ?? []}
-                club={club}
-              />
-
-              {/* Add new row after this one */}
-              {isEditing && (
-                <AnimatePresence>
-                  {openMenuAfter === row.rowId ? (
-                    <AddBlockMenu
-                      key={`menu-${row.rowId}`}
-                      onAdd={type => handleAddBlock(type, row.rowId)}
-                      onCancel={() => setOpenMenuAfter(null)}
-                    />
-                  ) : (
-                    <button
-                      onClick={() => setOpenMenuAfter(row.rowId)}
-                      className="flex items-center justify-center gap-1 w-full mb-3 py-1.5 text-xs text-gray-300 hover:text-slate-600 hover:bg-gray-100 rounded-xl transition-colors"
-                    >
-                      <PlusIcon /> Ajouter une ligne ici
-                    </button>
-                  )}
-                </AnimatePresence>
-              )}
-            </div>
-          ))}
-        </Reorder.Group>
-
-        {/* Empty state */}
-        {blocks.length === 0 && isEditing && (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round">
-                <rect x="3" y="3" width="18" height="18" rx="3"/>
-                <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-              </svg>
-            </div>
-            <p className="text-gray-500 font-medium text-sm mb-4">Page vide — ajoutez votre premier bloc</p>
-            <button onClick={() => addBlock('title', null)}
-              className="px-4 py-2 bg-slate-800 text-white text-sm rounded-xl hover:bg-slate-700 transition-colors">
-              + Ajouter un bloc
+      {/* ── Tab bar (when teams exist) ── */}
+      {allTeams.length > 0 && (
+        <div className="flex border-b border-gray-200 bg-white overflow-x-auto flex-shrink-0" style={{ scrollbarWidth: 'none' }}>
+          <button
+            onClick={() => setActiveTeamId(null)}
+            className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap"
+            style={activeTeamId === null
+              ? { borderColor: '#1e293b', color: '#1e293b' }
+              : { borderColor: 'transparent', color: '#94a3b8' }}
+          >
+            Général
+          </button>
+          {allTeams.map(team => (
+            <button
+              key={team.id}
+              onClick={() => setActiveTeamId(team.id)}
+              className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap"
+              style={activeTeamId === team.id
+                ? { borderColor: '#1e293b', color: '#1e293b' }
+                : { borderColor: 'transparent', color: '#94a3b8' }}
+            >
+              {team.name}
             </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Content ── */}
+      <div className="flex-1 overflow-y-auto">
+
+        {activeTeam ? (
+          <TeamView
+            key={activeTeam.id}
+            team={activeTeam}
+            blocks={blocks}
+            isEditing={isEditing}
+            updateBlock={updateBlock}
+            addBlock={addBlock}
+            club={club}
+            trainings={teamTrainings}
+            onUpdateTrainings={setTeamTrainings}
+          />
+        ) : (
+          <div className="px-4 py-5">
+            <Reorder.Group
+              axis="y"
+              values={rows}
+              onReorder={reorderRows}
+              as="div"
+            >
+              {rows.map(row => (
+                <div key={row.rowId}>
+                  <DraggableRow
+                    row={row}
+                    isEditing={isEditing}
+                    onUpdate={updateBlock}
+                    onDelete={deleteBlock}
+                    onToggle={toggleBlock}
+                    onSetSpan={setBlockSpan}
+                    onMoveLeft={id => moveBlockInRow(id, 'left')}
+                    onMoveRight={id => moveBlockInRow(id, 'right')}
+                    onAddToRow={addBlockToRow}
+                    allEvents={allEvents ?? []}
+                    club={club}
+                  />
+
+                  {isEditing && (
+                    <AnimatePresence>
+                      {openMenuAfter === row.rowId ? (
+                        <AddBlockMenu
+                          key={`menu-${row.rowId}`}
+                          onAdd={type => handleAddBlock(type, row.rowId)}
+                          onCancel={() => setOpenMenuAfter(null)}
+                        />
+                      ) : (
+                        <button
+                          onClick={() => setOpenMenuAfter(row.rowId)}
+                          className="flex items-center justify-center gap-1 w-full mb-3 py-1.5 text-xs text-gray-300 hover:text-slate-600 hover:bg-gray-100 rounded-xl transition-colors"
+                        >
+                          <PlusIcon /> Ajouter une ligne ici
+                        </button>
+                      )}
+                    </AnimatePresence>
+                  )}
+                </div>
+              ))}
+            </Reorder.Group>
+
+            {blocks.length === 0 && isEditing && (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round">
+                    <rect x="3" y="3" width="18" height="18" rx="3"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+                  </svg>
+                </div>
+                <p className="text-gray-500 font-medium text-sm mb-4">Page vide — ajoutez votre premier bloc</p>
+                <button onClick={() => addBlock('title', null)}
+                  className="px-4 py-2 bg-slate-800 text-white text-sm rounded-xl hover:bg-slate-700 transition-colors">
+                  + Ajouter un bloc
+                </button>
+              </div>
+            )}
+
+            {isEditing && blocks.length > 0 && openMenuAfter === null && (
+              <button onClick={() => setOpenMenuAfter('__end__')}
+                className="flex items-center justify-center gap-2 w-full py-3 mt-1 border-2 border-dashed border-gray-200 rounded-2xl text-sm text-gray-400 hover:border-slate-400 hover:text-slate-600 transition-colors">
+                <PlusIcon /> Ajouter un bloc à la fin
+              </button>
+            )}
+            <AnimatePresence>
+              {openMenuAfter === '__end__' && (
+                <AddBlockMenu
+                  onAdd={type => { addBlock(type, null); setOpenMenuAfter(null); }}
+                  onCancel={() => setOpenMenuAfter(null)}
+                />
+              )}
+            </AnimatePresence>
           </div>
         )}
-
-        {/* Add at the very end */}
-        {isEditing && blocks.length > 0 && openMenuAfter === null && (
-          <button onClick={() => setOpenMenuAfter('__end__')}
-            className="flex items-center justify-center gap-2 w-full py-3 mt-1 border-2 border-dashed border-gray-200 rounded-2xl text-sm text-gray-400 hover:border-slate-400 hover:text-slate-600 transition-colors">
-            <PlusIcon /> Ajouter un bloc à la fin
-          </button>
-        )}
-        <AnimatePresence>
-          {openMenuAfter === '__end__' && (
-            <AddBlockMenu
-              onAdd={type => { addBlock(type, null); setOpenMenuAfter(null); }}
-              onCancel={() => setOpenMenuAfter(null)}
-            />
-          )}
-        </AnimatePresence>
       </div>
     </motion.div>
   );

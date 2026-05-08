@@ -3,13 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function uid() { return `m_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`; }
 
-const AGE_CATS = [
-  'U7', 'U7F', 'U9', 'U9F', 'U11', 'U11F', 'U13', 'U13F',
-  'U15', 'U15F', 'U17', 'U17F', 'U19', 'U19F',
-  'Seniors', 'Seniors F', 'Vétérans', 'Vétérans F', 'Loisir', 'Loisir F',
-];
-
-const BLANK = { id: '', date: '', time: '15:00', opponent: '', isHome: true, competition: '', category: 'Seniors', scoreHome: '', scoreAway: '', publishedOnMap: true };
+const BLANK = { id: '', date: '', time: '15:00', opponent: '', isHome: true, competition: '', teamId: '', teamName: '', scoreHome: '', scoreAway: '', publishedOnMap: true };
 
 function isUpcoming(match) {
   if (!match.date) return true;
@@ -41,6 +35,8 @@ function MatchCard({ match, club, isEditing, onEdit, onRemove }) {
     ? `${match.scoreHome} – ${match.scoreAway}`
     : `${match.scoreAway} – ${match.scoreHome}`;
 
+  const teamLabel = match.teamName || match.category || '';
+
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="flex items-center gap-3 px-3 py-2.5">
@@ -62,7 +58,7 @@ function MatchCard({ match, club, isEditing, onEdit, onRemove }) {
                 : { backgroundColor: '#F8FAFC', color: '#64748b' }}>
               {match.isHome ? 'DOM' : 'EXT'}
             </span>
-            <span className="text-[9px] text-gray-400 font-medium">{match.category}</span>
+            {teamLabel && <span className="text-[9px] text-gray-400 font-medium truncate max-w-[80px]">{teamLabel}</span>}
             {match.time && <span className="text-[9px] text-gray-400">· {match.time}</span>}
             {match.competition && <span className="text-[9px] text-gray-400 truncate">· {match.competition}</span>}
           </div>
@@ -110,7 +106,7 @@ function MatchCard({ match, club, isEditing, onEdit, onRemove }) {
   );
 }
 
-function MatchForm({ initial, onSave, onCancel }) {
+function MatchForm({ initial, allTeams, onSave, onCancel }) {
   const [f, setF] = useState(initial);
   function set(k, v) { setF(p => ({ ...p, [k]: v })); }
 
@@ -142,8 +138,8 @@ function MatchForm({ initial, onSave, onCancel }) {
           className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200" />
       </div>
 
-      {/* Domicile / Extérieur + Catégorie */}
-      <div className="grid grid-cols-2 gap-2">
+      {/* Domicile / Extérieur + Équipe */}
+      <div className="grid gap-2" style={{ gridTemplateColumns: allTeams.length > 0 ? '1fr 1fr' : '1fr' }}>
         <div>
           <label className="text-xs font-semibold text-gray-500 block mb-1">Lieu</label>
           <div className="flex rounded-xl border border-gray-200 overflow-hidden bg-white">
@@ -159,13 +155,23 @@ function MatchForm({ initial, onSave, onCancel }) {
             </button>
           </div>
         </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-500 block mb-1">Catégorie</label>
-          <select value={f.category} onChange={e => set('category', e.target.value)}
-            className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none">
-            {AGE_CATS.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
+        {allTeams.length > 0 && (
+          <div>
+            <label className="text-xs font-semibold text-gray-500 block mb-1">Équipe</label>
+            <select
+              value={f.teamId}
+              onChange={e => {
+                const team = allTeams.find(t => t.id === e.target.value);
+                set('teamId', e.target.value);
+                set('teamName', team?.name ?? '');
+              }}
+              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none"
+            >
+              <option value="">— Équipe —</option>
+              {allTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Compétition */}
@@ -237,14 +243,20 @@ function MatchForm({ initial, onSave, onCancel }) {
   );
 }
 
-export default function MatchesBlock({ data, onUpdate, isEditing, club }) {
-  const matches = data?.matches ?? [];
+export default function MatchesBlock({ data, onUpdate, isEditing, club, filterTeamId }) {
+  const allTeams = (club?.categories ?? []).flatMap(c => c.teams ?? []);
+  const allMatches = data?.matches ?? [];
+  const matches = filterTeamId
+    ? allMatches.filter(m => m.teamId === filterTeamId)
+    : allMatches;
+
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formInit, setFormInit] = useState(BLANK);
 
   function openAdd() {
-    setFormInit({ ...BLANK, id: uid() });
+    const preTeam = filterTeamId ? allTeams.find(t => t.id === filterTeamId) : null;
+    setFormInit({ ...BLANK, id: uid(), teamId: preTeam?.id ?? '', teamName: preTeam?.name ?? '' });
     setEditingId(null);
     setShowForm(true);
   }
@@ -258,15 +270,15 @@ export default function MatchesBlock({ data, onUpdate, isEditing, club }) {
   function handleSave(f) {
     const cleaned = { ...f, scoreHome: f.scoreHome === '' ? null : Number(f.scoreHome), scoreAway: f.scoreAway === '' ? null : Number(f.scoreAway) };
     if (editingId) {
-      onUpdate({ matches: matches.map(m => m.id === editingId ? cleaned : m) });
+      onUpdate({ matches: allMatches.map(m => m.id === editingId ? cleaned : m) });
     } else {
-      onUpdate({ matches: [...matches, cleaned] });
+      onUpdate({ matches: [...allMatches, cleaned] });
     }
     setShowForm(false);
   }
 
   function remove(id) {
-    onUpdate({ matches: matches.filter(m => m.id !== id) });
+    onUpdate({ matches: allMatches.filter(m => m.id !== id) });
   }
 
   const upcoming = matches.filter(isUpcoming).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
@@ -281,6 +293,7 @@ export default function MatchesBlock({ data, onUpdate, isEditing, club }) {
           <MatchForm
             key={editingId ?? 'new'}
             initial={formInit}
+            allTeams={allTeams}
             onSave={handleSave}
             onCancel={() => setShowForm(false)}
           />

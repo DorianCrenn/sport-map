@@ -73,8 +73,8 @@ export function useClubMatches() {
             departmentId: 'finistere',
             regionId: 'brittany',
             description: match.competition
-              ? `${match.category} — ${match.competition}`
-              : `Match de ${match.category} — ${club.name}`,
+              ? `${match.teamName || match.category || 'Équipe'} — ${match.competition}`
+              : `Match de ${match.teamName || match.category || 'Équipe'} — ${club.name}`,
             level: 'Amateur',
             isClubMatch: true,
             clubId: club.id,
