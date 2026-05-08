@@ -18,7 +18,7 @@ import AuthPage from './pages/AuthPage.jsx';
 import OnboardingPage from './pages/OnboardingPage.jsx';
 
 function AppInner() {
-  const { currentUser, isAdmin } = useAuth();
+  const { currentUser, isAdmin, isClubAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [activeDepartment, setActiveDepartment] = useState('finistere');
   const [showAuth, setShowAuth] = useState(false);
@@ -68,6 +68,7 @@ function AppInner() {
           <MapPage
             allEvents={allEvents}
             activeDepartment={activeDepartment}
+            canAddEvent={isAdmin || isClubAdmin}
             onAddEvent={addEvent}
             onUpdateEvent={updateEvent}
             onDeleteEvent={deleteEvent}

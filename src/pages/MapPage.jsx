@@ -9,7 +9,7 @@ import EventSidebar from '../components/EventSidebar.jsx';
 import EventFormModal from '../components/EventFormModal.jsx';
 import MobileEventSheet from '../components/MobileEventSheet.jsx';
 
-export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite, favoritesCount, onGoToFavoris }) {
+export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite, favoritesCount, onGoToFavoris }) {
   const [sportFilter, setSportFilter] = useState(null);
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
   const [nearbyFilter, setNearbyFilter] = useState(false);
@@ -103,6 +103,7 @@ export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpd
             onEventSelect={(id) => setSelectedEventId((prev) => (prev === id ? null : id))}
             onGeolocate={requestGeo}
             geoLoading={geoLoading}
+            canAddEvent={canAddEvent}
             onAddEvent={() => setModalEvent(null)}
             onEditEvent={(event) => setModalEvent(event)}
             onDeleteEvent={handleDeleteEvent}
@@ -131,14 +132,16 @@ export default function MapPage({ allEvents, activeDepartment, onAddEvent, onUpd
             )}
           </button>
 
-          {/* Ajouter FAB — bottom right */}
-          <button
-            onClick={() => setModalEvent(null)}
-            className="pointer-events-auto flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white cursor-pointer"
-            style={{ backgroundColor: '#1e293b', boxShadow: '0 2px 12px rgba(0,0,0,0.25)' }}
-          >
-            <span>＋</span> Ajouter
-          </button>
+          {/* Ajouter FAB — clubs et admins uniquement */}
+          {canAddEvent && (
+            <button
+              onClick={() => setModalEvent(null)}
+              className="pointer-events-auto flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white cursor-pointer"
+              style={{ backgroundColor: '#1e293b', boxShadow: '0 2px 12px rgba(0,0,0,0.25)' }}
+            >
+              <span>＋</span> Ajouter
+            </button>
+          )}
         </div>
 
         {/* Mobile bottom sheet — slides up on pin click */}

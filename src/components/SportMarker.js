@@ -47,7 +47,7 @@ export function createSportMarker(sport, isSelected = false, isFavorite = false)
 
   const icon = SPORT_ICONS[sport] ?? null;
   // Center the 24×24 icon at (18, 17) inside the 36×50 pin viewBox
-  const scale = isSelected ? 0.95 : 0.85;
+  const scale = isSelected ? 1.1 : 1.0;
   const tx = Math.round(18 - 12 * scale);
   const ty = Math.round(17 - 12 * scale);
   const iconEl = icon

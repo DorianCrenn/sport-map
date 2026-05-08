@@ -8,6 +8,7 @@ export default function EventSidebar({
   onEventSelect,
   onGeolocate,
   geoLoading,
+  canAddEvent,
   onAddEvent,
   onEditEvent,
   onDeleteEvent,
@@ -45,15 +46,17 @@ export default function EventSidebar({
           </button>
         </div>
 
-        {/* Bouton Ajouter */}
-        <button
-          onClick={onAddEvent}
-          className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer"
-          style={{ backgroundColor: '#1e293b' }}
-        >
-          <span className="text-base">＋</span>
-          Ajouter un événement
-        </button>
+        {/* Bouton Ajouter — clubs et admins uniquement */}
+        {canAddEvent && (
+          <button
+            onClick={onAddEvent}
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer"
+            style={{ backgroundColor: '#1e293b' }}
+          >
+            <span className="text-base">＋</span>
+            Ajouter un événement
+          </button>
+        )}
       </div>
 
       {/* Liste */}
