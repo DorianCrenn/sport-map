@@ -67,7 +67,7 @@ export function useClubMatches() {
             sport: club.sport,
             date: `${match.date}${timeStr}`,
             city: club.city,
-            venue: `${club.city} — Domicile`,
+            venue: match.venue || `${club.city} — Domicile`,
             lat: coords[0],
             lng: coords[1],
             departmentId: 'finistere',

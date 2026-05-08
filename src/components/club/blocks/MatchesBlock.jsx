@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function uid() { return `m_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`; }
 
-const BLANK = { id: '', date: '', time: '15:00', opponent: '', isHome: true, competition: '', teamId: '', teamName: '', scoreHome: '', scoreAway: '', publishedOnMap: true };
+const BLANK = { id: '', date: '', time: '15:00', opponent: '', isHome: true, competition: '', teamId: '', teamName: '', venue: '', scoreHome: '', scoreAway: '', publishedOnMap: true };
 
 function isUpcoming(match) {
   if (!match.date) return true;
@@ -63,6 +63,12 @@ function MatchCard({ match, club, isEditing, onEdit, onRemove }) {
             {match.competition && <span className="text-[9px] text-gray-400 truncate">· {match.competition}</span>}
           </div>
           <div className="text-sm font-semibold text-gray-700 truncate">{homeTeam} <span className="text-gray-400 font-normal">vs</span> {awayTeam}</div>
+          {match.venue && (
+            <div className="flex items-center gap-1 mt-0.5">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span className="text-[9px] text-gray-400 truncate">{match.venue}</span>
+            </div>
+          )}
         </div>
 
         {/* Score / result / upcoming */}
@@ -135,6 +141,14 @@ function MatchForm({ initial, allTeams, onSave, onCancel }) {
         <label className="text-xs font-semibold text-gray-500 block mb-1">Adversaire *</label>
         <input type="text" value={f.opponent} onChange={e => set('opponent', e.target.value)}
           placeholder="ex. HBC Concarneau"
+          className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200" />
+      </div>
+
+      {/* Lieu de la rencontre */}
+      <div>
+        <label className="text-xs font-semibold text-gray-500 block mb-1">Lieu <span className="font-normal text-gray-400">(optionnel)</span></label>
+        <input type="text" value={f.venue} onChange={e => set('venue', e.target.value)}
+          placeholder="ex. Stade municipal, Gymnase Jean Macé…"
           className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200" />
       </div>
 
