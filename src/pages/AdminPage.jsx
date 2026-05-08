@@ -13,8 +13,8 @@ const PRESET_COLORS = [
 ];
 const PRESET_EMOJIS = ['⚽','🏀','🏉','🤾','🏃','🚵','🚴','🏊','🎾','🏐','🥊','🏋️','🤸','⛷️','🏄','🎿','🤺','🏇'];
 
-function SportForm({ onSave, onCancel }) {
-  const [form, setForm] = useState({ label: '', color: '#16a34a', emoji: '🏅' });
+function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
+  const [form, setForm] = useState(initial ?? { label: '', color: '#16a34a', emoji: '🏅' });
   const [error, setError] = useState('');
 
   function set(k) { return v => setForm(p => ({ ...p, [k]: v })); }
@@ -30,9 +30,10 @@ function SportForm({ onSave, onCancel }) {
       initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-2xl border border-green-100 p-4 shadow-sm"
     >
-      <h3 className="font-bold text-sm font-poppins mb-4" style={{ color: '#0F1E3A' }}>Nouveau sport</h3>
+      <h3 className="font-bold text-sm font-poppins mb-4" style={{ color: '#0F1E3A' }}>
+        {saveLabel === 'Ajouter' ? 'Nouveau sport' : 'Modifier le sport'}
+      </h3>
       <form onSubmit={handleSubmit} className="space-y-3.5">
-        {/* Nom */}
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Nom du sport *</label>
           <input
@@ -44,7 +45,6 @@ function SportForm({ onSave, onCancel }) {
           {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
         </div>
 
-        {/* Couleur */}
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Couleur</label>
           <div className="flex items-center gap-2 flex-wrap">
@@ -61,7 +61,6 @@ function SportForm({ onSave, onCancel }) {
           </div>
         </div>
 
-        {/* Emoji */}
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Emoji</label>
           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -82,7 +81,6 @@ function SportForm({ onSave, onCancel }) {
           />
         </div>
 
-        {/* Aperçu */}
         {form.label && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ backgroundColor: `${form.color}12` }}>
             <span className="text-xl">{form.emoji}</span>
@@ -99,7 +97,7 @@ function SportForm({ onSave, onCancel }) {
           <button type="submit"
             className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold"
             style={{ backgroundColor: '#22C55E' }}>
-            Ajouter
+            {saveLabel}
           </button>
         </div>
       </form>
@@ -118,11 +116,12 @@ export default function AdminPage() {
   const { users, updateUser, isAdmin, currentUser } = useAuth();
   const { requests, pendingRequests, reviewRequest } = useClubRequests();
   const { addClub } = useClubs();
-  const { allSports, customSports, addSport, deleteSport } = useSports();
+  const { allSports, customSports, deletedDefaults, addSport, updateSport, deleteSport, restoreSport, toggleArchive } = useSports();
   const [tab, setTab] = useState('overview');
   const [reviewNote, setReviewNote] = useState('');
   const [reviewingId, setReviewingId] = useState(null);
   const [showSportForm, setShowSportForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   if (!isAdmin) {
     return (
@@ -417,7 +416,7 @@ export default function AdminPage() {
                 {Object.keys(allSports).length} sport{Object.keys(allSports).length > 1 ? 's' : ''}
                 {customSports.length > 0 && <span className="text-green-500 ml-1">· {customSports.length} personnalisé{customSports.length > 1 ? 's' : ''}</span>}
               </p>
-              {!showSportForm && (
+              {!showSportForm && !editingId && (
                 <button
                   onClick={() => setShowSportForm(true)}
                   className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl text-white"
@@ -441,42 +440,131 @@ export default function AdminPage() {
             {/* Liste des sports */}
             <div className="space-y-2">
               {Object.values(allSports).map(sport => {
-                const isCustom = !!sport.isCustom;
+                const isEditing = editingId === sport.id;
+                const isArchived = !!sport.isArchived;
+
                 return (
-                  <div key={sport.id} className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                      style={{ backgroundColor: `${sport.color}18` }}
-                    >
-                      {sport.emoji}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-800 text-sm">{sport.label}</div>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: sport.color }} />
-                        <span className="text-[10px] text-gray-400">{sport.color}</span>
-                        {isCustom
-                          ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>Personnalisé</span>
-                          : <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#f8fafc', color: '#94a3b8' }}>Par défaut</span>
-                        }
+                  <div key={sport.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-opacity"
+                    style={{ opacity: isArchived ? 0.55 : 1 }}>
+                    <div className="p-3.5 flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                        style={{ backgroundColor: `${sport.color}18` }}
+                      >
+                        {sport.emoji}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-gray-800 text-sm">{sport.label}</div>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: sport.color }} />
+                          <span className="text-[10px] text-gray-400">{sport.color}</span>
+                          {sport.isCustom
+                            ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>Personnalisé</span>
+                            : sport.isOverride
+                              ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#eff6ff', color: '#3b82f6' }}>Modifié</span>
+                              : <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#f8fafc', color: '#94a3b8' }}>Par défaut</span>
+                          }
+                          {isArchived && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#fff7ed', color: '#f97316' }}>Archivé</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {/* Edit */}
+                        <button
+                          onClick={() => setEditingId(isEditing ? null : sport.id)}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
+                          style={{
+                            backgroundColor: isEditing ? '#eff6ff' : '#f8fafc',
+                            color: isEditing ? '#3b82f6' : '#64748b',
+                          }}
+                          title="Modifier"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </button>
+
+                        {/* Archive / Unarchive */}
+                        <button
+                          onClick={() => toggleArchive(sport.id)}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
+                          style={{
+                            backgroundColor: isArchived ? '#fff7ed' : '#f8fafc',
+                            color: isArchived ? '#f97316' : '#64748b',
+                          }}
+                          title={isArchived ? 'Désarchiver' : 'Archiver'}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/>
+                          </svg>
+                        </button>
+
+                        {/* Delete */}
+                        <button
+                          onClick={() => deleteSport(sport.id)}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:opacity-80"
+                          style={{ backgroundColor: '#fef2f2', color: '#ef4444' }}
+                          title="Supprimer"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                          </svg>
+                        </button>
                       </div>
                     </div>
-                    {isCustom && (
-                      <button
-                        onClick={() => deleteSport(sport.id)}
-                        className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 hover:opacity-80 transition-opacity"
-                        style={{ backgroundColor: '#fef2f2', color: '#ef4444' }}
-                        title="Supprimer ce sport"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                        </svg>
-                      </button>
-                    )}
+
+                    {/* Inline edit form */}
+                    <AnimatePresence>
+                      {isEditing && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                          className="border-t border-gray-100 overflow-hidden"
+                        >
+                          <div className="p-3">
+                            <SportForm
+                              initial={{ label: sport.label, color: sport.color, emoji: sport.emoji }}
+                              saveLabel="Enregistrer"
+                              onSave={(data) => { updateSport(sport.id, data); setEditingId(null); }}
+                              onCancel={() => setEditingId(null)}
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 );
               })}
             </div>
+
+            {/* Sports supprimés — section restauration */}
+            {deletedDefaults.length > 0 && (
+              <div className="mt-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Sports supprimés</p>
+                <div className="space-y-2">
+                  {deletedDefaults.map(sport => (
+                    <div key={sport.id} className="bg-white rounded-2xl p-3 shadow-sm border border-dashed border-gray-200 flex items-center gap-3 opacity-50">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                        style={{ backgroundColor: `${sport.color}18` }}>
+                        {sport.emoji}
+                      </div>
+                      <div className="flex-1 min-w-0 text-sm text-gray-400">{sport.label}</div>
+                      <button
+                        onClick={() => restoreSport(sport.id)}
+                        className="text-[10px] font-bold px-2.5 py-1.5 rounded-xl"
+                        style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}
+                      >
+                        Restaurer
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
