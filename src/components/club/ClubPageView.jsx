@@ -471,7 +471,17 @@ export default function ClubPageView({ club, allEvents, onBack }) {
       className="absolute inset-0 bg-gray-50 flex flex-col z-10"
     >
       {/* ── Header ── */}
-      <div className="flex-shrink-0 relative text-white" style={{ backgroundColor: '#1e293b' }}>
+      <div className="flex-shrink-0 relative text-white overflow-hidden" style={{ backgroundColor: '#0F1E3A' }}>
+        {/* Sport-color background accent */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: `linear-gradient(135deg, transparent 35%, ${sportData?.color ?? '#22C55E'}1A 100%)`,
+        }} />
+        <div style={{
+          position: 'absolute', top: '-40%', right: '-8%', width: 240, height: 240,
+          borderRadius: '50%', pointerEvents: 'none',
+          background: `radial-gradient(circle, ${sportData?.color ?? '#22C55E'}28 0%, transparent 65%)`,
+        }} />
         <div className="flex items-center justify-between px-4 pt-4 pb-3">
           <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm transition-colors">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
