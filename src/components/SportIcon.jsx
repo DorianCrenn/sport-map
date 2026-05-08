@@ -3,8 +3,9 @@ import { useSports } from '../hooks/useSports.js';
 
 export default function SportIcon({ sport, size = 18, color }) {
   const { allSports } = useSports();
-  const icon = SPORT_ICONS[sport];
-  const resolvedColor = color ?? allSports[sport]?.color ?? '#6b7280';
+  const sportData = allSports[sport];
+  const icon = SPORT_ICONS[sport] ?? SPORT_ICONS[sportData?.iconId];
+  const resolvedColor = color ?? sportData?.color ?? '#6b7280';
   if (!icon) return null;
   return (
     <svg

@@ -16,9 +16,8 @@ export function SportsProvider({ children }) {
   const [archivedIds, setArchivedIds] = useState(() => load(ARCHIVED_KEY));
 
   const addSport = useCallback((data) => {
-    // Use label as ID to match built-in SPORTS key format
     const id = data.label.trim();
-    const sport = { id, label: id, color: data.color, emoji: data.emoji || '🏅', isCustom: true };
+    const sport = { id, label: id, color: data.color, iconId: data.iconId || null, isCustom: true };
     setCustom(prev => {
       if (prev.some(s => s.id === id)) return prev; // no duplicates
       const next = [...prev, sport];

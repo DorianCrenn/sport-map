@@ -4,16 +4,17 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { useClubRequests } from '../hooks/useClubRequests.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useSports } from '../hooks/useSports.js';
+import SportIcon from '../components/SportIcon.jsx';
+import { SPORT_ICON_OPTIONS, SPORT_ICONS } from '../components/sportIcons.js';
 
 const PRESET_COLORS = [
   '#16a34a','#f97316','#eab308','#dc2626','#2563eb',
   '#06b6d4','#7c3aed','#ec4899','#14b8a6','#f59e0b',
   '#6366f1','#84cc16',
 ];
-const PRESET_EMOJIS = ['⚽','🏀','🏉','🤾','🏃','🚵','🚴','🏊','🎾','🏐','🥊','🏋️','🤸','⛷️','🏄','🎿','🤺','🏇'];
 
 function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
-  const [form, setForm] = useState(initial ?? { label: '', color: '#16a34a', emoji: '🏅' });
+  const [form, setForm] = useState(initial ?? { label: '', color: '#16a34a', iconId: 'Football' });
   const [error, setError] = useState('');
 
   function set(k) { return v => setForm(p => ({ ...p, [k]: v })); }
@@ -24,6 +25,8 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
     onSave(form);
   }
 
+  const selectedIcon = SPORT_ICONS[form.iconId];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
@@ -33,6 +36,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
         {saveLabel === 'Ajouter' ? 'Nouveau sport' : 'Modifier le sport'}
       </h3>
       <form onSubmit={handleSubmit} className="space-y-3.5">
+        {/* Nom */}
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Nom du sport *</label>
           <input
@@ -44,6 +48,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
           {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
         </div>
 
+        {/* Couleur */}
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Couleur</label>
           <div className="flex items-center gap-2 flex-wrap">
@@ -60,29 +65,46 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
           </div>
         </div>
 
+        {/* Icône */}
         <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Emoji</label>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {PRESET_EMOJIS.map(em => (
-              <button key={em} type="button" onClick={() => set('emoji')(em)}
-                className="w-8 h-8 rounded-lg text-base flex items-center justify-center transition-colors"
-                style={{ backgroundColor: form.emoji === em ? `${form.color}20` : '#f1f5f9', outline: form.emoji === em ? `2px solid ${form.color}` : 'none' }}
-              >
-                {em}
-              </button>
-            ))}
+          <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Icône</label>
+          <div className="grid grid-cols-6 gap-1.5 max-h-48 overflow-y-auto pr-0.5">
+            {SPORT_ICON_OPTIONS.map(opt => {
+              const isSelected = form.iconId === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => set('iconId')(opt.id)}
+                  className="flex flex-col items-center gap-1 p-2 rounded-xl transition-colors"
+                  style={{
+                    backgroundColor: isSelected ? `${form.color}18` : '#f8fafc',
+                    outline: isSelected ? `2px solid ${form.color}` : 'none',
+                  }}
+                  title={opt.label}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" style={{ color: isSelected ? form.color : '#94a3b8' }}>
+                    <g dangerouslySetInnerHTML={{ __html: SPORT_ICONS[opt.id] }} />
+                  </svg>
+                  <span className="text-[9px] leading-tight text-center truncate w-full"
+                    style={{ color: isSelected ? form.color : '#94a3b8' }}>
+                    {opt.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          <input
-            value={form.emoji} onChange={e => set('emoji')(e.target.value)}
-            placeholder="Autre emoji…"
-            className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-            maxLength={4}
-          />
         </div>
 
+        {/* Aperçu */}
         {form.label && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ backgroundColor: `${form.color}12` }}>
-            <span className="text-xl">{form.emoji}</span>
+          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl" style={{ backgroundColor: `${form.color}12` }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: `${form.color}25` }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" style={{ color: form.color }}>
+                <g dangerouslySetInnerHTML={{ __html: selectedIcon ?? SPORT_ICONS.Football }} />
+              </svg>
+            </div>
             <span className="text-sm font-bold font-poppins" style={{ color: form.color }}>{form.label}</span>
             <span className="text-[10px] px-2 py-0.5 rounded-full text-white ml-auto" style={{ backgroundColor: form.color }}>Aperçu</span>
           </div>
@@ -268,7 +290,7 @@ export default function AdminPage() {
               </div>
             )}
             {requests.map(req => {
-              const sport = SPORTS[req.sport];
+              const sport = allSports[req.sport];
               const isPending = req.status === 'pending';
               const isApproved = req.status === 'approved';
               const isReviewing = reviewingId === req.id;
@@ -296,7 +318,7 @@ export default function AdminPage() {
                     {sport && (
                       <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full text-white"
                         style={{ backgroundColor: sport.color }}>
-                        {sport.emoji} {sport.label}
+                        <SportIcon sport={sport.id} size={11} color="white" /> {sport.label}
                       </span>
                     )}
 
@@ -447,10 +469,10 @@ export default function AdminPage() {
                     style={{ opacity: isArchived ? 0.55 : 1 }}>
                     <div className="p-3.5 flex items-center gap-3">
                       <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: `${sport.color}18` }}
                       >
-                        {sport.emoji}
+                        <SportIcon sport={sport.id} size={22} color={sport.color} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-gray-800 text-sm">{sport.label}</div>
@@ -526,7 +548,7 @@ export default function AdminPage() {
                         >
                           <div className="p-3">
                             <SportForm
-                              initial={{ label: sport.label, color: sport.color, emoji: sport.emoji }}
+                              initial={{ label: sport.label, color: sport.color, iconId: sport.iconId ?? sport.id }}
                               saveLabel="Enregistrer"
                               onSave={(data) => { updateSport(sport.id, data); setEditingId(null); }}
                               onCancel={() => setEditingId(null)}
@@ -547,9 +569,9 @@ export default function AdminPage() {
                 <div className="space-y-2">
                   {deletedDefaults.map(sport => (
                     <div key={sport.id} className="bg-white rounded-2xl p-3 shadow-sm border border-dashed border-gray-200 flex items-center gap-3 opacity-50">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: `${sport.color}18` }}>
-                        {sport.emoji}
+                        <SportIcon sport={sport.id} size={20} color={sport.color} />
                       </div>
                       <div className="flex-1 min-w-0 text-sm text-gray-400">{sport.label}</div>
                       <button
