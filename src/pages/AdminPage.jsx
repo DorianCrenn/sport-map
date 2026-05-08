@@ -30,12 +30,12 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl border border-green-100 p-4 shadow-sm"
+      className="bg-white rounded-2xl border border-green-100 p-3 shadow-sm"
     >
-      <h3 className="font-bold text-sm font-poppins mb-4" style={{ color: '#0F1E3A' }}>
+      <h3 className="font-bold text-xs font-poppins mb-3" style={{ color: '#0F1E3A' }}>
         {saveLabel === 'Ajouter' ? 'Nouveau sport' : 'Modifier le sport'}
       </h3>
-      <form onSubmit={handleSubmit} className="space-y-3.5">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Nom */}
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Nom du sport *</label>
@@ -43,7 +43,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
             value={form.label}
             onChange={e => { set('label')(e.target.value); setError(''); }}
             placeholder="Ex: Natation"
-            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
           />
           {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
         </div>
@@ -69,7 +69,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Icône</label>
           <div className="relative">
-            <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-0.5 pb-1">
+            <div className="grid grid-cols-4 gap-1.5 max-h-52 overflow-y-auto pr-0.5 pb-1">
               {SPORT_ICON_OPTIONS.map(opt => {
                 const isSelected = form.iconId === opt.id;
                 return (
@@ -77,7 +77,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
                     key={opt.id}
                     type="button"
                     onClick={() => set('iconId')(opt.id)}
-                    className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl transition-all"
+                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl transition-all"
                     style={{
                       backgroundColor: isSelected ? `${form.color}18` : '#f1f5f9',
                       outline: isSelected ? `2px solid ${form.color}` : '2px solid transparent',
@@ -103,7 +103,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
 
         {/* Aperçu */}
         {form.label && (
-          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl" style={{ backgroundColor: `${form.color}12` }}>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ backgroundColor: `${form.color}12` }}>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ backgroundColor: `${form.color}25` }}>
               <svg width="20" height="20" viewBox="0 0 24 24" style={{ color: form.color }}>
@@ -115,13 +115,13 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
           </div>
         )}
 
-        <div className="flex gap-2 pt-1">
+        <div className="flex gap-1.5 pt-0.5">
           <button type="button" onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500">
+            className="flex-1 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-500">
             Annuler
           </button>
           <button type="submit"
-            className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold"
+            className="flex-1 py-2 rounded-xl text-white text-xs font-bold"
             style={{ backgroundColor: '#22C55E' }}>
             {saveLabel}
           </button>
