@@ -3,13 +3,14 @@ import { useSports } from '../hooks/useSports.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import SportIcon from './SportIcon.jsx';
 
-export default function SportFilterBar({ active, onChange, nearbyActive, onNearbyToggle, geoLoading, showAllSports, onShowAllSports }) {
+export default function SportFilterBar({ active, onChange, nearbyActive, onNearbyToggle, geoLoading, showAllSports, onShowAllSports, onHideSomeSports }) {
   const { allSports } = useSports();
   const { currentUser } = useAuth();
 
   const favoriteSports = currentUser?.favoriteSports || [];
   const hasFavorites = favoriteSports.length > 0;
   const inFavoritesMode = hasFavorites && !showAllSports;
+  const inExpandedMode = hasFavorites && showAllSports;
 
   const allVisible = Object.values(allSports).filter(s => !s.isArchived);
   const visibleSports = inFavoritesMode
@@ -21,6 +22,22 @@ export default function SportFilterBar({ active, onChange, nearbyActive, onNearb
 
   return (
     <div className="flex gap-2 px-4 py-2 bg-white border-b border-gray-100 flex-shrink-0 overflow-x-auto">
+
+      {/* "← Mes sports" collapse button — only when expanded with favorites */}
+      {inExpandedMode && (
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => { onHideSomeSports(); onChange(null); }}
+          className="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 flex items-center gap-1 cursor-pointer"
+          style={{ backgroundColor: '#f0fdf4', color: '#16a34a', border: '1.5px solid #86efac' }}
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Mes sports
+        </motion.button>
+      )}
+
       {/* "Mes sports" or "Tous" */}
       <motion.button
         whileTap={{ scale: 0.95 }}

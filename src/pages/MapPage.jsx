@@ -91,6 +91,11 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
     setSportFilter(null);
   }
 
+  function handleHideSomeSports() {
+    setShowAllSports(false);
+    setSportFilter(null);
+  }
+
   return (
     <div className="flex flex-col h-full">
       <SportFilterBar
@@ -101,6 +106,7 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
         geoLoading={geoLoading}
         showAllSports={showAllSports}
         onShowAllSports={handleShowAllSports}
+        onHideSomeSports={handleHideSomeSports}
       />
       <DateFilterBar active={dateRangeFilter} onChange={setDateRangeFilter} />
 

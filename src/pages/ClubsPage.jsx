@@ -36,9 +36,10 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
   const { requests, submitRequest } = useClubRequests();
   const { currentUser, isAdmin, isClubAdmin } = useAuth();
 
-  const [search, setSearch]             = useState('');
-  const [sportFilter, setSportFilter]   = useState(null);
-  const [selectedClub, setSelectedClub] = useState(null);
+  const [search, setSearch]               = useState('');
+  const [sportFilter, setSportFilter]     = useState(null);
+  const [showAllSports, setShowAllSports] = useState(false);
+  const [selectedClub, setSelectedClub]   = useState(null);
   const [formClub, setFormClub]         = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -46,10 +47,15 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
   // All clubs visible in the list
   const allClubs = [...userClubs, ...STATIC_CLUBS];
 
+  const favoriteSports = currentUser?.favoriteSports || [];
+  const inFavoritesMode = favoriteSports.length > 0 && !showAllSports;
+
   const filtered = allClubs.filter(c => {
     const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.city.toLowerCase().includes(search.toLowerCase());
-    const matchSport = !sportFilter || c.sport === sportFilter;
+    const matchSport = sportFilter ? c.sport === sportFilter
+      : inFavoritesMode ? favoriteSports.includes(c.sport)
+      : true;
     return matchSearch && matchSport;
   });
 
@@ -195,21 +201,72 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
           />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-0.5">
-          <button onClick={() => setSportFilter(null)}
-            className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors"
-            style={sportFilter === null ? { backgroundColor: '#0F1E3A', color: 'white' } : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
-            Tous
-          </button>
-          {Object.values(SPORTS).map(sport => (
-            <button key={sport.id} onClick={() => setSportFilter(sportFilter === sport.id ? null : sport.id)}
-              className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 transition-colors"
-              style={sportFilter === sport.id ? { backgroundColor: sport.color, color: 'white' } : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
-              <SportIcon sport={sport.id} size={13} color={sportFilter === sport.id ? 'white' : sport.color} />
-              {sport.label}
-            </button>
-          ))}
-        </div>
+        {(() => {
+          const favoriteSports = currentUser?.favoriteSports || [];
+          const hasFavorites = favoriteSports.length > 0;
+          const inFavoritesMode = hasFavorites && !showAllSports;
+          const inExpandedMode = hasFavorites && showAllSports;
+          const allVisible = Object.values(SPORTS).filter(s => !s.isArchived);
+          const visibleSports = inFavoritesMode
+            ? allVisible.filter(s => favoriteSports.includes(s.id))
+            : allVisible;
+          const hiddenCount = inFavoritesMode
+            ? allVisible.filter(s => !favoriteSports.includes(s.id)).length
+            : 0;
+          return (
+            <div className="flex gap-2 overflow-x-auto pb-0.5">
+              {/* Collapse button when expanded */}
+              {inExpandedMode && (
+                <button
+                  onClick={() => { setShowAllSports(false); setSportFilter(null); }}
+                  className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 flex items-center gap-1 transition-colors"
+                  style={{ backgroundColor: '#f0fdf4', color: '#16a34a', border: '1.5px solid #86efac' }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+                  Mes sports
+                </button>
+              )}
+              {/* "Mes sports" or "Tous" */}
+              <button
+                onClick={() => setSportFilter(null)}
+                className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors"
+                style={sportFilter === null
+                  ? { backgroundColor: '#0F1E3A', color: 'white' }
+                  : { backgroundColor: '#f1f5f9', color: '#64748b' }}
+              >
+                {inFavoritesMode ? 'Mes sports' : 'Tous'}
+              </button>
+              {/* Sport pills */}
+              {visibleSports.map(sport => (
+                <button key={sport.id}
+                  onClick={() => setSportFilter(sportFilter === sport.id ? null : sport.id)}
+                  className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 transition-colors"
+                  style={sportFilter === sport.id
+                    ? { backgroundColor: sport.color, color: 'white' }
+                    : { backgroundColor: '#f1f5f9', color: '#64748b' }}
+                >
+                  <SportIcon sport={sport.id} size={13} color={sportFilter === sport.id ? 'white' : sport.color} />
+                  {sport.label}
+                </button>
+              ))}
+              {/* "+ N sports" expand button */}
+              {inFavoritesMode && hiddenCount > 0 && (
+                <button
+                  onClick={() => { setShowAllSports(true); setSportFilter(null); }}
+                  className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1 transition-colors"
+                  style={{ backgroundColor: '#f0fdf4', color: '#16a34a', border: '1.5px dashed #86efac' }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  {hiddenCount} sport{hiddenCount > 1 ? 's' : ''}
+                </button>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* List */}
