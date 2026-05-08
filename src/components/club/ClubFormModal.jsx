@@ -132,7 +132,8 @@ function CityField({ value, onChange, onValidChange, error }) {
 // ── Logo upload ───────────────────────────────────────────────────────────────
 function LogoUpload({ logo, name, sport, onChange }) {
   const ref = useRef();
-  const sportColor = SPORTS[sport]?.color ?? '#64748b';
+  const { allSports } = useSports();
+  const sportColor = allSports[sport]?.color ?? '#64748b';
   const initials = (name || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3);
 
   function handleFile(e) {
