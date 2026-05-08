@@ -68,31 +68,36 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
         {/* Icône */}
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Icône</label>
-          <div className="grid grid-cols-6 gap-1.5 max-h-48 overflow-y-auto pr-0.5">
-            {SPORT_ICON_OPTIONS.map(opt => {
-              const isSelected = form.iconId === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => set('iconId')(opt.id)}
-                  className="flex flex-col items-center gap-1 p-2 rounded-xl transition-colors"
-                  style={{
-                    backgroundColor: isSelected ? `${form.color}18` : '#f8fafc',
-                    outline: isSelected ? `2px solid ${form.color}` : 'none',
-                  }}
-                  title={opt.label}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" style={{ color: isSelected ? form.color : '#94a3b8' }}>
-                    <g dangerouslySetInnerHTML={{ __html: SPORT_ICONS[opt.id] }} />
-                  </svg>
-                  <span className="text-[9px] leading-tight text-center truncate w-full"
-                    style={{ color: isSelected ? form.color : '#94a3b8' }}>
-                    {opt.label}
-                  </span>
-                </button>
-              );
-            })}
+          <div className="relative">
+            <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-0.5 pb-1">
+              {SPORT_ICON_OPTIONS.map(opt => {
+                const isSelected = form.iconId === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => set('iconId')(opt.id)}
+                    className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl transition-all"
+                    style={{
+                      backgroundColor: isSelected ? `${form.color}18` : '#f1f5f9',
+                      outline: isSelected ? `2px solid ${form.color}` : '2px solid transparent',
+                    }}
+                    title={opt.label}
+                  >
+                    <svg width="26" height="26" viewBox="0 0 24 24" style={{ color: isSelected ? form.color : '#64748b' }}>
+                      <g dangerouslySetInnerHTML={{ __html: SPORT_ICONS[opt.id] }} />
+                    </svg>
+                    <span className="text-[10px] leading-tight text-center w-full px-0.5 line-clamp-2"
+                      style={{ color: isSelected ? form.color : '#64748b', fontWeight: isSelected ? 700 : 500 }}>
+                      {opt.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {/* Scroll fade indicator */}
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 rounded-b-xl"
+              style={{ background: 'linear-gradient(to bottom, transparent, #f8fafc)' }} />
           </div>
         </div>
 

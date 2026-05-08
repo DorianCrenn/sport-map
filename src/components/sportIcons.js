@@ -20,7 +20,7 @@ export const SPORT_ICONS = {
   // ── Aquatic ──────────────────────────────────────────────────────────────────
   Natation: `<circle cx="17" cy="4.5" r="2" fill="currentColor"/><path d="M15.5 6l-3 4.5-5-1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M2 15c2-3 4-3 6 0s4 3 6 0 4-3 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M2 19c2-3 4-3 6 0s4 3 6 0 4-3 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>`,
 
-  Surf: `<path d="M2 20c6-11 14-13 20-17" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="13" cy="9" r="2.5" fill="currentColor"/><path d="M11.5 11l-3 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>`,
+  Surf: `<path d="M12 2c2.5 0 5 4 5 10.5S14.5 22 12 22 7 18 7 12.5 9.5 2 12 2z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 5v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>`,
 
   Voile: `<path d="M12 20V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M12 5l9 12H12M12 5L3 17h9" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>`,
 
@@ -29,9 +29,9 @@ export const SPORT_ICONS = {
   // ── Racket sports ────────────────────────────────────────────────────────────
   Tennis: `<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M5.5 6C8 8.5 8 15.5 5.5 18M18.5 6c-2.5 2.5-2.5 9.5 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>`,
 
-  Badminton: `<path d="M3 19l9-9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M5.5 16.5C3.5 13 4 10 7 9s6 0 7 3-1 5.5-4 6.5-5.5-.5-4.5-2z" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M17 3l3 3-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="19" cy="4" r="1.5" fill="currentColor"/>`,
+  Badminton: `<ellipse cx="12" cy="8" rx="5.5" ry="7" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 1v14M6.5 8h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M12 15v8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>`,
 
-  TennisTable: `<path d="M3 18l8-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><ellipse cx="8" cy="13" rx="5" ry="6" stroke="currentColor" stroke-width="2" fill="none" transform="rotate(45 8 13)"/><circle cx="19" cy="7" r="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M2 22h20" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>`,
+  TennisTable: `<circle cx="12" cy="9" r="6.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M5.5 9h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/><rect x="10.5" y="15.5" width="3" height="6" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>`,
 
   // ── Ball sports ──────────────────────────────────────────────────────────────
   Volleyball: `<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 3c-4 4 0 9 5 9M17 12c-4 0-8-4-5-9M12 21c4-4 0-9-5-9M7 12c4 0 8 4 5 9" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
@@ -43,9 +43,9 @@ export const SPORT_ICONS = {
   Petanque: `<circle cx="8" cy="16" r="4.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="16" cy="16" r="4.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="9" r="2.5" fill="currentColor"/><path d="M3 22h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>`,
 
   // ── Combat sports ────────────────────────────────────────────────────────────
-  Boxe: `<path d="M7 9a5 5 0 0 1 5-5h1a5 5 0 0 1 5 5v3H7V9z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/><path d="M6 12h12v2a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5v-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>`,
+  Boxe: `<rect x="2" y="7" width="8.5" height="9.5" rx="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M2 17.5h8.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="13.5" y="7" width="8.5" height="9.5" rx="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M13.5 17.5h8.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>`,
 
-  Judo: `<circle cx="8" cy="5" r="2" fill="currentColor"/><circle cx="16" cy="5" r="2" fill="currentColor"/><path d="M8 7l4 5-4 7M16 7l-4 5 4 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
+  Judo: `<circle cx="12" cy="3.5" r="1.8" fill="currentColor"/><path d="M7 7.5h10v13H7z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M7 7.5l5 6.5M17 7.5l-5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M7 15h10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M7 9.5L3 13M17 9.5l4 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>`,
 
   Karate: `<circle cx="12" cy="4" r="2" fill="currentColor"/><path d="M12 6v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M9 8.5L5 12M15 8.5l5 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M10 11l-3 8M14 11l5 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>`,
 
@@ -62,7 +62,7 @@ export const SPORT_ICONS = {
   Fitness: `<circle cx="12" cy="4" r="2" fill="currentColor"/><path d="M12 6l-3 4 3 3 3-3-3-4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M9 10l-4 8M15 10l4 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>`,
 
   // ── Other ────────────────────────────────────────────────────────────────────
-  Equitation: `<path d="M8 20c0-5 8-7 8-3v3c0 2-8 2-8 0z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M8 17l-3 4M16 17l3 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M16 8c0-4-6-5-6-1v3" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="16" cy="5" r="2" fill="currentColor"/><path d="M15 6l-5 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>`,
+  Equitation: `<ellipse cx="14" cy="15" rx="6" ry="3.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8 13.5c-1 -3.5 .5 -6 3 -7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M11 6.5c.5-1.5 2-2.5 3.5-2s2.5 2 1.5 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M10 18.5l-1 4.5M13 18.5v4.5M16.5 18.5l1 4M19.5 17l1.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M20 15c2.5-1 3.5-2.5 3-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>`,
 
   Athletisme: `<circle cx="14" cy="4" r="2" fill="currentColor"/><path d="M14 6l-2 5-5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M12 11l-3 8M12 11l4 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><ellipse cx="6" cy="18" rx="5" ry="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>`,
 
