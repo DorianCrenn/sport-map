@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { useFilteredEvents } from '../hooks/useFilteredEvents.js';
 import { useGeolocation } from '../hooks/useGeolocation.js';
 import SportFilterBar from '../components/SportFilterBar.jsx';
@@ -10,12 +11,20 @@ import EventFormModal from '../components/EventFormModal.jsx';
 import MobileEventSheet from '../components/MobileEventSheet.jsx';
 
 export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite, favoritesCount, onGoToFavoris }) {
+  const { currentUser } = useAuth();
   const [sportFilter, setSportFilter] = useState(null);
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
   const [nearbyFilter, setNearbyFilter] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
   const [modalEvent, setModalEvent] = useState(undefined);
+  const [showAllSports, setShowAllSports] = useState(false);
+
+  // Reset to favorites-only mode on login/logout
+  useEffect(() => {
+    setShowAllSports(false);
+    setSportFilter(null);
+  }, [currentUser?.id]);
 
   const { coords: userCoords, loading: geoLoading, request: requestGeo } = useGeolocation();
 
@@ -30,11 +39,18 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
 
   const nearbyCoords = nearbyFilter && userCoords ? userCoords : null;
 
+  // Scope: restrict events to favorite sports unless user expanded or has no favorites
+  const sportScope = useMemo(() => {
+    const favs = currentUser?.favoriteSports || [];
+    return (!showAllSports && favs.length > 0) ? favs : [];
+  }, [showAllSports, currentUser]);
+
   const filteredEvents = useFilteredEvents(allEvents, {
     sport: sportFilter,
     dateRange: dateRangeFilter,
     departmentId: activeDepartment,
     nearbyCoords,
+    sportScope,
   });
 
   const selectedEvent = useMemo(
@@ -70,6 +86,11 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
     if (selectedEventId === id) setSelectedEventId(null);
   }
 
+  function handleShowAllSports() {
+    setShowAllSports(true);
+    setSportFilter(null);
+  }
+
   return (
     <div className="flex flex-col h-full">
       <SportFilterBar
@@ -78,6 +99,8 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
         nearbyActive={nearbyFilter}
         onNearbyToggle={handleNearbyToggle}
         geoLoading={geoLoading}
+        showAllSports={showAllSports}
+        onShowAllSports={handleShowAllSports}
       />
       <DateFilterBar active={dateRangeFilter} onChange={setDateRangeFilter} />
 
