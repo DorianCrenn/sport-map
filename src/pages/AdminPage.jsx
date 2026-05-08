@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { useClubRequests } from '../hooks/useClubRequests.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useSports } from '../hooks/useSports.js';
-import { SPORTS } from '../data/events.js';
 
 const PRESET_COLORS = [
   '#16a34a','#f97316','#eab308','#dc2626','#2563eb',

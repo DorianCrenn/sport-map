@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SPORTS } from '../../data/events.js';
+import { useSports } from '../../hooks/useSports.js';
 
 export default function ClubRequestModal({ onSubmit, onClose }) {
+  const { allSports: SPORTS } = useSports();
   const [form, setForm] = useState({ clubName: '', sport: '', city: '', description: '' });
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);

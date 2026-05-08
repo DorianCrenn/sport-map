@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SPORTS } from '../data/events.js';
+import { useSports } from '../hooks/useSports.js';
 import SportIcon from './SportIcon.jsx';
 
 const CalendarSvg = () => (
@@ -39,6 +39,7 @@ function StandingsRow({ team, rank, wins, draws, losses, points }) {
 }
 
 const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, isFavorite, onToggleFavorite }, ref) {
+  const { allSports: SPORTS } = useSports();
   const group = SPORTS[event.sport];
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });

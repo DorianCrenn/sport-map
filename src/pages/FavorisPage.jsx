@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { SPORTS } from '../data/events.js';
+import { useSports } from '../hooks/useSports.js';
 import SportIcon from '../components/SportIcon.jsx';
 
 const CalendarSvg = () => (
@@ -19,6 +19,7 @@ const PinSvg = () => (
 );
 
 function FavoriteCard({ event, onToggleFavorite }) {
+  const { allSports: SPORTS } = useSports();
   const group = SPORTS[event.sport];
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });

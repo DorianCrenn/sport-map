@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
-import { SPORTS } from '../../data/events.js';
+import { useSports } from '../../hooks/useSports.js';
 import { useClubPage } from '../../hooks/useClubPage.js';
 import SportIcon from '../SportIcon.jsx';
 import TitleBlock from './blocks/TitleBlock.jsx';
@@ -263,6 +263,7 @@ function useMatchStats(blocks) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ClubPageView({ club, allEvents, onBack }) {
+  const { allSports: SPORTS } = useSports();
   const {
     blocks, isEditing, setIsEditing,
     addBlock, addBlockToRow,

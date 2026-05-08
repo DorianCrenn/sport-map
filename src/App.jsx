@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
+import { SportsProvider } from './contexts/SportsContext.jsx';
 import { EVENTS } from './data/events.js';
 import { useLocalEvents } from './hooks/useLocalEvents.js';
 import { useFavorites } from './hooks/useFavorites.js';
@@ -118,7 +119,9 @@ function AppInner() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppInner />
+      <SportsProvider>
+        <AppInner />
+      </SportsProvider>
     </AuthProvider>
   );
 }

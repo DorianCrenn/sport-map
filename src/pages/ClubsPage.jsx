@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SPORTS } from '../data/events.js';
+import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useClubRequests } from '../hooks/useClubRequests.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -31,6 +31,7 @@ const STATIC_CLUBS = [
 ];
 
 export default function ClubsPage({ allEvents, onShowAuth }) {
+  const { allSports: SPORTS } = useSports();
   const { userClubs, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
   const { currentUser, isAdmin, isClubAdmin } = useAuth();

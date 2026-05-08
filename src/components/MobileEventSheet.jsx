@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { SPORTS } from '../data/events.js';
+import { useSports } from '../hooks/useSports.js';
 import SportIcon from './SportIcon.jsx';
 
 const CalendarSvg = () => (
@@ -26,6 +26,7 @@ const MedalSvg = () => (
 );
 
 export default function MobileEventSheet({ event, onClose, onEdit, onDelete, isFavorite, onToggleFavorite }) {
+  const { allSports: SPORTS } = useSports();
   const group = SPORTS[event.sport];
   const fav = isFavorite?.(event.id) ?? false;
   const dateObj = new Date(event.date);

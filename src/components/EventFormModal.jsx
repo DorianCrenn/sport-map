@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FINISTERE_CITIES, SPORT_TO_GROUP, SPORT_OPTIONS, LEVEL_OPTIONS } from '../data/cities.js';
+import { FINISTERE_CITIES, LEVEL_OPTIONS } from '../data/cities.js';
+import { useSports } from '../hooks/useSports.js';
 
 const EMPTY_FORM = {
   title: '',
@@ -34,7 +35,7 @@ function toFormValues(event) {
 
 function buildEvent(form) {
   const city = FINISTERE_CITIES.find((c) => c.name === form.cityName) ?? FINISTERE_CITIES[0];
-  const sportGroup = SPORT_TO_GROUP[form.sport] ?? 'endurance';
+  const sportGroup = form.sport; // sport ID = label in our schema
   const isTeamSport = ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport);
 
   const title =
@@ -78,6 +79,8 @@ function Field({ label, children }) {
 const inputCls = 'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:bg-white transition-colors';
 
 export default function EventFormModal({ event, onSave, onClose }) {
+  const { allSports } = useSports();
+  const sportOptions = Object.values(allSports).filter(s => !s.isArchived).map(s => s.label);
   const isEdit = !!event;
   const [form, setForm] = useState(() => toFormValues(event));
   const isTeamSport = ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport);
@@ -143,7 +146,7 @@ export default function EventFormModal({ event, onSave, onClose }) {
           >
             <Field label="Type de sport *">
               <select value={form.sport} onChange={(e) => set('sport', e.target.value)} className={inputCls}>
-                {SPORT_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                {sportOptions.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </Field>
 

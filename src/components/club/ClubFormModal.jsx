@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SPORTS } from '../../data/events.js';
+import { useSports } from '../../hooks/useSports.js';
 import SportIcon from '../SportIcon.jsx';
 
 const AGE_CATEGORIES = [
@@ -236,6 +236,7 @@ function CategoryBlock({ cat, onAddTeam, onUpdateTeam, onRemoveTeam, onRemoveCat
 
 // ── Main modal ────────────────────────────────────────────────────────────────
 export default function ClubFormModal({ club, onSave, onClose }) {
+  const { allSports: SPORTS } = useSports();
   const isEdit = !!club;
 
   const [form, setForm] = useState({

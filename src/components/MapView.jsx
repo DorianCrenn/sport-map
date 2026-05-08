@@ -5,7 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.Default.css';
 import L from 'leaflet';
-import { DEPARTMENTS, SPORTS } from '../data/events.js';
+import { DEPARTMENTS } from '../data/events.js';
+import { useSports } from '../hooks/useSports.js';
 import { createSportMarker, createClusterMarker } from './SportMarker.js';
 import { SPORT_ICONS } from './sportIcons.js';
 
@@ -42,15 +43,15 @@ function MapController({ activeDepartment, userCoords, onBoundsChange, selectedE
 }
 
 export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, onBoundsChange, selectedEvent, onMapClick, isFavorite }) {
+  const { allSports } = useSports();
   const dept = DEPARTMENTS[activeDepartment] ?? DEPARTMENTS.finistere;
 
   function clusterIcon(cluster) {
     const count = cluster.getChildCount();
-    // title est stocké dans options.title par Leaflet — on l'utilise pour le sport
     const markers = cluster.getAllChildMarkers();
     const sports = markers.map((m) => m.options.title).filter(Boolean);
     const allSame = sports.length > 0 && sports.every((s) => s === sports[0]);
-    const color = allSame ? (SPORTS[sports[0]]?.color ?? '#64748b') : '#64748b';
+    const color = allSame ? (allSports[sports[0]]?.color ?? '#64748b') : '#64748b';
     const icon = allSame ? (SPORT_ICONS[sports[0]] ?? null) : null;
     return createClusterMarker(count, color, icon);
   }
@@ -86,7 +87,7 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
             <Marker
               key={event.id}
               position={[event.lat, event.lng]}
-              icon={createSportMarker(event.sport, event.id === selectedEventId, isFavorite?.(event.id))}
+              icon={createSportMarker(event.sport, event.id === selectedEventId, isFavorite?.(event.id), allSports)}
               eventHandlers={{ click: () => onMarkerClick(event.id) }}
               title={event.sport}
             />

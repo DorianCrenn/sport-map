@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { SPORTS } from '../data/events.js';
+import { useSports } from '../hooks/useSports.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 
 export default function OnboardingPage({ onDone }) {
   const { currentUser, updateProfile } = useAuth();
+  const { allSports: SPORTS } = useSports();
   const [selected, setSelected] = useState(new Set());
 
   function toggle(sportId) {

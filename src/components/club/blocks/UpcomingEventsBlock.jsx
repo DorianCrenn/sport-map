@@ -1,7 +1,8 @@
-import { SPORTS } from '../../../data/events.js';
+import { useSports } from '../../../hooks/useSports.js';
 import SportIcon from '../../SportIcon.jsx';
 
 export default function UpcomingEventsBlock({ data, allEvents, isEditing, onUpdate }) {
+  const { allSports: SPORTS } = useSports();
   const now = new Date();
   const events = (allEvents ?? [])
     .filter(e => new Date(e.date) >= now && (!data.sport || e.sport === data.sport))

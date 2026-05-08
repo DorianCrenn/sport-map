@@ -1,11 +1,15 @@
-import { motion } from 'framer-motion';
-import { SPORTS } from '../data/events.js';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useSports } from '../hooks/useSports.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 
 export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAuth }) {
-  const { currentUser, logout, isAdmin, isClubAdmin } = useAuth();
+  const { currentUser, logout, isAdmin, isClubAdmin, updateProfile } = useAuth();
+  const { allSports } = useSports();
+  const [editingSports, setEditingSports] = useState(false);
+  const [selectedSports, setSelectedSports] = useState(new Set());
   const favCount = favorites?.size ?? 0;
   const eventCount = userEvents?.length ?? 0;
   const favSports = currentUser?.favoriteSports ?? [];
@@ -120,7 +124,7 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
           {[
             { label: 'Favoris', value: favCount, color: '#ef4444', bg: '#fef2f2' },
             { label: 'Ajoutés', value: eventCount, color: '#3B82F6', bg: '#EFF6FF' },
-            { label: 'Sports', value: favSports.length || Object.keys(SPORTS).length, color: '#22C55E', bg: '#F0FDF4' },
+            { label: 'Sports', value: favSports.length || Object.keys(allSports).length, color: '#22C55E', bg: '#F0FDF4' },
           ].map(({ label, value, color, bg }, i) => (
             <motion.div
               key={label}
@@ -196,23 +200,98 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
         )}
 
         {/* Sports suivis */}
-        {favSports.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <h3 className="font-semibold text-sm mb-3 font-poppins" style={{ color: '#0F1E3A' }}>Sports suivis</h3>
-            <div className="flex flex-wrap gap-2">
-              {favSports.map(sportId => {
-                const sport = SPORTS[sportId];
-                return sport ? (
-                  <div key={sportId} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-                    style={{ backgroundColor: `${sport.color}15` }}>
-                    <SportIcon sport={sport.id} size={13} color={sport.color} />
-                    <span className="text-xs font-semibold" style={{ color: sport.color }}>{sport.label}</span>
-                  </div>
-                ) : null;
-              })}
-            </div>
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-sm font-poppins" style={{ color: '#0F1E3A' }}>Sports suivis</h3>
+            {!editingSports ? (
+              <button
+                onClick={() => { setSelectedSports(new Set(favSports)); setEditingSports(true); }}
+                className="text-xs font-semibold px-2.5 py-1 rounded-lg"
+                style={{ backgroundColor: '#f1f5f9', color: '#64748b' }}
+              >
+                Modifier
+              </button>
+            ) : (
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setEditingSports(false)}
+                  className="text-xs font-semibold px-2.5 py-1 rounded-lg border border-gray-200 text-gray-400"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={() => { updateProfile({ favoriteSports: [...selectedSports] }); setEditingSports(false); }}
+                  className="text-xs font-bold px-2.5 py-1 rounded-lg text-white"
+                  style={{ backgroundColor: '#22C55E' }}
+                >
+                  Enregistrer
+                </button>
+              </div>
+            )}
           </div>
-        )}
+
+          <AnimatePresence mode="wait">
+            {!editingSports ? (
+              <motion.div key="view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {favSports.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {favSports.map(sportId => {
+                      const sport = allSports[sportId];
+                      return sport ? (
+                        <div key={sportId} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+                          style={{ backgroundColor: `${sport.color}15` }}>
+                          <SportIcon sport={sport.id} size={13} color={sport.color} />
+                          <span className="text-xs font-semibold" style={{ color: sport.color }}>{sport.label}</span>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400">Aucun sport sélectionné — cliquez sur Modifier.</p>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div key="edit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="grid grid-cols-2 gap-2">
+                {Object.values(allSports).filter(s => !s.isArchived).map(sport => {
+                  const on = selectedSports.has(sport.id);
+                  return (
+                    <button
+                      key={sport.id}
+                      onClick={() => setSelectedSports(prev => {
+                        const next = new Set(prev);
+                        on ? next.delete(sport.id) : next.add(sport.id);
+                        return next;
+                      })}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-left transition-colors"
+                      style={{
+                        backgroundColor: on ? `${sport.color}12` : '#f8fafc',
+                        borderColor: on ? sport.color : 'transparent',
+                      }}
+                    >
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: on ? `${sport.color}25` : '#f1f5f9' }}>
+                        <SportIcon sport={sport.id} size={15} color={on ? sport.color : '#94a3b8'} />
+                      </div>
+                      <span className="text-xs font-semibold leading-tight"
+                        style={{ color: on ? sport.color : '#64748b' }}>
+                        {sport.label}
+                      </span>
+                      {on && (
+                        <div className="ml-auto w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: sport.color }}>
+                          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Logout */}
         <button
