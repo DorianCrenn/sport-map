@@ -282,14 +282,14 @@ export default function HomePage({ onNavigate, stats }) {
 
           <motion.div className="flex gap-3 justify-center"
             initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.32 }}>
-            <motion.button whileTap={{ scale:0.95 }} onClick={() => onNavigate('map')}
-              className="font-bold font-poppins text-white flex items-center gap-2"
+            <motion.button whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }} onClick={() => onNavigate('map')}
+              className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer"
               style={{ backgroundColor:'#22C55E', borderRadius:14, padding:'12px 22px', fontSize:14 }}>
               Voir la carte
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </motion.button>
-            <motion.button whileTap={{ scale:0.95 }} onClick={() => onNavigate('clubs')}
-              className="font-semibold font-poppins border-2"
+            <motion.button whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }} onClick={() => onNavigate('clubs')}
+              className="font-semibold font-poppins border-2 cursor-pointer"
               style={{ borderColor:'rgba(255,255,255,0.25)', color:'white', borderRadius:14, padding:'12px 22px', fontSize:14, backgroundColor:'rgba(255,255,255,0.08)' }}>
               Les clubs
             </motion.button>
@@ -351,14 +351,14 @@ export default function HomePage({ onNavigate, stats }) {
 
             {/* Boutons */}
             <div className="flex gap-4 mb-12">
-              <motion.button whileTap={{ scale:0.96 }} onClick={() => onNavigate('map')}
-                className="font-bold font-poppins text-white flex items-center gap-2.5"
+              <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('map')}
+                className="font-bold font-poppins text-white flex items-center gap-2.5 cursor-pointer"
                 style={{ backgroundColor:'#22C55E', borderRadius:16, padding:'14px 28px', fontSize:16 }}>
                 Voir la carte
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </motion.button>
-              <motion.button whileTap={{ scale:0.96 }} onClick={() => onNavigate('clubs')}
-                className="font-semibold font-poppins border-2"
+              <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('clubs')}
+                className="font-semibold font-poppins border-2 cursor-pointer"
                 style={{ borderColor:'rgba(255,255,255,0.3)', color:'white', borderRadius:16, padding:'14px 28px', fontSize:16, backgroundColor:'rgba(255,255,255,0.08)' }}>
                 Explorer les clubs
               </motion.button>
@@ -406,7 +406,9 @@ export default function HomePage({ onNavigate, stats }) {
                   { n:'3', color:'#a855f7', bg:'#FDF4FF', title:'Rejoins un club, suis ses matchs', desc:"Consulte les pages des clubs, leur calendrier par équipe, leurs résultats et contacte-les directement depuis l'app." },
                 ].map(({ n, color, bg, title, desc }, i) => (
                   <motion.div key={n}
-                    initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5 + i*0.1 }}
+                    initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+                    whileHover={{ y:-4, boxShadow:'0 12px 32px rgba(0,0,0,0.08)' }}
+                    transition={{ delay:0.5 + i*0.1 }}
                     className="rounded-2xl p-6 border border-gray-100"
                     style={{ backgroundColor:'white' }}>
                     <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold font-poppins text-white text-base mb-4"
@@ -430,12 +432,13 @@ export default function HomePage({ onNavigate, stats }) {
                     Crée la page de ton club, publie ton calendrier par équipe, affiche tes matchs à domicile sur la carte et gère tes résultats en temps réel.
                   </p>
                 </div>
-                <button onClick={() => onNavigate('clubs')}
-                  className="flex-shrink-0 flex items-center gap-2 font-bold font-poppins text-white"
+                <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.04, y:-1 }}
+                  onClick={() => onNavigate('clubs')}
+                  className="flex-shrink-0 flex items-center gap-2 font-bold font-poppins text-white cursor-pointer"
                   style={{ backgroundColor:'#22C55E', borderRadius:14, padding:'12px 24px', fontSize:15 }}>
                   Voir les clubs
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
+                </motion.button>
               </div>
             </div>
 
@@ -452,7 +455,9 @@ export default function HomePage({ onNavigate, stats }) {
                 { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'#FDF4FF', color:'#a855f7', title:'Vis ta passion', desc:"Rejoins une communauté de passionnés, suis l'actualité sportive et reste connecté à ton sport." },
               ].map(({ icon, bg, color, title, desc }, i) => (
                 <motion.div key={title}
-                  initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6 + i*0.1 }}
+                  initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+                  whileHover={{ y:-4, boxShadow:'0 16px 40px rgba(0,0,0,0.1)' }}
+                  transition={{ delay:0.6 + i*0.1 }}
                   className="rounded-2xl p-6 border border-gray-100 shadow-sm"
                   style={{ backgroundColor:'white' }}>
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor:bg }}>

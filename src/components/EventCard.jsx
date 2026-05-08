@@ -140,7 +140,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
                 )}
 
                 {hasStandings && (
-                  <div className="mt-2 pt-2 border-t border-gray-100">
+                  <div className="mt-2 pt-2 border-t border-gray-100 overflow-x-auto">
                     <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
                       Classement
                     </div>

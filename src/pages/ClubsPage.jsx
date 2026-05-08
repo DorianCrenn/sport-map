@@ -177,7 +177,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
             placeholder="Rechercher un club ou une ville…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-300"
           />
         </div>
 
@@ -194,12 +194,15 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
             ? allVisible.filter(s => !favoriteSports.includes(s.id)).length
             : 0;
           return (
-            <div className="flex gap-2 overflow-x-auto pb-0.5">
+            <div className="relative">
+              <div className="absolute right-0 top-0 bottom-0 w-6 z-10 pointer-events-none"
+                style={{ background: 'linear-gradient(to left, white 20%, transparent)' }} />
+            <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {/* Collapse button when expanded */}
               {inExpandedMode && (
                 <button
                   onClick={() => { setShowAllSports(false); setSportFilter(null); }}
-                  className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 flex items-center gap-1 transition-colors"
+                  className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
                   style={{ backgroundColor: '#f0fdf4', color: '#16a34a', border: '1.5px solid #86efac' }}
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -211,7 +214,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
               {/* "Mes sports" or "Tous" */}
               <button
                 onClick={() => setSportFilter(null)}
-                className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors"
+                className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors cursor-pointer"
                 style={sportFilter === null
                   ? { backgroundColor: '#0F1E3A', color: 'white' }
                   : { backgroundColor: '#f1f5f9', color: '#64748b' }}
@@ -222,7 +225,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
               {visibleSports.map(sport => (
                 <button key={sport.id}
                   onClick={() => setSportFilter(sportFilter === sport.id ? null : sport.id)}
-                  className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 transition-colors cursor-pointer"
                   style={sportFilter === sport.id
                     ? { backgroundColor: sport.color, color: 'white' }
                     : { backgroundColor: '#f1f5f9', color: '#64748b' }}
@@ -235,7 +238,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
               {inFavoritesMode && hiddenCount > 0 && (
                 <button
                   onClick={() => { setShowAllSports(true); setSportFilter(null); }}
-                  className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1 transition-colors"
+                  className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
                   style={{ backgroundColor: '#f0fdf4', color: '#16a34a', border: '1.5px dashed #86efac' }}
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -244,6 +247,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                   {hiddenCount} sport{hiddenCount > 1 ? 's' : ''}
                 </button>
               )}
+            </div>
             </div>
           );
         })()}
@@ -369,7 +373,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                   <div className="flex items-center gap-2">
                     <div className="font-semibold text-gray-800 text-sm truncate">{club.name}</div>
                     {own && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: '#F0FDF4', color: '#16a34a' }}>
                         {isAdmin ? 'Géré' : 'Mon club'}
                       </span>
@@ -411,7 +415,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                 {own ? (
                   <>
                     <button onClick={() => setFormClub(club)}
-                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs text-gray-500 hover:bg-gray-50 transition-colors">
+                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
@@ -420,7 +424,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                     </button>
                     <div className="w-px bg-gray-100" />
                     <button onClick={() => setSelectedClub(club)}
-                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold transition-colors font-poppins"
+                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold transition-colors font-poppins hover:bg-gray-50 cursor-pointer"
                       style={{ color: '#22C55E' }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                         <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/>
@@ -429,7 +433,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                     </button>
                     <div className="w-px bg-gray-100" />
                     <button onClick={() => setConfirmDelete(club)}
-                      className="flex items-center justify-center py-2.5 px-3 text-red-400 hover:bg-red-50 transition-colors">
+                      className="flex items-center justify-center py-2.5 px-3 text-red-400 hover:bg-red-50 transition-colors cursor-pointer">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                       </svg>
@@ -451,7 +455,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                       </>
                     )}
                     <button onClick={() => setSelectedClub(club)}
-                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold transition-colors font-poppins"
+                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold transition-colors font-poppins hover:bg-gray-50 cursor-pointer"
                       style={{ color: sport?.color ?? '#0F1E3A' }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                         <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/>

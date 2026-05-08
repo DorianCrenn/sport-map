@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { SportsProvider } from './contexts/SportsContext.jsx';
 import { EVENTS } from './data/events.js';
@@ -9,7 +9,9 @@ import { useFavorites } from './hooks/useFavorites.js';
 import { useClubMatches } from './hooks/useClubMatches.js';
 import { useClubs } from './hooks/useClubs.js';
 import { useSports } from './hooks/useSports.js';
+import { useUpcomingFavorites } from './hooks/useUpcomingFavorites.js';
 import Header from './components/Header.jsx';
+import ReminderBanner from './components/ReminderBanner.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import HomePage from './pages/HomePage.jsx';
 import MapPage from './pages/MapPage.jsx';
@@ -37,6 +39,8 @@ function AppInner() {
     () => [...EVENTS, ...userEvents, ...clubMatchEvents],
     [userEvents, clubMatchEvents]
   );
+
+  const upcomingFavorites = useUpcomingFavorites(allEvents, favorites);
 
   const homeStats = useMemo(() => ({
     clubs: userClubs.length + STATIC_CLUBS.length,
@@ -72,38 +76,57 @@ function AppInner() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
       {activeTab !== 'home' && <Header />}
 
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-        {activeTab === 'home' && (
-          <HomePage onNavigate={setActiveTab} stats={homeStats} />
-        )}
-        {activeTab === 'map' && (
-          <MapPage
-            allEvents={allEvents}
-            activeDepartment={activeDepartment}
-            canAddEvent={isAdmin || isClubAdmin}
-            onAddEvent={addEvent}
-            onUpdateEvent={updateEvent}
-            onDeleteEvent={deleteEvent}
-            isFavorite={isFavorite}
-            onToggleFavorite={toggleFavorite}
-            favoritesCount={favorites.size}
-            onGoToFavoris={() => setActiveTab('favoris')}
-          />
-        )}
-        {activeTab === 'favoris' && (
-          <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} />
-        )}
-        {activeTab === 'news' && <NewsPage />}
-        {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} />}
-        {activeTab === 'profil' && (
-          <ProfilPage
-            favorites={favorites}
-            userEvents={userEvents}
-            onNavigate={handleTabChange}
-            onShowAuth={() => setShowAuth(true)}
-          />
-        )}
-        {activeTab === 'admin' && isAdmin && <AdminPage />}
+      {activeTab === 'home' && (upcomingFavorites.today.length > 0 || upcomingFavorites.tomorrow.length > 0) && (
+        <ReminderBanner
+          today={upcomingFavorites.today}
+          tomorrow={upcomingFavorites.tomorrow}
+          onNavigateToFavoris={() => setActiveTab('favoris')}
+        />
+      )}
+
+      <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.14 }}
+            style={{ position: 'absolute', inset: 0 }}
+          >
+            {activeTab === 'home' && (
+              <HomePage onNavigate={setActiveTab} stats={homeStats} />
+            )}
+            {activeTab === 'map' && (
+              <MapPage
+                allEvents={allEvents}
+                activeDepartment={activeDepartment}
+                canAddEvent={isAdmin || isClubAdmin}
+                onAddEvent={addEvent}
+                onUpdateEvent={updateEvent}
+                onDeleteEvent={deleteEvent}
+                isFavorite={isFavorite}
+                onToggleFavorite={toggleFavorite}
+                favoritesCount={favorites.size}
+                onGoToFavoris={() => setActiveTab('favoris')}
+              />
+            )}
+            {activeTab === 'favoris' && (
+              <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} />
+            )}
+            {activeTab === 'news' && <NewsPage />}
+            {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} />}
+            {activeTab === 'profil' && (
+              <ProfilPage
+                favorites={favorites}
+                userEvents={userEvents}
+                onNavigate={handleTabChange}
+                onShowAuth={() => setShowAuth(true)}
+              />
+            )}
+            {activeTab === 'admin' && isAdmin && <AdminPage />}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />

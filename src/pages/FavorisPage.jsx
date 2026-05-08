@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import SportIcon from '../components/SportIcon.jsx';
@@ -67,17 +68,74 @@ function FavoriteCard({ event, onToggleFavorite }) {
   );
 }
 
+function NotifBanner({ favoriteEvents }) {
+  const [status, setStatus] = useState(
+    'Notification' in window ? Notification.permission : 'unavailable'
+  );
+
+  if (favoriteEvents.length === 0 || status === 'granted' || status === 'unavailable') return null;
+
+  async function handleRequest() {
+    const perm = await Notification.requestPermission();
+    setStatus(perm);
+    if (perm === 'granted' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      const now = Date.now();
+      for (const event of favoriteEvents) {
+        const delay = new Date(event.date).getTime() - now - 60 * 60 * 1000;
+        if (delay > 0) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'SCHEDULE_NOTIFICATION',
+            title: `📅 ${event.title}`,
+            body: `Dans 1h · ${event.venue || event.city}`,
+            delay,
+            tag: `event-${event.id}`,
+          });
+        }
+      }
+      new Notification('🔔 Rappels activés !', {
+        body: `Tu seras notifié 1h avant tes ${favoriteEvents.length} événement${favoriteEvents.length > 1 ? 's' : ''} favoris.`,
+        icon: '/Logo-sportlink-sans-fond.png',
+      });
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+      className="mx-4 mt-3 mb-1 rounded-2xl p-3.5 flex items-center gap-3 border"
+      style={{ background: 'linear-gradient(135deg, #F0FDF4, #ECFDF5)', borderColor: '#BBF7D0' }}
+    >
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#22C55E' }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-bold text-sm font-poppins" style={{ color: '#15803d' }}>Activer les rappels</div>
+        <div className="text-xs" style={{ color: '#16a34a' }}>Reçois une notification 1h avant chaque événement.</div>
+      </div>
+      <button onClick={handleRequest}
+        className="text-xs font-bold text-white px-3 py-1.5 rounded-xl flex-shrink-0 cursor-pointer"
+        style={{ backgroundColor: '#22C55E' }}>
+        Activer
+      </button>
+    </motion.div>
+  );
+}
+
 export default function FavorisPage({ allEvents, favorites, onToggleFavorite }) {
   const favoriteEvents = allEvents.filter((e) => favorites.has(e.id))
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      <div className="px-4 pt-4 pb-2">
+      <div className="px-4 pt-4 pb-1">
         <p className="text-sm text-gray-500">
           {favoriteEvents.length} événement{favoriteEvents.length !== 1 ? 's' : ''} sauvegardé{favoriteEvents.length !== 1 ? 's' : ''}
         </p>
       </div>
+      <NotifBanner favoriteEvents={favoriteEvents} />
 
       <div className="flex-1 overflow-y-auto px-4 pb-4">
         <AnimatePresence mode="popLayout">
