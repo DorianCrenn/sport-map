@@ -20,7 +20,8 @@ export function useGeolocation() {
       () => {
         setError('Impossible d\'obtenir votre position.');
         setLoading(false);
-      }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }, []);
 
