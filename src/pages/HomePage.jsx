@@ -189,8 +189,14 @@ function FeaturesSection({ stats = {}, onNavigate }) {
   const { clubs = 0, events = 0, sports = 0 } = stats;
   return (
     <div className="px-5 pt-6 pb-6 md:px-12 md:pt-10 md:pb-10">
+      {/* How it works + club banner — mobile */}
+      <div className="md:hidden">
+        <HowItWorks />
+        <ClubBanner onNavigate={onNavigate} />
+      </div>
+
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-6 md:gap-5 md:mb-8">
+      <div className="grid grid-cols-3 gap-3 mb-6 mt-8 md:mt-0 md:gap-5 md:mb-8">
         {[
           { bg:'#F0FDF4', color:'#22C55E', label:'Clubs', value: clubs, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
           { bg:'#EFF6FF', color:'#3B82F6', label:'Événements', value: events, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
@@ -228,11 +234,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
         ))}
       </div>
 
-      {/* How it works + club banner — mobile only */}
-      <div className="md:hidden">
-        <HowItWorks />
-        <ClubBanner onNavigate={onNavigate} />
-      </div>
+      {/* How it works + club banner — mobile only (avant les features) */}
 
       <div className="text-center mt-6">
         <p style={{ fontSize:11, color:'#cbd5e1' }}>Finistère (29) · Version 1.0.0</p>
@@ -391,33 +393,10 @@ export default function HomePage({ onNavigate, stats }) {
         {/* Features + extra sections — fond blanc */}
         <div style={{ backgroundColor:'white', position:'relative', zIndex:1 }}>
           <div className="max-w-5xl mx-auto">
-            <div className="px-12 pt-10 pb-4">
-              <h2 className="font-bold font-poppins text-center mb-8" style={{ fontSize:28, color:'#0F1E3A' }}>
-                Tout ce dont tu as besoin
-              </h2>
-            </div>
-            <div className="grid grid-cols-3 gap-6 px-12 pb-10">
-              {[
-                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'#F0FDF4', color:'#22C55E', title:'Trouve un club', desc:'Parcours tous les clubs sportifs du Finistère, filtre par sport ou par ville et contacte-les directement.' },
-                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'#EFF6FF', color:'#3B82F6', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois, cyclosportives — tous les événements locaux visibles sur la carte.' },
-                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'#FDF4FF', color:'#a855f7', title:'Vis ta passion', desc:"Rejoins une communauté de passionnés, suis l'actualité sportive et reste connecté à ton sport." },
-              ].map(({ icon, bg, color, title, desc }, i) => (
-                <motion.div key={title}
-                  initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5 + i*0.1 }}
-                  className="rounded-2xl p-6 border border-gray-100 shadow-sm"
-                  style={{ backgroundColor:'white' }}>
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor:bg }}>
-                    {icon}
-                  </div>
-                  <div className="font-bold font-poppins mb-2" style={{ fontSize:17, color:'#0F1E3A' }}>{title}</div>
-                  <div style={{ fontSize:13, color:'#94a3b8', lineHeight:1.6 }}>{desc}</div>
-                </motion.div>
-              ))}
-            </div>
 
-            {/* How it works — desktop */}
-            <div className="px-12 pb-10" style={{ borderTop: '1px solid #f1f5f9' }}>
-              <h2 className="font-bold font-poppins text-center mb-8 pt-10" style={{ fontSize:24, color:'#0F1E3A' }}>
+            {/* How it works — desktop (en premier) */}
+            <div className="px-12 pt-10 pb-10">
+              <h2 className="font-bold font-poppins text-center mb-8" style={{ fontSize:28, color:'#0F1E3A' }}>
                 Comment ça marche ?
               </h2>
               <div className="grid grid-cols-3 gap-6">
@@ -427,7 +406,7 @@ export default function HomePage({ onNavigate, stats }) {
                   { n:'3', color:'#a855f7', bg:'#FDF4FF', title:'Rejoins un club, suis ses matchs', desc:"Consulte les pages des clubs, leur calendrier par équipe, leurs résultats et contacte-les directement depuis l'app." },
                 ].map(({ n, color, bg, title, desc }, i) => (
                   <motion.div key={n}
-                    initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6 + i*0.1 }}
+                    initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5 + i*0.1 }}
                     className="rounded-2xl p-6 border border-gray-100"
                     style={{ backgroundColor:'white' }}>
                     <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold font-poppins text-white text-base mb-4"
@@ -442,8 +421,8 @@ export default function HomePage({ onNavigate, stats }) {
             </div>
 
             {/* Club banner — desktop */}
-            <div className="px-12 pb-12">
-              <div className="rounded-2xl p-8 relative overflow-hidden flex items-center gap-8" style={{ backgroundColor:'#0F1E3A' }}>
+            <div className="px-12 pb-12" style={{ borderTop: '1px solid #f1f5f9' }}>
+              <div className="rounded-2xl p-8 mt-10 relative overflow-hidden flex items-center gap-8" style={{ backgroundColor:'#0F1E3A' }}>
                 <div style={{ position:'absolute', top:'-20%', right:'5%', width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
                 <div className="flex-1">
                   <div className="font-bold font-poppins text-white mb-2" style={{ fontSize:20 }}>Tu gères un club ?</div>
@@ -458,6 +437,31 @@ export default function HomePage({ onNavigate, stats }) {
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </button>
               </div>
+            </div>
+
+            {/* Tout ce dont tu as besoin — en dernier */}
+            <div className="px-12 pb-4" style={{ borderTop: '1px solid #f1f5f9' }}>
+              <h2 className="font-bold font-poppins text-center mb-8 pt-10" style={{ fontSize:24, color:'#0F1E3A' }}>
+                Tout ce dont tu as besoin
+              </h2>
+            </div>
+            <div className="grid grid-cols-3 gap-6 px-12 pb-12">
+              {[
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'#F0FDF4', color:'#22C55E', title:'Trouve un club', desc:'Parcours tous les clubs sportifs du Finistère, filtre par sport ou par ville et contacte-les directement.' },
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'#EFF6FF', color:'#3B82F6', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois, cyclosportives — tous les événements locaux visibles sur la carte.' },
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'#FDF4FF', color:'#a855f7', title:'Vis ta passion', desc:"Rejoins une communauté de passionnés, suis l'actualité sportive et reste connecté à ton sport." },
+              ].map(({ icon, bg, color, title, desc }, i) => (
+                <motion.div key={title}
+                  initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6 + i*0.1 }}
+                  className="rounded-2xl p-6 border border-gray-100 shadow-sm"
+                  style={{ backgroundColor:'white' }}>
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor:bg }}>
+                    {icon}
+                  </div>
+                  <div className="font-bold font-poppins mb-2" style={{ fontSize:17, color:'#0F1E3A' }}>{title}</div>
+                  <div style={{ fontSize:13, color:'#94a3b8', lineHeight:1.6 }}>{desc}</div>
+                </motion.div>
+              ))}
             </div>
 
             <div className="text-center pb-8">
