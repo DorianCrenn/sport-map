@@ -3,9 +3,12 @@ import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { SportsProvider } from './contexts/SportsContext.jsx';
 import { EVENTS } from './data/events.js';
+import { STATIC_CLUBS } from './data/clubs.js';
 import { useLocalEvents } from './hooks/useLocalEvents.js';
 import { useFavorites } from './hooks/useFavorites.js';
 import { useClubMatches } from './hooks/useClubMatches.js';
+import { useClubs } from './hooks/useClubs.js';
+import { useSports } from './hooks/useSports.js';
 import Header from './components/Header.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import HomePage from './pages/HomePage.jsx';
@@ -27,11 +30,19 @@ function AppInner() {
   const { events: userEvents, addEvent, updateEvent, deleteEvent } = useLocalEvents();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const clubMatchEvents = useClubMatches();
+  const { userClubs } = useClubs();
+  const { allSports } = useSports();
 
   const allEvents = useMemo(
     () => [...EVENTS, ...userEvents, ...clubMatchEvents],
     [userEvents, clubMatchEvents]
   );
+
+  const homeStats = useMemo(() => ({
+    clubs: userClubs.length + STATIC_CLUBS.length,
+    events: allEvents.length,
+    sports: Object.keys(allSports).length,
+  }), [userClubs, allEvents, allSports]);
 
   const shouldShowOnboarding = !!currentUser && !currentUser.onboardingDone && !showAuth;
 
@@ -59,11 +70,11 @@ function AppInner() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
-      {activeTab === 'map' && <Header />}
+      {activeTab !== 'home' && <Header />}
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {activeTab === 'home' && (
-          <HomePage onNavigate={setActiveTab} />
+          <HomePage onNavigate={setActiveTab} stats={homeStats} />
         )}
         {activeTab === 'map' && (
           <MapPage
