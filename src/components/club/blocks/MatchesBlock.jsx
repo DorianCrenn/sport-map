@@ -9,7 +9,7 @@ const AGE_CATS = [
   'Seniors', 'Seniors F', 'Vétérans', 'Vétérans F', 'Loisir', 'Loisir F',
 ];
 
-const BLANK = { id: '', date: '', time: '15:00', opponent: '', isHome: true, competition: '', category: 'Seniors', scoreHome: '', scoreAway: '' };
+const BLANK = { id: '', date: '', time: '15:00', opponent: '', isHome: true, competition: '', category: 'Seniors', scoreHome: '', scoreAway: '', publishedOnMap: true };
 
 function isUpcoming(match) {
   if (!match.date) return true;
@@ -192,6 +192,34 @@ function MatchForm({ initial, onSave, onCancel }) {
           </span>
         </div>
       </div>
+
+      {/* Publier sur la carte */}
+      {f.isHome && (
+        <button
+          type="button"
+          onClick={() => set('publishedOnMap', !f.publishedOnMap)}
+          className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl border transition-colors"
+          style={f.publishedOnMap
+            ? { backgroundColor: '#f0fdf4', borderColor: '#86efac' }
+            : { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}
+        >
+          <div className="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ color: f.publishedOnMap ? '#16a34a' : '#94a3b8' }}>
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+              <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+            </svg>
+            <span className="text-xs font-semibold" style={{ color: f.publishedOnMap ? '#16a34a' : '#64748b' }}>
+              Publier sur la carte
+            </span>
+          </div>
+          <div className="w-9 h-5 rounded-full transition-colors flex items-center px-0.5 flex-shrink-0"
+            style={{ backgroundColor: f.publishedOnMap ? '#22c55e' : '#d1d5db' }}>
+            <div className="w-4 h-4 bg-white rounded-full shadow transition-transform"
+              style={{ transform: f.publishedOnMap ? 'translateX(16px)' : 'translateX(0)' }} />
+          </div>
+        </button>
+      )}
 
       {/* Buttons */}
       <div className="flex gap-2 pt-1">

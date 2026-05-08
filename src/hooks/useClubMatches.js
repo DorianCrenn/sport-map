@@ -54,7 +54,7 @@ export function useClubMatches() {
         const matches = block.data?.matches ?? [];
 
         for (const match of matches) {
-          if (!match.date || !match.isHome) continue; // only home matches on map
+          if (!match.date || !match.isHome || match.publishedOnMap === false) continue;
           const coords = getCoords(club.city);
           const hasScore = match.scoreHome !== null && match.scoreHome !== undefined &&
                            match.scoreAway !== null && match.scoreAway !== undefined;
