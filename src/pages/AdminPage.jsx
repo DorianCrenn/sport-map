@@ -80,7 +80,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
                     className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl transition-all"
                     style={{
                       backgroundColor: isSelected ? `${form.color}18` : '#f1f5f9',
-                      outline: isSelected ? `2px solid ${form.color}` : '2px solid transparent',
+                      border: `2px solid ${isSelected ? form.color : 'transparent'}`,
                     }}
                     title={opt.label}
                   >
