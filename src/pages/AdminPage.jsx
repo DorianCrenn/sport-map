@@ -1,9 +1,111 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useClubRequests } from '../hooks/useClubRequests.js';
 import { useClubs } from '../hooks/useClubs.js';
+import { useSports } from '../hooks/useSports.js';
 import { SPORTS } from '../data/events.js';
+
+const PRESET_COLORS = [
+  '#16a34a','#f97316','#eab308','#dc2626','#2563eb',
+  '#06b6d4','#7c3aed','#ec4899','#14b8a6','#f59e0b',
+  '#6366f1','#84cc16',
+];
+const PRESET_EMOJIS = ['⚽','🏀','🏉','🤾','🏃','🚵','🚴','🏊','🎾','🏐','🥊','🏋️','🤸','⛷️','🏄','🎿','🤺','🏇'];
+
+function SportForm({ onSave, onCancel }) {
+  const [form, setForm] = useState({ label: '', color: '#16a34a', emoji: '🏅' });
+  const [error, setError] = useState('');
+
+  function set(k) { return v => setForm(p => ({ ...p, [k]: v })); }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.label.trim()) { setError('Nom requis'); return; }
+    onSave(form);
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-2xl border border-green-100 p-4 shadow-sm"
+    >
+      <h3 className="font-bold text-sm font-poppins mb-4" style={{ color: '#0F1E3A' }}>Nouveau sport</h3>
+      <form onSubmit={handleSubmit} className="space-y-3.5">
+        {/* Nom */}
+        <div>
+          <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Nom du sport *</label>
+          <input
+            value={form.label}
+            onChange={e => { set('label')(e.target.value); setError(''); }}
+            placeholder="Ex: Natation"
+            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+          {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+        </div>
+
+        {/* Couleur */}
+        <div>
+          <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Couleur</label>
+          <div className="flex items-center gap-2 flex-wrap">
+            {PRESET_COLORS.map(c => (
+              <button key={c} type="button" onClick={() => set('color')(c)}
+                className="w-7 h-7 rounded-lg transition-transform hover:scale-110 flex-shrink-0"
+                style={{ backgroundColor: c, outline: form.color === c ? `3px solid ${c}` : 'none', outlineOffset: '2px' }}
+              />
+            ))}
+            <input type="color" value={form.color} onChange={e => set('color')(e.target.value)}
+              className="w-7 h-7 rounded-lg cursor-pointer border-0 p-0"
+              title="Couleur personnalisée"
+            />
+          </div>
+        </div>
+
+        {/* Emoji */}
+        <div>
+          <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Emoji</label>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {PRESET_EMOJIS.map(em => (
+              <button key={em} type="button" onClick={() => set('emoji')(em)}
+                className="w-8 h-8 rounded-lg text-base flex items-center justify-center transition-colors"
+                style={{ backgroundColor: form.emoji === em ? `${form.color}20` : '#f1f5f9', outline: form.emoji === em ? `2px solid ${form.color}` : 'none' }}
+              >
+                {em}
+              </button>
+            ))}
+          </div>
+          <input
+            value={form.emoji} onChange={e => set('emoji')(e.target.value)}
+            placeholder="Autre emoji…"
+            className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            maxLength={4}
+          />
+        </div>
+
+        {/* Aperçu */}
+        {form.label && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ backgroundColor: `${form.color}12` }}>
+            <span className="text-xl">{form.emoji}</span>
+            <span className="text-sm font-bold font-poppins" style={{ color: form.color }}>{form.label}</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full text-white ml-auto" style={{ backgroundColor: form.color }}>Aperçu</span>
+          </div>
+        )}
+
+        <div className="flex gap-2 pt-1">
+          <button type="button" onClick={onCancel}
+            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500">
+            Annuler
+          </button>
+          <button type="submit"
+            className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold"
+            style={{ backgroundColor: '#22C55E' }}>
+            Ajouter
+          </button>
+        </div>
+      </form>
+    </motion.div>
+  );
+}
 
 function roleColor(role) {
   return { superadmin: '#7c3aed', admin: '#3b82f6', club_admin: '#f59e0b', user: '#64748b' }[role] ?? '#64748b';
@@ -16,9 +118,11 @@ export default function AdminPage() {
   const { users, updateUser, isAdmin, currentUser } = useAuth();
   const { requests, pendingRequests, reviewRequest } = useClubRequests();
   const { addClub } = useClubs();
+  const { allSports, customSports, addSport, deleteSport } = useSports();
   const [tab, setTab] = useState('overview');
   const [reviewNote, setReviewNote] = useState('');
   const [reviewingId, setReviewingId] = useState(null);
+  const [showSportForm, setShowSportForm] = useState(false);
 
   if (!isAdmin) {
     return (
@@ -61,6 +165,7 @@ export default function AdminPage() {
     { id: 'overview', label: 'Aperçu' },
     { id: 'requests', label: pendingRequests.length > 0 ? `Demandes (${pendingRequests.length})` : 'Demandes' },
     { id: 'users', label: 'Utilisateurs' },
+    { id: 'sports', label: 'Sports' },
   ];
 
   const approved = requests.filter(r => r.status === 'approved').length;
@@ -301,6 +406,77 @@ export default function AdminPage() {
                 </div>
               );
             })}
+          </motion.div>
+        )}
+
+        {/* ── SPORTS ── */}
+        {tab === 'sports' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-400 font-medium">
+                {Object.keys(allSports).length} sport{Object.keys(allSports).length > 1 ? 's' : ''}
+                {customSports.length > 0 && <span className="text-green-500 ml-1">· {customSports.length} personnalisé{customSports.length > 1 ? 's' : ''}</span>}
+              </p>
+              {!showSportForm && (
+                <button
+                  onClick={() => setShowSportForm(true)}
+                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl text-white"
+                  style={{ backgroundColor: '#22C55E' }}
+                >
+                  <span className="text-sm leading-none">＋</span> Nouveau sport
+                </button>
+              )}
+            </div>
+
+            <AnimatePresence>
+              {showSportForm && (
+                <SportForm
+                  key="sport-form"
+                  onSave={(data) => { addSport(data); setShowSportForm(false); }}
+                  onCancel={() => setShowSportForm(false)}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Liste des sports */}
+            <div className="space-y-2">
+              {Object.values(allSports).map(sport => {
+                const isCustom = !!sport.isCustom;
+                return (
+                  <div key={sport.id} className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                      style={{ backgroundColor: `${sport.color}18` }}
+                    >
+                      {sport.emoji}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-800 text-sm">{sport.label}</div>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: sport.color }} />
+                        <span className="text-[10px] text-gray-400">{sport.color}</span>
+                        {isCustom
+                          ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>Personnalisé</span>
+                          : <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#f8fafc', color: '#94a3b8' }}>Par défaut</span>
+                        }
+                      </div>
+                    </div>
+                    {isCustom && (
+                      <button
+                        onClick={() => deleteSport(sport.id)}
+                        className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 hover:opacity-80 transition-opacity"
+                        style={{ backgroundColor: '#fef2f2', color: '#ef4444' }}
+                        title="Supprimer ce sport"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </motion.div>
         )}
 
