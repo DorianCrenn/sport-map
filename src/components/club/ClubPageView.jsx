@@ -471,7 +471,7 @@ export default function ClubPageView({ club, allEvents, onBack }) {
       className="absolute inset-0 bg-gray-50 flex flex-col z-10"
     >
       {/* ── Header ── */}
-      <div className="flex-shrink-0 relative text-white overflow-hidden" style={{ backgroundColor: '#0F1E3A' }}>
+      <div className="flex-shrink-0 relative text-white" style={{ backgroundColor: '#0F1E3A' }}>
         {/* Sport-color background accent */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',

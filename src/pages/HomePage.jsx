@@ -203,7 +203,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
           { bg:'#FDF4FF', color:'#a855f7', label:'Sports', value: sports, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
         ].map(({ bg, color, label, value, icon }, i) => (
           <motion.div key={label}
-            initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.08 + i*0.05 }}
+            initial={{ opacity:0, y:22 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.18 + i*0.09, duration:0.4, ease:'easeOut' }}
             className="rounded-2xl flex flex-col items-center gap-1.5 py-4 md:py-5"
             style={{ backgroundColor:bg }}>
             {icon}
@@ -221,7 +221,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
           { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'#FDF4FF', title:'Vis ta passion', desc:'Rejoins une communauté de passionnés de sport local.' },
         ].map(({ icon, bg, title, desc }, i) => (
           <motion.div key={title}
-            initial={{ opacity:0, x:-8 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.13 + i*0.06 }}
+            initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.26 + i*0.1, duration:0.4, ease:'easeOut' }}
             className="flex items-start gap-3 md:flex-col md:gap-3 md:bg-white md:rounded-2xl md:p-5 md:border md:border-gray-100 md:shadow-sm">
             <div className="rounded-xl flex items-center justify-center flex-shrink-0 md:w-12 md:h-12" style={{ width:38, height:38, backgroundColor:bg }}>
               {icon}
@@ -256,32 +256,32 @@ export default function HomePage({ onNavigate, stats }) {
           <div style={{ position:'absolute', top:'-40%', left:'50%', transform:'translateX(-50%)', width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
 
           <motion.div className="flex items-center justify-center gap-2 mb-6"
-            initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.22 }}>
+            initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.3 }}>
             <SportLinkLogo size={32} onDark />
             <span className="font-extrabold font-poppins text-white" style={{ fontSize:21, letterSpacing:'-0.3px' }}>SportLink</span>
           </motion.div>
 
           <motion.div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-5"
             style={{ backgroundColor:'rgba(34,197,94,0.15)', border:'1px solid rgba(34,197,94,0.3)' }}
-            initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.05 }}>
+            initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.09 }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             <span className="font-semibold font-poppins" style={{ fontSize:12, color:'#22C55E' }}>Sport en Finistère</span>
           </motion.div>
 
           <motion.h1 className="font-extrabold font-poppins text-white mb-4"
             style={{ fontSize:40, lineHeight:1.08, letterSpacing:'-1px' }}
-            initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.09 }}>
+            initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15 }}>
             Le sport<br />près de <span style={{ color:'#22C55E' }}>toi</span>
           </motion.h1>
 
           <motion.p className="font-poppins mb-7 mx-auto"
             style={{ fontSize:15, color:'rgba(255,255,255,0.65)', maxWidth:300, lineHeight:1.6 }}
-            initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.14 }}>
+            initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.23 }}>
             Trouve des clubs, des événements et des actualités sportives autour de toi.
           </motion.p>
 
           <motion.div className="flex gap-3 justify-center"
-            initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.19 }}>
+            initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.29 }}>
             <motion.button whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }} onClick={() => onNavigate('map')}
               className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer"
               style={{ backgroundColor:'#22C55E', borderRadius:14, padding:'12px 22px', fontSize:14 }}>
@@ -298,7 +298,7 @@ export default function HomePage({ onNavigate, stats }) {
 
         {/* Phone */}
         <motion.div className="px-8 pb-2 relative"
-          initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.22, type:'spring', stiffness:200, damping:22 }}>
+          initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3, type:'spring', stiffness:180, damping:22 }}>
           <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:'80%', height:60, background:'radial-gradient(ellipse, rgba(34,197,94,0.25) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
           <PhoneMockup />
         </motion.div>
@@ -321,7 +321,7 @@ export default function HomePage({ onNavigate, stats }) {
 
           {/* Colonne gauche — texte */}
           <motion.div className="flex-1 text-white"
-            initial={{ opacity:0, x:-24 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.28 }}>
+            initial={{ opacity:0, x:-24 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.35 }}>
 
             {/* Logo */}
             <div className="flex items-center gap-3 mb-8">
@@ -382,7 +382,7 @@ export default function HomePage({ onNavigate, stats }) {
           {/* Colonne droite — phone */}
           <motion.div className="flex-shrink-0 relative"
             style={{ width: 320 }}
-            initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1, type:'spring', stiffness:180, damping:22 }}>
+            initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15, type:'spring', stiffness:160, damping:22 }}>
             <div style={{ position:'absolute', bottom:'-5%', left:'50%', transform:'translateX(-50%)', width:'120%', height:80, background:'radial-gradient(ellipse, rgba(34,197,94,0.3) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none', zIndex:0 }} />
             <div style={{ position:'relative', zIndex:1 }}>
               <PhoneMockup />
@@ -408,7 +408,7 @@ export default function HomePage({ onNavigate, stats }) {
                   <motion.div key={n}
                     initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
                     whileHover={{ y:-4, boxShadow:'0 12px 32px rgba(0,0,0,0.08)' }}
-                    transition={{ delay:0.1 + i*0.07 }}
+                    transition={{ delay:0.15 + i*0.1, duration:0.4, ease:'easeOut' }}
                     className="rounded-2xl p-6 border border-gray-100"
                     style={{ backgroundColor:'white' }}>
                     <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold font-poppins text-white text-base mb-4"
@@ -457,7 +457,7 @@ export default function HomePage({ onNavigate, stats }) {
                 <motion.div key={title}
                   initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
                   whileHover={{ y:-4, boxShadow:'0 16px 40px rgba(0,0,0,0.1)' }}
-                  transition={{ delay:0.15 + i*0.07 }}
+                  transition={{ delay:0.2 + i*0.1, duration:0.4, ease:'easeOut' }}
                   className="rounded-2xl p-6 border border-gray-100 shadow-sm"
                   style={{ backgroundColor:'white' }}>
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor:bg }}>
