@@ -19,9 +19,16 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
   }, []);
 
   const q = query.trim().toLowerCase();
+
+  // "Starts with" ranked before "contains" for better UX with 300+ communes
   const matchedCities = q.length >= 1
-    ? cities.filter(c => c.toLowerCase().includes(q)).slice(0, 5)
+    ? (() => {
+        const startsWith = cities.filter(c => c.toLowerCase().startsWith(q));
+        const contains   = cities.filter(c => !c.toLowerCase().startsWith(q) && c.toLowerCase().includes(q));
+        return [...startsWith, ...contains].slice(0, 6);
+      })()
     : [];
+
   const matchedClubs = q.length >= 2
     ? clubs.filter(c =>
         c.name.toLowerCase().includes(q) ||

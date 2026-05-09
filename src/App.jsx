@@ -10,6 +10,7 @@ import { useClubMatches } from './hooks/useClubMatches.js';
 import { useClubs } from './hooks/useClubs.js';
 import { useSports } from './hooks/useSports.js';
 import { useUpcomingFavorites } from './hooks/useUpcomingFavorites.js';
+import { useCommunes } from './hooks/useCommunes.js';
 import Header from './components/Header.jsx';
 import ReminderBanner from './components/ReminderBanner.jsx';
 import BottomNav from './components/BottomNav.jsx';
@@ -45,10 +46,8 @@ function AppInner() {
 
   const allClubs = useMemo(() => [...userClubs, ...STATIC_CLUBS], [userClubs]);
 
-  const allCities = useMemo(
-    () => [...new Set(allEvents.map(e => e.city))].sort(),
-    [allEvents]
-  );
+  // Fetch all communes for active departments from geo.api.gouv.fr
+  const { communes } = useCommunes([activeDepartment]);
 
   const upcomingFavorites = useUpcomingFavorites(allEvents, favorites);
 
@@ -91,7 +90,7 @@ function AppInner() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
       {activeTab !== 'home' && (
         <Header
-          cities={allCities}
+          cities={communes}
           clubs={allClubs}
           cityFilter={cityFilter}
           onCityFilter={(city) => { setCityFilter(city); setActiveTab('map'); }}
