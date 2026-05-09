@@ -98,7 +98,7 @@ function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
       {block.type === 'image'           && <ImageBlock           data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'matches'         && <MatchesBlock         data={block.data} isEditing={isEditing} onUpdate={onUpdate} club={club} />}
       {block.type === 'about'           && (isEditing
-        ? <AboutBlockEditor block={block} onChange={updated => onUpdate({ data: updated.data })} />
+        ? <AboutBlockEditor block={block} onChange={updated => onUpdate(updated.data)} />
         : <AboutBlockView   block={block} />
       )}
     </>

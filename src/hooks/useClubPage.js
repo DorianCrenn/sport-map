@@ -19,6 +19,7 @@ function defaultData(type, club) {
     case 'training':        return { sessions: [] };
     case 'image':           return { src: '', caption: '', fit: 'cover', ratio: '16/9' };
     case 'matches':         return { matches: [] };
+    case 'about':           return { description: '', founded: '', address: '', prices: [], contacts: [] };
     default:                return {};
   }
 }

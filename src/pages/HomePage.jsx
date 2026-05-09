@@ -1,6 +1,126 @@
 import { motion } from 'framer-motion';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 
+// ── Floating sport logos in hero background ───────────────────────────────────
+const SPORT_ICONS = [
+  // Football
+  (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+    </svg>
+  ),
+  // Running
+  (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="13" cy="4" r="2"/>
+      <path d="m6 21 5-5 2 3 3-8 4 2"/>
+      <path d="m3 14 4-1 3.5 3"/>
+    </svg>
+  ),
+  // Trophy
+  (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="8 6 4 6 4 10"/>
+      <polyline points="16 6 20 6 20 10"/>
+      <path d="M4 10c0 4.4 3.6 8 8 8s8-3.6 8-8"/>
+      <line x1="12" y1="18" x2="12" y2="22"/>
+      <line x1="8" y1="22" x2="16" y2="22"/>
+    </svg>
+  ),
+  // Bicycle
+  (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/>
+      <circle cx="15" cy="5" r="1"/>
+      <path d="m12 17.5-5.5 0 3-9 2.5 5 2.5-2.5"/>
+      <path d="M16 6.5 18.5 14 12 17.5"/>
+    </svg>
+  ),
+  // Heart / Favoris
+  (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  ),
+  // Star / Handball
+  (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+  ),
+  // Map pin / localisation
+  (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+  ),
+  // Shield / club
+  (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  ),
+];
+
+const FLOAT_CONFIG = [
+  { iconIdx: 0, x: '6%',   y: '12%', size: 36, color: '#22C55E', opacity: 0.18, dur: 7,   delay: 0,   dy: 18 },
+  { iconIdx: 1, x: '88%',  y: '8%',  size: 30, color: '#3B82F6', opacity: 0.15, dur: 9,   delay: 1.5, dy: 22 },
+  { iconIdx: 3, x: '78%',  y: '62%', size: 42, color: '#f97316', opacity: 0.14, dur: 8,   delay: 0.8, dy: 16 },
+  { iconIdx: 5, x: '12%',  y: '70%', size: 28, color: '#a855f7', opacity: 0.16, dur: 10,  delay: 2,   dy: 20 },
+  { iconIdx: 6, x: '50%',  y: '5%',  size: 22, color: '#22C55E', opacity: 0.12, dur: 11,  delay: 3,   dy: 14 },
+  { iconIdx: 7, x: '92%',  y: '38%', size: 32, color: '#ef4444', opacity: 0.13, dur: 8.5, delay: 0.5, dy: 18 },
+  { iconIdx: 2, x: '3%',   y: '42%', size: 26, color: '#f59e0b', opacity: 0.15, dur: 9.5, delay: 4,   dy: 20 },
+  { iconIdx: 4, x: '65%',  y: '80%', size: 24, color: '#ec4899', opacity: 0.13, dur: 7.5, delay: 1.2, dy: 16 },
+  { iconIdx: 0, x: '38%',  y: '88%', size: 20, color: '#22C55E', opacity: 0.10, dur: 12,  delay: 2.5, dy: 12 },
+  { iconIdx: 3, x: '22%',  y: '22%', size: 18, color: '#3B82F6', opacity: 0.10, dur: 13,  delay: 5,   dy: 10 },
+];
+
+function FloatingLogos() {
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      {FLOAT_CONFIG.map((item, i) => (
+        <motion.div
+          key={i}
+          style={{
+            position: 'absolute',
+            left: item.x,
+            top: item.y,
+            opacity: item.opacity,
+          }}
+          animate={{ y: [0, -item.dy, 0], rotate: [0, item.dy * 0.3, 0] }}
+          transition={{
+            duration: item.dur,
+            delay: item.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        >
+          {SPORT_ICONS[item.iconIdx](item.size, item.color)}
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// ── Scroll-aware animation wrapper ────────────────────────────────────────────
+function FadeUp({ children, delay = 0, y = 18, className, style }) {
+  return (
+    <motion.div
+      className={className}
+      style={style}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.45, delay, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 // ── Phone mockup ──────────────────────────────────────────────────────────────
 function PhoneMockup() {
   const markers = [
@@ -112,7 +232,7 @@ function PhoneMockup() {
   );
 }
 
-// ── Shared content sections ───────────────────────────────────────────────────
+// ── How It Works ──────────────────────────────────────────────────────────────
 function HowItWorks() {
   const steps = [
     {
@@ -141,17 +261,19 @@ function HowItWorks() {
         Comment ça marche ?
       </h3>
       <div className="space-y-4">
-        {steps.map(({ n, color, bg, title, desc, icon }) => (
-          <div key={n} className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold font-poppins text-white text-sm"
-              style={{ backgroundColor: color, marginTop: 1 }}>
-              {n}
+        {steps.map(({ n, color, bg, title, desc, icon }, i) => (
+          <FadeUp key={n} delay={i * 0.1}>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold font-poppins text-white text-sm"
+                style={{ backgroundColor: color, marginTop: 1 }}>
+                {n}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold font-poppins text-sm" style={{ color: '#0F1E3A' }}>{title}</div>
+                <div className="text-xs mt-0.5" style={{ color: '#64748b', lineHeight: 1.55 }}>{desc}</div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-bold font-poppins text-sm" style={{ color: '#0F1E3A' }}>{title}</div>
-              <div className="text-xs mt-0.5" style={{ color: '#94a3b8', lineHeight: 1.55 }}>{desc}</div>
-            </div>
-          </div>
+          </FadeUp>
         ))}
       </div>
     </div>
@@ -160,31 +282,33 @@ function HowItWorks() {
 
 function ClubBanner({ onNavigate }) {
   return (
-    <div className="mt-8 rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: '#0F1E3A' }}>
-      <div style={{ position: 'absolute', top: '-30%', right: '-10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 65%)', pointerEvents: 'none' }} />
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(34,197,94,0.2)' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="3"/>
-            <path d="M3 9h18M9 21V9"/>
-          </svg>
+    <FadeUp>
+      <div className="mt-8 rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: '#0F1E3A' }}>
+        <div style={{ position: 'absolute', top: '-30%', right: '-10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 65%)', pointerEvents: 'none' }} />
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(34,197,94,0.2)' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <path d="M3 9h18M9 21V9"/>
+            </svg>
+          </div>
+          <div className="font-bold font-poppins text-white" style={{ fontSize: 14 }}>Tu gères un club ?</div>
         </div>
-        <div className="font-bold font-poppins text-white" style={{ fontSize: 14 }}>Tu gères un club ?</div>
+        <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.60)', lineHeight: 1.55 }}>
+          Crée la page de ton club, publie ton calendrier par équipe, affiche tes matchs à domicile sur la carte et gère tes résultats.
+        </p>
+        <button onClick={() => onNavigate('clubs')}
+          className="flex items-center gap-1.5 font-semibold font-poppins text-white"
+          style={{ backgroundColor: '#22C55E', borderRadius: 12, padding: '9px 16px', fontSize: 13 }}>
+          Voir les clubs
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
       </div>
-      <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.60)', lineHeight: 1.55 }}>
-        Crée la page de ton club, publie ton calendrier par équipe, affiche tes matchs à domicile sur la carte et gère tes résultats.
-      </p>
-      <button onClick={() => onNavigate('clubs')}
-        className="flex items-center gap-1.5 font-semibold font-poppins text-white"
-        style={{ backgroundColor: '#22C55E', borderRadius: 12, padding: '9px 16px', fontSize: 13 }}>
-        Voir les clubs
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </button>
-    </div>
+    </FadeUp>
   );
 }
 
-// ── Stats + Features (partagé mobile & desktop) ───────────────────────────────
+// ── Stats + Features ──────────────────────────────────────────────────────────
 function FeaturesSection({ stats = {}, onNavigate }) {
   const { clubs = 0, events = 0, sports = 0 } = stats;
   return (
@@ -202,39 +326,35 @@ function FeaturesSection({ stats = {}, onNavigate }) {
           { bg:'#EFF6FF', color:'#3B82F6', label:'Événements', value: events, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
           { bg:'#FDF4FF', color:'#a855f7', label:'Sports', value: sports, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
         ].map(({ bg, color, label, value, icon }, i) => (
-          <motion.div key={label}
-            initial={{ opacity:0, y:22 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.18 + i*0.09, duration:0.4, ease:'easeOut' }}
+          <FadeUp key={label} delay={i * 0.1}
             className="rounded-2xl flex flex-col items-center gap-1.5 py-4 md:py-5"
-            style={{ backgroundColor:bg }}>
+            style={{ backgroundColor: bg }}>
             {icon}
             <div className="font-extrabold font-poppins md:text-3xl" style={{ fontSize:20, color, lineHeight:1 }}>{value}</div>
-            <div className="font-medium text-center" style={{ fontSize:11, color:'#94a3b8' }}>{label}</div>
-          </motion.div>
+            <div className="font-medium text-center" style={{ fontSize:11, color:'#64748b' }}>{label}</div>
+          </FadeUp>
         ))}
       </div>
 
-      {/* Features */}
+      {/* Feature cards */}
       <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-3 md:gap-5">
         {[
           { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'#F0FDF4', title:'Trouve un club', desc:'Parcours les clubs sportifs du Finistère par sport ou par ville.' },
           { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'#EFF6FF', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois — tous les événements sur la carte.' },
           { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'#FDF4FF', title:'Vis ta passion', desc:'Rejoins une communauté de passionnés de sport local.' },
         ].map(({ icon, bg, title, desc }, i) => (
-          <motion.div key={title}
-            initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.26 + i*0.1, duration:0.4, ease:'easeOut' }}
+          <FadeUp key={title} delay={i * 0.1}
             className="flex items-start gap-3 md:flex-col md:gap-3 md:bg-white md:rounded-2xl md:p-5 md:border md:border-gray-100 md:shadow-sm">
             <div className="rounded-xl flex items-center justify-center flex-shrink-0 md:w-12 md:h-12" style={{ width:38, height:38, backgroundColor:bg }}>
               {icon}
             </div>
             <div>
               <div className="font-bold font-poppins md:text-base" style={{ fontSize:14, color:'#0F1E3A' }}>{title}</div>
-              <div style={{ fontSize:12, color:'#94a3b8', marginTop:2, lineHeight:1.5 }}>{desc}</div>
+              <div style={{ fontSize:12, color:'#64748b', marginTop:2, lineHeight:1.5 }}>{desc}</div>
             </div>
-          </motion.div>
+          </FadeUp>
         ))}
       </div>
-
-      {/* How it works + club banner — mobile only (avant les features) */}
 
       <div className="text-center mt-6">
         <p style={{ fontSize:11, color:'#cbd5e1' }}>Finistère (29) · Version 1.0.0</p>
@@ -243,7 +363,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage({ onNavigate, stats }) {
   return (
     <div className="h-full overflow-y-auto" style={{ background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 55%, #0F1E3A 100%)' }}>
@@ -253,34 +373,37 @@ export default function HomePage({ onNavigate, stats }) {
 
         {/* Hero texte centré */}
         <div className="flex-shrink-0 px-6 pt-10 pb-6 text-white text-center relative overflow-hidden">
+          {/* Floating logos */}
+          <FloatingLogos />
+
           <div style={{ position:'absolute', top:'-40%', left:'50%', transform:'translateX(-50%)', width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
 
-          <motion.div className="flex items-center justify-center gap-2 mb-6"
+          <motion.div className="flex items-center justify-center gap-2 mb-6 relative"
             initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.3 }}>
             <SportLinkLogo size={32} onDark />
             <span className="font-extrabold font-poppins text-white" style={{ fontSize:21, letterSpacing:'-0.3px' }}>SportLink</span>
           </motion.div>
 
-          <motion.div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-5"
+          <motion.div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-5 relative"
             style={{ backgroundColor:'rgba(34,197,94,0.15)', border:'1px solid rgba(34,197,94,0.3)' }}
             initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.09 }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             <span className="font-semibold font-poppins" style={{ fontSize:12, color:'#22C55E' }}>Sport en Finistère</span>
           </motion.div>
 
-          <motion.h1 className="font-extrabold font-poppins text-white mb-4"
+          <motion.h1 className="font-extrabold font-poppins text-white mb-4 relative"
             style={{ fontSize:40, lineHeight:1.08, letterSpacing:'-1px' }}
             initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15 }}>
             Le sport<br />près de <span style={{ color:'#22C55E' }}>toi</span>
           </motion.h1>
 
-          <motion.p className="font-poppins mb-7 mx-auto"
+          <motion.p className="font-poppins mb-7 mx-auto relative"
             style={{ fontSize:15, color:'rgba(255,255,255,0.65)', maxWidth:300, lineHeight:1.6 }}
             initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.23 }}>
             Trouve des clubs, des événements et des actualités sportives autour de toi.
           </motion.p>
 
-          <motion.div className="flex gap-3 justify-center"
+          <motion.div className="flex gap-3 justify-center relative"
             initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.29 }}>
             <motion.button whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }} onClick={() => onNavigate('map')}
               className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer"
@@ -315,12 +438,15 @@ export default function HomePage({ onNavigate, stats }) {
         {/* Hero — deux colonnes */}
         <div className="flex flex-1 items-center px-16 xl:px-24 py-16 gap-12 xl:gap-20 relative overflow-hidden" style={{ minHeight: '100vh' }}>
 
+          {/* Floating logos — desktop */}
+          <FloatingLogos />
+
           {/* Orbes déco */}
           <div style={{ position:'absolute', top:'10%', right:'35%', width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 65%)', pointerEvents:'none' }} />
           <div style={{ position:'absolute', bottom:'5%', left:'5%', width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 65%)', pointerEvents:'none' }} />
 
           {/* Colonne gauche — texte */}
-          <motion.div className="flex-1 text-white"
+          <motion.div className="flex-1 text-white relative"
             initial={{ opacity:0, x:-24 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.35 }}>
 
             {/* Logo */}
@@ -394,11 +520,13 @@ export default function HomePage({ onNavigate, stats }) {
         <div style={{ backgroundColor:'white', position:'relative', zIndex:1 }}>
           <div className="max-w-5xl mx-auto">
 
-            {/* How it works — desktop (en premier) */}
+            {/* How it works — desktop */}
             <div className="px-12 pt-10 pb-10">
-              <h2 className="font-bold font-poppins text-center mb-8" style={{ fontSize:28, color:'#0F1E3A' }}>
-                Comment ça marche ?
-              </h2>
+              <FadeUp>
+                <h2 className="font-bold font-poppins text-center mb-8" style={{ fontSize:28, color:'#0F1E3A' }}>
+                  Comment ça marche ?
+                </h2>
+              </FadeUp>
               <div className="grid grid-cols-3 gap-6">
                 {[
                   { n:'1', color:'#22C55E', bg:'#F0FDF4', title:'Crée ton compte & choisis tes sports', desc:"Inscris-toi en 30 secondes et sélectionne tes disciplines favorites. La carte et les clubs se filtrent automatiquement selon tes préférences." },
@@ -406,9 +534,11 @@ export default function HomePage({ onNavigate, stats }) {
                   { n:'3', color:'#a855f7', bg:'#FDF4FF', title:'Rejoins un club, suis ses matchs', desc:"Consulte les pages des clubs, leur calendrier par équipe, leurs résultats et contacte-les directement depuis l'app." },
                 ].map(({ n, color, bg, title, desc }, i) => (
                   <motion.div key={n}
-                    initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+                    initial={{ opacity:0, y:18 }}
+                    whileInView={{ opacity:1, y:0 }}
+                    viewport={{ once: true, margin: '-40px' }}
                     whileHover={{ y:-4, boxShadow:'0 12px 32px rgba(0,0,0,0.08)' }}
-                    transition={{ delay:0.15 + i*0.1, duration:0.4, ease:'easeOut' }}
+                    transition={{ delay: i * 0.1, duration:0.4, ease:'easeOut' }}
                     className="rounded-2xl p-6 border border-gray-100"
                     style={{ backgroundColor:'white' }}>
                     <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold font-poppins text-white text-base mb-4"
@@ -416,7 +546,7 @@ export default function HomePage({ onNavigate, stats }) {
                       {n}
                     </div>
                     <div className="font-bold font-poppins mb-2" style={{ fontSize:15, color:'#0F1E3A' }}>{title}</div>
-                    <div style={{ fontSize:13, color:'#94a3b8', lineHeight:1.6 }}>{desc}</div>
+                    <div style={{ fontSize:13, color:'#64748b', lineHeight:1.6 }}>{desc}</div>
                   </motion.div>
                 ))}
               </div>
@@ -424,7 +554,12 @@ export default function HomePage({ onNavigate, stats }) {
 
             {/* Club banner — desktop */}
             <div className="px-12 pb-12" style={{ borderTop: '1px solid #f1f5f9' }}>
-              <div className="rounded-2xl p-8 mt-10 relative overflow-hidden flex items-center gap-8" style={{ backgroundColor:'#0F1E3A' }}>
+              <motion.div
+                initial={{ opacity:0, y:18 }}
+                whileInView={{ opacity:1, y:0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration:0.45, ease:'easeOut' }}
+                className="rounded-2xl p-8 mt-10 relative overflow-hidden flex items-center gap-8" style={{ backgroundColor:'#0F1E3A' }}>
                 <div style={{ position:'absolute', top:'-20%', right:'5%', width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
                 <div className="flex-1">
                   <div className="font-bold font-poppins text-white mb-2" style={{ fontSize:20 }}>Tu gères un club ?</div>
@@ -439,14 +574,16 @@ export default function HomePage({ onNavigate, stats }) {
                   Voir les clubs
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </motion.button>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Tout ce dont tu as besoin — en dernier */}
+            {/* Tout ce dont tu as besoin */}
             <div className="px-12 pb-4" style={{ borderTop: '1px solid #f1f5f9' }}>
-              <h2 className="font-bold font-poppins text-center mb-8 pt-10" style={{ fontSize:24, color:'#0F1E3A' }}>
-                Tout ce dont tu as besoin
-              </h2>
+              <FadeUp>
+                <h2 className="font-bold font-poppins text-center mb-8 pt-10" style={{ fontSize:24, color:'#0F1E3A' }}>
+                  Tout ce dont tu as besoin
+                </h2>
+              </FadeUp>
             </div>
             <div className="grid grid-cols-3 gap-6 px-12 pb-12">
               {[
@@ -455,16 +592,18 @@ export default function HomePage({ onNavigate, stats }) {
                 { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'#FDF4FF', color:'#a855f7', title:'Vis ta passion', desc:"Rejoins une communauté de passionnés, suis l'actualité sportive et reste connecté à ton sport." },
               ].map(({ icon, bg, color, title, desc }, i) => (
                 <motion.div key={title}
-                  initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+                  initial={{ opacity:0, y:18 }}
+                  whileInView={{ opacity:1, y:0 }}
+                  viewport={{ once: true, margin: '-40px' }}
                   whileHover={{ y:-4, boxShadow:'0 16px 40px rgba(0,0,0,0.1)' }}
-                  transition={{ delay:0.2 + i*0.1, duration:0.4, ease:'easeOut' }}
+                  transition={{ delay: i * 0.1, duration:0.4, ease:'easeOut' }}
                   className="rounded-2xl p-6 border border-gray-100 shadow-sm"
                   style={{ backgroundColor:'white' }}>
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor:bg }}>
                     {icon}
                   </div>
                   <div className="font-bold font-poppins mb-2" style={{ fontSize:17, color:'#0F1E3A' }}>{title}</div>
-                  <div style={{ fontSize:13, color:'#94a3b8', lineHeight:1.6 }}>{desc}</div>
+                  <div style={{ fontSize:13, color:'#64748b', lineHeight:1.6 }}>{desc}</div>
                 </motion.div>
               ))}
             </div>
