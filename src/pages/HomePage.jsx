@@ -27,32 +27,43 @@ function FloatingLogos() {
     .slice(0, FLOAT_SLOTS.length);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
       {sports.map(([name, sportData], i) => {
         const slot = FLOAT_SLOTS[i];
         const iconHtml = SPORT_ICONS[name] ?? SPORT_ICONS[sportData.iconId];
         if (!iconHtml) return null;
         const color = sportData.color ?? '#22C55E';
         return (
-          <motion.div
+          /* position + opacity static — motion.div gère uniquement le float */
+          <div
             key={name}
             style={{ position: 'absolute', left: slot.x, top: slot.y, opacity: slot.opacity }}
-            animate={{ y: [0, -slot.dy, 0], rotate: [0, slot.dy * 0.25, 0] }}
-            transition={{ duration: slot.dur, delay: slot.delay, repeat: Infinity, ease: 'easeInOut' }}
           >
-            {/* glow halo */}
-            <div style={{
-              position: 'absolute',
-              inset: -slot.size * 0.5,
-              borderRadius: '50%',
-              background: `radial-gradient(circle, ${color}35 0%, transparent 70%)`,
-              pointerEvents: 'none',
-            }} />
-            <svg width={slot.size} height={slot.size} viewBox="0 0 24 24" aria-hidden="true"
-              style={{ display: 'block', color }}>
-              <g dangerouslySetInnerHTML={{ __html: iconHtml }} />
-            </svg>
-          </motion.div>
+            <motion.div
+              initial={{ y: 0 }}
+              animate={{ y: -slot.dy }}
+              transition={{
+                duration: slot.dur,
+                delay: slot.delay,
+                repeat: Infinity,
+                repeatType: 'mirror',
+                ease: 'easeInOut',
+              }}
+            >
+              {/* glow halo */}
+              <div style={{
+                position: 'absolute',
+                inset: -slot.size * 0.5,
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${color}35 0%, transparent 70%)`,
+                pointerEvents: 'none',
+              }} />
+              <svg width={slot.size} height={slot.size} viewBox="0 0 24 24" aria-hidden="true"
+                style={{ display: 'block', color }}>
+                <g dangerouslySetInnerHTML={{ __html: iconHtml }} />
+              </svg>
+            </motion.div>
+          </div>
         );
       })}
     </div>
