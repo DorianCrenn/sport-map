@@ -50,6 +50,8 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
         background: 'linear-gradient(90deg, #0F1E3A 0%, #1a3460 100%)',
         boxShadow: '0 2px 12px rgba(15,30,58,0.3)',
         minHeight: 58,
+        position: 'relative',
+        zIndex: 1000,
       }}
     >
       {/* Logo */}
