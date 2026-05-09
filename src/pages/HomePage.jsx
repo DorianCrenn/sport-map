@@ -1,106 +1,50 @@
 import { motion } from 'framer-motion';
+import { useSports } from '../hooks/useSports.js';
+import { SPORT_ICONS } from '../components/sportIcons.js';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 
-// ── Floating sport logos in hero background ───────────────────────────────────
-const SPORT_ICONS = [
-  // Football
-  (size, color) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-      <line x1="2" y1="12" x2="22" y2="12"/>
-    </svg>
-  ),
-  // Running
-  (size, color) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="13" cy="4" r="2"/>
-      <path d="m6 21 5-5 2 3 3-8 4 2"/>
-      <path d="m3 14 4-1 3.5 3"/>
-    </svg>
-  ),
-  // Trophy
-  (size, color) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="8 6 4 6 4 10"/>
-      <polyline points="16 6 20 6 20 10"/>
-      <path d="M4 10c0 4.4 3.6 8 8 8s8-3.6 8-8"/>
-      <line x1="12" y1="18" x2="12" y2="22"/>
-      <line x1="8" y1="22" x2="16" y2="22"/>
-    </svg>
-  ),
-  // Bicycle
-  (size, color) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/>
-      <circle cx="15" cy="5" r="1"/>
-      <path d="m12 17.5-5.5 0 3-9 2.5 5 2.5-2.5"/>
-      <path d="M16 6.5 18.5 14 12 17.5"/>
-    </svg>
-  ),
-  // Heart / Favoris
-  (size, color) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
-  ),
-  // Star / Handball
-  (size, color) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-    </svg>
-  ),
-  // Map pin / localisation
-  (size, color) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-      <circle cx="12" cy="10" r="3"/>
-    </svg>
-  ),
-  // Shield / club
-  (size, color) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-    </svg>
-  ),
-];
-
-const FLOAT_CONFIG = [
-  { iconIdx: 0, x: '6%',   y: '12%', size: 36, color: '#22C55E', opacity: 0.18, dur: 7,   delay: 0,   dy: 18 },
-  { iconIdx: 1, x: '88%',  y: '8%',  size: 30, color: '#3B82F6', opacity: 0.15, dur: 9,   delay: 1.5, dy: 22 },
-  { iconIdx: 3, x: '78%',  y: '62%', size: 42, color: '#f97316', opacity: 0.14, dur: 8,   delay: 0.8, dy: 16 },
-  { iconIdx: 5, x: '12%',  y: '70%', size: 28, color: '#a855f7', opacity: 0.16, dur: 10,  delay: 2,   dy: 20 },
-  { iconIdx: 6, x: '50%',  y: '5%',  size: 22, color: '#22C55E', opacity: 0.12, dur: 11,  delay: 3,   dy: 14 },
-  { iconIdx: 7, x: '92%',  y: '38%', size: 32, color: '#ef4444', opacity: 0.13, dur: 8.5, delay: 0.5, dy: 18 },
-  { iconIdx: 2, x: '3%',   y: '42%', size: 26, color: '#f59e0b', opacity: 0.15, dur: 9.5, delay: 4,   dy: 20 },
-  { iconIdx: 4, x: '65%',  y: '80%', size: 24, color: '#ec4899', opacity: 0.13, dur: 7.5, delay: 1.2, dy: 16 },
-  { iconIdx: 0, x: '38%',  y: '88%', size: 20, color: '#22C55E', opacity: 0.10, dur: 12,  delay: 2.5, dy: 12 },
-  { iconIdx: 3, x: '22%',  y: '22%', size: 18, color: '#3B82F6', opacity: 0.10, dur: 13,  delay: 5,   dy: 10 },
+// Positions & animation params — up to 12 slots, cycled if more sports
+const FLOAT_SLOTS = [
+  { x: '6%',  y: '12%', size: 36, opacity: 0.18, dur: 7,   delay: 0,   dy: 18 },
+  { x: '88%', y: '8%',  size: 30, opacity: 0.15, dur: 9,   delay: 1.5, dy: 22 },
+  { x: '78%', y: '62%', size: 40, opacity: 0.14, dur: 8,   delay: 0.8, dy: 16 },
+  { x: '12%', y: '70%', size: 28, opacity: 0.16, dur: 10,  delay: 2,   dy: 20 },
+  { x: '50%', y: '5%',  size: 22, opacity: 0.12, dur: 11,  delay: 3,   dy: 14 },
+  { x: '92%', y: '38%', size: 32, opacity: 0.13, dur: 8.5, delay: 0.5, dy: 18 },
+  { x: '3%',  y: '42%', size: 26, opacity: 0.15, dur: 9.5, delay: 4,   dy: 20 },
+  { x: '65%', y: '80%', size: 24, opacity: 0.13, dur: 7.5, delay: 1.2, dy: 16 },
+  { x: '38%', y: '88%', size: 20, opacity: 0.10, dur: 12,  delay: 2.5, dy: 12 },
+  { x: '22%', y: '22%', size: 18, opacity: 0.10, dur: 13,  delay: 5,   dy: 10 },
+  { x: '58%', y: '55%', size: 22, opacity: 0.09, dur: 11,  delay: 3.5, dy: 14 },
+  { x: '42%', y: '35%', size: 16, opacity: 0.09, dur: 14,  delay: 6,   dy: 10 },
 ];
 
 function FloatingLogos() {
+  const { allSports } = useSports();
+
+  const sports = Object.entries(allSports)
+    .filter(([, s]) => !s.isArchived)
+    .slice(0, FLOAT_SLOTS.length);
+
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-      {FLOAT_CONFIG.map((item, i) => (
-        <motion.div
-          key={i}
-          style={{
-            position: 'absolute',
-            left: item.x,
-            top: item.y,
-            opacity: item.opacity,
-          }}
-          animate={{ y: [0, -item.dy, 0], rotate: [0, item.dy * 0.3, 0] }}
-          transition={{
-            duration: item.dur,
-            delay: item.delay,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        >
-          {SPORT_ICONS[item.iconIdx](item.size, item.color)}
-        </motion.div>
-      ))}
+      {sports.map(([name, sportData], i) => {
+        const slot = FLOAT_SLOTS[i];
+        const iconHtml = SPORT_ICONS[name] ?? SPORT_ICONS[sportData.iconId];
+        if (!iconHtml) return null;
+        return (
+          <motion.div
+            key={name}
+            style={{ position: 'absolute', left: slot.x, top: slot.y, opacity: slot.opacity, color: sportData.color }}
+            animate={{ y: [0, -slot.dy, 0], rotate: [0, slot.dy * 0.25, 0] }}
+            transition={{ duration: slot.dur, delay: slot.delay, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <svg width={slot.size} height={slot.size} viewBox="0 0 24 24" aria-hidden="true" style={{ display: 'block' }}>
+              <g dangerouslySetInnerHTML={{ __html: iconHtml }} />
+            </svg>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
