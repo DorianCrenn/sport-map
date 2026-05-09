@@ -1,23 +1,17 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { useClubs } from '../hooks/useClubs.js';
 import { useFilteredEvents } from '../hooks/useFilteredEvents.js';
 import { useGeolocation } from '../hooks/useGeolocation.js';
-import { STATIC_CLUBS } from '../data/clubs.js';
 import SportFilterBar from '../components/SportFilterBar.jsx';
 import DateFilterBar from '../components/DateFilterBar.jsx';
 import MapView from '../components/MapView.jsx';
 import EventSidebar from '../components/EventSidebar.jsx';
 import EventFormModal from '../components/EventFormModal.jsx';
 import MobileEventSheet from '../components/MobileEventSheet.jsx';
-import ClubPageView from '../components/club/ClubPageView.jsx';
 
-export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite, favoritesCount, onGoToFavoris }) {
+export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite, favoritesCount, onGoToFavoris, cityFilter }) {
   const { currentUser } = useAuth();
-  const { userClubs } = useClubs();
-  const allClubs = useMemo(() => [...userClubs, ...STATIC_CLUBS], [userClubs]);
-  const [selectedMapClub, setSelectedMapClub] = useState(null);
   const [sportFilter, setSportFilter] = useState(null);
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
   const [nearbyFilter, setNearbyFilter] = useState(false);
@@ -57,6 +51,7 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
     departmentId: activeDepartment,
     nearbyCoords,
     sportScope,
+    cityFilter,
   });
 
   const selectedEvent = useMemo(
@@ -144,8 +139,6 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
             onDeleteEvent={handleDeleteEvent}
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}
-            clubs={allClubs}
-            onSelectClub={setSelectedMapClub}
           />
         </div>
 
@@ -196,18 +189,6 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
           )}
         </AnimatePresence>
       </div>
-
-      {/* Club page overlay (from sidebar search) */}
-      <AnimatePresence>
-        {selectedMapClub && (
-          <ClubPageView
-            key={selectedMapClub.id}
-            club={selectedMapClub}
-            allEvents={[]}
-            onBack={() => setSelectedMapClub(null)}
-          />
-        )}
-      </AnimatePresence>
 
       {modalEvent !== undefined && (
         <EventFormModal

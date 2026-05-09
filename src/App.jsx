@@ -13,6 +13,7 @@ import { useUpcomingFavorites } from './hooks/useUpcomingFavorites.js';
 import Header from './components/Header.jsx';
 import ReminderBanner from './components/ReminderBanner.jsx';
 import BottomNav from './components/BottomNav.jsx';
+import ClubPageView from './components/club/ClubPageView.jsx';
 import HomePage from './pages/HomePage.jsx';
 import MapPage from './pages/MapPage.jsx';
 import FavorisPage from './pages/FavorisPage.jsx';
@@ -34,10 +35,19 @@ function AppInner() {
   const clubMatchEvents = useClubMatches();
   const { userClubs } = useClubs();
   const { allSports } = useSports();
+  const [cityFilter, setCityFilter] = useState(null);
+  const [selectedSearchClub, setSelectedSearchClub] = useState(null);
 
   const allEvents = useMemo(
     () => [...EVENTS, ...userEvents, ...clubMatchEvents],
     [userEvents, clubMatchEvents]
+  );
+
+  const allClubs = useMemo(() => [...userClubs, ...STATIC_CLUBS], [userClubs]);
+
+  const allCities = useMemo(
+    () => [...new Set(allEvents.map(e => e.city))].sort(),
+    [allEvents]
   );
 
   const upcomingFavorites = useUpcomingFavorites(allEvents, favorites);
@@ -79,7 +89,16 @@ function AppInner() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
-      {activeTab !== 'home' && <Header />}
+      {activeTab !== 'home' && (
+        <Header
+          cities={allCities}
+          clubs={allClubs}
+          cityFilter={cityFilter}
+          onCityFilter={(city) => { setCityFilter(city); setActiveTab('map'); }}
+          onSelectClub={(club) => setSelectedSearchClub(club)}
+          onClearCity={() => setCityFilter(null)}
+        />
+      )}
 
       {activeTab === 'home' && (upcomingFavorites.today.length > 0 || upcomingFavorites.tomorrow.length > 0) && (
         <ReminderBanner
@@ -114,6 +133,7 @@ function AppInner() {
                 onToggleFavorite={toggleFavorite}
                 favoritesCount={favorites.size}
                 onGoToFavoris={() => setActiveTab('favoris')}
+                cityFilter={cityFilter}
               />
             )}
             {activeTab === 'favoris' && (
@@ -148,6 +168,14 @@ function AppInner() {
           <OnboardingPage
             key="onboarding"
             onDone={handleOnboardingDone}
+          />
+        )}
+        {selectedSearchClub && (
+          <ClubPageView
+            key={selectedSearchClub.id}
+            club={selectedSearchClub}
+            allEvents={allEvents}
+            onBack={() => setSelectedSearchClub(null)}
           />
         )}
       </AnimatePresence>

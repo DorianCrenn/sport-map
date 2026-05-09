@@ -43,12 +43,17 @@ function isThisWeek(dateStr) {
   return d >= today && d <= endOfWeek;
 }
 
-export function useFilteredEvents(events, { sport, dateRange, departmentId, nearbyCoords, sportScope }) {
+export function useFilteredEvents(events, { sport, dateRange, departmentId, nearbyCoords, sportScope, cityFilter }) {
   return useMemo(() => {
     let result = events;
 
     if (departmentId) {
       result = result.filter(e => e.departmentId === departmentId);
+    }
+
+    if (cityFilter) {
+      const q = cityFilter.toLowerCase();
+      result = result.filter(e => e.city.toLowerCase().includes(q));
     }
 
     if (sport) {
@@ -72,5 +77,5 @@ export function useFilteredEvents(events, { sport, dateRange, departmentId, near
     }
 
     return result.sort((a, b) => new Date(a.date) - new Date(b.date));
-  }, [events, sport, dateRange, departmentId, nearbyCoords, sportScope]);
+  }, [events, sport, dateRange, departmentId, nearbyCoords, sportScope, cityFilter]);
 }
