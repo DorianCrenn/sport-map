@@ -3,20 +3,20 @@ import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 
-// Positions & animation params — up to 12 slots, cycled if more sports
+// Positions & animation params — up to 12 slots
 const FLOAT_SLOTS = [
-  { x: '6%',  y: '12%', size: 36, opacity: 0.18, dur: 7,   delay: 0,   dy: 18 },
-  { x: '88%', y: '8%',  size: 30, opacity: 0.15, dur: 9,   delay: 1.5, dy: 22 },
-  { x: '78%', y: '62%', size: 40, opacity: 0.14, dur: 8,   delay: 0.8, dy: 16 },
-  { x: '12%', y: '70%', size: 28, opacity: 0.16, dur: 10,  delay: 2,   dy: 20 },
-  { x: '50%', y: '5%',  size: 22, opacity: 0.12, dur: 11,  delay: 3,   dy: 14 },
-  { x: '92%', y: '38%', size: 32, opacity: 0.13, dur: 8.5, delay: 0.5, dy: 18 },
-  { x: '3%',  y: '42%', size: 26, opacity: 0.15, dur: 9.5, delay: 4,   dy: 20 },
-  { x: '65%', y: '80%', size: 24, opacity: 0.13, dur: 7.5, delay: 1.2, dy: 16 },
-  { x: '38%', y: '88%', size: 20, opacity: 0.10, dur: 12,  delay: 2.5, dy: 12 },
-  { x: '22%', y: '22%', size: 18, opacity: 0.10, dur: 13,  delay: 5,   dy: 10 },
-  { x: '58%', y: '55%', size: 22, opacity: 0.09, dur: 11,  delay: 3.5, dy: 14 },
-  { x: '42%', y: '35%', size: 16, opacity: 0.09, dur: 14,  delay: 6,   dy: 10 },
+  { x: '5%',  y: '10%', size: 44, opacity: 0.45, dur: 7,   delay: 0,   dy: 18 },
+  { x: '84%', y: '7%',  size: 38, opacity: 0.40, dur: 9,   delay: 1.5, dy: 22 },
+  { x: '75%', y: '58%', size: 48, opacity: 0.38, dur: 8,   delay: 0.8, dy: 16 },
+  { x: '10%', y: '65%', size: 36, opacity: 0.40, dur: 10,  delay: 2,   dy: 20 },
+  { x: '48%', y: '4%',  size: 30, opacity: 0.35, dur: 11,  delay: 3,   dy: 14 },
+  { x: '90%', y: '35%', size: 40, opacity: 0.38, dur: 8.5, delay: 0.5, dy: 18 },
+  { x: '2%',  y: '40%', size: 32, opacity: 0.36, dur: 9.5, delay: 4,   dy: 20 },
+  { x: '62%', y: '76%', size: 30, opacity: 0.35, dur: 7.5, delay: 1.2, dy: 16 },
+  { x: '35%', y: '82%', size: 26, opacity: 0.32, dur: 12,  delay: 2.5, dy: 12 },
+  { x: '20%', y: '20%', size: 24, opacity: 0.32, dur: 13,  delay: 5,   dy: 10 },
+  { x: '55%', y: '48%', size: 28, opacity: 0.30, dur: 11,  delay: 3.5, dy: 14 },
+  { x: '40%', y: '32%', size: 22, opacity: 0.28, dur: 14,  delay: 6,   dy: 10 },
 ];
 
 function FloatingLogos() {
@@ -27,19 +27,29 @@ function FloatingLogos() {
     .slice(0, FLOAT_SLOTS.length);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
       {sports.map(([name, sportData], i) => {
         const slot = FLOAT_SLOTS[i];
         const iconHtml = SPORT_ICONS[name] ?? SPORT_ICONS[sportData.iconId];
         if (!iconHtml) return null;
+        const color = sportData.color ?? '#22C55E';
         return (
           <motion.div
             key={name}
-            style={{ position: 'absolute', left: slot.x, top: slot.y, opacity: slot.opacity, color: sportData.color }}
+            style={{ position: 'absolute', left: slot.x, top: slot.y, opacity: slot.opacity }}
             animate={{ y: [0, -slot.dy, 0], rotate: [0, slot.dy * 0.25, 0] }}
             transition={{ duration: slot.dur, delay: slot.delay, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <svg width={slot.size} height={slot.size} viewBox="0 0 24 24" aria-hidden="true" style={{ display: 'block' }}>
+            {/* glow halo */}
+            <div style={{
+              position: 'absolute',
+              inset: -slot.size * 0.5,
+              borderRadius: '50%',
+              background: `radial-gradient(circle, ${color}35 0%, transparent 70%)`,
+              pointerEvents: 'none',
+            }} />
+            <svg width={slot.size} height={slot.size} viewBox="0 0 24 24" aria-hidden="true"
+              style={{ display: 'block', color }}>
               <g dangerouslySetInnerHTML={{ __html: iconHtml }} />
             </svg>
           </motion.div>
