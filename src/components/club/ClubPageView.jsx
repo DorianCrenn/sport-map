@@ -9,12 +9,13 @@ import UpcomingEventsBlock from './blocks/UpcomingEventsBlock.jsx';
 import TrainingBlock from './blocks/TrainingBlock.jsx';
 import ImageBlock from './blocks/ImageBlock.jsx';
 import MatchesBlock from './blocks/MatchesBlock.jsx';
+import { AboutBlockEditor, AboutBlockView } from './blocks/AboutBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
   'upcoming-events': 'Événements', training: 'Entraînements',
-  image: 'Image', matches: 'Matchs',
+  image: 'Image', matches: 'Matchs', about: 'À propos',
 };
 
 // ── Span helpers ──────────────────────────────────────────────────────────────
@@ -96,6 +97,10 @@ function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
       {block.type === 'training'        && <TrainingBlock        data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'image'           && <ImageBlock           data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'matches'         && <MatchesBlock         data={block.data} isEditing={isEditing} onUpdate={onUpdate} club={club} />}
+      {block.type === 'about'           && (isEditing
+        ? <AboutBlockEditor block={block} onChange={updated => onUpdate({ data: updated.data })} />
+        : <AboutBlockView   block={block} />
+      )}
     </>
   );
 }
@@ -420,6 +425,34 @@ function useMatchStats(blocks) {
   return { W, D, L, played: played.length };
 }
 
+function usePendingResults(blocks) {
+  return useMemo(() => {
+    const now = new Date();
+    return blocks
+      .filter(b => b.type === 'matches')
+      .flatMap(b => b.data?.matches ?? [])
+      .filter(m => m.date && new Date(m.date + 'T23:59:59') < now && (m.scoreHome === null || m.scoreHome === undefined)).length;
+  }, [blocks]);
+}
+
+function PendingResultsBanner({ count, isEditing }) {
+  if (!isEditing || count === 0) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+      className="mx-4 mt-4 mb-0 rounded-2xl px-4 py-3 flex items-center gap-3 border"
+      style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderColor: '#fcd34d' }}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p className="text-xs font-semibold flex-1" style={{ color: '#92400e' }}>
+        {count} match{count > 1 ? 's' : ''} passé{count > 1 ? 's' : ''} sans score — pensez à les saisir !
+      </p>
+    </motion.div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ClubPageView({ club, allEvents, onBack }) {
   const { allSports: SPORTS } = useSports();
@@ -454,6 +487,7 @@ export default function ClubPageView({ club, allEvents, onBack }) {
   const sportData = SPORTS[club.sport];
   const rows = getRows(blocks);
   const stats = useMatchStats(blocks);
+  const pendingCount = usePendingResults(blocks);
 
   function handleAddBlock(type, afterRowId) {
     const rowBlocks = blocks.filter(b => b.rowId === afterRowId);
@@ -568,6 +602,8 @@ export default function ClubPageView({ club, allEvents, onBack }) {
           </div>
         )}
       </div>
+
+      <PendingResultsBanner count={pendingCount} isEditing={isEditing} />
 
       {/* ── Tab bar (when teams exist) ── */}
       {allTeams.length > 0 && (

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
+import { useShare } from '../hooks/useShare.js';
 import SportIcon from '../components/SportIcon.jsx';
 
 const CalendarSvg = () => (
@@ -19,21 +20,58 @@ const PinSvg = () => (
   </svg>
 );
 
+function ShareButton({ event }) {
+  const { share } = useShare();
+  const [copied, setCopied] = useState(false);
+
+  async function handleShare() {
+    const result = await share({
+      title: event.title,
+      text: `${event.title} — ${new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`,
+      url: window.location.href,
+    });
+    if (result.success && result.method === 'clipboard') {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      title={copied ? 'Lien copié !' : 'Partager'}
+      className="p-1.5 rounded-lg transition-colors cursor-pointer"
+      style={{ color: copied ? '#22C55E' : '#94a3b8', backgroundColor: copied ? '#f0fdf4' : 'transparent' }}
+    >
+      {copied ? (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      ) : (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+      )}
+    </button>
+  );
+}
+
 function FavoriteCard({ event, onToggleFavorite }) {
   const { allSports: SPORTS } = useSports();
   const group = SPORTS[event.sport];
   const dateObj = new Date(event.date);
-  const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const isPast = dateObj < new Date();
 
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: isPast ? 0.55 : 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100"
+      className="bg-white rounded-2xl p-4 mb-2.5 shadow-sm border border-gray-100"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -46,7 +84,7 @@ function FavoriteCard({ event, onToggleFavorite }) {
             <div className="font-semibold text-gray-800 text-sm leading-tight font-oswald tracking-wide">{event.title}</div>
             <div className="flex items-center gap-1 text-xs text-gray-500 mt-1 font-oswald">
               <CalendarSvg />
-              <span>{dateStr} · {timeStr}</span>
+              <span>{timeStr}</span>
             </div>
             <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5 font-inter">
               <PinSvg />
@@ -54,17 +92,40 @@ function FavoriteCard({ event, onToggleFavorite }) {
             </div>
           </div>
         </div>
-        <button
-          onClick={() => onToggleFavorite(event.id)}
-          className="p-2 rounded-xl transition-colors cursor-pointer flex-shrink-0"
-          style={{ color: '#ef4444', backgroundColor: '#fef2f2' }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-        </button>
+        <div className="flex items-center gap-0.5 flex-shrink-0">
+          <ShareButton event={event} />
+          <button
+            onClick={() => onToggleFavorite(event.id)}
+            className="p-2 rounded-xl transition-colors cursor-pointer"
+            style={{ color: '#ef4444', backgroundColor: '#fef2f2' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </motion.div>
+  );
+}
+
+function DateGroup({ label, events, onToggleFavorite, accent }) {
+  return (
+    <div className="mb-5">
+      <div className="flex items-center gap-2 mb-2.5">
+        <div className="h-px flex-1 bg-gray-100" />
+        <span
+          className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+          style={{ color: accent || '#64748b', backgroundColor: accent ? `${accent}14` : '#f1f5f9' }}
+        >
+          {label}
+        </span>
+        <div className="h-px flex-1 bg-gray-100" />
+      </div>
+      {events.map((event) => (
+        <FavoriteCard key={event.id} event={event} onToggleFavorite={onToggleFavorite} />
+      ))}
+    </div>
   );
 }
 
@@ -124,22 +185,57 @@ function NotifBanner({ favoriteEvents }) {
   );
 }
 
+function groupByDate(events) {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrowStart = new Date(todayStart); tomorrowStart.setDate(todayStart.getDate() + 1);
+  const dayAfterTomorrow = new Date(todayStart); dayAfterTomorrow.setDate(todayStart.getDate() + 2);
+  const nextWeekEnd = new Date(todayStart); nextWeekEnd.setDate(todayStart.getDate() + 7);
+
+  const groups = { today: [], tomorrow: [], thisWeek: [], later: [], past: [] };
+
+  for (const ev of events) {
+    const d = new Date(ev.date);
+    if (d < todayStart) groups.past.push(ev);
+    else if (d < tomorrowStart) groups.today.push(ev);
+    else if (d < dayAfterTomorrow) groups.tomorrow.push(ev);
+    else if (d < nextWeekEnd) groups.thisWeek.push(ev);
+    else groups.later.push(ev);
+  }
+
+  return groups;
+}
+
 export default function FavorisPage({ allEvents, favorites, onToggleFavorite }) {
-  const favoriteEvents = allEvents.filter((e) => favorites.has(e.id))
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const favoriteEvents = useMemo(
+    () => allEvents.filter((e) => favorites.has(e.id)).sort((a, b) => new Date(a.date) - new Date(b.date)),
+    [allEvents, favorites]
+  );
+
+  const upcomingFavorites = useMemo(
+    () => favoriteEvents.filter((e) => new Date(e.date) >= new Date()),
+    [favoriteEvents]
+  );
+
+  const groups = useMemo(() => groupByDate(favoriteEvents), [favoriteEvents]);
+
+  const hasGroups = groups.today.length + groups.tomorrow.length + groups.thisWeek.length + groups.later.length + groups.past.length > 0;
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
       <div className="px-4 pt-4 pb-1">
         <p className="text-sm text-gray-500">
           {favoriteEvents.length} événement{favoriteEvents.length !== 1 ? 's' : ''} sauvegardé{favoriteEvents.length !== 1 ? 's' : ''}
+          {upcomingFavorites.length > 0 && (
+            <span className="ml-1.5 text-green-600 font-semibold">· {upcomingFavorites.length} à venir</span>
+          )}
         </p>
       </div>
-      <NotifBanner favoriteEvents={favoriteEvents} />
+      <NotifBanner favoriteEvents={upcomingFavorites} />
 
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
+      <div className="flex-1 overflow-y-auto px-4 pt-3 pb-6">
         <AnimatePresence mode="popLayout">
-          {favoriteEvents.length === 0 ? (
+          {!hasGroups ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -154,9 +250,23 @@ export default function FavorisPage({ allEvents, favorites, onToggleFavorite }) 
               <p className="text-gray-400 text-sm mt-1">Appuyez sur le cœur d'un événement pour l'ajouter ici</p>
             </motion.div>
           ) : (
-            favoriteEvents.map((event) => (
-              <FavoriteCard key={event.id} event={event} onToggleFavorite={onToggleFavorite} />
-            ))
+            <motion.div key="groups" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              {groups.today.length > 0 && (
+                <DateGroup label="Aujourd'hui" events={groups.today} onToggleFavorite={onToggleFavorite} accent="#22C55E" />
+              )}
+              {groups.tomorrow.length > 0 && (
+                <DateGroup label="Demain" events={groups.tomorrow} onToggleFavorite={onToggleFavorite} accent="#3b82f6" />
+              )}
+              {groups.thisWeek.length > 0 && (
+                <DateGroup label="Cette semaine" events={groups.thisWeek} onToggleFavorite={onToggleFavorite} accent="#f97316" />
+              )}
+              {groups.later.length > 0 && (
+                <DateGroup label="Plus tard" events={groups.later} onToggleFavorite={onToggleFavorite} />
+              )}
+              {groups.past.length > 0 && (
+                <DateGroup label="Passés" events={groups.past} onToggleFavorite={onToggleFavorite} />
+              )}
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

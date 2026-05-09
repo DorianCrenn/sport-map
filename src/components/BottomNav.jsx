@@ -24,6 +24,15 @@ const BASE_TABS = [
     ),
   },
   {
+    id: 'favoris',
+    label: 'Favoris',
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    ),
+  },
+  {
     id: 'clubs',
     label: 'Clubs',
     icon: () => (
@@ -61,7 +70,7 @@ const ACTIVE_COLOR = '#22C55E';
 const INACTIVE_COLOR = '#94a3b8';
 const ADMIN_COLOR = '#3b82f6';
 
-export default function BottomNav({ activeTab, onTabChange }) {
+export default function BottomNav({ activeTab, onTabChange, badgeCounts = {} }) {
   const { isAdmin } = useAuth();
   const tabs = isAdmin ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS;
 
@@ -75,6 +84,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
         const isAdminTab = tab.id === 'admin';
         const activeColor = isAdminTab ? ADMIN_COLOR : ACTIVE_COLOR;
         const color = active ? activeColor : INACTIVE_COLOR;
+        const badgeCount = badgeCounts[tab.id] || 0;
 
         return (
           <motion.button
@@ -92,7 +102,21 @@ export default function BottomNav({ activeTab, onTabChange }) {
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
               />
             )}
-            {tab.icon(active)}
+            <div className="relative">
+              {tab.icon(active)}
+              {badgeCount > 0 && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: '#ef4444', minWidth: 16 }}
+                >
+                  <span className="text-white font-bold" style={{ fontSize: 9, lineHeight: 1 }}>
+                    {badgeCount > 9 ? '9+' : badgeCount}
+                  </span>
+                </motion.div>
+              )}
+            </div>
             <span
               className="text-[10px] font-semibold font-poppins"
               style={{ color }}

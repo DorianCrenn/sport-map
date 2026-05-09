@@ -48,7 +48,7 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
               </svg>
             </div>
             <h3 className="font-bold text-base font-poppins mb-2" style={{ color: '#0F1E3A' }}>Rejoignez SportLink</h3>
-            <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+            <p className="text-xs text-gray-500 mb-5 leading-relaxed">
               Suivez vos clubs favoris, sauvegardez des événements et gérez votre page club.
             </p>
             <button
@@ -64,7 +64,7 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
             <div className="flex justify-center mb-3">
               <SportLinkLogo size={110} variant="full" />
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed text-center">
+            <p className="text-xs text-gray-500 leading-relaxed text-center">
               Application communautaire pour trouver les clubs et événements sportifs du Finistère.
             </p>
             <p className="text-xs text-gray-300 mt-2 text-center">Version 1.0.0 · Finistère (29)</p>

@@ -42,6 +42,11 @@ function AppInner() {
 
   const upcomingFavorites = useUpcomingFavorites(allEvents, favorites);
 
+  const navBadges = useMemo(() => {
+    const todayCount = upcomingFavorites.today.length;
+    return todayCount > 0 ? { favoris: todayCount } : {};
+  }, [upcomingFavorites.today]);
+
   const homeStats = useMemo(() => ({
     clubs: userClubs.length + STATIC_CLUBS.length,
     events: allEvents.length,
@@ -129,7 +134,7 @@ function AppInner() {
         </AnimatePresence>
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} />
 
       <AnimatePresence>
         {showAuth && (

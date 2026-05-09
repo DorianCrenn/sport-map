@@ -48,7 +48,7 @@ export default function EventSidebar({
             <span className="font-semibold text-gray-800 text-sm">
               {events.length} événement{events.length !== 1 ? 's' : ''}
             </span>
-            <p className="text-xs text-gray-400">Cliquez pour localiser</p>
+            <p className="text-xs text-gray-500">Cliquez pour localiser</p>
           </div>
           <button
             onClick={onGeolocate}

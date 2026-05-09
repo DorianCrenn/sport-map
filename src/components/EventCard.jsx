@@ -1,6 +1,7 @@
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
+import { useShare } from '../hooks/useShare.js';
 import SportIcon from './SportIcon.jsx';
 
 const CalendarSvg = () => (
@@ -35,6 +36,47 @@ function StandingsRow({ team, rank, wins, draws, losses, points }) {
         <span className="font-bold text-gray-800 w-6 text-center">{points}</span>
       )}
     </div>
+  );
+}
+
+function ShareBtn({ event }) {
+  const { share } = useShare();
+  const [copied, setCopied] = useState(false);
+
+  async function handleShare(e) {
+    e.stopPropagation();
+    const result = await share({
+      title: event.title,
+      text: `${event.title} — ${new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`,
+      url: window.location.href,
+    });
+    if (result.success && result.method === 'clipboard') {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      title={copied ? 'Lien copié !' : 'Partager'}
+      className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl border transition-colors cursor-pointer"
+      style={copied
+        ? { color: '#22C55E', borderColor: '#22C55E', backgroundColor: '#f0fdf4' }
+        : { color: '#64748b', borderColor: '#e2e8f0', backgroundColor: 'transparent' }}
+    >
+      {copied ? (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      ) : (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+      )}
+      {copied ? 'Copié !' : 'Partager'}
+    </button>
   );
 }
 
@@ -119,7 +161,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
             <CalendarSvg />
             <span>{dateStr} · {timeStr}</span>
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5 font-inter">
+          <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5 font-inter">
             <PinSvg />
             <span className="truncate">{event.venue || event.city}</span>
           </div>
@@ -138,6 +180,10 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
                     {event.description}
                   </p>
                 )}
+
+                <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-2">
+                  <ShareBtn event={event} />
+                </div>
 
                 {hasStandings && (
                   <div className="mt-2 pt-2 border-t border-gray-100 overflow-x-auto">
