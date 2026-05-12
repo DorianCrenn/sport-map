@@ -187,7 +187,7 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
               width: 56, height: 56, borderRadius: 14, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 800, fontSize: 20, fontFamily: 'Inter, sans-serif',
-              backgroundColor: '#22d96a', color: '#0a0f0d',
+              backgroundColor: '#22d96a', color: '#fff',
               boxShadow: '0 0 0 2px rgba(34,217,106,0.4)',
             }}>
               {currentUser.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'}

@@ -2,7 +2,8 @@ import { useCallback } from 'react';
 
 export function useShare() {
   const share = useCallback(async ({ title, text, url }) => {
-    const shareData = { title, text, url: url || window.location.href };
+    const fullUrl = url || window.location.href;
+    const shareData = { title, text, url: fullUrl };
 
     if (navigator.share) {
       try {
@@ -13,8 +14,10 @@ export function useShare() {
       }
     }
 
+    // Clipboard fallback: copy full text + URL so the paste contains event details
+    const clipboardText = text ? `${text}\n${fullUrl}` : fullUrl;
     try {
-      await navigator.clipboard.writeText(url || window.location.href);
+      await navigator.clipboard.writeText(clipboardText);
       return { success: true, method: 'clipboard' };
     } catch {
       return { success: false, method: 'none' };

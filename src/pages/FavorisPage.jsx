@@ -25,9 +25,15 @@ function ShareButton({ event }) {
   const [copied, setCopied] = useState(false);
 
   async function handleShare() {
+    const dateObj = new Date(event.date);
+    const dateLabel = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const timeLabel = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const venue = event.venue || event.city || '';
+    const lines = [event.title, `📅 ${dateLabel} à ${timeLabel}`];
+    if (venue) lines.push(`📍 ${venue}`);
     const result = await share({
       title: event.title,
-      text: `${event.title} — ${new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`,
+      text: lines.join('\n'),
       url: window.location.href,
     });
     if (result.success && result.method === 'clipboard') {

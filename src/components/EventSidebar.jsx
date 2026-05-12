@@ -70,7 +70,7 @@ export default function EventSidebar({
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: 8, padding: '9px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
-              backgroundColor: 'var(--sl-green)', color: '#0a0f0d',
+              backgroundColor: 'var(--sl-green)', color: '#fff',
               fontSize: 13, fontWeight: 700,
             }}
           >

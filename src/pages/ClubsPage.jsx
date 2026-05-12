@@ -193,7 +193,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 10,
-                backgroundColor: 'var(--sl-green)', color: '#0a0f0d', border: 'none', cursor: 'pointer',
+                backgroundColor: 'var(--sl-green)', color: '#fff', border: 'none', cursor: 'pointer',
               }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -256,7 +256,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                 padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 600,
                 whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
                 backgroundColor: sportFilter === null ? 'var(--sl-green)' : 'transparent',
-                color: sportFilter === null ? '#0a0f0d' : 'var(--sl-t2)',
+                color: sportFilter === null ? '#fff' : 'var(--sl-t2)',
                 border: sportFilter === null ? '1px solid transparent' : '1px solid var(--sl-border-s)',
               }}
             >
@@ -350,7 +350,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                 }}
               >
                 <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: 'var(--sl-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0a0f0d" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                   </svg>
@@ -363,7 +363,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                   onClick={() => currentUser ? setShowRequestModal(true) : onShowAuth?.()}
                   style={{
                     fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 8,
-                    backgroundColor: 'var(--sl-green)', color: '#0a0f0d', border: 'none', cursor: 'pointer', flexShrink: 0,
+                    backgroundColor: 'var(--sl-green)', color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0,
                   }}
                 >
                   {currentUser ? 'Demander' : 'Se connecter'}

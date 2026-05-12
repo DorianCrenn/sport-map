@@ -27,7 +27,7 @@ export default function SportFilterBar({ active, onChange, nearbyActive, onNearb
   };
   const allActiveChip = {
     backgroundColor: 'var(--sl-green)',
-    color: '#0a0f0d',
+    color: '#fff',
     border: '1px solid transparent',
     fontWeight: 700,
   };
