@@ -15,30 +15,37 @@ export default function DateFilterBar({ active, onChange }) {
   const dateInputRef = useRef(null);
   const isSpecific = active && !PREDEFINED.find((o) => o.key === active);
 
-  const inactiveStyle = {
-    backgroundColor: 'var(--sl-pill-bg)',
-    color: 'var(--sl-pill-text)',
-    border: '1px solid var(--sl-bar-border)',
+  const inactive = {
+    backgroundColor: 'transparent',
+    color: 'var(--sl-t2)',
+    border: '1px solid var(--sl-border-s)',
   };
   const activeStyle = {
-    backgroundColor: 'var(--sl-pill-active-bg)',
-    color: 'var(--sl-pill-active-txt)',
+    backgroundColor: 'var(--sl-green)',
+    color: '#0a0f0d',
     border: '1px solid transparent',
+    fontWeight: 700,
   };
 
   return (
     <div
-      className="flex gap-2 px-4 py-2 flex-shrink-0 overflow-x-auto items-center"
       style={{
-        backgroundColor: 'var(--sl-bar-bg)',
-        borderBottom: '1px solid var(--sl-bar-border)',
+        display: 'flex', gap: 6, padding: '6px 14px',
+        flexShrink: 0, overflowX: 'auto', alignItems: 'center',
+        backgroundColor: 'var(--sl-surface)',
+        borderBottom: '1px solid var(--sl-border)',
+        scrollbarWidth: 'none',
       }}
     >
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.93 }}
         onClick={() => onChange(null)}
-        className="px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer transition-colors"
-        style={active === null ? activeStyle : inactiveStyle}
+        style={{
+          ...(active === null ? activeStyle : inactive),
+          padding: '4px 12px', borderRadius: 999,
+          fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+          flexShrink: 0, cursor: 'pointer',
+        }}
       >
         Tout
       </motion.button>
@@ -46,10 +53,14 @@ export default function DateFilterBar({ active, onChange }) {
       {PREDEFINED.map(({ key, label }) => (
         <motion.button
           key={key}
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.93 }}
           onClick={() => onChange(active === key ? null : key)}
-          className="px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer transition-colors"
-          style={active === key ? activeStyle : inactiveStyle}
+          style={{
+            ...(active === key ? activeStyle : inactive),
+            padding: '4px 12px', borderRadius: 999,
+            fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+            flexShrink: 0, cursor: 'pointer',
+          }}
         >
           {label}
         </motion.button>
@@ -63,10 +74,15 @@ export default function DateFilterBar({ active, onChange }) {
         style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
       />
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.93 }}
         onClick={() => dateInputRef.current?.showPicker()}
-        className="px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer flex items-center gap-1.5 transition-colors"
-        style={isSpecific ? activeStyle : inactiveStyle}
+        style={{
+          ...(isSpecific ? activeStyle : inactive),
+          padding: '4px 12px', borderRadius: 999,
+          fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+          flexShrink: 0, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 5,
+        }}
       >
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2"/>

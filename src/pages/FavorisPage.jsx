@@ -60,55 +60,70 @@ function ShareButton({ event }) {
 function FavoriteCard({ event, onToggleFavorite }) {
   const { allSports: SPORTS } = useSports();
   const group = SPORTS[event.sport];
+  const sportColor = group?.color ?? '#22d96a';
   const dateObj = new Date(event.date);
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const dateShort = dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   const isPast = dateObj < new Date();
 
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: isPast ? 0.55 : 1, y: 0 }}
+      animate={{ opacity: isPast ? 0.5 : 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="rounded-2xl p-4 mb-2.5"
       style={{
+        borderRadius: 14, padding: '12px 12px 12px 0', marginBottom: 8,
         backgroundColor: 'var(--sl-card)',
-        boxShadow: 'var(--sl-shadow)',
         border: '1px solid var(--sl-border)',
+        display: 'flex', alignItems: 'stretch', overflow: 'hidden',
       }}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: `${group?.color}18` }}>
-            <SportIcon sport={event.sport} size={22} />
+      <div style={{
+        width: 3, flexShrink: 0, backgroundColor: sportColor,
+        borderRadius: '0 3px 3px 0', marginRight: 12, alignSelf: 'stretch',
+      }} />
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+          backgroundColor: `${sportColor}15`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <SportIcon sport={event.sport} size={20} color={sportColor} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: sportColor, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {event.sport}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold mb-0.5 font-inter" style={{ color: group?.color }}>{event.sport}</div>
-            <div className="font-semibold text-sm leading-tight font-oswald tracking-wide" style={{ color: 'var(--sl-t1)' }}>{event.title}</div>
-            <div className="flex items-center gap-1 text-xs mt-1 font-oswald" style={{ color: 'var(--sl-t2)' }}>
-              <CalendarSvg />
-              <span>{timeStr}</span>
-            </div>
-            <div className="flex items-center gap-1 text-xs mt-0.5 font-inter" style={{ color: 'var(--sl-t3)' }}>
-              <PinSvg />
-              <span className="truncate">{event.venue || event.city}</span>
-            </div>
+          <div style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.3, color: 'var(--sl-t1)', marginBottom: 5 }}>
+            {event.title}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--sl-t2)' }}>
+            <CalendarSvg />
+            <span>{dateShort} · {timeStr}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>
+            <PinSvg />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {event.venue || event.city}
+            </span>
           </div>
         </div>
-        <div className="flex items-center gap-0.5 flex-shrink-0">
-          <ShareButton event={event} />
-          <button
-            onClick={() => onToggleFavorite(event.id)}
-            className="p-2 rounded-xl transition-colors cursor-pointer"
-            style={{ color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)' }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-          </button>
-        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0, paddingRight: 4 }}>
+        <ShareButton event={event} />
+        <button
+          onClick={() => onToggleFavorite(event.id)}
+          style={{
+            padding: 7, borderRadius: 10, border: 'none', cursor: 'pointer',
+            color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)',
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
       </div>
     </motion.div>
   );
@@ -116,16 +131,18 @@ function FavoriteCard({ event, onToggleFavorite }) {
 
 function DateGroup({ label, events, onToggleFavorite, accent }) {
   return (
-    <div className="mb-5">
-      <div className="flex items-center gap-2 mb-2.5">
-        <div className="h-px flex-1" style={{ backgroundColor: 'var(--sl-divider)' }} />
-        <span
-          className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-          style={{ color: accent || 'var(--sl-t2)', backgroundColor: accent ? `${accent}14` : 'var(--sl-surface)' }}
-        >
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+        <div style={{ height: 1, flex: 1, backgroundColor: 'var(--sl-divider)' }} />
+        <span style={{
+          fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
+          padding: '3px 10px', borderRadius: 999,
+          color: accent || 'var(--sl-t2)',
+          backgroundColor: accent ? `${accent}14` : 'var(--sl-surface)',
+        }}>
           {label}
         </span>
-        <div className="h-px flex-1" style={{ backgroundColor: 'var(--sl-divider)' }} />
+        <div style={{ height: 1, flex: 1, backgroundColor: 'var(--sl-divider)' }} />
       </div>
       {events.map((event) => (
         <FavoriteCard key={event.id} event={event} onToggleFavorite={onToggleFavorite} />
@@ -230,37 +247,44 @@ export default function FavorisPage({ allEvents, favorites, onToggleFavorite }) 
   const hasGroups = groups.today.length + groups.tomorrow.length + groups.thisWeek.length + groups.later.length + groups.past.length > 0;
 
   return (
-    <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--sl-bg)' }}>
-      <div className="px-4 pt-4 pb-1">
-        <p className="text-sm" style={{ color: 'var(--sl-t2)' }}>
-          {favoriteEvents.length} événement{favoriteEvents.length !== 1 ? 's' : ''} sauvegardé{favoriteEvents.length !== 1 ? 's' : ''}
-          {upcomingFavorites.length > 0 && (
-            <span className="ml-1.5 font-semibold" style={{ color: 'var(--sl-green)' }}>· {upcomingFavorites.length} à venir</span>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)' }}>
+      <div style={{ padding: '14px 16px 8px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
+            Favoris
+          </span>
+          {favoriteEvents.length > 0 && (
+            <span style={{ fontSize: 13, color: 'var(--sl-t3)', fontWeight: 500 }}>
+              {favoriteEvents.length} événement{favoriteEvents.length !== 1 ? 's' : ''}
+              {upcomingFavorites.length > 0 && (
+                <span style={{ color: 'var(--sl-green)', fontWeight: 700 }}> · {upcomingFavorites.length} à venir</span>
+              )}
+            </span>
           )}
-        </p>
+        </div>
       </div>
       <NotifBanner favoriteEvents={upcomingFavorites} />
 
-      <div className="flex-1 overflow-y-auto px-4 pt-3 pb-6">
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px 24px' }}>
         <AnimatePresence mode="popLayout">
           {!hasGroups ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center mt-20"
+              style={{ textAlign: 'center', marginTop: 72 }}
             >
-              <div className="flex justify-center mb-4">
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
                 <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
               </div>
-              <p className="font-medium" style={{ color: 'var(--sl-t2)' }}>Aucun favori pour l'instant</p>
-              <p className="text-sm mt-1" style={{ color: 'var(--sl-t3)' }}>Appuyez sur le cœur d'un événement pour l'ajouter ici</p>
+              <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--sl-t2)' }}>Aucun favori pour l'instant</p>
+              <p style={{ fontSize: 13, marginTop: 6, color: 'var(--sl-t3)' }}>Appuyez sur le cœur d'un événement pour l'ajouter ici</p>
             </motion.div>
           ) : (
             <motion.div key="groups" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               {groups.today.length > 0 && (
-                <DateGroup label="Aujourd'hui" events={groups.today} onToggleFavorite={onToggleFavorite} accent="#22C55E" />
+                <DateGroup label="Aujourd'hui" events={groups.today} onToggleFavorite={onToggleFavorite} accent="var(--sl-green)" />
               )}
               {groups.tomorrow.length > 0 && (
                 <DateGroup label="Demain" events={groups.tomorrow} onToggleFavorite={onToggleFavorite} accent="#3b82f6" />

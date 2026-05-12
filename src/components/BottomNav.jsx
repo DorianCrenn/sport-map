@@ -15,8 +15,8 @@ const BASE_TABS = [
   {
     id: 'map',
     label: 'Carte',
-    icon: () => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
         <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
         <line x1="9" y1="3" x2="9" y2="18"/>
         <line x1="15" y1="6" x2="15" y2="21"/>
@@ -35,8 +35,8 @@ const BASE_TABS = [
   {
     id: 'clubs',
     label: 'Clubs',
-    icon: () => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
         <circle cx="9" cy="7" r="4"/>
         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -66,66 +66,115 @@ const ADMIN_TAB = {
   ),
 };
 
-const ACTIVE_GREEN = '#22C55E';
-const ACTIVE_BLUE  = '#3b82f6';
-
 export default function BottomNav({ activeTab, onTabChange, badgeCounts = {} }) {
   const { isAdmin } = useAuth();
   const tabs = isAdmin ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS;
 
   return (
-    <nav
-      className="flex-shrink-0 flex items-stretch"
+    <div
       style={{
-        backgroundColor: 'var(--sl-nav-bg)',
-        boxShadow: 'var(--sl-nav-shadow)',
-        borderTop: '1px solid var(--sl-nav-border)',
+        position: 'relative',
+        flexShrink: 0,
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        background: 'var(--sl-bg)',
       }}
     >
-      {tabs.map((tab) => {
-        const active       = activeTab === tab.id;
-        const isAdminTab   = tab.id === 'admin';
-        const activeColor  = isAdminTab ? ACTIVE_BLUE : ACTIVE_GREEN;
-        const color        = active ? activeColor : 'var(--sl-nav-inactive)';
-        const badgeCount   = badgeCounts[tab.id] || 0;
+      <nav
+        style={{
+          display: 'flex',
+          alignItems: 'stretch',
+          margin: '8px 12px 12px',
+          borderRadius: 24,
+          background: 'var(--sl-nav-bg)',
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+          boxShadow: 'var(--sl-nav-shadow)',
+          border: '1px solid var(--sl-nav-border)',
+          overflow: 'hidden',
+        }}
+      >
+        {tabs.map((tab) => {
+          const active = activeTab === tab.id;
+          const isAdminTab = tab.id === 'admin';
+          const activeColor = isAdminTab ? '#3da5ff' : 'var(--sl-green)';
+          const color = active ? activeColor : 'var(--sl-nav-inactive)';
+          const badgeCount = badgeCounts[tab.id] || 0;
 
-        return (
-          <motion.button
-            key={tab.id}
-            whileTap={{ scale: 0.88 }}
-            onClick={() => onTabChange(tab.id)}
-            className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 cursor-pointer relative"
-            style={{ color }}
-          >
-            {active && (
-              <motion.div
-                layoutId="nav-indicator"
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full"
-                style={{ backgroundColor: activeColor }}
-                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-              />
-            )}
-            <div className="relative">
-              {tab.icon(active)}
-              {badgeCount > 0 && (
+          return (
+            <motion.button
+              key={tab.id}
+              whileTap={{ scale: 0.86 }}
+              onClick={() => onTabChange(tab.id)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 3,
+                padding: '10px 4px',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color,
+                position: 'relative',
+              }}
+            >
+              {active && (
                 <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: '#ef4444', minWidth: 16 }}
-                >
-                  <span className="text-white font-bold" style={{ fontSize: 9, lineHeight: 1 }}>
-                    {badgeCount > 9 ? '9+' : badgeCount}
-                  </span>
-                </motion.div>
+                  layoutId="nav-indicator"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 28,
+                    height: 2,
+                    borderRadius: 999,
+                    backgroundColor: activeColor,
+                  }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
               )}
-            </div>
-            <span className="text-[10px] font-semibold font-poppins" style={{ color }}>
-              {tab.label}
-            </span>
-          </motion.button>
-        );
-      })}
-    </nav>
+              <div style={{ position: 'relative' }}>
+                {tab.icon(active)}
+                {badgeCount > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    style={{
+                      position: 'absolute',
+                      top: -4,
+                      right: -6,
+                      width: 16,
+                      height: 16,
+                      borderRadius: '50%',
+                      backgroundColor: '#ef4444',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: 16,
+                    }}
+                  >
+                    <span style={{ color: '#fff', fontWeight: 700, fontSize: 9, lineHeight: 1 }}>
+                      {badgeCount > 9 ? '9+' : badgeCount}
+                    </span>
+                  </motion.div>
+                )}
+              </div>
+              <span style={{
+                fontSize: 10,
+                fontWeight: 600,
+                fontFamily: 'Inter, sans-serif',
+                letterSpacing: '0.01em',
+                color,
+              }}>
+                {tab.label}
+              </span>
+            </motion.button>
+          );
+        })}
+      </nav>
+    </div>
   );
 }

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -5,84 +6,91 @@
   --font-oswald:  'Oswald', sans-serif;
   --font-inter:   'Inter', sans-serif;
 
-  --color-brand:       #0F1E3A;
-  --color-brand-green: #22C55E;
-  --color-brand-blue:  #3B82F6;
+  --color-brand:       #0a0f0d;
+  --color-brand-green: #22d96a;
+  --color-brand-blue:  #3da5ff;
 }
 
 /* ═══════════════════════════════════════════════════════════
    DESIGN TOKENS — DARK MODE (default)
-   Sporty · Immersif · Néon · Tech premium
-   Ambiance Strava / Discord / Spotify
+   Sporty · Premium · Vert-noir · Prototype 2026
    ═══════════════════════════════════════════════════════════ */
 :root {
   color-scheme: dark;
 
   /* Backgrounds */
-  --sl-bg:        #07101F;   /* page background — bleu nuit profond */
-  --sl-surface:   #0C1829;   /* secondary surface */
-  --sl-card:      #101E36;   /* card background */
-  --sl-card-hi:   #162547;   /* elevated card */
+  --sl-bg:        #0a0f0d;
+  --sl-surface:   #0f1612;
+  --sl-card:      #11181c;
+  --sl-card-hi:   #1d2a28;
   --sl-hover:     rgba(255,255,255,0.05);
-  --sl-overlay:   rgba(0,0,0,0.7);
+  --sl-overlay:   rgba(0,0,0,0.75);
 
   /* Borders */
-  --sl-border:    rgba(255,255,255,0.08);
-  --sl-border-s:  rgba(255,255,255,0.14);
+  --sl-border:    rgba(255,255,255,0.07);
+  --sl-border-s:  rgba(255,255,255,0.13);
 
   /* Text */
-  --sl-t1:  #E2EBF8;   /* primary */
-  --sl-t2:  #7B97BB;   /* secondary */
-  --sl-t3:  #3C5270;   /* muted */
+  --sl-t1:  #eef2ef;
+  --sl-t2:  rgba(238,242,239,0.62);
+  --sl-t3:  rgba(238,242,239,0.38);
 
   /* Brand accents */
-  --sl-green:      #22C55E;
-  --sl-green-dim:  rgba(34,197,94,0.14);
-  --sl-green-glow: 0 0 20px rgba(34,197,94,0.35);
-  --sl-blue:       #3B82F6;
-  --sl-blue-dim:   rgba(59,130,246,0.14);
+  --sl-green:      #22d96a;
+  --sl-green-dim:  rgba(34,217,106,0.15);
+  --sl-green-glow: 0 0 24px rgba(34,217,106,0.35);
+  --sl-blue:       #3da5ff;
+  --sl-blue-dim:   rgba(61,165,255,0.15);
 
-  /* Navigation */
-  --sl-nav-bg:       #0C1829;
-  --sl-nav-border:   rgba(255,255,255,0.07);
-  --sl-nav-shadow:   0 -2px 24px rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.07);
-  --sl-nav-inactive: #3A5070;
+  /* Sport colors */
+  --sl-sport-football:   #22d96a;
+  --sl-sport-basketball: #ff8a3d;
+  --sl-sport-tennis:     #f5d042;
+  --sl-sport-rugby:      #e8484f;
+  --sl-sport-running:    #8b6cf7;
+  --sl-sport-cyclisme:   #3da5ff;
+
+  /* Navigation — floating glassmorphism pill */
+  --sl-nav-bg:       rgba(17,24,28,0.82);
+  --sl-nav-border:   rgba(255,255,255,0.08);
+  --sl-nav-shadow:   0 8px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.07);
+  --sl-nav-inactive: rgba(238,242,239,0.38);
 
   /* Filter / action bars */
-  --sl-bar-bg:          #0C1829;
+  --sl-bar-bg:          #0f1612;
   --sl-bar-border:      rgba(255,255,255,0.07);
-  --sl-pill-bg:         rgba(255,255,255,0.08);
-  --sl-pill-text:       #7B97BB;
-  --sl-pill-active-bg:  #1C2E4A;
-  --sl-pill-active-txt: #E2EBF8;
+  --sl-pill-bg:         rgba(255,255,255,0.06);
+  --sl-pill-text:       rgba(238,242,239,0.55);
+  --sl-pill-active-bg:  #22d96a;
+  --sl-pill-active-txt: #0a0f0d;
 
   /* Shadows */
-  --sl-shadow:    0 4px 20px rgba(0,0,0,0.45);
-  --sl-shadow-xl: 0 8px 40px rgba(0,0,0,0.6);
+  --sl-shadow:    0 4px 24px rgba(0,0,0,0.5);
+  --sl-shadow-xl: 0 12px 48px rgba(0,0,0,0.65);
 
   /* Input */
-  --sl-input-bg:     rgba(255,255,255,0.07);
-  --sl-input-border: rgba(255,255,255,0.11);
-  --sl-input-text:   #E2EBF8;
-  --sl-input-placeholder: #3C5270;
+  --sl-input-bg:          rgba(255,255,255,0.06);
+  --sl-input-border:      rgba(255,255,255,0.10);
+  --sl-input-text:        #eef2ef;
+  --sl-input-placeholder: rgba(238,242,239,0.35);
 
-  /* Header (stays dark — brand identity) */
-  --sl-header-bg:     linear-gradient(90deg, #060C17 0%, #0C1829 100%);
-  --sl-header-shadow: 0 2px 20px rgba(0,0,0,0.55);
+  /* Header */
+  --sl-header-bg:     rgba(10,15,13,0.92);
+  --sl-header-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.4);
 
   /* Hero / landing */
-  --sl-hero-bg:         linear-gradient(160deg, #040A14 0%, #0C1829 55%, #040A14 100%);
-  --sl-hero-section-bg: #0C1829;   /* replaces white section in HomePage */
+  --sl-hero-bg:         linear-gradient(160deg, #050807 0%, #0f1612 55%, #050807 100%);
+  --sl-hero-section-bg: #0f1612;
 
   /* Sidebar */
-  --sl-sidebar-bg: #0C1829;
+  --sl-sidebar-bg: #0f1612;
 
   /* Dividers */
   --sl-divider: rgba(255,255,255,0.06);
 
   /* Leaflet popup */
-  --sl-popup-bg:     #101E36;
-  --sl-popup-border: rgba(255,255,255,0.1);
+  --sl-popup-bg:     #11181c;
+  --sl-popup-border: rgba(255,255,255,0.10);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -121,30 +129,38 @@
   --sl-bar-border:      #F0F4F9;
   --sl-pill-bg:         #F1F5F9;
   --sl-pill-text:       #64748B;
-  --sl-pill-active-bg:  #1E293B;
+  --sl-pill-active-bg:  #0f5132;
   --sl-pill-active-txt: #FFFFFF;
 
-  --sl-shadow:    0 2px 12px rgba(15,30,58,0.08);
-  --sl-shadow-xl: 0 8px 32px rgba(15,30,58,0.12);
+  --sl-shadow:    0 2px 12px rgba(10,15,13,0.08);
+  --sl-shadow-xl: 0 8px 32px rgba(10,15,13,0.12);
 
-  --sl-input-bg:     #F1F5F9;
-  --sl-input-border: #E2E8F0;
-  --sl-input-text:   #0F1E3A;
-  --sl-input-placeholder: #94A3B8;
+  --sl-input-bg:     #F1F5F2;
+  --sl-input-border: #D4DDD6;
+  --sl-input-text:   #0a1a10;
+  --sl-input-placeholder: #94A3A0;
 
-  /* Header stays dark — brand identity in both themes */
-  --sl-header-bg:     linear-gradient(90deg, #0F1E3A 0%, #1a3460 100%);
-  --sl-header-shadow: 0 2px 12px rgba(15,30,58,0.2);
+  /* Sport colors */
+  --sl-sport-football:   #16a34a;
+  --sl-sport-basketball: #ea6b1a;
+  --sl-sport-tennis:     #ca9f05;
+  --sl-sport-rugby:      #c72d33;
+  --sl-sport-running:    #6d48d4;
+  --sl-sport-cyclisme:   #1d7fc4;
 
-  --sl-hero-bg:         linear-gradient(160deg, #0F1E3A 0%, #1a3460 55%, #0F1E3A 100%);
+  /* Header stays dark — brand identity */
+  --sl-header-bg:     linear-gradient(90deg, #0a1a10 0%, #0f2a1a 100%);
+  --sl-header-shadow: 0 2px 12px rgba(10,15,13,0.2);
+
+  --sl-hero-bg:         linear-gradient(160deg, #0a1a10 0%, #0f2a1a 55%, #0a1a10 100%);
   --sl-hero-section-bg: #FFFFFF;
 
-  --sl-sidebar-bg: #F8FAFD;
+  --sl-sidebar-bg: #F7FAF8;
 
-  --sl-divider: #F0F4F9;
+  --sl-divider: #E8EEE9;
 
   --sl-popup-bg:     #FFFFFF;
-  --sl-popup-border: #E8EEF6;
+  --sl-popup-border: #D4DDD6;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -231,9 +247,10 @@ html:not([data-theme="light"]) .leaflet-popup-tip {
    ═══════════════════════════════════════════════════════════ */
 body {
   margin: 0;
-  font-family: 'Poppins', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   background-color: var(--sl-bg);
   color: var(--sl-t1);
+  -webkit-font-smoothing: antialiased;
 }
 
 button, [role="button"] {

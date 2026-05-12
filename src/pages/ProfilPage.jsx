@@ -29,7 +29,7 @@ function ThemeToggle() {
         >
           {isDark ? (
             /* Moon icon */
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
           ) : (
@@ -63,7 +63,7 @@ function ThemeToggle() {
         style={{
           width: 46,
           height: 26,
-          backgroundColor: isDark ? '#22C55E' : '#e2e8f0',
+          backgroundColor: isDark ? '#22d96a' : '#e2e8f0',
         }}
       >
         <motion.div
@@ -98,7 +98,7 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
         {/* Hero */}
         <div
           className="flex-shrink-0 px-5 py-4 text-white relative overflow-hidden"
-          style={{ background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 100%)' }}
+          style={{ background: 'linear-gradient(160deg, #050807 0%, #0f1a10 100%)' }}
         >
           <div className="absolute top-0 right-0 w-56 h-56 rounded-full pointer-events-none"
             style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
@@ -162,60 +162,73 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
       : { label: 'Membre', color: 'var(--sl-green)', bg: 'var(--sl-green-dim)' };
 
   return (
-    <div className="h-full flex flex-col overflow-y-auto" style={{ backgroundColor: 'var(--sl-bg)' }}>
-      {/* Hero — always dark (brand identity) */}
-      <div
-        className="flex-shrink-0 px-6 pt-6 pb-6 text-white relative overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 100%)' }}
-      >
-        <div className="absolute top-0 right-0 w-56 h-56 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
-        <div className="flex items-center gap-4 relative">
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'auto', backgroundColor: 'var(--sl-bg)' }}>
+      {/* Hero */}
+      <div style={{
+        flexShrink: 0, padding: '20px 20px 24px',
+        background: 'linear-gradient(160deg, #050807 0%, #0f1a10 100%)',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: 0, right: 0, width: 200, height: 200,
+          borderRadius: '50%', pointerEvents: 'none',
+          background: 'radial-gradient(circle, rgba(34,217,106,0.12) 0%, transparent 70%)',
+          transform: 'translate(30%,-30%)',
+        }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
           {currentUser.avatar ? (
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
-              className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
-              style={{ boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)' }}
+              style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0, boxShadow: '0 0 0 2px rgba(34,217,106,0.5)' }}
             />
           ) : (
-            <div
-              className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-xl font-oswald"
-              style={{ backgroundColor: '#22C55E', color: 'white', boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)' }}
-            >
+            <div style={{
+              width: 56, height: 56, borderRadius: 14, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 800, fontSize: 20, fontFamily: 'Inter, sans-serif',
+              backgroundColor: '#22d96a', color: '#0a0f0d',
+              boxShadow: '0 0 0 2px rgba(34,217,106,0.4)',
+            }}>
               {currentUser.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'}
             </div>
           )}
           <div>
-            <h2 className="text-lg font-bold font-poppins leading-tight">{currentUser.name}</h2>
-            <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.55)' }}>{currentUser.email}</p>
-            <span
-              className="text-[11px] font-bold px-2.5 py-0.5 rounded-full"
-              style={{ backgroundColor: roleBadge.bg, color: roleBadge.color }}
-            >
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#eef2ef', letterSpacing: '-0.02em', lineHeight: 1.2, fontFamily: 'Inter, sans-serif', margin: 0 }}>
+              {currentUser.name}
+            </h2>
+            <p style={{ fontSize: 12, color: 'rgba(238,242,239,0.5)', margin: '3px 0 8px' }}>{currentUser.email}</p>
+            <span style={{
+              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+              backgroundColor: roleBadge.bg, color: roleBadge.color,
+            }}>
               {roleBadge.label}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="px-4 pt-3 space-y-3 pb-8">
+      <div style={{ padding: '14px 14px 32px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {/* Stats */}
-        <div className="rounded-2xl p-4 grid grid-cols-3 gap-3" style={{ backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
+        <div style={{
+          borderRadius: 16, padding: '14px 10px',
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8,
+          backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+        }}>
           {[
-            { label: 'Favoris',  value: favCount,                                              color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
-            { label: 'Ajoutés',  value: eventCount,                                            color: 'var(--sl-blue)', bg: 'var(--sl-blue-dim)' },
-            { label: 'Sports',   value: favSports.length || Object.keys(allSports).length,     color: 'var(--sl-green)', bg: 'var(--sl-green-dim)' },
+            { label: 'Favoris',  value: favCount,                                          color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
+            { label: 'Ajoutés',  value: eventCount,                                        color: 'var(--sl-blue)', bg: 'var(--sl-blue-dim)' },
+            { label: 'Sports',   value: favSports.length || Object.keys(allSports).length, color: 'var(--sl-green)', bg: 'var(--sl-green-dim)' },
           ].map(({ label, value, color, bg }, i) => (
             <motion.div
               key={label}
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-              className="flex flex-col items-center gap-1"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: bg }}>
-                <span className="text-base font-bold font-poppins" style={{ color }}>{value}</span>
+              <div style={{ width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
+                <span style={{ fontSize: 18, fontWeight: 800, color, fontFamily: 'Inter, sans-serif' }}>{value}</span>
               </div>
-              <span className="text-[10px] font-medium" style={{ color: 'var(--sl-t3)' }}>{label}</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
             </motion.div>
           ))}
         </div>
@@ -227,7 +240,7 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
         {isAdmin && (
           <button
             onClick={() => onNavigate('admin')}
-            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-colors"
+            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-colors cursor-pointer"
             style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-blue-dim)', boxShadow: 'var(--sl-shadow)' }}
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--sl-blue-dim)' }}>
@@ -247,7 +260,7 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
         {isClubAdmin && (
           <button
             onClick={() => onNavigate('clubs')}
-            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-colors"
+            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-colors cursor-pointer"
             style={{ backgroundColor: 'var(--sl-card)', border: '1px solid rgba(245,158,11,0.2)', boxShadow: 'var(--sl-shadow)' }}
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(245,158,11,0.12)' }}>
@@ -268,7 +281,7 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
         {favCount > 0 && (
           <button
             onClick={() => onNavigate('favoris')}
-            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-colors"
+            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-colors cursor-pointer"
             style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)' }}
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(239,68,68,0.12)' }}>

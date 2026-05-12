@@ -20,7 +20,6 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
 
   const q = query.trim().toLowerCase();
 
-  // "Starts with" ranked before "contains" for better UX with 300+ communes
   const matchedCities = q.length >= 1
     ? (() => {
         const startsWith = cities.filter(c => c.toLowerCase().startsWith(q));
@@ -52,148 +51,170 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
 
   return (
     <header
-      className="flex-shrink-0 flex items-center gap-3 px-4 text-white"
       style={{
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '0 16px',
+        minHeight: 56,
         background: 'var(--sl-header-bg)',
         boxShadow: 'var(--sl-header-shadow)',
-        minHeight: 58,
         position: 'relative',
         zIndex: 1000,
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
       }}
     >
-      {/* Logo */}
-      <SportLinkLogo size={26} onDark />
-      <div className="flex-shrink-0 mr-1">
-        <div className="text-sm font-bold tracking-tight leading-none font-poppins">SportLink</div>
-        <div className="text-[9px] font-medium mt-0.5" style={{ color: '#22C55E' }}>Le sport près de toi</div>
+      {/* Logo + brand */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <SportLinkLogo size={24} onDark />
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#eef2ef', letterSpacing: '-0.02em', lineHeight: 1 }}>
+            SportLink
+          </div>
+          <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--sl-green)', marginTop: 2, letterSpacing: '0.04em' }}>
+            FINISTÈRE
+          </div>
+        </div>
       </div>
 
       {/* Search bar */}
-      <div className="flex-1 min-w-0 relative" ref={wrapRef}>
+      <div style={{ flex: 1, minWidth: 0, position: 'relative' }} ref={wrapRef}>
         {cityFilter ? (
-          /* Active city filter chip */
-          <div className="flex items-center gap-2">
-            <div
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold"
-              style={{ backgroundColor: 'rgba(34,197,94,0.22)', color: '#4ade80', border: '1.5px solid rgba(34,197,94,0.4)' }}
-            >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '5px 10px',
+              borderRadius: 10,
+              backgroundColor: 'rgba(34,217,106,0.18)',
+              border: '1px solid rgba(34,217,106,0.35)',
+              color: 'var(--sl-green)',
+              fontSize: 12,
+              fontWeight: 600,
+            }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
               </svg>
               {cityFilter}
-              <button onClick={onClearCity} className="ml-0.5 opacity-70 hover:opacity-100 transition-opacity">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <button
+                onClick={onClearCity}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', opacity: 0.7, display: 'flex', alignItems: 'center' }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
               </button>
             </div>
-            <button
-              onClick={() => { inputRef.current?.focus(); }}
-              className="text-[11px] opacity-50 hover:opacity-80 transition-opacity"
-              style={{ color: 'white' }}
-            >
-              Modifier
-            </button>
           </div>
         ) : (
-          <div className="relative">
-            {/* Search icon */}
+          <div style={{ position: 'relative' }}>
             <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
               width="14" height="14" viewBox="0 0 24 24"
-              fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"
+              fill="none" stroke="rgba(238,242,239,0.4)" strokeWidth="2.5" strokeLinecap="round"
             >
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={e => { setQuery(e.target.value); setOpen(true); }}
               onFocus={() => setOpen(true)}
-              placeholder="Rechercher une ville ou un club…"
-              className="w-full pl-9 pr-8 py-2 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-300/40 transition-shadow"
+              placeholder="Ville, club, sport…"
               style={{
-                backgroundColor: 'rgba(255,255,255,0.12)',
-                border: '1.5px solid rgba(255,255,255,0.18)',
-                color: 'white',
+                width: '100%',
+                paddingLeft: 34,
+                paddingRight: 32,
+                paddingTop: 8,
+                paddingBottom: 8,
+                borderRadius: 12,
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: '#eef2ef',
+                fontSize: 13,
+                fontWeight: 500,
+                fontFamily: 'Inter, sans-serif',
+                outline: 'none',
+                boxSizing: 'border-box',
               }}
             />
-
-            {query ? (
+            {query && (
               <button
                 onClick={() => { setQuery(''); setOpen(false); inputRef.current?.focus(); }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-colors"
-                style={{ backgroundColor: 'var(--sl-surface)' }}
+                style={{
+                  position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                  width: 18, height: 18, borderRadius: '50%',
+                  backgroundColor: 'rgba(255,255,255,0.15)',
+                  border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
               >
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="3" strokeLinecap="round">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(238,242,239,0.7)" strokeWidth="3" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
               </button>
-            ) : (
-              /* Shortcut hint */
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium pointer-events-none"
-                style={{ color: '#94a3b8' }}>
-                ↵
-              </span>
             )}
           </div>
         )}
 
-        {/* ── Dropdown ── */}
+        {/* Dropdown */}
         <AnimatePresence>
           {open && hasResults && !cityFilter && (
             <motion.div
               key="dropdown"
-              initial={{ opacity: 0, y: -8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              transition={{ duration: 0.14, ease: 'easeOut' }}
-              className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.12 }}
               style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                left: 0,
+                right: 0,
+                borderRadius: 16,
                 backgroundColor: 'var(--sl-card)',
                 boxShadow: 'var(--sl-shadow-xl)',
                 border: '1px solid var(--sl-border-s)',
                 zIndex: 200,
+                overflow: 'hidden',
               }}
             >
-              {/* Villes */}
               {matchedCities.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 px-4 pt-3 pb-1.5">
-                    <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: '#eff6ff' }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                      </svg>
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--sl-t3)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px 6px' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)' }}>
                       Villes
                     </span>
-                    <span className="text-[10px] font-semibold ml-auto px-1.5 py-0.5 rounded-md"
-                      style={{ backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
-                      {matchedCities.length}
-                    </span>
                   </div>
-                  <div className="px-2 pb-2">
+                  <div style={{ padding: '0 6px 6px' }}>
                     {matchedCities.map(city => (
                       <button
                         key={city}
                         onClick={() => selectCity(city)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors"
-                        style={{ color: 'var(--sl-t1)' }}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '8px 10px', borderRadius: 10, border: 'none',
+                          backgroundColor: 'transparent', cursor: 'pointer', textAlign: 'left',
+                          color: 'var(--sl-t1)',
+                        }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--sl-hover)'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ backgroundColor: '#dbeafe' }}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round">
+                        <div style={{
+                          width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                          backgroundColor: 'rgba(34,217,106,0.12)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2" strokeLinecap="round">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                           </svg>
                         </div>
-                        <span className="text-sm font-medium">{city}</span>
-                        <svg className="ml-auto flex-shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round">
+                        <span style={{ fontSize: 13, fontWeight: 500 }}>{city}</span>
+                        <svg style={{ marginLeft: 'auto', flexShrink: 0 }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round">
                           <polyline points="9 18 15 12 9 6"/>
                         </svg>
                       </button>
@@ -201,32 +222,17 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
                   </div>
                 </div>
               )}
-
-              {/* Divider between groups */}
               {matchedCities.length > 0 && matchedClubs.length > 0 && (
-                <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '0 16px' }} />
+                <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '0 14px' }} />
               )}
-
-              {/* Clubs */}
               {matchedClubs.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 px-4 pt-3 pb-1.5">
-                    <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: '#fdf4ff' }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                      </svg>
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--sl-t3)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px 6px' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)' }}>
                       Clubs
                     </span>
-                    <span className="text-[10px] font-semibold ml-auto px-1.5 py-0.5 rounded-md"
-                      style={{ backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
-                      {matchedClubs.length}
-                    </span>
                   </div>
-                  <div className="px-2 pb-2">
+                  <div style={{ padding: '0 6px 6px' }}>
                     {matchedClubs.map(club => {
                       const sportColor = allSports[club.sport]?.color ?? '#64748b';
                       const initials = club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -234,25 +240,33 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
                         <button
                           key={club.id}
                           onClick={() => selectClub(club)}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors"
+                          style={{
+                            width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '8px 10px', borderRadius: 10, border: 'none',
+                            backgroundColor: 'transparent', cursor: 'pointer', textAlign: 'left',
+                          }}
                           onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--sl-hover)'}
                           onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                          <div
-                            className="w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
-                            style={{ backgroundColor: sportColor }}
-                          >
+                          <div style={{
+                            width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+                            backgroundColor: sportColor,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 11, fontWeight: 700, color: '#fff',
+                          }}>
                             {initials}
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="text-sm font-semibold truncate" style={{ color: 'var(--sl-t1)' }}>{club.name}</div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[11px]" style={{ color: '#64748b' }}>{club.city}</span>
-                              <span style={{ color: '#cbd5e1', fontSize: 10 }}>·</span>
-                              <span className="text-[11px] font-medium" style={{ color: sportColor }}>{club.sport}</span>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {club.name}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                              <span style={{ fontSize: 11, color: 'var(--sl-t2)' }}>{club.city}</span>
+                              <span style={{ color: 'var(--sl-t3)', fontSize: 10 }}>·</span>
+                              <span style={{ fontSize: 11, fontWeight: 600, color: sportColor }}>{club.sport}</span>
                             </div>
                           </div>
-                          <svg className="flex-shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round">
+                          <svg style={{ flexShrink: 0 }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round">
                             <polyline points="9 18 15 12 9 6"/>
                           </svg>
                         </button>

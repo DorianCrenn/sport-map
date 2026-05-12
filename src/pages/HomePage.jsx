@@ -46,7 +46,7 @@ function FloatingLogos() {
         const slot = FLOAT_SLOTS[i];
         const iconHtml = SPORT_ICONS[name] ?? SPORT_ICONS[sportData.iconId];
         if (!iconHtml) return null;
-        const color = sportData.color ?? '#22C55E';
+        const color = sportData.color ?? '#22d96a';
         return (
           <div
             key={name}
@@ -98,10 +98,10 @@ function FadeUp({ children, delay = 0, y = 18, className, style }) {
 // ── Phone mockup ──────────────────────────────────────────────────────────────
 function PhoneMockup() {
   const markers = [
-    { x: 100, y: 108, color: '#22C55E', r: 13 },
+    { x: 100, y: 108, color: '#22d96a', r: 13 },
     { x: 155, y: 82,  color: '#f97316', r: 13 },
     { x: 65,  y: 148, color: '#8b5cf6', r: 13 },
-    { x: 185, y: 140, color: '#22C55E', r: 13 },
+    { x: 185, y: 140, color: '#22d96a', r: 13 },
     { x: 130, y: 178, color: '#3B82F6', r: 11 },
   ];
   const clusters = [
@@ -136,7 +136,7 @@ function PhoneMockup() {
       <div style={{ backgroundColor: 'white' }}>
         {/* App header */}
         <div style={{ padding: '10px 14px 7px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 16, fontWeight: 800, color: '#0F1E3A', fontFamily: 'Poppins,sans-serif' }}>Carte</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', fontFamily: 'Poppins,sans-serif' }}>Carte</span>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
         </div>
 
@@ -145,7 +145,7 @@ function PhoneMockup() {
           {['Tous','Football','Handball'].map((t, i) => (
             <span key={t} style={{
               fontSize: 9, borderRadius: 20, padding: '3px 10px', fontWeight: 700, whiteSpace: 'nowrap',
-              backgroundColor: i === 0 ? '#22C55E' : 'var(--sl-surface)',
+              backgroundColor: i === 0 ? '#22d96a' : 'var(--sl-surface)',
               color: i === 0 ? 'white' : '#64748b',
             }}>{t}</span>
           ))}
@@ -196,8 +196,8 @@ function PhoneMockup() {
             { label:'Profil',  icon:<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>, active: false },
           ].map(({ label, icon, active }) => (
             <div key={label} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={active ? '#22C55E' : '#94a3b8'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
-              <span style={{ fontSize:7.5, color: active ? '#22C55E' : '#94a3b8', fontWeight: active ? 700 : 500, fontFamily:'Poppins,sans-serif' }}>{label}</span>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={active ? '#22d96a' : '#94a3b8'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
+              <span style={{ fontSize:7.5, color: active ? '#22d96a' : '#94a3b8', fontWeight: active ? 700 : 500, fontFamily:'Poppins,sans-serif' }}>{label}</span>
             </div>
           ))}
         </div>
@@ -210,10 +210,10 @@ function PhoneMockup() {
 function HowItWorks() {
   const steps = [
     {
-      n: '1', color: '#22C55E', bg: '#F0FDF4',
+      n: '1', color: '#22d96a', bg: '#F0FDF4',
       title: 'Crée ton compte & choisis tes sports',
       desc: 'Inscris-toi en 30 secondes et sélectionne tes disciplines favorites. La carte et les clubs se filtrent automatiquement.',
-      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
     },
     {
       n: '2', color: '#3B82F6', bg: '#EFF6FF',
@@ -257,11 +257,11 @@ function HowItWorks() {
 function ClubBanner({ onNavigate }) {
   return (
     <FadeUp>
-      <div className="mt-8 rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: '#0F1E3A' }}>
-        <div style={{ position: 'absolute', top: '-30%', right: '-10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 65%)', pointerEvents: 'none' }} />
+      <div className="mt-8 rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: '#0c1a10' }}>
+        <div style={{ position: 'absolute', top: '-30%', right: '-10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,217,106,0.15) 0%, transparent 65%)', pointerEvents: 'none' }} />
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(34,197,94,0.2)' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(34,217,106,0.2)' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="3"/>
               <path d="M3 9h18M9 21V9"/>
             </svg>
@@ -273,7 +273,7 @@ function ClubBanner({ onNavigate }) {
         </p>
         <button onClick={() => onNavigate('clubs')}
           className="flex items-center gap-1.5 font-semibold font-poppins text-white"
-          style={{ backgroundColor: '#22C55E', borderRadius: 12, padding: '9px 16px', fontSize: 13 }}>
+          style={{ backgroundColor: '#22d96a', borderRadius: 12, padding: '9px 16px', fontSize: 13 }}>
           Voir les clubs
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
@@ -296,9 +296,9 @@ function FeaturesSection({ stats = {}, onNavigate }) {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-6 mt-8 md:mt-0 md:gap-5 md:mb-8">
         {[
-          { bg:'#F0FDF4', color:'#22C55E', label:'Clubs', value: clubs, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-          { bg:'#EFF6FF', color:'#3B82F6', label:'Événements', value: events, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
-          { bg:'#FDF4FF', color:'#a855f7', label:'Sports', value: sports, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+          { bg:'rgba(34,217,106,0.10)', color:'#22d96a', label:'Clubs', value: clubs, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+          { bg:'rgba(61,165,255,0.10)', color:'#3B82F6', label:'Événements', value: events, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+          { bg:'rgba(168,85,247,0.10)', color:'#a855f7', label:'Sports', value: sports, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
         ].map(({ bg, color, label, value, icon }, i) => (
           <FadeUp key={label} delay={i * 0.1}
             className="rounded-2xl flex flex-col items-center gap-1.5 py-4 md:py-5"
@@ -313,9 +313,9 @@ function FeaturesSection({ stats = {}, onNavigate }) {
       {/* Feature cards */}
       <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-3 md:gap-5">
         {[
-          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'#F0FDF4', title:'Trouve un club', desc:'Parcours les clubs sportifs du Finistère par sport ou par ville.' },
-          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'#EFF6FF', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois — tous les événements sur la carte.' },
-          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'#FDF4FF', title:'Vis ta passion', desc:'Rejoins une communauté de passionnés de sport local.' },
+          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'rgba(34,217,106,0.10)', title:'Trouve un club', desc:'Parcours les clubs sportifs du Finistère par sport ou par ville.' },
+          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'rgba(61,165,255,0.10)', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois — tous les événements sur la carte.' },
+          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'rgba(168,85,247,0.10)', title:'Vis ta passion', desc:'Rejoins une communauté de passionnés de sport local.' },
         ].map(({ icon, bg, title, desc }, i) => (
           <FadeUp key={title} delay={i * 0.1}
             className="flex items-start gap-3 md:flex-col md:gap-3 md:bg-white md:rounded-2xl md:p-5 md:border md:border-gray-100 md:shadow-sm">
@@ -350,7 +350,7 @@ export default function HomePage({ onNavigate, stats }) {
           {/* Floating logos */}
           <FloatingLogos />
 
-          <div style={{ position:'absolute', top:'-40%', left:'50%', transform:'translateX(-50%)', width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
+          <div style={{ position:'absolute', top:'-40%', left:'50%', transform:'translateX(-50%)', width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,217,106,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
 
           <motion.div className="flex items-center justify-center gap-2 mb-6 relative"
             initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.3 }}>
@@ -359,16 +359,16 @@ export default function HomePage({ onNavigate, stats }) {
           </motion.div>
 
           <motion.div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-5 relative"
-            style={{ backgroundColor:'rgba(34,197,94,0.15)', border:'1px solid rgba(34,197,94,0.3)' }}
+            style={{ backgroundColor:'rgba(34,217,106,0.15)', border:'1px solid rgba(34,217,106,0.3)' }}
             initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.09 }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span className="font-semibold font-poppins" style={{ fontSize:12, color:'#22C55E' }}>Sport en Finistère</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span className="font-semibold font-poppins" style={{ fontSize:12, color:'#22d96a' }}>Sport en Finistère</span>
           </motion.div>
 
           <motion.h1 className="font-extrabold font-poppins text-white mb-4 relative"
             style={{ fontSize:40, lineHeight:1.08, letterSpacing:'-1px' }}
             initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15 }}>
-            Le sport<br />près de <span style={{ color:'#22C55E' }}>toi</span>
+            Le sport<br />près de <span style={{ color:'#22d96a' }}>toi</span>
           </motion.h1>
 
           <motion.p className="font-poppins mb-7 mx-auto relative"
@@ -381,7 +381,7 @@ export default function HomePage({ onNavigate, stats }) {
             initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.29 }}>
             <motion.button whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }} onClick={() => onNavigate('map')}
               className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer"
-              style={{ backgroundColor:'#22C55E', borderRadius:14, padding:'12px 22px', fontSize:14 }}>
+              style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'12px 22px', fontSize:14 }}>
               Voir la carte
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </motion.button>
@@ -396,7 +396,7 @@ export default function HomePage({ onNavigate, stats }) {
         {/* Phone */}
         <motion.div className="px-8 pb-2 relative"
           initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3, type:'spring', stiffness:180, damping:22 }}>
-          <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:'80%', height:60, background:'radial-gradient(ellipse, rgba(34,197,94,0.25) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
+          <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:'80%', height:60, background:'radial-gradient(ellipse, rgba(34,217,106,0.25) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
           <PhoneMockup />
         </motion.div>
 
@@ -416,7 +416,7 @@ export default function HomePage({ onNavigate, stats }) {
           <FloatingLogos />
 
           {/* Orbes déco */}
-          <div style={{ position:'absolute', top:'10%', right:'35%', width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 65%)', pointerEvents:'none' }} />
+          <div style={{ position:'absolute', top:'10%', right:'35%', width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,217,106,0.08) 0%, transparent 65%)', pointerEvents:'none' }} />
           <div style={{ position:'absolute', bottom:'5%', left:'5%', width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 65%)', pointerEvents:'none' }} />
 
           {/* Colonne gauche — texte */}
@@ -431,16 +431,16 @@ export default function HomePage({ onNavigate, stats }) {
 
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
-              style={{ backgroundColor:'rgba(34,197,94,0.15)', border:'1px solid rgba(34,197,94,0.3)' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span className="font-semibold font-poppins" style={{ fontSize:13, color:'#22C55E' }}>La plateforme sportive du Finistère</span>
+              style={{ backgroundColor:'rgba(34,217,106,0.15)', border:'1px solid rgba(34,217,106,0.3)' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span className="font-semibold font-poppins" style={{ fontSize:13, color:'#22d96a' }}>La plateforme sportive du Finistère</span>
             </div>
 
             {/* Titre */}
             <h1 className="font-extrabold font-poppins text-white mb-5"
               style={{ fontSize:64, lineHeight:1.04, letterSpacing:'-2px' }}>
               Le sport<br />
-              près de <span style={{ color:'#22C55E' }}>toi</span>
+              près de <span style={{ color:'#22d96a' }}>toi</span>
             </h1>
 
             {/* Sous-titre */}
@@ -453,7 +453,7 @@ export default function HomePage({ onNavigate, stats }) {
             <div className="flex gap-4 mb-12">
               <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('map')}
                 className="font-bold font-poppins text-white flex items-center gap-2.5 cursor-pointer"
-                style={{ backgroundColor:'#22C55E', borderRadius:16, padding:'14px 28px', fontSize:16 }}>
+                style={{ backgroundColor:'#22d96a', borderRadius:16, padding:'14px 28px', fontSize:16 }}>
                 Voir la carte
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </motion.button>
@@ -467,7 +467,7 @@ export default function HomePage({ onNavigate, stats }) {
             {/* Stats mini */}
             <div className="flex gap-8">
               {[
-                { value: stats?.clubs ?? 0,  label:'Clubs', color:'#22C55E' },
+                { value: stats?.clubs ?? 0,  label:'Clubs', color:'#22d96a' },
                 { value: stats?.events ?? 0, label:'Événements', color:'#3B82F6' },
                 { value: stats?.sports ?? 0, label:'Sports', color:'#a855f7' },
               ].map(({ value, label, color }) => (
@@ -483,7 +483,7 @@ export default function HomePage({ onNavigate, stats }) {
           <motion.div className="flex-shrink-0 relative"
             style={{ width: 320 }}
             initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15, type:'spring', stiffness:160, damping:22 }}>
-            <div style={{ position:'absolute', bottom:'-5%', left:'50%', transform:'translateX(-50%)', width:'120%', height:80, background:'radial-gradient(ellipse, rgba(34,197,94,0.3) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none', zIndex:0 }} />
+            <div style={{ position:'absolute', bottom:'-5%', left:'50%', transform:'translateX(-50%)', width:'120%', height:80, background:'radial-gradient(ellipse, rgba(34,217,106,0.3) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none', zIndex:0 }} />
             <div style={{ position:'relative', zIndex:1 }}>
               <PhoneMockup />
             </div>
@@ -503,9 +503,9 @@ export default function HomePage({ onNavigate, stats }) {
               </FadeUp>
               <div className="grid grid-cols-3 gap-6">
                 {[
-                  { n:'1', color:'#22C55E', bg:'#F0FDF4', title:'Crée ton compte & choisis tes sports', desc:"Inscris-toi en 30 secondes et sélectionne tes disciplines favorites. La carte et les clubs se filtrent automatiquement selon tes préférences." },
-                  { n:'2', color:'#3B82F6', bg:'#EFF6FF', title:'Explore la carte interactive', desc:"Visualise tous les événements — matchs, trails, tournois — sur une carte en temps réel. Active la géolocalisation pour voir ce qui se passe près de toi." },
-                  { n:'3', color:'#a855f7', bg:'#FDF4FF', title:'Rejoins un club, suis ses matchs', desc:"Consulte les pages des clubs, leur calendrier par équipe, leurs résultats et contacte-les directement depuis l'app." },
+                  { n:'1', color:'#22d96a', bg:'rgba(34,217,106,0.10)', title:'Crée ton compte & choisis tes sports', desc:"Inscris-toi en 30 secondes et sélectionne tes disciplines favorites. La carte et les clubs se filtrent automatiquement selon tes préférences." },
+                  { n:'2', color:'#3B82F6', bg:'rgba(61,165,255,0.10)', title:'Explore la carte interactive', desc:"Visualise tous les événements — matchs, trails, tournois — sur une carte en temps réel. Active la géolocalisation pour voir ce qui se passe près de toi." },
+                  { n:'3', color:'#a855f7', bg:'rgba(168,85,247,0.10)', title:'Rejoins un club, suis ses matchs', desc:"Consulte les pages des clubs, leur calendrier par équipe, leurs résultats et contacte-les directement depuis l'app." },
                 ].map(({ n, color, bg, title, desc }, i) => (
                   <motion.div key={n}
                     initial={{ opacity:0, y:18 }}
@@ -533,8 +533,8 @@ export default function HomePage({ onNavigate, stats }) {
                 whileInView={{ opacity:1, y:0 }}
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration:0.45, ease:'easeOut' }}
-                className="rounded-2xl p-8 mt-10 relative overflow-hidden flex items-center gap-8" style={{ backgroundColor:'#0F1E3A' }}>
-                <div style={{ position:'absolute', top:'-20%', right:'5%', width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
+                className="rounded-2xl p-8 mt-10 relative overflow-hidden flex items-center gap-8" style={{ backgroundColor:'#0c1a10' }}>
+                <div style={{ position:'absolute', top:'-20%', right:'5%', width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,217,106,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
                 <div className="flex-1">
                   <div className="font-bold font-poppins text-white mb-2" style={{ fontSize:20 }}>Tu gères un club ?</div>
                   <p style={{ fontSize:14, color:'rgba(255,255,255,0.60)', lineHeight:1.6 }}>
@@ -544,7 +544,7 @@ export default function HomePage({ onNavigate, stats }) {
                 <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.04, y:-1 }}
                   onClick={() => onNavigate('clubs')}
                   className="flex-shrink-0 flex items-center gap-2 font-bold font-poppins text-white cursor-pointer"
-                  style={{ backgroundColor:'#22C55E', borderRadius:14, padding:'12px 24px', fontSize:15 }}>
+                  style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'12px 24px', fontSize:15 }}>
                   Voir les clubs
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </motion.button>
@@ -561,9 +561,9 @@ export default function HomePage({ onNavigate, stats }) {
             </div>
             <div className="grid grid-cols-3 gap-6 px-12 pb-12">
               {[
-                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'#F0FDF4', color:'#22C55E', title:'Trouve un club', desc:'Parcours tous les clubs sportifs du Finistère, filtre par sport ou par ville et contacte-les directement.' },
-                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'#EFF6FF', color:'#3B82F6', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois, cyclosportives — tous les événements locaux visibles sur la carte.' },
-                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'#FDF4FF', color:'#a855f7', title:'Vis ta passion', desc:"Rejoins une communauté de passionnés, suis l'actualité sportive et reste connecté à ton sport." },
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'rgba(34,217,106,0.10)', color:'#22d96a', title:'Trouve un club', desc:'Parcours tous les clubs sportifs du Finistère, filtre par sport ou par ville et contacte-les directement.' },
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'rgba(61,165,255,0.10)', color:'#3B82F6', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois, cyclosportives — tous les événements locaux visibles sur la carte.' },
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'rgba(168,85,247,0.10)', color:'#a855f7', title:'Vis ta passion', desc:"Rejoins une communauté de passionnés, suis l'actualité sportive et reste connecté à ton sport." },
               ].map(({ icon, bg, color, title, desc }, i) => (
                 <motion.div key={title}
                   initial={{ opacity:0, y:18 }}

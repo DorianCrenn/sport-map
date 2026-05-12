@@ -20,29 +20,54 @@ export default function SportFilterBar({ active, onChange, nearbyActive, onNearb
     ? allVisible.filter(s => !favoriteSports.includes(s.id)).length
     : 0;
 
+  const inactiveChip = {
+    backgroundColor: 'transparent',
+    color: 'var(--sl-t2)',
+    border: '1px solid var(--sl-border-s)',
+  };
+  const allActiveChip = {
+    backgroundColor: 'var(--sl-green)',
+    color: '#0a0f0d',
+    border: '1px solid transparent',
+    fontWeight: 700,
+  };
+
   return (
     <div
-      className="relative flex-shrink-0"
       style={{
-        backgroundColor: 'var(--sl-bar-bg)',
-        borderBottom: '1px solid var(--sl-bar-border)',
+        position: 'relative',
+        flexShrink: 0,
+        backgroundColor: 'var(--sl-surface)',
+        borderBottom: '1px solid var(--sl-border)',
       }}
     >
-      {/* Fade gradient right edge */}
       <div
-        className="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
-        style={{ background: 'linear-gradient(to left, var(--sl-bar-bg) 20%, transparent)' }}
+        style={{
+          position: 'absolute', right: 0, top: 0, bottom: 0, width: 32,
+          background: 'linear-gradient(to left, var(--sl-surface) 20%, transparent)',
+          zIndex: 10, pointerEvents: 'none',
+        }}
       />
-
-      <div className="flex gap-2 px-4 py-2 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-
-        {/* "← Mes sports" collapse — only when expanded with favorites */}
+      <div
+        style={{
+          display: 'flex', gap: 6, padding: '8px 14px',
+          overflowX: 'auto', scrollbarWidth: 'none',
+        }}
+      >
         {inExpandedMode && (
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.93 }}
             onClick={() => { onHideSomeSports(); onChange(null); }}
-            className="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 flex items-center gap-1 cursor-pointer"
-            style={{ backgroundColor: 'var(--sl-green-dim)', color: 'var(--sl-green)', border: '1.5px solid var(--sl-green)' }}
+            style={{
+              ...inactiveChip,
+              padding: '5px 12px', borderRadius: 999,
+              fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
+              display: 'flex', alignItems: 'center', gap: 5,
+              cursor: 'pointer', background: 'none',
+              backgroundColor: 'var(--sl-green-dim)',
+              color: 'var(--sl-green)',
+              border: '1px solid var(--sl-green)',
+            }}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"/>
@@ -51,16 +76,15 @@ export default function SportFilterBar({ active, onChange, nearbyActive, onNearb
           </motion.button>
         )}
 
-        {/* "Mes sports" / "Tous" */}
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.93 }}
           onClick={() => onChange(null)}
-          className="px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 cursor-pointer"
-          style={
-            active === null
-              ? { backgroundColor: 'var(--sl-pill-active-bg)', color: 'var(--sl-pill-active-txt)' }
-              : { backgroundColor: 'var(--sl-pill-bg)', color: 'var(--sl-pill-text)' }
-          }
+          style={{
+            ...(active === null ? allActiveChip : inactiveChip),
+            padding: '5px 14px', borderRadius: 999,
+            fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
+            cursor: 'pointer', background: active === null ? 'var(--sl-green)' : 'transparent',
+          }}
         >
           {inFavoritesMode ? 'Mes sports' : 'Tous'}
         </motion.button>
@@ -70,30 +94,39 @@ export default function SportFilterBar({ active, onChange, nearbyActive, onNearb
           return (
             <motion.button
               key={sport.id}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.93 }}
               onClick={() => onChange(isActive ? null : sport.id)}
-              className="px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 cursor-pointer"
-              style={
-                isActive
-                  ? { backgroundColor: sport.color, color: 'white' }
-                  : { backgroundColor: 'var(--sl-pill-bg)', color: 'var(--sl-pill-text)' }
-              }
+              style={{
+                padding: '5px 12px', borderRadius: 999,
+                fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
+                display: 'flex', alignItems: 'center', gap: 5,
+                cursor: 'pointer',
+                backgroundColor: isActive ? sport.color : 'transparent',
+                color: isActive ? '#fff' : 'var(--sl-t2)',
+                border: isActive ? '1px solid transparent' : '1px solid var(--sl-border-s)',
+              }}
             >
-              <SportIcon sport={sport.id} size={14} color={isActive ? 'white' : sport.color} />
+              <SportIcon sport={sport.id} size={13} color={isActive ? '#fff' : sport.color} />
               {sport.label}
             </motion.button>
           );
         })}
 
-        {/* "+ N sports" expand */}
         {inFavoritesMode && hiddenCount > 0 && (
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.93 }}
             onClick={onShowAllSports}
-            className="px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1 cursor-pointer"
-            style={{ backgroundColor: 'var(--sl-green-dim)', color: 'var(--sl-green)', border: '1.5px dashed var(--sl-green)' }}
+            style={{
+              padding: '5px 12px', borderRadius: 999,
+              fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
+              display: 'flex', alignItems: 'center', gap: 4,
+              cursor: 'pointer',
+              backgroundColor: 'var(--sl-green-dim)',
+              color: 'var(--sl-green)',
+              border: '1px dashed var(--sl-green)',
+            }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             {hiddenCount} sport{hiddenCount > 1 ? 's' : ''}

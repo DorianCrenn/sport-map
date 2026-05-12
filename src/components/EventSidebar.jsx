@@ -19,65 +19,76 @@ export default function EventSidebar({
 
   useEffect(() => {
     if (selectedEventId !== null && cardRefs.current[selectedEventId]) {
-      cardRefs.current[selectedEventId].scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-      });
+      cardRefs.current[selectedEventId].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }, [selectedEventId]);
 
   return (
-    <div
-      className="w-96 flex flex-col flex-shrink-0"
-      style={{
-        backgroundColor: 'var(--sl-sidebar-bg)',
-        borderLeft: '1px solid var(--sl-border-s)',
-      }}
-    >
-      {/* Entête sidebar */}
-      <div
-        className="px-4 py-3 flex-shrink-0"
-        style={{
-          backgroundColor: 'var(--sl-card)',
-          borderBottom: '1px solid var(--sl-border)',
-        }}
-      >
-        <div className="flex items-center justify-between mb-2">
+    <div style={{
+      width: 380, display: 'flex', flexDirection: 'column', flexShrink: 0,
+      backgroundColor: 'var(--sl-sidebar-bg)',
+      borderLeft: '1px solid var(--sl-border)',
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: '12px 14px',
+        flexShrink: 0,
+        backgroundColor: 'var(--sl-card)',
+        borderBottom: '1px solid var(--sl-border)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <div>
-            <span className="font-semibold text-sm" style={{ color: 'var(--sl-t1)' }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--sl-t1)', letterSpacing: '-0.01em' }}>
               {events.length} événement{events.length !== 1 ? 's' : ''}
-            </span>
-            <p className="text-xs" style={{ color: 'var(--sl-t2)' }}>Cliquez pour localiser</p>
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+              Cliquez pour localiser
+            </div>
           </div>
           <button
             onClick={onGeolocate}
             disabled={geoLoading}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
-            style={{ backgroundColor: 'var(--sl-blue-dim)', color: 'var(--sl-blue)' }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 600,
+              padding: '6px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              backgroundColor: 'var(--sl-blue-dim)', color: 'var(--sl-blue)',
+              opacity: geoLoading ? 0.5 : 1,
+            }}
           >
-            {geoLoading ? '⏳' : '📍'} Autour de moi
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+            </svg>
+            {geoLoading ? 'Recherche…' : 'Autour de moi'}
           </button>
         </div>
 
         {canAddEvent && (
           <button
             onClick={onAddEvent}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer"
-            style={{ backgroundColor: '#1e293b' }}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 8, padding: '9px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
+              backgroundColor: 'var(--sl-green)', color: '#0a0f0d',
+              fontSize: 13, fontWeight: 700,
+            }}
           >
-            <span className="text-base">＋</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
             Ajouter un événement
           </button>
         )}
       </div>
 
-      {/* Liste événements */}
-      <div className="flex-1 overflow-y-auto px-3 py-3">
+      {/* Event list */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
         {events.length === 0 ? (
-          <div className="text-center mt-12">
-            <div className="text-4xl mb-3">🔍</div>
-            <p className="text-sm font-medium" style={{ color: 'var(--sl-t2)' }}>Aucun événement trouvé</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--sl-t3)' }}>Essayez d'autres filtres ou ajoutez le vôtre</p>
+          <div style={{ textAlign: 'center', marginTop: 48 }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--sl-t2)' }}>Aucun événement trouvé</p>
+            <p style={{ fontSize: 12, marginTop: 4, color: 'var(--sl-t3)' }}>Essayez d'autres filtres</p>
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
