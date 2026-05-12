@@ -367,8 +367,8 @@ export default function EventFormModal({ event, onSave, onClose }) {
             <button
               type="submit"
               form="event-form"
-              className="flex-1 py-3 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer"
-              style={{ backgroundColor: '#1e293b' }}
+              className="flex-1 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+              style={{ backgroundColor: 'var(--sl-green)', color: '#fff' }}
             >
               {isEdit ? 'Enregistrer' : 'Ajouter'}
             </button>

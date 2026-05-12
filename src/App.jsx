@@ -6,6 +6,7 @@ import { EVENTS } from './data/events.js';
 import { STATIC_CLUBS } from './data/clubs.js';
 import { useLocalEvents } from './hooks/useLocalEvents.js';
 import { useFavorites } from './hooks/useFavorites.js';
+import { useAttendees } from './hooks/useAttendees.js';
 import { useClubMatches } from './hooks/useClubMatches.js';
 import { useClubs } from './hooks/useClubs.js';
 import { useSports } from './hooks/useSports.js';
@@ -24,6 +25,7 @@ import ProfilPage from './pages/ProfilPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import OnboardingPage from './pages/OnboardingPage.jsx';
+import EventFormModal from './components/EventFormModal.jsx';
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin } = useAuth();
@@ -33,6 +35,8 @@ function AppInner() {
 
   const { events: userEvents, addEvent, updateEvent, deleteEvent } = useLocalEvents();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const { toggle: toggleAttend, isAttending } = useAttendees();
+  const [showNewEventForm, setShowNewEventForm] = useState(false);
   const clubMatchEvents = useClubMatches();
   const { userClubs } = useClubs();
   const { allSports } = useSports();
@@ -96,6 +100,8 @@ function AppInner() {
           onCityFilter={(city) => { setCityFilter(city); setActiveTab('map'); }}
           onSelectClub={(club) => setSelectedSearchClub(club)}
           onClearCity={() => setCityFilter(null)}
+          onTabChange={handleTabChange}
+          onShowAuth={() => setShowAuth(true)}
         />
       )}
 
@@ -130,6 +136,8 @@ function AppInner() {
                 onDeleteEvent={deleteEvent}
                 isFavorite={isFavorite}
                 onToggleFavorite={toggleFavorite}
+                isAttending={isAttending}
+                onToggleAttend={toggleAttend}
                 favoritesCount={favorites.size}
                 onGoToFavoris={() => setActiveTab('favoris')}
                 cityFilter={cityFilter}
@@ -153,7 +161,7 @@ function AppInner() {
         </AnimatePresence>
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} />
 
       <AnimatePresence>
         {showAuth && (
@@ -167,6 +175,14 @@ function AppInner() {
           <OnboardingPage
             key="onboarding"
             onDone={handleOnboardingDone}
+          />
+        )}
+        {showNewEventForm && (
+          <EventFormModal
+            key="fab-event-form"
+            event={{ _isNew: true }}
+            onSave={(data) => { addEvent(data); setShowNewEventForm(false); setActiveTab('map'); }}
+            onClose={() => setShowNewEventForm(false)}
           />
         )}
         {selectedSearchClub && (

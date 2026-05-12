@@ -10,7 +10,7 @@ import EventSidebar from '../components/EventSidebar.jsx';
 import EventFormModal from '../components/EventFormModal.jsx';
 import MobileEventSheet from '../components/MobileEventSheet.jsx';
 
-export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite, favoritesCount, onGoToFavoris, cityFilter }) {
+export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAddEvent, onUpdateEvent, onDeleteEvent, isFavorite, onToggleFavorite, isAttending, onToggleAttend, favoritesCount, onGoToFavoris, cityFilter }) {
   const { currentUser } = useAuth();
   const [sportFilter, setSportFilter] = useState(null);
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
@@ -139,12 +139,13 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
             onDeleteEvent={handleDeleteEvent}
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}
+            isAttending={isAttending}
+            onToggleAttend={onToggleAttend}
           />
         </div>
 
         {/* Mobile: floating action buttons */}
         <div className="md:hidden absolute bottom-4 left-4 right-4 flex justify-between items-end pointer-events-none" style={{ zIndex: 999 }}>
-          {/* Favoris FAB — bottom left */}
           <button
             onClick={onGoToFavoris}
             className="pointer-events-auto relative flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl cursor-pointer"
@@ -161,20 +162,17 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
               </span>
             )}
           </button>
-
-          {/* Ajouter FAB — clubs et admins uniquement */}
           {canAddEvent && (
             <button
               onClick={() => setModalEvent({ _isNew: true })}
-              className="pointer-events-auto flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white cursor-pointer"
-              style={{ backgroundColor: '#1e293b', boxShadow: '0 2px 12px rgba(0,0,0,0.25)' }}
+              className="pointer-events-auto flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl cursor-pointer"
+              style={{ backgroundColor: 'var(--sl-green)', color: '#fff', boxShadow: '0 4px 16px rgba(34,217,106,0.35)' }}
             >
               <span>＋</span> Ajouter
             </button>
           )}
         </div>
 
-        {/* Mobile bottom sheet — slides up on pin click */}
         <AnimatePresence>
           {selectedEvent && (
             <MobileEventSheet
@@ -185,6 +183,8 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
               onDelete={handleDeleteEvent}
               isFavorite={isFavorite}
               onToggleFavorite={onToggleFavorite}
+              isAttending={isAttending}
+              onToggleAttend={onToggleAttend}
             />
           )}
         </AnimatePresence>

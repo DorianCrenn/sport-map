@@ -13,34 +13,34 @@
 
 /* ═══════════════════════════════════════════════════════════
    DESIGN TOKENS — DARK MODE (default)
-   Sporty · Premium · Vert-noir · Prototype 2026
+   Navy Premium · Linear × Spotify × Nike 2026
    ═══════════════════════════════════════════════════════════ */
 :root {
   color-scheme: dark;
 
-  /* Backgrounds */
-  --sl-bg:        #0a0f0d;
-  --sl-surface:   #0f1612;
-  --sl-card:      #11181c;
-  --sl-card-hi:   #1d2a28;
-  --sl-hover:     rgba(255,255,255,0.05);
-  --sl-overlay:   rgba(0,0,0,0.75);
+  /* Backgrounds — deep navy, not pure black */
+  --sl-bg:        #0a1628;
+  --sl-surface:   #0f1e38;
+  --sl-card:      #152848;
+  --sl-card-hi:   #1c3560;
+  --sl-hover:     rgba(255,255,255,0.04);
+  --sl-overlay:   rgba(0,0,0,0.72);
 
   /* Borders */
   --sl-border:    rgba(255,255,255,0.07);
   --sl-border-s:  rgba(255,255,255,0.13);
 
-  /* Text */
-  --sl-t1:  #eef2ef;
-  --sl-t2:  rgba(238,242,239,0.62);
-  --sl-t3:  rgba(238,242,239,0.38);
+  /* Text — légèrement blue-tinted pour harmonie navy */
+  --sl-t1:  #deeeff;
+  --sl-t2:  rgba(222,238,255,0.65);
+  --sl-t3:  rgba(222,238,255,0.38);
 
   /* Brand accents */
   --sl-green:      #22d96a;
-  --sl-green-dim:  rgba(34,217,106,0.15);
-  --sl-green-glow: 0 0 24px rgba(34,217,106,0.35);
-  --sl-blue:       #3da5ff;
-  --sl-blue-dim:   rgba(61,165,255,0.15);
+  --sl-green-dim:  rgba(34,217,106,0.12);
+  --sl-green-glow: 0 0 24px rgba(34,217,106,0.32);
+  --sl-blue:       #4da6ff;
+  --sl-blue-dim:   rgba(77,166,255,0.12);
 
   /* Sport colors */
   --sl-sport-football:   #22d96a;
@@ -48,48 +48,48 @@
   --sl-sport-tennis:     #f5d042;
   --sl-sport-rugby:      #e8484f;
   --sl-sport-running:    #8b6cf7;
-  --sl-sport-cyclisme:   #3da5ff;
+  --sl-sport-cyclisme:   #4da6ff;
 
   /* Navigation — floating glassmorphism pill */
-  --sl-nav-bg:       rgba(17,24,28,0.82);
-  --sl-nav-border:   rgba(255,255,255,0.08);
+  --sl-nav-bg:       rgba(14,26,48,0.9);
+  --sl-nav-border:   rgba(255,255,255,0.09);
   --sl-nav-shadow:   0 8px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.07);
-  --sl-nav-inactive: rgba(238,242,239,0.38);
+  --sl-nav-inactive: rgba(222,238,255,0.36);
 
   /* Filter / action bars */
-  --sl-bar-bg:          #0f1612;
+  --sl-bar-bg:          #0f1e38;
   --sl-bar-border:      rgba(255,255,255,0.07);
-  --sl-pill-bg:         rgba(255,255,255,0.06);
-  --sl-pill-text:       rgba(238,242,239,0.55);
+  --sl-pill-bg:         rgba(255,255,255,0.05);
+  --sl-pill-text:       rgba(222,238,255,0.55);
   --sl-pill-active-bg:  #22d96a;
   --sl-pill-active-txt: #fff;
 
   /* Shadows */
-  --sl-shadow:    0 4px 24px rgba(0,0,0,0.5);
-  --sl-shadow-xl: 0 12px 48px rgba(0,0,0,0.65);
+  --sl-shadow:    0 4px 24px rgba(0,0,0,0.48);
+  --sl-shadow-xl: 0 12px 48px rgba(0,0,0,0.62);
 
   /* Input */
-  --sl-input-bg:          rgba(255,255,255,0.06);
-  --sl-input-border:      rgba(255,255,255,0.10);
-  --sl-input-text:        #eef2ef;
-  --sl-input-placeholder: rgba(238,242,239,0.35);
+  --sl-input-bg:          rgba(255,255,255,0.05);
+  --sl-input-border:      rgba(255,255,255,0.09);
+  --sl-input-text:        #deeeff;
+  --sl-input-placeholder: rgba(222,238,255,0.35);
 
   /* Header */
-  --sl-header-bg:     rgba(10,15,13,0.92);
+  --sl-header-bg:     rgba(8,18,36,0.94);
   --sl-header-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.4);
 
   /* Hero / landing */
-  --sl-hero-bg:         linear-gradient(160deg, #050807 0%, #0f1612 55%, #050807 100%);
-  --sl-hero-section-bg: #0f1612;
+  --sl-hero-bg:         linear-gradient(160deg, #060f20 0%, #0e1c3a 55%, #060f20 100%);
+  --sl-hero-section-bg: #0e1c3a;
 
   /* Sidebar */
-  --sl-sidebar-bg: #0f1612;
+  --sl-sidebar-bg: #0f1e38;
 
   /* Dividers */
   --sl-divider: rgba(255,255,255,0.06);
 
   /* Leaflet popup */
-  --sl-popup-bg:     #11181c;
+  --sl-popup-bg:     #152848;
   --sl-popup-border: rgba(255,255,255,0.10);
 }
 
@@ -213,7 +213,7 @@ html:not([data-theme="light"]) {
    LEAFLET — dark map tiles + controls
    ═══════════════════════════════════════════════════════════ */
 html:not([data-theme="light"]) .leaflet-tile-pane {
-  filter: brightness(0.52) contrast(1.15) saturate(0.5);
+  filter: brightness(0.45) contrast(1.2) saturate(0.5) hue-rotate(195deg);
 }
 
 html:not([data-theme="light"]) .leaflet-control-zoom a {
