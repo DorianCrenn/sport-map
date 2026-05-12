@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
         setProfile(prof);
       }
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
