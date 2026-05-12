@@ -13,6 +13,7 @@ import MatchesBlock from './blocks/MatchesBlock.jsx';
 import { AboutBlockEditor, AboutBlockView } from './blocks/AboutBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 import EventFormModal from '../EventFormModal.jsx';
+import PosterStudio from '../PosterStudio.jsx';
 
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
@@ -94,7 +95,7 @@ function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
     <>
       {block.type === 'title'           && <TitleBlock           data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'text'            && <TextBlock            data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
-      {block.type === 'upcoming-events' && <UpcomingEventsBlock  data={block.data} allEvents={allEvents} isEditing={isEditing} onUpdate={onUpdate} />}
+      {block.type === 'upcoming-events' && <UpcomingEventsBlock  data={block.data} allEvents={allEvents} club={club} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'training'        && <TrainingBlock        data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'image'           && <ImageBlock           data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'matches'         && <MatchesBlock         data={block.data} isEditing={isEditing} onUpdate={patch => onUpdate(patch)} club={club} />}
@@ -513,6 +514,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
   const [activeTeamId, setActiveTeamId] = useState(null);
   const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
+  const [showPoster, setShowPoster] = useState(false);
 
   const [teamTrainings, setTeamTrainings] = useState(() => {
     try {
@@ -536,6 +538,22 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
   const activeTeam = allTeams.find(t => t.id === activeTeamId) ?? null;
   const sportData = SPORTS[club.sport];
+
+  const posterEvent = useMemo(() => {
+    const now = new Date();
+    const next = (allEvents ?? [])
+      .filter(e => e.clubId === club.id && new Date(e.date) >= now)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+    if (next) return next;
+    return {
+      id: `club-poster-${club.id}`,
+      sport: club.sport,
+      title: club.name,
+      date: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 16),
+      city: club.city,
+      eventType: 'friendly',
+    };
+  }, [allEvents, club]);
   const rows = getRows(blocks);
   const stats = useMatchStats(blocks);
   const pendingCount = usePendingResults(blocks);
@@ -645,19 +663,34 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             </div>
           </div>
 
-          {club.contact && (
-            <a href={`mailto:${club.contact}`}
-              className="flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors group"
-              title={`Contacter ${club.name}`}>
-              <div className="w-9 h-9 rounded-xl bg-slate-700 group-hover:bg-slate-600 flex items-center justify-center transition-colors">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
+          <div className="flex-shrink-0 flex gap-2">
+            <button
+              onClick={() => setShowPoster(true)}
+              className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors group cursor-pointer"
+              title="Créer l'affiche du prochain match"
+            >
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors" style={{ backgroundColor: `${sportData?.color ?? '#22C55E'}25` }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={sportData?.color ?? '#22C55E'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                 </svg>
               </div>
-              <span className="text-[9px] text-slate-400 font-medium leading-tight text-center">Contacter<br/>le club</span>
-            </a>
-          )}
+              <span className="text-[9px] font-medium leading-tight text-center" style={{ color: sportData?.color ?? '#22C55E' }}>Affiche</span>
+            </button>
+
+            {club.contact && (
+              <a href={`mailto:${club.contact}`}
+                className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors group"
+                title={`Contacter ${club.name}`}>
+                <div className="w-9 h-9 rounded-xl bg-slate-700 group-hover:bg-slate-600 flex items-center justify-center transition-colors">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </div>
+                <span className="text-[9px] text-slate-400 font-medium leading-tight text-center">Contacter<br/>le club</span>
+              </a>
+            )}
+          </div>
         </div>
 
         {isEditing && (
@@ -844,6 +877,9 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           onClose={() => setTeamEventModal(undefined)}
         />
       )}
+
+      {/* Poster studio modal */}
+      {showPoster && <PosterStudio event={posterEvent} onClose={() => setShowPoster(false)} />}
     </motion.div>
   );
 }

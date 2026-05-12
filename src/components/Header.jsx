@@ -15,6 +15,7 @@ export default function Header({
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
   const searchRef = useRef(null);
   const profileRef = useRef(null);
   const inputRef = useRef(null);
@@ -94,22 +95,33 @@ export default function Header({
           </div>
         ) : (
           <div style={{ position: 'relative' }}>
-            <svg style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
-              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(222,238,255,0.35)" strokeWidth="2.5" strokeLinecap="round">
+            <svg
+              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', transition: 'opacity 0.2s' }}
+              width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke={inputFocused ? 'rgba(34,217,106,0.7)' : 'rgba(222,238,255,0.3)'}
+              strokeWidth="2.5" strokeLinecap="round"
+            >
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
             <input
               ref={inputRef}
               type="text" value={query}
               onChange={e => { setQuery(e.target.value); setSearchOpen(true); }}
-              onFocus={() => setSearchOpen(true)}
+              onFocus={() => { setSearchOpen(true); setInputFocused(true); }}
+              onBlur={() => setInputFocused(false)}
               placeholder="Ville, club, sport…"
               style={{
-                width: '100%', paddingLeft: 34, paddingRight: 32, paddingTop: 8, paddingBottom: 8,
-                borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.11)', color: 'var(--sl-t1)',
+                width: '100%', paddingLeft: 36, paddingRight: 34, paddingTop: 9, paddingBottom: 9,
+                borderRadius: 14,
+                backgroundColor: inputFocused ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.06)',
+                border: `1.5px solid ${inputFocused ? 'rgba(34,217,106,0.4)' : 'rgba(255,255,255,0.12)'}`,
+                color: 'var(--sl-t1)',
                 fontSize: 13, fontWeight: 500, fontFamily: 'Inter, sans-serif',
                 outline: 'none', boxSizing: 'border-box',
+                boxShadow: inputFocused
+                  ? '0 0 0 3px rgba(34,217,106,0.1), 0 2px 12px rgba(0,0,0,0.25)'
+                  : '0 1px 4px rgba(0,0,0,0.2)',
+                transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s',
               }}
             />
             {query && (

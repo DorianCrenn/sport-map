@@ -1,25 +1,37 @@
 import { useSports } from '../../../hooks/useSports.js';
 import SportIcon from '../../SportIcon.jsx';
 
-export default function UpcomingEventsBlock({ data, allEvents, isEditing, onUpdate }) {
+export default function UpcomingEventsBlock({ data, allEvents, club, isEditing, onUpdate }) {
   const { allSports: SPORTS } = useSports();
   const now = new Date();
   const events = (allEvents ?? [])
-    .filter(e => new Date(e.date) >= now && (!data.sport || e.sport === data.sport))
+    .filter(e =>
+      new Date(e.date) >= now &&
+      (!data.sport || e.sport === data.sport) &&
+      (!club || e.clubId === club.id)
+    )
     .sort((a, b) => new Date(a.date) - new Date(b.date))
     .slice(0, data.maxItems ?? 5);
 
   return (
     <div>
-      {/* Contrôles éditeur */}
       {isEditing && (
-        <div className="flex flex-wrap gap-2 mb-3 p-3 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-          <div className="flex items-center gap-1.5">
-            <label className="text-xs text-gray-500 font-medium">Sport</label>
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12,
+          padding: 12, borderRadius: 12,
+          backgroundColor: 'var(--sl-surface)',
+          border: '1.5px dashed var(--sl-border)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <label style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600 }}>Sport</label>
             <select
               value={data.sport || ''}
               onChange={e => onUpdate({ sport: e.target.value || null })}
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none"
+              style={{
+                fontSize: 11, border: '1px solid var(--sl-border)', borderRadius: 8,
+                padding: '3px 8px', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)',
+                outline: 'none',
+              }}
             >
               <option value="">Tous</option>
               {Object.values(SPORTS).map(s => (
@@ -27,12 +39,16 @@ export default function UpcomingEventsBlock({ data, allEvents, isEditing, onUpda
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-1.5">
-            <label className="text-xs text-gray-500 font-medium">Nombre</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <label style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600 }}>Nombre</label>
             <select
               value={data.maxItems ?? 5}
               onChange={e => onUpdate({ maxItems: Number(e.target.value) })}
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none"
+              style={{
+                fontSize: 11, border: '1px solid var(--sl-border)', borderRadius: 8,
+                padding: '3px 8px', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)',
+                outline: 'none',
+              }}
             >
               {[3, 5, 10].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
@@ -41,34 +57,49 @@ export default function UpcomingEventsBlock({ data, allEvents, isEditing, onUpda
       )}
 
       {events.length === 0 ? (
-        <p className="text-sm text-gray-400 italic py-4 text-center">
+        <p style={{ fontSize: 13, color: 'var(--sl-t3)', fontStyle: 'italic', padding: '16px 0', textAlign: 'center' }}>
           Aucun événement à venir{data.sport ? ` en ${data.sport}` : ''}.
         </p>
       ) : (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {events.map(event => {
             const sp = SPORTS[event.sport];
             const d = new Date(event.date);
             return (
-              <div key={event.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div
-                  className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${sp?.color}18` }}
-                >
+              <div
+                key={event.id}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 12px', borderRadius: 12,
+                  backgroundColor: 'var(--sl-surface)',
+                  border: '1px solid var(--sl-border)',
+                  transition: 'background-color 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--sl-hover)'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--sl-surface)'}
+              >
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  backgroundColor: `${sp?.color ?? '#64748b'}18`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
                   <SportIcon sport={event.sport} size={18} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-gray-800 font-oswald truncate">{event.title}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {event.title}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>
                     {d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
                     {' · '}
                     {d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
-                <span
-                  className="text-[10px] font-semibold text-white px-2 py-1 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: sp?.color }}
-                >
+                <span style={{
+                  fontSize: 10, fontWeight: 700, color: '#fff',
+                  padding: '3px 8px', borderRadius: 999, flexShrink: 0,
+                  backgroundColor: sp?.color ?? '#64748b',
+                }}>
                   {event.city}
                 </span>
               </div>

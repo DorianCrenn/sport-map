@@ -195,7 +195,7 @@ export default function MapPage({
         </div>
 
         {/* Mobile floating buttons */}
-        <div className="md:hidden" style={{ position: 'absolute', bottom: 16, left: 16, right: 16, zIndex: 999, pointerEvents: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div className="md:hidden" style={{ position: 'absolute', bottom: selectedEvent ? 'calc(52dvh + 14px)' : 16, left: 16, right: 16, zIndex: 999, pointerEvents: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', transition: 'bottom 0.3s ease' }}>
           {/* Favoris */}
           <button
             onClick={onGoToFavoris}

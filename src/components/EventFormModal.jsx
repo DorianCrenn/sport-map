@@ -302,7 +302,9 @@ export default function EventFormModal({ event, onSave, onClose }) {
     onSave(buildEvent(form, currentUser, myClub, useSmartMode));
   }
 
-  const teamPresets = TEAM_PRESETS[form.sport] ?? [];
+  const teamPresets = useSmartMode && myClub
+    ? (myClub.categories ?? []).flatMap(c => c.teams?.map(t => t.name) ?? [])
+    : TEAM_PRESETS[form.sport] ?? [];
   const champLevels = CHAMPIONSHIP_LEVELS[form.sport] ?? CHAMPIONSHIP_LEVELS.default;
   const inputStyle = {
     width: '100%', boxSizing: 'border-box',

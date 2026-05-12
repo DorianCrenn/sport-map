@@ -170,10 +170,10 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                 <motion.div
                   layoutId="nav-indicator"
                   style={{
-                    position: 'absolute', top: 0, left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 28, height: 2, borderRadius: 999,
+                    position: 'absolute', top: 0, left: 0, right: 0,
+                    width: 28, height: 3, borderRadius: 999,
                     backgroundColor: activeColor,
+                    margin: '0 auto',
                   }}
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
