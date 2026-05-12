@@ -105,6 +105,44 @@ export function AuthProvider({ children }) {
     if (currentUser?.id === id) setCurrentUser(prev => ({ ...prev, ...patch }));
   }, [currentUser?.id]);
 
+  const loginWithProvider = useCallback((email, provider) => {
+    const all = loadUsers();
+    let user = all.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!user) {
+      const namePart = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      user = {
+        id: `user_${Date.now()}`,
+        email,
+        password: null,
+        name: namePart,
+        role: 'user',
+        avatar: null,
+        favoriteSports: [],
+        followedClubs: [],
+        clubId: null,
+        authProvider: provider,
+        onboardingDone: false,
+        createdAt: new Date().toISOString(),
+      };
+      const next = [...all, user];
+      persist(next);
+    }
+    setCurrentUser(user);
+    localStorage.setItem(SESSION_KEY, user.id);
+    return user;
+  }, []);
+
+  const requestPasswordReset = useCallback((email) => {
+    const all = loadUsers();
+    const user = all.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!user) return null;
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const tempPassword = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const next = all.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, password: tempPassword } : u);
+    persist(next);
+    return { email: user.email, tempPassword };
+  }, []);
+
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const isClubAdmin = currentUser?.role === 'club_admin';
   const isLoggedIn = !!currentUser;
@@ -113,6 +151,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       currentUser, users,
       login, register, logout, updateProfile, updateUser,
+      loginWithProvider, requestPasswordReset,
       isAdmin, isClubAdmin, isLoggedIn,
     }}>
       {children}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 function uid()    { return `b_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`; }
 function genRowId() { return `r_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`; }
@@ -24,8 +24,32 @@ function defaultData(type, club) {
   }
 }
 
+const FONT_OPTIONS = [
+  { key: 'Oswald',   label: 'Oswald',   weights: '400;600;700' },
+  { key: 'Inter',    label: 'Inter',    weights: '400;500;600' },
+  { key: 'Manrope',  label: 'Manrope',  weights: '400;600;700' },
+  { key: 'Poppins',  label: 'Poppins',  weights: '400;600;700' },
+  { key: 'Raleway',  label: 'Raleway',  weights: '400;600;700' },
+];
+
+const DEFAULT_TYPOGRAPHY = { titleFont: 'Oswald', bodyFont: 'Inter' };
+
+export { FONT_OPTIONS, DEFAULT_TYPOGRAPHY };
+
+function injectGoogleFont(fontKey) {
+  const weights = FONT_OPTIONS.find(f => f.key === fontKey)?.weights ?? '400;600;700';
+  const id = `gfont-${fontKey.toLowerCase()}`;
+  if (document.getElementById(id)) return;
+  const link = document.createElement('link');
+  link.id = id;
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${fontKey.replace(/ /g, '+')}:wght@${weights}&display=swap`;
+  document.head.appendChild(link);
+}
+
 export function useClubPage(club) {
   const storageKey = `club-page-${club.id}`;
+  const typoKey    = `club-typography-${club.id}`;
 
   const [blocks, setBlocks] = useState(() => {
     try {
@@ -41,9 +65,26 @@ export function useClubPage(club) {
 
   const [isEditing, setIsEditing] = useState(false);
 
+  const [typography, setTypographyState] = useState(() => {
+    try {
+      const raw = localStorage.getItem(typoKey);
+      return raw ? { ...DEFAULT_TYPOGRAPHY, ...JSON.parse(raw) } : DEFAULT_TYPOGRAPHY;
+    } catch { return DEFAULT_TYPOGRAPHY; }
+  });
+
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(blocks));
   }, [blocks, storageKey]);
+
+  useEffect(() => {
+    localStorage.setItem(typoKey, JSON.stringify(typography));
+    injectGoogleFont(typography.titleFont);
+    injectGoogleFont(typography.bodyFont);
+  }, [typography, typoKey]);
+
+  const setTypography = useCallback((patch) => {
+    setTypographyState(prev => ({ ...prev, ...patch }));
+  }, []);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -137,5 +178,6 @@ export function useClubPage(club) {
     addBlock, addBlockToRow,
     updateBlock, setBlockSpan, moveBlockInRow,
     deleteBlock, reorderRows, toggleBlock, resetPage,
+    typography, setTypography,
   };
 }

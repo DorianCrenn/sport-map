@@ -4,6 +4,29 @@ import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import SportIcon from './SportIcon.jsx';
 
+const EVENT_TYPE_META = {
+  championship: { label: 'Championnat', color: '#3b82f6' },
+  cup:          { label: 'Coupe',        color: '#f97316' },
+  friendly:     { label: 'Amical',       color: '#22C55E' },
+};
+
+function EventTypeBadge({ event }) {
+  const meta = EVENT_TYPE_META[event.eventType];
+  if (!meta) {
+    return event.level
+      ? <span className="text-xs flex-shrink-0 font-inter" style={{ color: 'var(--sl-t3)' }}>{event.level}</span>
+      : null;
+  }
+  return (
+    <span
+      className="text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
+      style={{ color: meta.color, backgroundColor: `${meta.color}22` }}
+    >
+      {meta.label}
+    </span>
+  );
+}
+
 const CalendarSvg = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
     <rect x="3" y="4" width="18" height="18" rx="2"/>
@@ -24,16 +47,17 @@ function StandingsRow({ team, rank, wins, draws, losses, points }) {
   const played = (wins ?? 0) + (draws ?? 0) + (losses ?? 0);
   return (
     <div className="flex items-center gap-2 text-xs py-1">
-      <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 flex-shrink-0 text-[10px]">
+      <span className="w-5 h-5 rounded-full flex items-center justify-center font-bold flex-shrink-0 text-[10px]"
+        style={{ backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
         {rank}
       </span>
-      <span className="flex-1 font-medium text-gray-700 truncate font-oswald tracking-wide">{team}</span>
-      <span className="text-gray-400 w-5 text-center">{played || '-'}</span>
+      <span className="flex-1 font-medium truncate font-oswald tracking-wide" style={{ color: 'var(--sl-t1)' }}>{team}</span>
+      <span className="w-5 text-center" style={{ color: 'var(--sl-t3)' }}>{played || '-'}</span>
       <span className="text-green-600 w-5 text-center font-medium">{wins ?? '-'}</span>
-      <span className="text-gray-400 w-5 text-center">{draws ?? '-'}</span>
+      <span className="w-5 text-center" style={{ color: 'var(--sl-t3)' }}>{draws ?? '-'}</span>
       <span className="text-red-500 w-5 text-center">{losses ?? '-'}</span>
       {points !== null && points !== undefined && (
-        <span className="font-bold text-gray-800 w-6 text-center">{points}</span>
+        <span className="font-bold w-6 text-center" style={{ color: 'var(--sl-t1)' }}>{points}</span>
       )}
     </div>
   );
@@ -62,8 +86,8 @@ function ShareBtn({ event }) {
       title={copied ? 'Lien copié !' : 'Partager'}
       className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl border transition-colors cursor-pointer"
       style={copied
-        ? { color: '#22C55E', borderColor: '#22C55E', backgroundColor: '#f0fdf4' }
-        : { color: '#64748b', borderColor: '#e2e8f0', backgroundColor: 'transparent' }}
+        ? { color: '#22C55E', borderColor: '#22C55E', backgroundColor: 'var(--sl-green-dim)' }
+        : { color: 'var(--sl-t2)', borderColor: 'var(--sl-border-s)', backgroundColor: 'transparent' }}
     >
       {copied ? (
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -101,12 +125,13 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
       transition={{ duration: 0.16 }}
       whileHover={{ scale: isSelected ? 1 : 1.01 }}
       onClick={onSelect}
-      className="rounded-xl p-3 mb-2 cursor-pointer border-2 transition-all bg-white"
+      className="rounded-xl p-3 mb-2 cursor-pointer border-2 transition-all"
       style={{
+        backgroundColor: 'var(--sl-card)',
         borderColor: isSelected ? group?.color : 'transparent',
         boxShadow: isSelected
           ? `0 0 0 1px ${group?.color}30, 0 4px 12px ${group?.color}20`
-          : '0 1px 4px rgba(0,0,0,0.06)',
+          : 'var(--sl-shadow)',
       }}
     >
       <div className="flex items-start gap-2">
@@ -123,7 +148,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
               <SportIcon sport={event.sport} size={11} color="white" />
               {event.sport}
             </span>
-            <span className="text-xs text-gray-400 flex-shrink-0 font-inter">{event.level}</span>
+            <EventTypeBadge event={event} />
             {isUserEvent && (
               <span className="text-[10px] text-blue-400 font-medium flex-shrink-0">✦ Club</span>
             )}
@@ -131,7 +156,8 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
               <div className="ml-auto flex gap-0.5 flex-shrink-0">
                 <button
                   onClick={(e) => { e.stopPropagation(); onEdit(event); }}
-                  className="p-1 rounded-md text-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                  className="p-1 rounded-md text-blue-400 hover:text-blue-600 transition-colors cursor-pointer"
+                  style={{ hover: { backgroundColor: 'var(--sl-blue-dim)' } }}
                   title="Modifier"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -141,7 +167,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); onDelete(event.id); }}
-                  className="p-1 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                  className="p-1 rounded-md text-red-400 hover:text-red-600 transition-colors cursor-pointer"
                   title="Supprimer"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -155,13 +181,13 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
             )}
           </div>
 
-          <div className="font-semibold text-gray-800 text-sm leading-tight font-oswald tracking-wide">{event.title}</div>
+          <div className="font-semibold text-sm leading-tight font-oswald tracking-wide" style={{ color: 'var(--sl-t1)' }}>{event.title}</div>
 
-          <div className="flex items-center gap-1 text-xs text-gray-500 mt-1 font-oswald">
+          <div className="flex items-center gap-1 text-xs mt-1 font-oswald" style={{ color: 'var(--sl-t2)' }}>
             <CalendarSvg />
             <span>{dateStr} · {timeStr}</span>
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5 font-inter">
+          <div className="flex items-center gap-1 text-xs mt-0.5 font-inter" style={{ color: 'var(--sl-t2)' }}>
             <PinSvg />
             <span className="truncate">{event.venue || event.city}</span>
           </div>
@@ -176,28 +202,28 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
                 className="overflow-hidden"
               >
                 {event.description && (
-                  <p className="text-xs text-gray-600 mt-2 leading-relaxed border-t border-gray-100 pt-2">
+                  <p className="text-xs mt-2 leading-relaxed border-t pt-2" style={{ color: 'var(--sl-t2)', borderColor: 'var(--sl-border)' }}>
                     {event.description}
                   </p>
                 )}
 
-                <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-2">
+                <div className="mt-2 pt-2 border-t flex items-center gap-2" style={{ borderColor: 'var(--sl-border)' }}>
                   <ShareBtn event={event} />
                 </div>
 
                 {hasStandings && (
-                  <div className="mt-2 pt-2 border-t border-gray-100 overflow-x-auto">
-                    <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                  <div className="mt-2 pt-2 border-t overflow-x-auto" style={{ borderColor: 'var(--sl-border)' }}>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--sl-t3)' }}>
                       Classement
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-gray-400 mb-0.5 px-0.5">
+                    <div className="flex items-center gap-2 text-[10px] mb-0.5 px-0.5" style={{ color: 'var(--sl-t3)' }}>
                       <span className="w-5 flex-shrink-0" />
                       <span className="flex-1">Équipe</span>
                       <span className="w-5 text-center">J</span>
                       <span className="w-5 text-center text-green-600">V</span>
                       <span className="w-5 text-center">N</span>
                       <span className="w-5 text-center text-red-500">D</span>
-                      {showPoints && <span className="w-6 text-center font-bold text-gray-600">Pts</span>}
+                      {showPoints && <span className="w-6 text-center font-bold" style={{ color: 'var(--sl-t2)' }}>Pts</span>}
                     </div>
                     <StandingsRow {...event.standings.home} />
                     <StandingsRow {...event.standings.away} />
@@ -212,7 +238,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(event.id); }}
             className="p-1.5 rounded-xl transition-colors cursor-pointer flex-shrink-0 self-start mt-0.5"
-            style={fav ? { color: '#ef4444', backgroundColor: '#fef2f2' } : { color: '#cbd5e1' }}
+            style={fav ? { color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)' } : { color: 'var(--sl-t3)' }}
             title={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

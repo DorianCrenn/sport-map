@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
-import { useClubPage } from '../../hooks/useClubPage.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useClubPage, FONT_OPTIONS } from '../../hooks/useClubPage.js';
 import SportIcon from '../SportIcon.jsx';
 import TitleBlock from './blocks/TitleBlock.jsx';
 import TextBlock from './blocks/TextBlock.jsx';
@@ -11,6 +12,7 @@ import ImageBlock from './blocks/ImageBlock.jsx';
 import MatchesBlock from './blocks/MatchesBlock.jsx';
 import { AboutBlockEditor, AboutBlockView } from './blocks/AboutBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
+import EventFormModal from '../EventFormModal.jsx';
 
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
@@ -41,7 +43,6 @@ function remainingSpanLabel(rem) {
   return `${rem}/12 restant`;
 }
 
-// Group consecutive blocks by rowId
 function getRows(blocks) {
   const result = [];
   const seen   = new Map();
@@ -96,7 +97,7 @@ function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
       {block.type === 'upcoming-events' && <UpcomingEventsBlock  data={block.data} allEvents={allEvents} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'training'        && <TrainingBlock        data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'image'           && <ImageBlock           data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
-      {block.type === 'matches'         && <MatchesBlock         data={block.data} isEditing={isEditing} onUpdate={onUpdate} club={club} />}
+      {block.type === 'matches'         && <MatchesBlock         data={block.data} isEditing={isEditing} onUpdate={patch => onUpdate(patch)} club={club} />}
       {block.type === 'about'           && (isEditing
         ? <AboutBlockEditor block={block} onChange={updated => onUpdate(updated.data)} />
         : <AboutBlockView   block={block} />
@@ -110,11 +111,18 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
   const usedByOthers = rowBlocks.filter(b => b.id !== block.id).reduce((s, b) => s + (b.span ?? 12), 0);
 
   return (
-    <div className={`flex flex-col border border-dashed rounded-2xl overflow-hidden ${!block.enabled ? 'opacity-40' : ''}`}
-      style={{ flex: spanToFlex(block.span ?? 12), minWidth: 0, borderColor: '#e2e8f0', backgroundColor: 'white' }}>
+    <div
+      className={`flex flex-col rounded-2xl overflow-hidden transition-opacity ${!block.enabled ? 'opacity-40' : ''}`}
+      style={{
+        flex: spanToFlex(block.span ?? 12),
+        minWidth: 0,
+        border: '1.5px dashed var(--sl-border-s)',
+        backgroundColor: 'var(--sl-card)',
+      }}
+    >
       {/* Toolbar */}
-      <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-100 bg-gray-50 flex-wrap">
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-1">
+      <div className="flex items-center gap-1 px-3 py-2 flex-wrap" style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)' }}>
+        <span className="text-[10px] font-bold uppercase tracking-wider mr-1" style={{ color: 'var(--sl-t3)' }}>
           {BLOCK_LABELS[block.type] ?? block.type}
         </span>
 
@@ -126,10 +134,10 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
               <button key={opt.span} onClick={() => onSetSpan(opt.span)}
                 disabled={wouldExceed}
                 title={wouldExceed ? 'Pas assez de place dans cette ligne' : opt.label}
-                className="text-[9px] px-1.5 py-0.5 rounded font-bold transition-colors disabled:opacity-30"
+                className="text-[9px] px-1.5 py-0.5 rounded font-bold transition-colors disabled:opacity-30 cursor-pointer"
                 style={(block.span ?? 12) === opt.span
                   ? { backgroundColor: '#0F1E3A', color: 'white' }
-                  : { backgroundColor: '#f1f5f9', color: '#94a3b8' }}>
+                  : { backgroundColor: 'var(--sl-bg)', color: 'var(--sl-t3)' }}>
                 {opt.label}
               </button>
             );
@@ -142,20 +150,22 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
         {rowBlocks.length > 1 && (
           <div className="flex">
             <button onClick={onMoveLeft} disabled={isFirst}
-              className="p-1 text-gray-300 hover:text-gray-600 disabled:opacity-20 transition-colors">
+              className="p-1 transition-colors cursor-pointer disabled:opacity-20"
+              style={{ color: 'var(--sl-t3)' }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <button onClick={onMoveRight} disabled={isLast}
-              className="p-1 text-gray-300 hover:text-gray-600 disabled:opacity-20 transition-colors">
+              className="p-1 transition-colors cursor-pointer disabled:opacity-20"
+              style={{ color: 'var(--sl-t3)' }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
         )}
 
-        <button onClick={onToggle} className="p-1 text-gray-300 hover:text-gray-600 transition-colors">
+        <button onClick={onToggle} className="p-1 transition-colors cursor-pointer" style={{ color: 'var(--sl-t3)' }}>
           {block.enabled ? <EyeOn /> : <EyeOff />}
         </button>
-        <button onClick={onDelete} className="p-1 text-red-300 hover:text-red-600 transition-colors">
+        <button onClick={onDelete} className="p-1 transition-colors cursor-pointer" style={{ color: '#ef4444' }}>
           <TrashIcon />
         </button>
       </div>
@@ -182,7 +192,18 @@ function EmptySlot({ remaining, onAdd }) {
       ) : (
         <button
           onClick={() => setPicking(true)}
-          className="w-full h-full min-h-[80px] flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-blue-300 hover:text-blue-400 hover:bg-blue-50 transition-colors"
+          className="w-full h-full min-h-[80px] flex flex-col items-center justify-center gap-2 rounded-2xl transition-colors cursor-pointer"
+          style={{ border: '2px dashed var(--sl-border-s)', color: 'var(--sl-t3)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = '#3b82f6';
+            e.currentTarget.style.color = '#3b82f6';
+            e.currentTarget.style.backgroundColor = 'rgba(59,130,246,0.05)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'var(--sl-border-s)';
+            e.currentTarget.style.color = 'var(--sl-t3)';
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
         >
           <PlusIcon />
           <span className="text-xs font-medium">{remainingSpanLabel(remaining)}</span>
@@ -195,7 +216,6 @@ function EmptySlot({ remaining, onAdd }) {
 // ── Draggable row ─────────────────────────────────────────────────────────────
 function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan, onMoveLeft, onMoveRight, onAddToRow, allEvents, club }) {
   const dragControls = useDragControls();
-
   const usedSpan   = row.blocks.reduce((s, b) => s + (b.span ?? 12), 0);
   const remaining  = 12 - usedSpan;
 
@@ -205,13 +225,13 @@ function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan,
         <div className="flex items-center gap-2 mb-1.5 px-1">
           <div
             onPointerDown={e => { e.preventDefault(); dragControls.start(e); }}
-            className="flex items-center gap-1 text-gray-300 hover:text-gray-500 transition-colors touch-none"
-            style={{ cursor: 'grab' }}
+            className="flex items-center gap-1 transition-colors touch-none cursor-grab"
+            style={{ color: 'var(--sl-t3)' }}
           >
             <DragDots />
             <span className="text-[9px] font-bold uppercase tracking-wider">Ligne</span>
           </div>
-          <div className="flex-1 h-px bg-gray-100" />
+          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--sl-border)' }} />
         </div>
       )}
 
@@ -268,19 +288,22 @@ function TeamTrainingSection({ sessions, isEditing, onChange }) {
     onChange(sessions.filter(s => s.id !== id));
   }
 
+  const inputCls = 'w-full text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400/40';
+  const inputStyle = { backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' };
+
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Entraînements</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--sl-t3)' }}>Entraînements</span>
         {sessions.length > 0 && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#EFF6FF', color: '#1d4ed8' }}>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>
             {sessions.length}
           </span>
         )}
       </div>
 
       {sessions.length === 0 && !showForm && (
-        <p className="text-xs text-gray-400 italic text-center py-4 border-2 border-dashed border-gray-200 rounded-xl mb-3">
+        <p className="text-xs italic text-center py-4 rounded-xl mb-3" style={{ color: 'var(--sl-t3)', border: '2px dashed var(--sl-border)' }}>
           {isEditing ? "Ajoutez les créneaux d'entraînement" : 'Aucun entraînement planifié'}
         </p>
       )}
@@ -288,16 +311,20 @@ function TeamTrainingSection({ sessions, isEditing, onChange }) {
       {sessions.length > 0 && (
         <div className="space-y-2 mb-3">
           {sessions.map(s => (
-            <div key={s.id} className="bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-2.5 flex items-center gap-3">
+            <div key={s.id} className="rounded-xl px-3 py-2.5 flex items-center gap-3"
+              style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)' }}>
               <div className="w-10 text-center flex-shrink-0">
-                <div className="text-[9px] font-bold text-gray-400 uppercase leading-none">{s.day.slice(0, 3)}</div>
-                <div className="text-xs font-bold text-gray-700 mt-0.5">{s.time}</div>
+                <div className="text-[9px] font-bold uppercase leading-none" style={{ color: 'var(--sl-t3)' }}>{s.day.slice(0, 3)}</div>
+                <div className="text-xs font-bold mt-0.5" style={{ color: 'var(--sl-t1)' }}>{s.time}</div>
               </div>
-              <div className="w-px h-8 bg-gray-100 flex-shrink-0" />
-              <div className="flex-1 text-sm text-gray-700 truncate">{s.location}</div>
+              <div className="w-px h-8 flex-shrink-0" style={{ backgroundColor: 'var(--sl-border)' }} />
+              <div className="flex-1 text-sm truncate" style={{ color: 'var(--sl-t2)' }}>{s.location}</div>
               {isEditing && (
                 <button onClick={() => remove(s.id)}
-                  className="p-1.5 text-gray-300 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50">
+                  className="p-1.5 rounded-lg transition-colors cursor-pointer"
+                  style={{ color: 'var(--sl-t3)' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'var(--sl-t3)'; e.currentTarget.style.backgroundColor = 'transparent'; }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                   </svg>
@@ -313,35 +340,34 @@ function TeamTrainingSection({ sessions, isEditing, onChange }) {
           <motion.div
             initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="rounded-2xl border border-blue-100 bg-blue-50/50 p-3 space-y-2 mb-3"
+            className="rounded-2xl p-3 space-y-2 mb-3"
+            style={{ border: '1px solid rgba(59,130,246,0.3)', backgroundColor: 'rgba(59,130,246,0.06)' }}
           >
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs font-semibold text-gray-500 block mb-1">Jour</label>
-                <select value={form.day} onChange={e => setF('day', e.target.value)}
-                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none">
+                <label className="text-xs font-semibold block mb-1" style={{ color: 'var(--sl-t3)' }}>Jour</label>
+                <select value={form.day} onChange={e => setF('day', e.target.value)} className={inputCls} style={inputStyle}>
                   {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-500 block mb-1">Heure</label>
-                <input type="time" value={form.time} onChange={e => setF('time', e.target.value)}
-                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                <label className="text-xs font-semibold block mb-1" style={{ color: 'var(--sl-t3)' }}>Heure</label>
+                <input type="time" value={form.time} onChange={e => setF('time', e.target.value)} className={inputCls} style={{ ...inputStyle, colorScheme: 'dark' }} />
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1">Lieu *</label>
+              <label className="text-xs font-semibold block mb-1" style={{ color: 'var(--sl-t3)' }}>Lieu *</label>
               <input type="text" value={form.location} onChange={e => setF('location', e.target.value)}
-                placeholder="ex. Gymnase Jean Macé"
-                className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                placeholder="ex. Gymnase Jean Macé" className={inputCls} style={inputStyle} />
             </div>
             <div className="flex gap-2 pt-1">
               <button onClick={() => { setShowForm(false); setForm(BLANK_TR); }}
-                className="flex-1 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-500 hover:bg-gray-100 bg-white transition-colors">
+                className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                style={{ border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)' }}>
                 Annuler
               </button>
               <button onClick={add}
-                className="flex-1 py-2 rounded-xl text-xs font-bold text-white transition-colors"
+                className="flex-1 py-2 rounded-xl text-xs font-bold text-white transition-colors cursor-pointer"
                 style={{ backgroundColor: '#3b82f6' }}>
                 Ajouter
               </button>
@@ -352,7 +378,10 @@ function TeamTrainingSection({ sessions, isEditing, onChange }) {
 
       {isEditing && !showForm && (
         <button onClick={() => setShowForm(true)}
-          className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-xs font-medium text-gray-400 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50 transition-colors">
+          className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-xs font-medium transition-colors cursor-pointer"
+          style={{ border: '2px dashed var(--sl-border)', color: 'var(--sl-t3)' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#3b82f6'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.color = 'var(--sl-t3)'; }}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
@@ -364,7 +393,7 @@ function TeamTrainingSection({ sessions, isEditing, onChange }) {
 }
 
 // ── Team view ─────────────────────────────────────────────────────────────────
-function TeamView({ team, blocks, isEditing, updateBlock, addBlock, club, trainings, onUpdateTrainings }) {
+function TeamView({ team, blocks, isEditing, updateBlock, addBlock, club, trainings, onUpdateTrainings, onAddEventForTeam, canAddEvent }) {
   const matchesBlock = blocks.find(b => b.type === 'matches');
   const teamSessions = trainings[team.id] ?? [];
 
@@ -374,15 +403,25 @@ function TeamView({ team, blocks, isEditing, updateBlock, addBlock, club, traini
 
   return (
     <div className="px-4 py-5 space-y-6">
-      <TeamTrainingSection
-        sessions={teamSessions}
-        isEditing={isEditing}
-        onChange={updateSessions}
-      />
+      {/* Team event creation */}
+      {canAddEvent && onAddEventForTeam && (
+        <button
+          onClick={() => onAddEventForTeam(team)}
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white transition-all cursor-pointer"
+          style={{ backgroundColor: '#1e293b', boxShadow: '0 2px 12px rgba(0,0,0,0.2)' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Ajouter un événement pour {team.name}
+        </button>
+      )}
+
+      <TeamTrainingSection sessions={teamSessions} isEditing={isEditing} onChange={updateSessions} />
 
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Matchs</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--sl-t3)' }}>Matchs</span>
         </div>
         {matchesBlock ? (
           <MatchesBlock
@@ -394,14 +433,17 @@ function TeamView({ team, blocks, isEditing, updateBlock, addBlock, club, traini
           />
         ) : isEditing ? (
           <button onClick={() => addBlock('matches', null)}
-            className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-xs text-gray-400 hover:border-green-300 hover:text-green-500 hover:bg-green-50 transition-colors">
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-xs transition-colors cursor-pointer"
+            style={{ border: '2px dashed var(--sl-border)', color: 'var(--sl-t3)' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#22C55E'; e.currentTarget.style.color = '#22C55E'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.color = 'var(--sl-t3)'; }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             Activer les matchs pour ce club
           </button>
         ) : (
-          <p className="text-xs text-gray-400 italic text-center py-6 border-2 border-dashed border-gray-200 rounded-2xl">
+          <p className="text-xs italic text-center py-6 rounded-2xl" style={{ color: 'var(--sl-t3)', border: '2px dashed var(--sl-border)' }}>
             Aucun match enregistré
           </p>
         )}
@@ -454,17 +496,22 @@ function PendingResultsBanner({ count, isEditing }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function ClubPageView({ club, allEvents, onBack }) {
+export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canAddEvent: canAddEventProp }) {
   const { allSports: SPORTS } = useSports();
+  const { isAdmin, isClubAdmin, currentUser } = useAuth();
+  const canAddEvent = canAddEventProp ?? (isAdmin || isClubAdmin);
+
   const {
     blocks, isEditing, setIsEditing,
     addBlock, addBlockToRow,
     updateBlock, setBlockSpan, moveBlockInRow,
     deleteBlock, reorderRows, toggleBlock,
+    typography, setTypography,
   } = useClubPage(club);
 
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
   const [activeTeamId, setActiveTeamId] = useState(null);
+  const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
 
   const [teamTrainings, setTeamTrainings] = useState(() => {
     try {
@@ -483,7 +530,6 @@ export default function ClubPageView({ club, allEvents, onBack }) {
   );
 
   const activeTeam = allTeams.find(t => t.id === activeTeamId) ?? null;
-
   const sportData = SPORTS[club.sport];
   const rows = getRows(blocks);
   const stats = useMatchStats(blocks);
@@ -496,17 +542,28 @@ export default function ClubPageView({ club, allEvents, onBack }) {
     setOpenMenuAfter(null);
   }
 
+  function handleAddEventForTeam(team) {
+    setTeamEventModal({ _isNew: true, defaultTeam: team.name, defaultCategory: team.category ?? '' });
+  }
+
+  function handleTeamEventSave(formData) {
+    if (onAddEvent) {
+      onAddEvent(formData);
+    }
+    setTeamEventModal(undefined);
+  }
+
   return (
     <motion.div
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', stiffness: 340, damping: 36 }}
-      className="absolute inset-0 bg-gray-50 flex flex-col z-10"
+      className="absolute inset-0 flex flex-col z-10"
+      style={{ backgroundColor: 'var(--sl-bg)' }}
     >
       {/* ── Header ── */}
       <div className="flex-shrink-0 relative text-white" style={{ backgroundColor: '#0F1E3A' }}>
-        {/* Sport-color background accent */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: `linear-gradient(135deg, transparent 35%, ${sportData?.color ?? '#22C55E'}1A 100%)`,
@@ -517,13 +574,13 @@ export default function ClubPageView({ club, allEvents, onBack }) {
           background: `radial-gradient(circle, ${sportData?.color ?? '#22C55E'}28 0%, transparent 65%)`,
         }} />
         <div className="flex items-center justify-between px-4 pt-4 pb-3">
-          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm transition-colors">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm transition-colors cursor-pointer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             Clubs
           </button>
           <button
             onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
-            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors ${
+            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
               isEditing ? 'bg-green-500 text-white hover:bg-green-400' : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
             }`}
           >
@@ -596,7 +653,7 @@ export default function ClubPageView({ club, allEvents, onBack }) {
         </div>
 
         {isEditing && (
-          <div className="px-4 py-2 bg-amber-500 text-white text-xs font-medium flex items-center gap-2">
+          <div className="px-4 py-2 text-white text-xs font-medium flex items-center gap-2" style={{ backgroundColor: '#d97706' }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             Glissez ⠿ pour réordonner les lignes · Réduisez un bloc pour placer du contenu à côté
           </div>
@@ -605,15 +662,56 @@ export default function ClubPageView({ club, allEvents, onBack }) {
 
       <PendingResultsBanner count={pendingCount} isEditing={isEditing} />
 
-      {/* ── Tab bar (when teams exist) ── */}
+      {/* ── Typography picker (edit mode) ── */}
+      <AnimatePresence>
+        {isEditing && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden flex-shrink-0"
+            style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)' }}
+          >
+            <div className="px-4 py-3">
+              <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Typographie</div>
+              <div className="flex gap-4 flex-wrap">
+                {['titleFont', 'bodyFont'].map(key => (
+                  <div key={key} className="flex-1 min-w-0">
+                    <div className="text-[10px] mb-1.5 font-medium" style={{ color: 'var(--sl-t3)' }}>
+                      {key === 'titleFont' ? 'Titres' : 'Corps de texte'}
+                    </div>
+                    <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                      {FONT_OPTIONS.map(font => (
+                        <button
+                          key={font.key}
+                          onClick={() => setTypography({ [key]: font.key })}
+                          className="flex-shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+                          style={{
+                            fontFamily: `"${font.key}", sans-serif`,
+                            backgroundColor: typography[key] === font.key ? '#0F1E3A' : 'var(--sl-card)',
+                            color: typography[key] === font.key ? 'white' : 'var(--sl-t2)',
+                            border: `1px solid ${typography[key] === font.key ? '#0F1E3A' : 'var(--sl-border)'}`,
+                          }}
+                        >
+                          {font.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Tab bar ── */}
       {allTeams.length > 0 && (
-        <div className="flex border-b border-gray-200 bg-white overflow-x-auto flex-shrink-0" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex overflow-x-auto flex-shrink-0" style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', scrollbarWidth: 'none' }}>
           <button
             onClick={() => setActiveTeamId(null)}
-            className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap"
+            className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer"
             style={activeTeamId === null
-              ? { borderColor: '#1e293b', color: '#1e293b' }
-              : { borderColor: 'transparent', color: '#94a3b8' }}
+              ? { borderColor: '#1e293b', color: 'var(--sl-t1)' }
+              : { borderColor: 'transparent', color: 'var(--sl-t3)' }}
           >
             Général
           </button>
@@ -621,10 +719,10 @@ export default function ClubPageView({ club, allEvents, onBack }) {
             <button
               key={team.id}
               onClick={() => setActiveTeamId(team.id)}
-              className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap"
+              className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer"
               style={activeTeamId === team.id
-                ? { borderColor: '#1e293b', color: '#1e293b' }
-                : { borderColor: 'transparent', color: '#94a3b8' }}
+                ? { borderColor: '#1e293b', color: 'var(--sl-t1)' }
+                : { borderColor: 'transparent', color: 'var(--sl-t3)' }}
             >
               {team.name}
             </button>
@@ -633,8 +731,7 @@ export default function ClubPageView({ club, allEvents, onBack }) {
       )}
 
       {/* ── Content ── */}
-      <div className="flex-1 overflow-y-auto">
-
+      <div className="flex-1 overflow-y-auto" style={{ '--club-font-title': `"${typography.titleFont}", sans-serif`, '--club-font-body': `"${typography.bodyFont}", sans-serif` }}>
         {activeTeam ? (
           <TeamView
             key={activeTeam.id}
@@ -646,15 +743,12 @@ export default function ClubPageView({ club, allEvents, onBack }) {
             club={club}
             trainings={teamTrainings}
             onUpdateTrainings={setTeamTrainings}
+            onAddEventForTeam={handleAddEventForTeam}
+            canAddEvent={canAddEvent && !!onAddEvent}
           />
         ) : (
           <div className="px-4 py-5">
-            <Reorder.Group
-              axis="y"
-              values={rows}
-              onReorder={reorderRows}
-              as="div"
-            >
+            <Reorder.Group axis="y" values={rows} onReorder={reorderRows} as="div">
               {rows.map(row => (
                 <div key={row.rowId}>
                   <DraggableRow
@@ -682,7 +776,10 @@ export default function ClubPageView({ club, allEvents, onBack }) {
                       ) : (
                         <button
                           onClick={() => setOpenMenuAfter(row.rowId)}
-                          className="flex items-center justify-center gap-1 w-full mb-3 py-1.5 text-xs text-gray-300 hover:text-slate-600 hover:bg-gray-100 rounded-xl transition-colors"
+                          className="flex items-center justify-center gap-1 w-full mb-3 py-1.5 text-xs rounded-xl transition-colors cursor-pointer"
+                          style={{ color: 'var(--sl-t3)' }}
+                          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--sl-hover)'; e.currentTarget.style.color = 'var(--sl-t2)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--sl-t3)'; }}
                         >
                           <PlusIcon /> Ajouter une ligne ici
                         </button>
@@ -695,15 +792,16 @@ export default function ClubPageView({ club, allEvents, onBack }) {
 
             {blocks.length === 0 && isEditing && (
               <div className="text-center py-16">
-                <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'var(--sl-surface)' }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round">
                     <rect x="3" y="3" width="18" height="18" rx="3"/>
                     <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
                   </svg>
                 </div>
-                <p className="text-gray-500 font-medium text-sm mb-4">Page vide — ajoutez votre premier bloc</p>
+                <p className="font-medium text-sm mb-4" style={{ color: 'var(--sl-t2)' }}>Page vide — ajoutez votre premier bloc</p>
                 <button onClick={() => addBlock('title', null)}
-                  className="px-4 py-2 bg-slate-800 text-white text-sm rounded-xl hover:bg-slate-700 transition-colors">
+                  className="px-4 py-2 text-white text-sm rounded-xl transition-colors cursor-pointer"
+                  style={{ backgroundColor: '#1e293b' }}>
                   + Ajouter un bloc
                 </button>
               </div>
@@ -711,7 +809,10 @@ export default function ClubPageView({ club, allEvents, onBack }) {
 
             {isEditing && blocks.length > 0 && openMenuAfter === null && (
               <button onClick={() => setOpenMenuAfter('__end__')}
-                className="flex items-center justify-center gap-2 w-full py-3 mt-1 border-2 border-dashed border-gray-200 rounded-2xl text-sm text-gray-400 hover:border-slate-400 hover:text-slate-600 transition-colors">
+                className="flex items-center justify-center gap-2 w-full py-3 mt-1 rounded-2xl text-sm transition-colors cursor-pointer"
+                style={{ border: '2px dashed var(--sl-border)', color: 'var(--sl-t3)' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sl-border-s)'; e.currentTarget.style.color = 'var(--sl-t2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.color = 'var(--sl-t3)'; }}>
                 <PlusIcon /> Ajouter un bloc à la fin
               </button>
             )}
@@ -726,6 +827,15 @@ export default function ClubPageView({ club, allEvents, onBack }) {
           </div>
         )}
       </div>
+
+      {/* Team event modal */}
+      {teamEventModal !== undefined && (
+        <EventFormModal
+          event={teamEventModal}
+          onSave={handleTeamEventSave}
+          onClose={() => setTeamEventModal(undefined)}
+        />
+      )}
     </motion.div>
   );
 }

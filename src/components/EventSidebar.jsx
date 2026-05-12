@@ -27,26 +27,38 @@ export default function EventSidebar({
   }, [selectedEventId]);
 
   return (
-    <div className="w-96 flex flex-col bg-slate-50 border-l border-gray-200 flex-shrink-0">
+    <div
+      className="w-96 flex flex-col flex-shrink-0"
+      style={{
+        backgroundColor: 'var(--sl-sidebar-bg)',
+        borderLeft: '1px solid var(--sl-border-s)',
+      }}
+    >
       {/* Entête sidebar */}
-      <div className="px-4 py-3 border-b border-gray-200 bg-white">
+      <div
+        className="px-4 py-3 flex-shrink-0"
+        style={{
+          backgroundColor: 'var(--sl-card)',
+          borderBottom: '1px solid var(--sl-border)',
+        }}
+      >
         <div className="flex items-center justify-between mb-2">
           <div>
-            <span className="font-semibold text-gray-800 text-sm">
+            <span className="font-semibold text-sm" style={{ color: 'var(--sl-t1)' }}>
               {events.length} événement{events.length !== 1 ? 's' : ''}
             </span>
-            <p className="text-xs text-gray-500">Cliquez pour localiser</p>
+            <p className="text-xs" style={{ color: 'var(--sl-t2)' }}>Cliquez pour localiser</p>
           </div>
           <button
             onClick={onGeolocate}
             disabled={geoLoading}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+            style={{ backgroundColor: 'var(--sl-blue-dim)', color: 'var(--sl-blue)' }}
           >
             {geoLoading ? '⏳' : '📍'} Autour de moi
           </button>
         </div>
 
-        {/* Bouton Ajouter — clubs et admins uniquement */}
         {canAddEvent && (
           <button
             onClick={onAddEvent}
@@ -62,10 +74,10 @@ export default function EventSidebar({
       {/* Liste événements */}
       <div className="flex-1 overflow-y-auto px-3 py-3">
         {events.length === 0 ? (
-          <div className="text-center text-gray-400 mt-12">
+          <div className="text-center mt-12">
             <div className="text-4xl mb-3">🔍</div>
-            <p className="text-sm font-medium text-gray-500">Aucun événement trouvé</p>
-            <p className="text-xs mt-1">Essayez d'autres filtres ou ajoutez le vôtre</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--sl-t2)' }}>Aucun événement trouvé</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--sl-t3)' }}>Essayez d'autres filtres ou ajoutez le vôtre</p>
           </div>
         ) : (
           <AnimatePresence mode="popLayout">

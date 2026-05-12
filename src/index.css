@@ -10,9 +10,230 @@
   --color-brand-blue:  #3B82F6;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS — DARK MODE (default)
+   Sporty · Immersif · Néon · Tech premium
+   Ambiance Strava / Discord / Spotify
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --sl-bg:        #07101F;   /* page background — bleu nuit profond */
+  --sl-surface:   #0C1829;   /* secondary surface */
+  --sl-card:      #101E36;   /* card background */
+  --sl-card-hi:   #162547;   /* elevated card */
+  --sl-hover:     rgba(255,255,255,0.05);
+  --sl-overlay:   rgba(0,0,0,0.7);
+
+  /* Borders */
+  --sl-border:    rgba(255,255,255,0.08);
+  --sl-border-s:  rgba(255,255,255,0.14);
+
+  /* Text */
+  --sl-t1:  #E2EBF8;   /* primary */
+  --sl-t2:  #7B97BB;   /* secondary */
+  --sl-t3:  #3C5270;   /* muted */
+
+  /* Brand accents */
+  --sl-green:      #22C55E;
+  --sl-green-dim:  rgba(34,197,94,0.14);
+  --sl-green-glow: 0 0 20px rgba(34,197,94,0.35);
+  --sl-blue:       #3B82F6;
+  --sl-blue-dim:   rgba(59,130,246,0.14);
+
+  /* Navigation */
+  --sl-nav-bg:       #0C1829;
+  --sl-nav-border:   rgba(255,255,255,0.07);
+  --sl-nav-shadow:   0 -2px 24px rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.07);
+  --sl-nav-inactive: #3A5070;
+
+  /* Filter / action bars */
+  --sl-bar-bg:          #0C1829;
+  --sl-bar-border:      rgba(255,255,255,0.07);
+  --sl-pill-bg:         rgba(255,255,255,0.08);
+  --sl-pill-text:       #7B97BB;
+  --sl-pill-active-bg:  #1C2E4A;
+  --sl-pill-active-txt: #E2EBF8;
+
+  /* Shadows */
+  --sl-shadow:    0 4px 20px rgba(0,0,0,0.45);
+  --sl-shadow-xl: 0 8px 40px rgba(0,0,0,0.6);
+
+  /* Input */
+  --sl-input-bg:     rgba(255,255,255,0.07);
+  --sl-input-border: rgba(255,255,255,0.11);
+  --sl-input-text:   #E2EBF8;
+  --sl-input-placeholder: #3C5270;
+
+  /* Header (stays dark — brand identity) */
+  --sl-header-bg:     linear-gradient(90deg, #060C17 0%, #0C1829 100%);
+  --sl-header-shadow: 0 2px 20px rgba(0,0,0,0.55);
+
+  /* Hero / landing */
+  --sl-hero-bg:         linear-gradient(160deg, #040A14 0%, #0C1829 55%, #040A14 100%);
+  --sl-hero-section-bg: #0C1829;   /* replaces white section in HomePage */
+
+  /* Sidebar */
+  --sl-sidebar-bg: #0C1829;
+
+  /* Dividers */
+  --sl-divider: rgba(255,255,255,0.06);
+
+  /* Leaflet popup */
+  --sl-popup-bg:     #101E36;
+  --sl-popup-border: rgba(255,255,255,0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS — LIGHT MODE
+   Lumineux · Élégant · Moderne · Apple / Nike
+   ═══════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --sl-bg:        #F3F6FB;
+  --sl-surface:   #F8FAFD;
+  --sl-card:      #FFFFFF;
+  --sl-card-hi:   #FFFFFF;
+  --sl-hover:     rgba(15,30,58,0.04);
+  --sl-overlay:   rgba(0,0,0,0.45);
+
+  --sl-border:    #E8EEF6;
+  --sl-border-s:  #CBD5E1;
+
+  --sl-t1:  #0F1E3A;
+  --sl-t2:  #475569;
+  --sl-t3:  #94A3B8;
+
+  --sl-green:      #16A34A;
+  --sl-green-dim:  rgba(22,163,74,0.10);
+  --sl-green-glow: 0 4px 16px rgba(22,163,74,0.22);
+  --sl-blue:       #2563EB;
+  --sl-blue-dim:   rgba(37,99,235,0.10);
+
+  --sl-nav-bg:       #FFFFFF;
+  --sl-nav-border:   #E8EEF6;
+  --sl-nav-shadow:   0 -1px 0 #E8EEF6, 0 -4px 20px rgba(15,30,58,0.06);
+  --sl-nav-inactive: #94A3B8;
+
+  --sl-bar-bg:          #FFFFFF;
+  --sl-bar-border:      #F0F4F9;
+  --sl-pill-bg:         #F1F5F9;
+  --sl-pill-text:       #64748B;
+  --sl-pill-active-bg:  #1E293B;
+  --sl-pill-active-txt: #FFFFFF;
+
+  --sl-shadow:    0 2px 12px rgba(15,30,58,0.08);
+  --sl-shadow-xl: 0 8px 32px rgba(15,30,58,0.12);
+
+  --sl-input-bg:     #F1F5F9;
+  --sl-input-border: #E2E8F0;
+  --sl-input-text:   #0F1E3A;
+  --sl-input-placeholder: #94A3B8;
+
+  /* Header stays dark — brand identity in both themes */
+  --sl-header-bg:     linear-gradient(90deg, #0F1E3A 0%, #1a3460 100%);
+  --sl-header-shadow: 0 2px 12px rgba(15,30,58,0.2);
+
+  --sl-hero-bg:         linear-gradient(160deg, #0F1E3A 0%, #1a3460 55%, #0F1E3A 100%);
+  --sl-hero-section-bg: #FFFFFF;
+
+  --sl-sidebar-bg: #F8FAFD;
+
+  --sl-divider: #F0F4F9;
+
+  --sl-popup-bg:     #FFFFFF;
+  --sl-popup-border: #E8EEF6;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   THEME TRANSITION — smooth switching
+   ═══════════════════════════════════════════════════════════ */
+html[data-theme-transition],
+html[data-theme-transition] *,
+html[data-theme-transition] *::before,
+html[data-theme-transition] *::after {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    fill 0.25s ease,
+    stroke 0.25s ease !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE — override Tailwind's static classes
+   So we don't have to touch every JSX inline style
+   ═══════════════════════════════════════════════════════════ */
+html:not([data-theme="light"]) {
+
+  .bg-white           { background-color: var(--sl-card) !important; }
+  .bg-gray-50         { background-color: var(--sl-bg) !important; }
+  .bg-gray-100        { background-color: var(--sl-surface) !important; }
+  .bg-slate-50        { background-color: var(--sl-surface) !important; }
+
+  .border-gray-100    { border-color: var(--sl-border) !important; }
+  .border-gray-200    { border-color: var(--sl-border-s) !important; }
+
+  .text-gray-900      { color: var(--sl-t1) !important; }
+  .text-gray-800      { color: var(--sl-t1) !important; }
+  .text-gray-700      { color: var(--sl-t1) !important; }
+  .text-gray-600      { color: var(--sl-t2) !important; }
+  .text-gray-500      { color: var(--sl-t2) !important; }
+  .text-gray-400      { color: var(--sl-t3) !important; }
+  .text-gray-300      { color: var(--sl-t3) !important; }
+
+  .divide-gray-100 > * + * { border-color: var(--sl-border) !important; }
+
+  /* Hover states */
+  .hover\:bg-gray-50:hover  { background-color: var(--sl-hover) !important; }
+  .hover\:bg-gray-100:hover { background-color: var(--sl-surface) !important; }
+  .hover\:bg-red-50:hover   { background-color: rgba(239,68,68,0.1) !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LEAFLET — dark map tiles + controls
+   ═══════════════════════════════════════════════════════════ */
+html:not([data-theme="light"]) .leaflet-tile-pane {
+  filter: brightness(0.52) contrast(1.15) saturate(0.5);
+}
+
+html:not([data-theme="light"]) .leaflet-control-zoom a {
+  background-color: var(--sl-card) !important;
+  color: var(--sl-t1) !important;
+  border-color: var(--sl-border-s) !important;
+}
+
+html:not([data-theme="light"]) .leaflet-control-zoom a:hover {
+  background-color: var(--sl-card-hi) !important;
+}
+
+html:not([data-theme="light"]) .leaflet-control-attribution {
+  background-color: rgba(7,16,31,0.85) !important;
+  color: var(--sl-t3) !important;
+}
+
+html:not([data-theme="light"]) .leaflet-popup-content-wrapper {
+  background-color: var(--sl-popup-bg) !important;
+  color: var(--sl-t1) !important;
+  border: 1px solid var(--sl-popup-border) !important;
+  box-shadow: var(--sl-shadow-xl) !important;
+}
+
+html:not([data-theme="light"]) .leaflet-popup-tip {
+  background-color: var(--sl-popup-bg) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════ */
 body {
   margin: 0;
   font-family: 'Poppins', system-ui, sans-serif;
+  background-color: var(--sl-bg);
+  color: var(--sl-t1);
 }
 
 button, [role="button"] {
@@ -26,6 +247,9 @@ button, [role="button"] {
   flex-direction: column;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   LEAFLET POPUP — always rounded, no tip
+   ═══════════════════════════════════════════════════════════ */
 .leaflet-popup-content-wrapper {
   border-radius: 14px !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.14) !important;

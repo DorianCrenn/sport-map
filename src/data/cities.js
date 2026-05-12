@@ -39,4 +39,9 @@ export const SPORT_TO_GROUP = {
 };
 
 export const SPORT_OPTIONS = Object.keys(SPORT_TO_GROUP);
-export const LEVEL_OPTIONS = ['Amateur', 'Régional', 'Pro', 'Tout public'];
+
+export const EVENT_TYPES = [
+  { value: 'championship', label: 'Championnat', icon: '🏆', color: '#3b82f6' },
+  { value: 'cup',          label: 'Coupe',        icon: '🥈', color: '#f97316' },
+  { value: 'friendly',     label: 'Amical',        icon: '⚽', color: '#22C55E' },
+];

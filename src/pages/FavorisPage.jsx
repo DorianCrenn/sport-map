@@ -41,7 +41,7 @@ function ShareButton({ event }) {
       onClick={handleShare}
       title={copied ? 'Lien copié !' : 'Partager'}
       className="p-1.5 rounded-lg transition-colors cursor-pointer"
-      style={{ color: copied ? '#22C55E' : '#94a3b8', backgroundColor: copied ? '#f0fdf4' : 'transparent' }}
+      style={{ color: copied ? 'var(--sl-green)' : 'var(--sl-t3)', backgroundColor: copied ? 'var(--sl-green-dim)' : 'transparent' }}
     >
       {copied ? (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -71,7 +71,12 @@ function FavoriteCard({ event, onToggleFavorite }) {
       animate={{ opacity: isPast ? 0.55 : 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="bg-white rounded-2xl p-4 mb-2.5 shadow-sm border border-gray-100"
+      className="rounded-2xl p-4 mb-2.5"
+      style={{
+        backgroundColor: 'var(--sl-card)',
+        boxShadow: 'var(--sl-shadow)',
+        border: '1px solid var(--sl-border)',
+      }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -81,12 +86,12 @@ function FavoriteCard({ event, onToggleFavorite }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-xs font-semibold mb-0.5 font-inter" style={{ color: group?.color }}>{event.sport}</div>
-            <div className="font-semibold text-gray-800 text-sm leading-tight font-oswald tracking-wide">{event.title}</div>
-            <div className="flex items-center gap-1 text-xs text-gray-500 mt-1 font-oswald">
+            <div className="font-semibold text-sm leading-tight font-oswald tracking-wide" style={{ color: 'var(--sl-t1)' }}>{event.title}</div>
+            <div className="flex items-center gap-1 text-xs mt-1 font-oswald" style={{ color: 'var(--sl-t2)' }}>
               <CalendarSvg />
               <span>{timeStr}</span>
             </div>
-            <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5 font-inter">
+            <div className="flex items-center gap-1 text-xs mt-0.5 font-inter" style={{ color: 'var(--sl-t3)' }}>
               <PinSvg />
               <span className="truncate">{event.venue || event.city}</span>
             </div>
@@ -97,7 +102,7 @@ function FavoriteCard({ event, onToggleFavorite }) {
           <button
             onClick={() => onToggleFavorite(event.id)}
             className="p-2 rounded-xl transition-colors cursor-pointer"
-            style={{ color: '#ef4444', backgroundColor: '#fef2f2' }}
+            style={{ color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)' }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -113,14 +118,14 @@ function DateGroup({ label, events, onToggleFavorite, accent }) {
   return (
     <div className="mb-5">
       <div className="flex items-center gap-2 mb-2.5">
-        <div className="h-px flex-1 bg-gray-100" />
+        <div className="h-px flex-1" style={{ backgroundColor: 'var(--sl-divider)' }} />
         <span
           className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-          style={{ color: accent || '#64748b', backgroundColor: accent ? `${accent}14` : '#f1f5f9' }}
+          style={{ color: accent || 'var(--sl-t2)', backgroundColor: accent ? `${accent}14` : 'var(--sl-surface)' }}
         >
           {label}
         </span>
-        <div className="h-px flex-1 bg-gray-100" />
+        <div className="h-px flex-1" style={{ backgroundColor: 'var(--sl-divider)' }} />
       </div>
       {events.map((event) => (
         <FavoriteCard key={event.id} event={event} onToggleFavorite={onToggleFavorite} />
@@ -164,21 +169,24 @@ function NotifBanner({ favoriteEvents }) {
     <motion.div
       initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
       className="mx-4 mt-3 mb-1 rounded-2xl p-3.5 flex items-center gap-3 border"
-      style={{ background: 'linear-gradient(135deg, #F0FDF4, #ECFDF5)', borderColor: '#BBF7D0' }}
+      style={{
+        background: 'linear-gradient(135deg, var(--sl-green-dim), rgba(34,197,94,0.08))',
+        borderColor: 'var(--sl-green)',
+      }}
     >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#22C55E' }}>
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--sl-green)' }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-bold text-sm font-poppins" style={{ color: '#15803d' }}>Activer les rappels</div>
-        <div className="text-xs" style={{ color: '#16a34a' }}>Reçois une notification 1h avant chaque événement.</div>
+        <div className="font-bold text-sm font-poppins" style={{ color: 'var(--sl-green)' }}>Activer les rappels</div>
+        <div className="text-xs" style={{ color: 'var(--sl-t2)' }}>Reçois une notification 1h avant chaque événement.</div>
       </div>
       <button onClick={handleRequest}
         className="text-xs font-bold text-white px-3 py-1.5 rounded-xl flex-shrink-0 cursor-pointer"
-        style={{ backgroundColor: '#22C55E' }}>
+        style={{ backgroundColor: 'var(--sl-green)' }}>
         Activer
       </button>
     </motion.div>
@@ -222,12 +230,12 @@ export default function FavorisPage({ allEvents, favorites, onToggleFavorite }) 
   const hasGroups = groups.today.length + groups.tomorrow.length + groups.thisWeek.length + groups.later.length + groups.past.length > 0;
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--sl-bg)' }}>
       <div className="px-4 pt-4 pb-1">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm" style={{ color: 'var(--sl-t2)' }}>
           {favoriteEvents.length} événement{favoriteEvents.length !== 1 ? 's' : ''} sauvegardé{favoriteEvents.length !== 1 ? 's' : ''}
           {upcomingFavorites.length > 0 && (
-            <span className="ml-1.5 text-green-600 font-semibold">· {upcomingFavorites.length} à venir</span>
+            <span className="ml-1.5 font-semibold" style={{ color: 'var(--sl-green)' }}>· {upcomingFavorites.length} à venir</span>
           )}
         </p>
       </div>
@@ -242,12 +250,12 @@ export default function FavorisPage({ allEvents, favorites, onToggleFavorite }) 
               className="text-center mt-20"
             >
               <div className="flex justify-center mb-4">
-                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
               </div>
-              <p className="text-gray-500 font-medium">Aucun favori pour l'instant</p>
-              <p className="text-gray-400 text-sm mt-1">Appuyez sur le cœur d'un événement pour l'ajouter ici</p>
+              <p className="font-medium" style={{ color: 'var(--sl-t2)' }}>Aucun favori pour l'instant</p>
+              <p className="text-sm mt-1" style={{ color: 'var(--sl-t3)' }}>Appuyez sur le cœur d'un événement pour l'ajouter ici</p>
             </motion.div>
           ) : (
             <motion.div key="groups" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

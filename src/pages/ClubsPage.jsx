@@ -10,7 +10,7 @@ import ClubFormModal from '../components/club/ClubFormModal.jsx';
 import ClubRequestModal from '../components/club/ClubRequestModal.jsx';
 import { STATIC_CLUBS } from '../data/clubs.js';
 
-export default function ClubsPage({ allEvents, onShowAuth }) {
+export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent }) {
   const { allSports: SPORTS } = useSports();
   const { userClubs, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
@@ -84,7 +84,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
   }
 
   return (
-    <div className="h-full flex flex-col bg-[#F1F5F9] relative overflow-hidden">
+    <div className="h-full flex flex-col relative overflow-hidden" style={{ backgroundColor: 'var(--sl-bg)' }}>
 
       {/* Club page overlay */}
       <AnimatePresence>
@@ -94,6 +94,8 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
             club={selectedClub}
             allEvents={allEvents ?? []}
             onBack={() => setSelectedClub(null)}
+            onAddEvent={onAddEvent}
+            canAddEvent={canAddEvent}
           />
         )}
       </AnimatePresence>
@@ -131,13 +133,15 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
             <motion.div
               initial={{ y: 60 }} animate={{ y: 0 }} exit={{ y: 60 }}
               transition={{ type: 'spring', stiffness: 340, damping: 34 }}
-              className="bg-white rounded-t-3xl p-6 w-full"
+              className="rounded-t-3xl p-6 w-full"
+              style={{ backgroundColor: 'var(--sl-card)' }}
             >
-              <h3 className="font-bold font-poppins text-base mb-2" style={{ color: '#0F1E3A' }}>Supprimer le club ?</h3>
-              <p className="text-sm text-gray-500 mb-5">Cette action supprimera <strong>{confirmDelete.name}</strong> et sa page définitivement.</p>
+              <h3 className="font-bold font-poppins text-base mb-2" style={{ color: 'var(--sl-t1)' }}>Supprimer le club ?</h3>
+              <p className="text-sm mb-5" style={{ color: 'var(--sl-t2)' }}>Cette action supprimera <strong>{confirmDelete.name}</strong> et sa page définitivement.</p>
               <div className="flex gap-3">
                 <button onClick={() => setConfirmDelete(null)}
-                  className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50">
+                  className="flex-1 py-3 rounded-2xl text-sm font-semibold"
+                  style={{ border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)' }}>
                   Annuler
                 </button>
                 <button onClick={() => handleDelete(confirmDelete)}
@@ -151,7 +155,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
       </AnimatePresence>
 
       {/* Header */}
-      <div className="bg-white px-4 pt-5 pb-3 border-b border-gray-100 flex-shrink-0">
+      <div className="px-4 pt-5 pb-3 flex-shrink-0" style={{ backgroundColor: 'var(--sl-card)', borderBottom: '1px solid var(--sl-border)' }}>
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold font-poppins" style={{ color: '#0F1E3A' }}>Clubs</h1>
           {isAdmin && (
@@ -177,7 +181,8 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
             placeholder="Rechercher un club ou une ville…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-300"
+            className="w-full pl-9 pr-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-300"
+            style={{ backgroundColor: 'var(--sl-input-bg)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}
           />
         </div>
 
@@ -196,7 +201,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
           return (
             <div className="relative">
               <div className="absolute right-0 top-0 bottom-0 w-6 z-10 pointer-events-none"
-                style={{ background: 'linear-gradient(to left, white 20%, transparent)' }} />
+                style={{ background: 'linear-gradient(to left, var(--sl-card) 20%, transparent)' }} />
             <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {/* Collapse button when expanded */}
               {inExpandedMode && (
@@ -216,8 +221,9 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                 onClick={() => setSportFilter(null)}
                 className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors cursor-pointer"
                 style={sportFilter === null
-                  ? { backgroundColor: '#0F1E3A', color: 'white' }
-                  : { backgroundColor: '#f1f5f9', color: '#64748b' }}
+                  ? { backgroundColor: 'var(--sl-pill-active-bg)', color: 'var(--sl-pill-active-txt)' }
+                  : { backgroundColor: 'var(--sl-pill-bg)', color: 'var(--sl-pill-text)' }
+                }
               >
                 {inFavoritesMode ? 'Mes sports' : 'Tous'}
               </button>
@@ -228,7 +234,8 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                   className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 transition-colors cursor-pointer"
                   style={sportFilter === sport.id
                     ? { backgroundColor: sport.color, color: 'white' }
-                    : { backgroundColor: '#f1f5f9', color: '#64748b' }}
+                    : { backgroundColor: 'var(--sl-pill-bg)', color: 'var(--sl-pill-text)' }
+                  }
                 >
                   <SportIcon sport={sport.id} size={13} color={sportFilter === sport.id ? 'white' : sport.color} />
                   {sport.label}
@@ -239,7 +246,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                 <button
                   onClick={() => { setShowAllSports(true); setSportFilter(null); }}
                   className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
-                  style={{ backgroundColor: '#f0fdf4', color: '#16a34a', border: '1.5px dashed #86efac' }}
+                  style={{ backgroundColor: 'var(--sl-green-dim)', color: 'var(--sl-green)', border: '1.5px dashed var(--sl-green)' }}
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -357,13 +364,18 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
             <motion.div key={club.id}
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.025, duration: 0.15 }}
-              className="bg-white rounded-2xl mb-2.5 shadow-sm border overflow-hidden"
-              style={{ borderColor: own ? '#BBF7D0' : '#f1f5f9' }}
+              className="rounded-2xl mb-2.5 overflow-hidden"
+              style={{
+                backgroundColor: 'var(--sl-card)',
+                border: '1px solid',
+                borderColor: own ? '#22C55E' : 'var(--sl-border)',
+                boxShadow: 'var(--sl-shadow)',
+              }}
             >
               <div className="flex items-center gap-3 px-4 pt-4 pb-3">
                 {/* Avatar */}
                 <div className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 font-bold text-white text-sm font-oswald tracking-wide select-none"
-                  style={{ backgroundColor: club.logo ? 'transparent' : (sport?.color ?? '#64748b'), boxShadow: '0 0 0 2px white, 0 0 0 3.5px rgba(0,0,0,0.08)' }}>
+                  style={{ backgroundColor: club.logo ? 'transparent' : (sport?.color ?? '#64748b'), boxShadow: '0 0 0 2px var(--sl-card), 0 0 0 3.5px var(--sl-border-s)' }}>
                   {club.logo
                     ? <img src={club.logo} alt={club.name} className="w-full h-full object-cover" />
                     : club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
@@ -411,7 +423,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
               </div>
 
               {/* Actions */}
-              <div className="flex border-t border-gray-100">
+              <div className="flex" style={{ borderTop: '1px solid var(--sl-border)' }}>
                 {own ? (
                   <>
                     <button onClick={() => setFormClub(club)}
@@ -422,7 +434,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                       </svg>
                       Éditer
                     </button>
-                    <div className="w-px bg-gray-100" />
+                    <div className="w-px" style={{ backgroundColor: 'var(--sl-border)' }} />
                     <button onClick={() => setSelectedClub(club)}
                       className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold transition-colors font-poppins hover:bg-gray-50 cursor-pointer"
                       style={{ color: '#22C55E' }}>
@@ -431,7 +443,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                       </svg>
                       Ma page
                     </button>
-                    <div className="w-px bg-gray-100" />
+                    <div className="w-px" style={{ backgroundColor: 'var(--sl-border)' }} />
                     <button onClick={() => setConfirmDelete(club)}
                       className="flex items-center justify-center py-2.5 px-3 text-red-400 hover:bg-red-50 transition-colors cursor-pointer">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -451,7 +463,7 @@ export default function ClubsPage({ allEvents, onShowAuth }) {
                           </svg>
                           Contacter
                         </a>
-                        <div className="w-px bg-gray-100" />
+                        <div className="w-px" style={{ backgroundColor: 'var(--sl-border)' }} />
                       </>
                     )}
                     <button onClick={() => setSelectedClub(club)}

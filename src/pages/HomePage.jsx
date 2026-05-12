@@ -145,7 +145,7 @@ function PhoneMockup() {
           {['Tous','Football','Handball'].map((t, i) => (
             <span key={t} style={{
               fontSize: 9, borderRadius: 20, padding: '3px 10px', fontWeight: 700, whiteSpace: 'nowrap',
-              backgroundColor: i === 0 ? '#22C55E' : '#f1f5f9',
+              backgroundColor: i === 0 ? '#22C55E' : 'var(--sl-surface)',
               color: i === 0 ? 'white' : '#64748b',
             }}>{t}</span>
           ))}
@@ -187,7 +187,7 @@ function PhoneMockup() {
         </div>
 
         {/* Bottom nav */}
-        <div style={{ display:'flex', borderTop:'1px solid #f1f5f9', padding:'9px 0 8px', backgroundColor:'white' }}>
+        <div style={{ display:'flex', borderTop:'1px solid var(--sl-border)', padding:'9px 0 8px', backgroundColor:'var(--sl-hero-section-bg)' }}>
           {[
             { label:'Accueil', icon:<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>, active: false },
             { label:'Carte',   icon:<><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></>, active: true },
@@ -230,7 +230,7 @@ function HowItWorks() {
   ];
 
   return (
-    <div className="mt-8 pt-8" style={{ borderTop: '1px solid #f1f5f9' }}>
+    <div className="mt-8 pt-8" style={{ borderTop: '1px solid var(--sl-border)' }}>
       <h3 className="font-bold font-poppins text-center mb-5" style={{ fontSize: 15, color: '#0F1E3A' }}>
         Comment ça marche ?
       </h3>
@@ -305,7 +305,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
             style={{ backgroundColor: bg }}>
             {icon}
             <div className="font-extrabold font-poppins md:text-3xl" style={{ fontSize:20, color, lineHeight:1 }}>{value}</div>
-            <div className="font-medium text-center" style={{ fontSize:11, color:'#64748b' }}>{label}</div>
+            <div className="font-medium text-center" style={{ fontSize:11, color:'var(--sl-t2)' }}>{label}</div>
           </FadeUp>
         ))}
       </div>
@@ -323,15 +323,15 @@ function FeaturesSection({ stats = {}, onNavigate }) {
               {icon}
             </div>
             <div>
-              <div className="font-bold font-poppins md:text-base" style={{ fontSize:14, color:'#0F1E3A' }}>{title}</div>
-              <div style={{ fontSize:12, color:'#64748b', marginTop:2, lineHeight:1.5 }}>{desc}</div>
+              <div className="font-bold font-poppins md:text-base" style={{ fontSize:14, color:'var(--sl-t1)' }}>{title}</div>
+              <div style={{ fontSize:12, color:'var(--sl-t2)', marginTop:2, lineHeight:1.5 }}>{desc}</div>
             </div>
           </FadeUp>
         ))}
       </div>
 
       <div className="text-center mt-6">
-        <p style={{ fontSize:11, color:'#cbd5e1' }}>Finistère (29) · Version 1.0.0</p>
+        <p style={{ fontSize:11, color:'var(--sl-t3)' }}>Finistère (29) · Version 1.0.0</p>
       </div>
     </div>
   );
@@ -340,7 +340,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage({ onNavigate, stats }) {
   return (
-    <div className="h-full overflow-y-auto" style={{ background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 55%, #0F1E3A 100%)' }}>
+    <div className="h-full overflow-y-auto" style={{ background: 'var(--sl-hero-bg)' }}>
 
       {/* ── MOBILE layout (< md) ── */}
       <div className="md:hidden flex flex-col">
@@ -400,8 +400,8 @@ export default function HomePage({ onNavigate, stats }) {
           <PhoneMockup />
         </motion.div>
 
-        {/* White section */}
-        <div style={{ backgroundColor:'white', borderRadius:'24px 24px 0 0', marginTop:'-8px', position:'relative', zIndex:1 }}>
+        {/* Themed section */}
+        <div style={{ backgroundColor:'var(--sl-hero-section-bg)', borderRadius:'24px 24px 0 0', marginTop:'-8px', position:'relative', zIndex:1 }}>
           <FeaturesSection stats={stats} onNavigate={onNavigate} />
         </div>
       </div>
@@ -490,14 +490,14 @@ export default function HomePage({ onNavigate, stats }) {
           </motion.div>
         </div>
 
-        {/* Features + extra sections — fond blanc */}
-        <div style={{ backgroundColor:'white', position:'relative', zIndex:1 }}>
+        {/* Features + extra sections — themed */}
+        <div style={{ backgroundColor:'var(--sl-hero-section-bg)', position:'relative', zIndex:1 }}>
           <div className="max-w-5xl mx-auto">
 
             {/* How it works — desktop */}
             <div className="px-12 pt-10 pb-10">
               <FadeUp>
-                <h2 className="font-bold font-poppins text-center mb-8" style={{ fontSize:28, color:'#0F1E3A' }}>
+                <h2 className="font-bold font-poppins text-center mb-8" style={{ fontSize:28, color:'var(--sl-t1)' }}>
                   Comment ça marche ?
                 </h2>
               </FadeUp>
@@ -514,20 +514,20 @@ export default function HomePage({ onNavigate, stats }) {
                     whileHover={{ y:-4, boxShadow:'0 12px 32px rgba(0,0,0,0.08)' }}
                     transition={{ delay: i * 0.1, duration:0.4, ease:'easeOut' }}
                     className="rounded-2xl p-6 border border-gray-100"
-                    style={{ backgroundColor:'white' }}>
+                    style={{ backgroundColor:'var(--sl-card)' }}>
                     <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold font-poppins text-white text-base mb-4"
                       style={{ backgroundColor: color }}>
                       {n}
                     </div>
-                    <div className="font-bold font-poppins mb-2" style={{ fontSize:15, color:'#0F1E3A' }}>{title}</div>
-                    <div style={{ fontSize:13, color:'#64748b', lineHeight:1.6 }}>{desc}</div>
+                    <div className="font-bold font-poppins mb-2" style={{ fontSize:15, color:'var(--sl-t1)' }}>{title}</div>
+                    <div style={{ fontSize:13, color:'var(--sl-t2)', lineHeight:1.6 }}>{desc}</div>
                   </motion.div>
                 ))}
               </div>
             </div>
 
             {/* Club banner — desktop */}
-            <div className="px-12 pb-12" style={{ borderTop: '1px solid #f1f5f9' }}>
+            <div className="px-12 pb-12" style={{ borderTop: '1px solid var(--sl-border)' }}>
               <motion.div
                 initial={{ opacity:0, y:18 }}
                 whileInView={{ opacity:1, y:0 }}
@@ -552,9 +552,9 @@ export default function HomePage({ onNavigate, stats }) {
             </div>
 
             {/* Tout ce dont tu as besoin */}
-            <div className="px-12 pb-4" style={{ borderTop: '1px solid #f1f5f9' }}>
+            <div className="px-12 pb-4" style={{ borderTop: '1px solid var(--sl-border)' }}>
               <FadeUp>
-                <h2 className="font-bold font-poppins text-center mb-8 pt-10" style={{ fontSize:24, color:'#0F1E3A' }}>
+                <h2 className="font-bold font-poppins text-center mb-8 pt-10" style={{ fontSize:24, color:'var(--sl-t1)' }}>
                   Tout ce dont tu as besoin
                 </h2>
               </FadeUp>
@@ -572,18 +572,18 @@ export default function HomePage({ onNavigate, stats }) {
                   whileHover={{ y:-4, boxShadow:'0 16px 40px rgba(0,0,0,0.1)' }}
                   transition={{ delay: i * 0.1, duration:0.4, ease:'easeOut' }}
                   className="rounded-2xl p-6 border border-gray-100 shadow-sm"
-                  style={{ backgroundColor:'white' }}>
+                  style={{ backgroundColor:'var(--sl-card)' }}>
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor:bg }}>
                     {icon}
                   </div>
-                  <div className="font-bold font-poppins mb-2" style={{ fontSize:17, color:'#0F1E3A' }}>{title}</div>
-                  <div style={{ fontSize:13, color:'#64748b', lineHeight:1.6 }}>{desc}</div>
+                  <div className="font-bold font-poppins mb-2" style={{ fontSize:17, color:'var(--sl-t1)' }}>{title}</div>
+                  <div style={{ fontSize:13, color:'var(--sl-t2)', lineHeight:1.6 }}>{desc}</div>
                 </motion.div>
               ))}
             </div>
 
             <div className="text-center pb-8">
-              <p style={{ fontSize:12, color:'#cbd5e1' }}>Finistère (29) · Version 1.0.0</p>
+              <p style={{ fontSize:12, color:'var(--sl-t3)' }}>Finistère (29) · Version 1.0.0</p>
             </div>
           </div>
         </div>

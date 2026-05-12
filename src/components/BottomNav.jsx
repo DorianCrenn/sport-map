@@ -66,9 +66,8 @@ const ADMIN_TAB = {
   ),
 };
 
-const ACTIVE_COLOR = '#22C55E';
-const INACTIVE_COLOR = '#94a3b8';
-const ADMIN_COLOR = '#3b82f6';
+const ACTIVE_GREEN = '#22C55E';
+const ACTIVE_BLUE  = '#3b82f6';
 
 export default function BottomNav({ activeTab, onTabChange, badgeCounts = {} }) {
   const { isAdmin } = useAuth();
@@ -76,22 +75,26 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {} }) 
 
   return (
     <nav
-      className="flex-shrink-0 bg-white flex items-stretch"
-      style={{ boxShadow: '0 -1px 0 #e2e8f0, 0 -4px 20px rgba(0,0,0,0.05)' }}
+      className="flex-shrink-0 flex items-stretch"
+      style={{
+        backgroundColor: 'var(--sl-nav-bg)',
+        boxShadow: 'var(--sl-nav-shadow)',
+        borderTop: '1px solid var(--sl-nav-border)',
+      }}
     >
       {tabs.map((tab) => {
-        const active = activeTab === tab.id;
-        const isAdminTab = tab.id === 'admin';
-        const activeColor = isAdminTab ? ADMIN_COLOR : ACTIVE_COLOR;
-        const color = active ? activeColor : INACTIVE_COLOR;
-        const badgeCount = badgeCounts[tab.id] || 0;
+        const active       = activeTab === tab.id;
+        const isAdminTab   = tab.id === 'admin';
+        const activeColor  = isAdminTab ? ACTIVE_BLUE : ACTIVE_GREEN;
+        const color        = active ? activeColor : 'var(--sl-nav-inactive)';
+        const badgeCount   = badgeCounts[tab.id] || 0;
 
         return (
           <motion.button
             key={tab.id}
             whileTap={{ scale: 0.88 }}
             onClick={() => onTabChange(tab.id)}
-            className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 cursor-pointer transition-colors relative"
+            className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 cursor-pointer relative"
             style={{ color }}
           >
             {active && (
@@ -117,10 +120,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {} }) 
                 </motion.div>
               )}
             </div>
-            <span
-              className="text-[10px] font-semibold font-poppins"
-              style={{ color }}
-            >
+            <span className="text-[10px] font-semibold font-poppins" style={{ color }}>
               {tab.label}
             </span>
           </motion.button>

@@ -73,7 +73,7 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
   }, [filteredEvents, selectedEventId]);
 
   function handleSave(formData) {
-    if (modalEvent === null) {
+    if (modalEvent?._isNew) {
       const created = onAddEvent(formData);
       setSelectedEventId(created.id);
     } else {
@@ -134,7 +134,7 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
             onGeolocate={requestGeo}
             geoLoading={geoLoading}
             canAddEvent={canAddEvent}
-            onAddEvent={() => setModalEvent(null)}
+            onAddEvent={() => setModalEvent({ _isNew: true })}
             onEditEvent={(event) => setModalEvent(event)}
             onDeleteEvent={handleDeleteEvent}
             isFavorite={isFavorite}
@@ -147,8 +147,8 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
           {/* Favoris FAB — bottom left */}
           <button
             onClick={onGoToFavoris}
-            className="pointer-events-auto relative flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-white cursor-pointer"
-            style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.15)', color: '#ef4444' }}
+            className="pointer-events-auto relative flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl cursor-pointer"
+            style={{ backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', color: '#ef4444', border: '1px solid var(--sl-border)' }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -165,7 +165,7 @@ export default function MapPage({ allEvents, activeDepartment, canAddEvent, onAd
           {/* Ajouter FAB — clubs et admins uniquement */}
           {canAddEvent && (
             <button
-              onClick={() => setModalEvent(null)}
+              onClick={() => setModalEvent({ _isNew: true })}
               className="pointer-events-auto flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white cursor-pointer"
               style={{ backgroundColor: '#1e293b', boxShadow: '0 2px 12px rgba(0,0,0,0.25)' }}
             >

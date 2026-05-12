@@ -15,17 +15,30 @@ export default function DateFilterBar({ active, onChange }) {
   const dateInputRef = useRef(null);
   const isSpecific = active && !PREDEFINED.find((o) => o.key === active);
 
+  const inactiveStyle = {
+    backgroundColor: 'var(--sl-pill-bg)',
+    color: 'var(--sl-pill-text)',
+    border: '1px solid var(--sl-bar-border)',
+  };
+  const activeStyle = {
+    backgroundColor: 'var(--sl-pill-active-bg)',
+    color: 'var(--sl-pill-active-txt)',
+    border: '1px solid transparent',
+  };
+
   return (
-    <div className="flex gap-2 px-4 py-2 bg-white border-b border-gray-200 flex-shrink-0 overflow-x-auto items-center">
+    <div
+      className="flex gap-2 px-4 py-2 flex-shrink-0 overflow-x-auto items-center"
+      style={{
+        backgroundColor: 'var(--sl-bar-bg)',
+        borderBottom: '1px solid var(--sl-bar-border)',
+      }}
+    >
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={() => onChange(null)}
         className="px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer transition-colors"
-        style={
-          active === null
-            ? { backgroundColor: '#1e293b', color: 'white' }
-            : { backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }
-        }
+        style={active === null ? activeStyle : inactiveStyle}
       >
         Tout
       </motion.button>
@@ -36,17 +49,12 @@ export default function DateFilterBar({ active, onChange }) {
           whileTap={{ scale: 0.95 }}
           onClick={() => onChange(active === key ? null : key)}
           className="px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer transition-colors"
-          style={
-            active === key
-              ? { backgroundColor: '#1e293b', color: 'white' }
-              : { backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }
-          }
+          style={active === key ? activeStyle : inactiveStyle}
         >
           {label}
         </motion.button>
       ))}
 
-      {/* Custom date picker — hidden input triggered by showPicker() */}
       <input
         ref={dateInputRef}
         type="date"
@@ -58,11 +66,7 @@ export default function DateFilterBar({ active, onChange }) {
         whileTap={{ scale: 0.95 }}
         onClick={() => dateInputRef.current?.showPicker()}
         className="px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 cursor-pointer flex items-center gap-1.5 transition-colors"
-        style={
-          isSpecific
-            ? { backgroundColor: '#1e293b', color: 'white' }
-            : { backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }
-        }
+        style={isSpecific ? activeStyle : inactiveStyle}
       >
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2"/>

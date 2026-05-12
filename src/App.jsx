@@ -139,7 +139,7 @@ function AppInner() {
               <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} />
             )}
             {activeTab === 'news' && <NewsPage />}
-            {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} />}
+            {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEvent} canAddEvent={isAdmin || isClubAdmin} />}
             {activeTab === 'profil' && (
               <ProfilPage
                 favorites={favorites}
@@ -175,6 +175,8 @@ function AppInner() {
             club={selectedSearchClub}
             allEvents={allEvents}
             onBack={() => setSelectedSearchClub(null)}
+            onAddEvent={addEvent}
+            canAddEvent={isAdmin || isClubAdmin}
           />
         )}
       </AnimatePresence>

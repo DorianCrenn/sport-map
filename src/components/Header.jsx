@@ -54,8 +54,8 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
     <header
       className="flex-shrink-0 flex items-center gap-3 px-4 text-white"
       style={{
-        background: 'linear-gradient(90deg, #0F1E3A 0%, #1a3460 100%)',
-        boxShadow: '0 2px 12px rgba(15,30,58,0.3)',
+        background: 'var(--sl-header-bg)',
+        boxShadow: 'var(--sl-header-shadow)',
         minHeight: 58,
         position: 'relative',
         zIndex: 1000,
@@ -115,9 +115,9 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
               placeholder="Rechercher une ville ou un club…"
               className="w-full pl-9 pr-8 py-2 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-300/40 transition-shadow"
               style={{
-                backgroundColor: 'white',
-                border: '1.5px solid rgba(255,255,255,0.15)',
-                color: '#0F1E3A',
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                border: '1.5px solid rgba(255,255,255,0.18)',
+                color: 'white',
               }}
             />
 
@@ -125,7 +125,7 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
               <button
                 onClick={() => { setQuery(''); setOpen(false); inputRef.current?.focus(); }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-colors"
-                style={{ backgroundColor: '#e2e8f0' }}
+                style={{ backgroundColor: 'var(--sl-surface)' }}
               >
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="3" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -152,9 +152,9 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
               transition={{ duration: 0.14, ease: 'easeOut' }}
               className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden"
               style={{
-                backgroundColor: 'white',
-                boxShadow: '0 16px 48px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.1)',
-                border: '1px solid #e2e8f0',
+                backgroundColor: 'var(--sl-card)',
+                boxShadow: 'var(--sl-shadow-xl)',
+                border: '1px solid var(--sl-border-s)',
                 zIndex: 200,
               }}
             >
@@ -168,11 +168,11 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                       </svg>
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#94a3b8' }}>
+                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--sl-t3)' }}>
                       Villes
                     </span>
                     <span className="text-[10px] font-semibold ml-auto px-1.5 py-0.5 rounded-md"
-                      style={{ backgroundColor: '#f1f5f9', color: '#64748b' }}>
+                      style={{ backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
                       {matchedCities.length}
                     </span>
                   </div>
@@ -182,8 +182,8 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
                         key={city}
                         onClick={() => selectCity(city)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors"
-                        style={{ color: '#0F1E3A' }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                        style={{ color: 'var(--sl-t1)' }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--sl-hover)'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -204,7 +204,7 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
 
               {/* Divider between groups */}
               {matchedCities.length > 0 && matchedClubs.length > 0 && (
-                <div style={{ height: 1, backgroundColor: '#f1f5f9', margin: '0 16px' }} />
+                <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '0 16px' }} />
               )}
 
               {/* Clubs */}
@@ -218,11 +218,11 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                       </svg>
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#94a3b8' }}>
+                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--sl-t3)' }}>
                       Clubs
                     </span>
                     <span className="text-[10px] font-semibold ml-auto px-1.5 py-0.5 rounded-md"
-                      style={{ backgroundColor: '#f1f5f9', color: '#64748b' }}>
+                      style={{ backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
                       {matchedClubs.length}
                     </span>
                   </div>
@@ -235,7 +235,7 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
                           key={club.id}
                           onClick={() => selectClub(club)}
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors"
-                          onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--sl-hover)'}
                           onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
                           <div
@@ -245,7 +245,7 @@ export default function Header({ cities = [], clubs = [], cityFilter, onCityFilt
                             {initials}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="text-sm font-semibold truncate" style={{ color: '#0F1E3A' }}>{club.name}</div>
+                            <div className="text-sm font-semibold truncate" style={{ color: 'var(--sl-t1)' }}>{club.name}</div>
                             <div className="flex items-center gap-1.5 mt-0.5">
                               <span className="text-[11px]" style={{ color: '#64748b' }}>{club.city}</span>
                               <span style={{ color: '#cbd5e1', fontSize: 10 }}>·</span>

@@ -11,6 +11,7 @@ export default function CityAutocomplete({
   onValidChange,
   placeholder = 'ex. Brest',
   inputClassName,
+  inputStyle,
   error,
 }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -73,6 +74,7 @@ export default function CityAutocomplete({
           onBlur={() => setTimeout(() => setOpen(false), 160)}
           placeholder={placeholder}
           className={`${baseCls} pr-8`}
+          style={inputStyle}
         />
 
         {/* Status icon */}
@@ -101,18 +103,21 @@ export default function CityAutocomplete({
           <motion.div
             initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.12 }}
-            className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden"
-            style={{ zIndex: 9999 }}
+            className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden"
+            style={{ zIndex: 9999, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border-s)', boxShadow: 'var(--sl-shadow-xl)' }}
           >
             {suggestions.map(c => (
               <button
                 key={c.code}
                 type="button"
                 onMouseDown={() => pick(c)}
-                className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 text-left transition-colors border-b border-gray-50 last:border-0"
+                className="w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors"
+                style={{ borderBottom: '1px solid var(--sl-border)', color: 'var(--sl-t1)' }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--sl-hover)'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <span className="text-sm font-medium text-gray-800">{c.nom}</span>
-                <span className="text-xs text-gray-400 ml-2 flex-shrink-0">dép. {c.codeDepartement}</span>
+                <span className="text-sm font-medium">{c.nom}</span>
+                <span className="text-xs ml-2 flex-shrink-0" style={{ color: 'var(--sl-t3)' }}>dép. {c.codeDepartement}</span>
               </button>
             ))}
           </motion.div>
