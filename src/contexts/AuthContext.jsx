@@ -63,8 +63,17 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(error.message);
+    const withTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Délai dépassé — vérifiez votre connexion internet')), 10000)
+    );
+    const { data, error } = await Promise.race([
+      supabase.auth.signInWithPassword({ email, password }),
+      withTimeout,
+    ]);
+    if (error) {
+      console.error('[Supabase login]', error);
+      throw new Error(error.message);
+    }
     return data.user;
   }, []);
 
