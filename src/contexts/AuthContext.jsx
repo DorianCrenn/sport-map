@@ -143,6 +143,23 @@ export function AuthProvider({ children }) {
     return { email: user.email, tempPassword };
   }, []);
 
+  const followClub = useCallback((clubId) => {
+    if (!currentUser) return;
+    const followed = currentUser.followedClubs ?? [];
+    if (followed.includes(clubId)) return;
+    updateProfile({ followedClubs: [...followed, clubId] });
+  }, [currentUser, updateProfile]);
+
+  const unfollowClub = useCallback((clubId) => {
+    if (!currentUser) return;
+    const followed = currentUser.followedClubs ?? [];
+    updateProfile({ followedClubs: followed.filter(id => id !== clubId) });
+  }, [currentUser, updateProfile]);
+
+  const isFollowingClub = useCallback((clubId) => {
+    return !!(currentUser?.followedClubs ?? []).includes(clubId);
+  }, [currentUser]);
+
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const isClubAdmin = currentUser?.role === 'club_admin';
   const isLoggedIn = !!currentUser;
@@ -152,6 +169,7 @@ export function AuthProvider({ children }) {
       currentUser, users,
       login, register, logout, updateProfile, updateUser,
       loginWithProvider, requestPasswordReset,
+      followClub, unfollowClub, isFollowingClub,
       isAdmin, isClubAdmin, isLoggedIn,
     }}>
       {children}

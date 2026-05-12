@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
@@ -24,8 +24,63 @@ function getEffectiveStatus(event) {
   return new Date(event.date) < new Date() ? 'done' : 'upcoming';
 }
 
+function QuickScoreEdit({ event, onUpdateEvent }) {
+  const [home, setHome] = useState(String(event.score?.home ?? ''));
+  const [away, setAway] = useState(String(event.score?.away ?? ''));
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setHome(String(event.score?.home ?? ''));
+    setAway(String(event.score?.away ?? ''));
+  }, [event.score?.home, event.score?.away]);
+
+  function handleSave() {
+    const h = parseInt(home, 10);
+    const a = parseInt(away, 10);
+    if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
+    onUpdateEvent(event.id, { score: { home: h, away: a } });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 14, marginBottom: 14 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+        {event.score != null ? 'Modifier le score' : 'Saisir le score'}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <input
+          type="number" min="0" max="99" value={home}
+          onChange={e => setHome(e.target.value)}
+          aria-label="Score domicile"
+          style={{ width: 60, textAlign: 'center', fontWeight: 800, fontSize: 22, padding: '8px 0', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}
+        />
+        <span style={{ fontWeight: 800, fontSize: 18, color: 'var(--sl-t3)' }}>—</span>
+        <input
+          type="number" min="0" max="99" value={away}
+          onChange={e => setAway(e.target.value)}
+          aria-label="Score extérieur"
+          style={{ width: 60, textAlign: 'center', fontWeight: 800, fontSize: 22, padding: '8px 0', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}
+        />
+        <button
+          onClick={handleSave}
+          style={{
+            flex: 1, padding: '10px 0', borderRadius: 12,
+            border: saved ? '1px solid var(--sl-green)' : 'none',
+            cursor: 'pointer', fontSize: 14, fontWeight: 700,
+            backgroundColor: saved ? 'var(--sl-green-dim)' : 'var(--sl-green)',
+            color: saved ? 'var(--sl-green)' : '#fff', transition: 'all 0.15s',
+          }}
+        >
+          {saved ? '✓ Enregistré' : 'Enregistrer'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function MobileEventSheet({
-  event, onClose, onEdit, onDelete,
+  event, onClose, onEdit, onDelete, onUpdateEvent,
   isFavorite, onToggleFavorite,
   isAttending, onToggleAttend,
 }) {
@@ -38,6 +93,7 @@ export default function MobileEventSheet({
   const sportColor = group?.color ?? '#22d96a';
   const fav = isFavorite?.(event.id) ?? false;
   const attending = isAttending?.(event.id) ?? false;
+  const isPast = new Date(event.date) < new Date();
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -155,9 +211,18 @@ export default function MobileEventSheet({
         </div>
 
         {/* Title */}
-        <h2 style={{ fontWeight: 800, fontSize: 20, lineHeight: 1.2, letterSpacing: '-0.02em', color: 'var(--sl-t1)', marginBottom: 12, fontFamily: 'Inter, sans-serif' }}>
+        <h2 style={{ fontWeight: 800, fontSize: 20, lineHeight: 1.2, letterSpacing: '-0.02em', color: 'var(--sl-t1)', marginBottom: event.score != null ? 8 : 12, fontFamily: 'Inter, sans-serif' }}>
           {event.title}
         </h2>
+
+        {/* Score display */}
+        {event.score != null && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <span style={{ fontSize: 32, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.home}</span>
+            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--sl-t3)' }}>—</span>
+            <span style={{ fontSize: 32, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.away}</span>
+          </div>
+        )}
 
         {/* Meta */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
@@ -259,6 +324,10 @@ export default function MobileEventSheet({
                     );
                   })}
                 </div>
+              )}
+
+              {event.source === 'user' && isPast && onUpdateEvent && (
+                <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />
               )}
 
               {event.source === 'user' && (

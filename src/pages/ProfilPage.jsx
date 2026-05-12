@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
+import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
+import { STATIC_CLUBS } from '../data/clubs.js';
 
 // ── Theme toggle switch ────────────────────────────────────────────────────────
 function ThemeToggle() {
@@ -84,8 +86,11 @@ function ThemeToggle() {
 }
 
 export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAuth }) {
-  const { currentUser, logout, isAdmin, isClubAdmin, updateProfile } = useAuth();
+  const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub } = useAuth();
   const { allSports } = useSports();
+  const { userClubs } = useClubs();
+  const allClubs = [...userClubs, ...STATIC_CLUBS];
+  const followedClubIds = currentUser?.followedClubs ?? [];
   const [editingSports, setEditingSports] = useState(false);
   const [selectedSports, setSelectedSports] = useState(new Set());
   const favCount = favorites?.size ?? 0;
@@ -391,6 +396,42 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
             )}
           </AnimatePresence>
         </div>
+
+        {/* Clubs suivis */}
+        {followedClubIds.length > 0 && (
+          <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
+            <h3 className="font-semibold text-sm font-poppins mb-3" style={{ color: 'var(--sl-t1)' }}>
+              Clubs suivis
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {followedClubIds.map(clubId => {
+                const club = allClubs.find(c => c.id === clubId);
+                if (!club) return null;
+                return (
+                  <div key={clubId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      backgroundColor: 'var(--sl-surface)', fontWeight: 700, fontSize: 11, color: 'var(--sl-t2)', fontFamily: 'Inter, sans-serif',
+                    }}>
+                      {club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club.name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{club.city} · {club.sport}</div>
+                    </div>
+                    <button
+                      onClick={() => unfollowClub(clubId)}
+                      aria-label={`Ne plus suivre ${club.name}`}
+                      style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', backgroundColor: 'transparent' }}
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Logout */}
         <button

@@ -186,6 +186,7 @@ export default function MapPage({
             onAddEvent={() => setModalEvent({ _isNew: true })}
             onEditEvent={(event) => setModalEvent(event)}
             onDeleteEvent={handleDeleteEvent}
+            onUpdateEvent={onUpdateEvent}
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}
             isAttending={isAttending}
@@ -257,6 +258,7 @@ export default function MapPage({
               onClose={() => setSelectedEventId(null)}
               onEdit={(event) => setModalEvent(event)}
               onDelete={handleDeleteEvent}
+              onUpdateEvent={onUpdateEvent}
               isFavorite={isFavorite}
               onToggleFavorite={onToggleFavorite}
               isAttending={isAttending}

@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
@@ -144,6 +144,64 @@ function NavBtn({ event }) {
   );
 }
 
+function QuickScoreEdit({ event, onUpdateEvent }) {
+  const [home, setHome] = useState(String(event.score?.home ?? ''));
+  const [away, setAway] = useState(String(event.score?.away ?? ''));
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setHome(String(event.score?.home ?? ''));
+    setAway(String(event.score?.away ?? ''));
+  }, [event.score?.home, event.score?.away]);
+
+  function handleSave(e) {
+    e.stopPropagation();
+    const h = parseInt(home, 10);
+    const a = parseInt(away, 10);
+    if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
+    onUpdateEvent(event.id, { score: { home: h, away: a } });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)' }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 7 }}>
+        {event.score != null ? 'Modifier le score' : 'Saisir le score'}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <input
+          type="number" min="0" max="99" value={home}
+          onChange={e => setHome(e.target.value)}
+          onClick={e => e.stopPropagation()}
+          aria-label="Score domicile"
+          style={{ width: 50, textAlign: 'center', fontWeight: 800, fontSize: 18, padding: '5px 0', borderRadius: 8, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}
+        />
+        <span style={{ fontWeight: 800, fontSize: 13, color: 'var(--sl-t3)' }}>—</span>
+        <input
+          type="number" min="0" max="99" value={away}
+          onChange={e => setAway(e.target.value)}
+          onClick={e => e.stopPropagation()}
+          aria-label="Score extérieur"
+          style={{ width: 50, textAlign: 'center', fontWeight: 800, fontSize: 18, padding: '5px 0', borderRadius: 8, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}
+        />
+        <button
+          onClick={handleSave}
+          style={{
+            flex: 1, padding: '6px 0', borderRadius: 8, border: saved ? '1px solid var(--sl-green)' : 'none', cursor: 'pointer',
+            fontSize: 12, fontWeight: 700,
+            backgroundColor: saved ? 'var(--sl-green-dim)' : 'var(--sl-green)',
+            color: saved ? 'var(--sl-green)' : '#fff',
+            transition: 'all 0.15s',
+          }}
+        >
+          {saved ? '✓ Enregistré' : 'Enregistrer'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ICSBtn({ event }) {
   function handleICS(e) { e.stopPropagation(); downloadICS(event); }
   return (
@@ -160,7 +218,7 @@ function ICSBtn({ event }) {
   );
 }
 
-const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, isFavorite, onToggleFavorite, isAttending, onToggleAttend }, ref) {
+const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, onUpdateEvent, isFavorite, onToggleFavorite, isAttending, onToggleAttend }, ref) {
   const { allSports: SPORTS } = useSports();
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
@@ -168,6 +226,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const isUserEvent = event.source === 'user';
+  const isPast = dateObj < new Date();
   const hasStandings = !!event.standings;
   const showPoints = event.standings?.home?.points !== null && event.standings?.home?.points !== undefined;
   const fav = isFavorite?.(event.id) ?? false;
@@ -217,9 +276,18 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
         </div>
 
         {/* Title */}
-        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 5, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none' }}>
+        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: event.score != null ? 4 : 5, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none' }}>
           {event.title}
         </div>
+
+        {/* Score display */}
+        {event.score != null && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+            <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.home}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t3)' }}>—</span>
+            <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.away}</span>
+          </div>
+        )}
 
         {/* Meta */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -256,6 +324,10 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
                 <ShareBtn event={event} />
                 <ICSBtn event={event} />
               </div>
+
+              {isUserEvent && isPast && onUpdateEvent && (
+                <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />
+              )}
 
               {hasStandings && (
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)', overflowX: 'auto' }}>

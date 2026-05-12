@@ -12,6 +12,7 @@ export default function EventSidebar({
   onAddEvent,
   onEditEvent,
   onDeleteEvent,
+  onUpdateEvent,
   isFavorite,
   onToggleFavorite,
   isAttending,
@@ -103,6 +104,7 @@ export default function EventSidebar({
                 onSelect={() => onEventSelect(event.id)}
                 onEdit={onEditEvent}
                 onDelete={onDeleteEvent}
+                onUpdateEvent={onUpdateEvent}
                 isFavorite={isFavorite}
                 onToggleFavorite={onToggleFavorite}
                 isAttending={isAttending}

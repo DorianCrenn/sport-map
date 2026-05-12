@@ -14,7 +14,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
   const { allSports: SPORTS } = useSports();
   const { userClubs, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
-  const { currentUser, isAdmin, isClubAdmin } = useAuth();
+  const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub } = useAuth();
 
   const [search, setSearch]               = useState('');
   const [sportFilter, setSportFilter]     = useState(null);
@@ -535,6 +535,32 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                   </>
                 ) : (
                   <>
+                    {currentUser && (() => {
+                      const following = isFollowingClub(club.id);
+                      return (
+                        <>
+                          <button
+                            onClick={() => following ? unfollowClub(club.id) : followClub(club.id)}
+                            aria-label={following ? 'Ne plus suivre ce club' : 'Suivre ce club'}
+                            style={{
+                              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              gap: 5, padding: '9px 0', fontSize: 12, fontWeight: 700,
+                              color: following ? 'var(--sl-green)' : 'var(--sl-t2)',
+                              backgroundColor: following ? 'var(--sl-green-dim)' : 'transparent',
+                              border: 'none', cursor: 'pointer',
+                            }}
+                          >
+                            {following ? (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            ) : (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                            )}
+                            {following ? 'Suivi ✓' : 'Suivre'}
+                          </button>
+                          <div style={{ width: 1, backgroundColor: 'var(--sl-border)' }} />
+                        </>
+                      );
+                    })()}
                     {club.contact && (
                       <>
                         <a
