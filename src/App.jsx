@@ -28,7 +28,7 @@ import OnboardingPage from './pages/OnboardingPage.jsx';
 import EventFormModal from './components/EventFormModal.jsx';
 
 function AppInner() {
-  const { currentUser, isAdmin, isClubAdmin } = useAuth();
+  const { currentUser, isAdmin, isClubAdmin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [activeDepartment, setActiveDepartment] = useState('finistere');
   const [showAuth, setShowAuth] = useState(false);
@@ -74,6 +74,14 @@ function AppInner() {
   }, [userClubs, allEvents, allSports]);
 
   const shouldShowOnboarding = !!currentUser && !currentUser.onboardingDone && !showAuth;
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', backgroundColor: 'var(--sl-bg)' }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid var(--sl-border)', borderTopColor: 'var(--sl-green)', animation: 'spin 0.8s linear infinite' }} />
+      </div>
+    );
+  }
 
   function handleTabChange(tab) {
     if (tab === 'profil' && !currentUser) {

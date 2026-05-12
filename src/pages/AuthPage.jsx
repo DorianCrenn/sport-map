@@ -48,7 +48,7 @@ function OAuthMockModal({ provider, onDone, onClose }) {
     if (!trimmed) { setError('Entrez votre email'); return; }
     setLoading(true);
     try {
-      const user = loginWithProvider(trimmed, provider);
+      const user = await loginWithProvider(trimmed, provider);
       onDone(user);
     } catch (err) {
       setError(err.message);
@@ -111,18 +111,25 @@ function OAuthMockModal({ provider, onDone, onClose }) {
 function ForgotPasswordView({ onBack }) {
   const { requestPasswordReset } = useAuth();
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(null); // null | { email, tempPassword }
+  const [sent, setSent] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const inputCls = 'w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow';
   const inputStyle = { backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' };
 
-  function handleSend() {
+  async function handleSend() {
     const trimmed = email.trim();
     if (!trimmed) { setError('Entrez votre email'); return; }
-    const result = requestPasswordReset(trimmed);
-    if (!result) { setError('Aucun compte avec cet email'); return; }
-    setSent(result);
+    setLoading(true);
+    try {
+      const result = await requestPasswordReset(trimmed);
+      setSent(result);
+    } catch (err) {
+      setError(err.message ?? 'Erreur lors de l\'envoi');
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (sent) {
@@ -132,13 +139,9 @@ function ForgotPasswordView({ onBack }) {
           <div className="text-4xl mb-3">📬</div>
           <h3 className="font-bold text-white font-oswald tracking-wide text-lg">Email envoyé !</h3>
           <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">
-            Un lien de réinitialisation a été envoyé à <span className="text-white font-medium">{sent.email}</span>
+            Un lien de réinitialisation a été envoyé à <span className="text-white font-medium">{sent.email}</span>.
+            Vérifiez votre boîte mail (et les spams).
           </p>
-        </div>
-        <div className="rounded-xl px-4 py-3 text-xs text-slate-300 leading-relaxed"
-          style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <span className="text-yellow-400 font-semibold">Mode démo :</span> Votre mot de passe temporaire est{' '}
-          <span className="text-green-400 font-mono font-bold">{sent.tempPassword}</span>
         </div>
         <button
           onClick={onBack}
@@ -172,10 +175,11 @@ function ForgotPasswordView({ onBack }) {
       </div>
       <button
         onClick={handleSend}
+        disabled={loading}
         className="w-full py-3 rounded-xl font-bold text-sm text-white"
-        style={{ backgroundColor: '#22C55E', boxShadow: '0 4px 20px rgba(34,197,94,0.3)' }}
+        style={{ backgroundColor: '#22C55E', boxShadow: '0 4px 20px rgba(34,197,94,0.3)', opacity: loading ? 0.7 : 1 }}
       >
-        Envoyer le lien
+        {loading ? '...' : 'Envoyer le lien'}
       </button>
       <button
         onClick={onBack}
@@ -190,7 +194,7 @@ function ForgotPasswordView({ onBack }) {
 // ── Main AuthPage ──────────────────────────────────────────────────────────
 
 export default function AuthPage({ onClose, onNeedOnboarding }) {
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
   const [mode, setMode] = useState('login');   // 'login' | 'register' | 'forgot'
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
@@ -213,20 +217,29 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
     setLoading(true);
     try {
       if (mode === 'login') {
-        login(form.email.trim(), form.password);
+        await login(form.email.trim(), form.password);
         onClose();
       } else {
         if (!form.name.trim()) throw new Error('Prénom ou surnom requis');
         if (form.password.length < 6) throw new Error('Mot de passe : 6 caractères minimum');
         if (form.password !== form.confirm) throw new Error('Les mots de passe ne correspondent pas');
-        const user = register({ name: form.name.trim(), email: form.email.trim(), password: form.password });
-        if (!user.onboardingDone) onNeedOnboarding?.();
-        else onClose();
+        await register({ name: form.name.trim(), email: form.email.trim(), password: form.password });
+        onNeedOnboarding?.();
       }
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
+    try {
+      await loginWithGoogle();
+      // Page redirects to Google — no further action needed here
+    } catch (err) {
+      // Google OAuth not configured: fall back to mock modal
+      setOauthProvider('google');
     }
   }
 
@@ -329,7 +342,7 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
                   <div className="space-y-2.5">
                     <button
                       type="button"
-                      onClick={() => setOauthProvider('google')}
+                      onClick={handleGoogleLogin}
                       className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
                       style={{ backgroundColor: 'rgba(255,255,255,0.96)', color: '#1e293b' }}
                     >
@@ -424,12 +437,9 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
                       {loading ? '...' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
                     </button>
 
-                    {mode === 'login' && (
+                    {mode === 'register' && (
                       <p className="text-center text-[11px] text-slate-600 pt-0.5">
-                        Compte démo :{' '}
-                        <span className="text-slate-500 font-medium">admin@sportlink.fr</span>
-                        {' / '}
-                        <span className="text-slate-500 font-medium">admin123</span>
+                        Un email de confirmation sera envoyé à votre adresse.
                       </p>
                     )}
                   </form>

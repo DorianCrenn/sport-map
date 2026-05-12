@@ -123,12 +123,12 @@ export default function MapPage({
     }
   }, [focusEventId]);
 
-  function handleSave(formData) {
+  async function handleSave(formData) {
     if (modalEvent?._isNew) {
-      const created = onAddEvent(formData);
+      const created = await onAddEvent(formData);
       setSelectedEventId(created.id);
     } else {
-      onUpdateEvent(modalEvent.id, formData);
+      await onUpdateEvent(modalEvent.id, formData);
     }
     setModalEvent(undefined);
   }

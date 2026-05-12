@@ -1,25 +1,55 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { supabase } from '../lib/supabase.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
-const KEY = 'sl_attending';
-
-function load() {
-  try { return new Set(JSON.parse(localStorage.getItem(KEY) ?? '[]')); }
-  catch { return new Set(); }
-}
+const LOCAL_KEY = 'sl_attending';
 
 export function useAttendees() {
-  const [attending, setAttending] = useState(load);
+  const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? null;
+  const prevUserId = useRef(null);
 
-  const toggle = useCallback((id) => {
+  const [attending, setAttending] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem(LOCAL_KEY) ?? '[]')); }
+    catch { return new Set(); }
+  });
+
+  useEffect(() => {
+    if (userId === prevUserId.current) return;
+    prevUserId.current = userId;
+
+    if (!userId) {
+      try { setAttending(new Set(JSON.parse(localStorage.getItem(LOCAL_KEY) ?? '[]'))); }
+      catch { setAttending(new Set()); }
+      return;
+    }
+
+    supabase.from('attendees').select('event_id').eq('user_id', userId)
+      .then(({ data }) => {
+        if (data) setAttending(new Set(data.map(r => String(r.event_id))));
+      });
+  }, [userId]);
+
+  const toggle = useCallback(async (id) => {
+    const strId = String(id);
+    const isCurrent = attending.has(strId);
+
     setAttending(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      localStorage.setItem(KEY, JSON.stringify([...next]));
+      isCurrent ? next.delete(strId) : next.add(strId);
+      if (!userId) localStorage.setItem(LOCAL_KEY, JSON.stringify([...next]));
       return next;
     });
-  }, []);
 
-  const isAttending = useCallback((id) => attending.has(id), [attending]);
+    if (!userId) return;
+    if (isCurrent) {
+      await supabase.from('attendees').delete().eq('user_id', userId).eq('event_id', strId);
+    } else {
+      await supabase.from('attendees').insert({ user_id: userId, event_id: strId });
+    }
+  }, [userId, attending]);
+
+  const isAttending = useCallback((id) => attending.has(String(id)), [attending]);
 
   return { attending, toggle, isAttending };
 }
