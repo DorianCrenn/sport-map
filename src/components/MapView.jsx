@@ -95,7 +95,7 @@ export default function MapView({
   }
 
   return (
-    <div className="flex-1 min-h-0" style={{ position: 'relative' }}>
+    <div className="flex-1 min-h-0" style={{ position: 'relative', isolation: 'isolate' }}>
       <MapContainer
         center={dept.center}
         zoom={dept.zoom}
