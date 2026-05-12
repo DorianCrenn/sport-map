@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext.jsx';
 import SportLinkLogo from './SportLinkLogo.jsx';
 
 export default function Header({
-  cities = [], clubs = [], cityFilter, onCityFilter, onSelectClub, onClearCity,
+  cities = [], clubs = [], allEvents = [], cityFilter, onCityFilter, onSelectClub, onSelectEvent, onClearCity,
   onTabChange, onShowAuth,
 }) {
   const { allSports } = useSports();
@@ -42,10 +42,20 @@ export default function Header({
         c.name.toLowerCase().includes(q) || c.city.toLowerCase().includes(q) || c.sport.toLowerCase().includes(q)
       ).slice(0, 5)
     : [];
-  const hasResults = matchedCities.length > 0 || matchedClubs.length > 0;
+  const now = new Date();
+  const matchedEvents = q.length >= 2
+    ? allEvents
+        .filter(e => new Date(e.date) >= now &&
+          (e.title.toLowerCase().includes(q) || e.sport.toLowerCase().includes(q) || (e.city ?? '').toLowerCase().includes(q))
+        )
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .slice(0, 4)
+    : [];
+  const hasResults = matchedCities.length > 0 || matchedClubs.length > 0 || matchedEvents.length > 0;
 
   function selectCity(city) { onCityFilter?.(city); setQuery(''); setSearchOpen(false); }
   function selectClub(club) { onSelectClub?.(club); setQuery(''); setSearchOpen(false); }
+  function selectEvent(event) { onSelectEvent?.(event); setQuery(''); setSearchOpen(false); }
 
   const initials = currentUser?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?';
 
@@ -181,7 +191,7 @@ export default function Header({
                   </div>
                 </div>
               )}
-              {matchedCities.length > 0 && matchedClubs.length > 0 && (
+              {matchedCities.length > 0 && (matchedClubs.length > 0 || matchedEvents.length > 0) && (
                 <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '0 14px' }} />
               )}
               {matchedClubs.length > 0 && (
@@ -210,6 +220,47 @@ export default function Header({
                               <span style={{ fontSize: 11, color: 'var(--sl-t2)' }}>{club.city}</span>
                               <span style={{ color: 'var(--sl-t3)', fontSize: 10 }}>·</span>
                               <span style={{ fontSize: 11, fontWeight: 600, color: sportColor }}>{club.sport}</span>
+                            </div>
+                          </div>
+                          <svg style={{ flexShrink: 0 }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round">
+                            <polyline points="9 18 15 12 9 6"/>
+                          </svg>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {matchedClubs.length > 0 && matchedEvents.length > 0 && (
+                <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '0 14px' }} />
+              )}
+              {matchedEvents.length > 0 && (
+                <div>
+                  <div style={{ padding: '10px 14px 6px' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)' }}>Événements</span>
+                  </div>
+                  <div style={{ padding: '0 6px 6px' }}>
+                    {matchedEvents.map(event => {
+                      const sportColor = allSports[event.sport]?.color ?? '#64748b';
+                      const d = new Date(event.date);
+                      const dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                      const timeStr = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <button key={event.id} onClick={() => selectEvent(event)} style={{
+                          width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '8px 10px', borderRadius: 10, border: 'none',
+                          backgroundColor: 'transparent', cursor: 'pointer', textAlign: 'left',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--sl-hover)'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                          <div style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0, backgroundColor: `${sportColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: sportColor }} />
+                          </div>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                              <span style={{ fontSize: 11, color: 'var(--sl-t2)' }}>{dateStr} · {timeStr}</span>
+                              {event.city && <><span style={{ color: 'var(--sl-t3)', fontSize: 10 }}>·</span><span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{event.city}</span></>}
                             </div>
                           </div>
                           <svg style={{ flexShrink: 0 }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round">

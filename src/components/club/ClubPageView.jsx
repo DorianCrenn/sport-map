@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
-import { useClubPage, FONT_OPTIONS } from '../../hooks/useClubPage.js';
+import { useClubPage, useClubAnalytics, FONT_OPTIONS } from '../../hooks/useClubPage.js';
 import SportIcon from '../SportIcon.jsx';
 import TitleBlock from './blocks/TitleBlock.jsx';
 import TextBlock from './blocks/TextBlock.jsx';
@@ -503,6 +503,8 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const canAddEvent = canAddEventProp ?? (isAdmin || isClubAdmin);
   const canEdit = isAdmin || (isClubAdmin && currentUser?.clubId === club.id);
 
+  const pageViews = useClubAnalytics(club.id);
+
   const {
     blocks, isEditing, setIsEditing,
     addBlock, addBlockToRow,
@@ -712,7 +714,13 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)' }}
           >
             <div className="px-4 py-3">
-              <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Typographie</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--sl-t3)' }}>Typographie</div>
+                <div className="flex items-center gap-1.5">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span className="text-[10px] font-semibold" style={{ color: 'var(--sl-t3)' }}>{pageViews} vue{pageViews !== 1 ? 's' : ''}</span>
+                </div>
+              </div>
               <div className="flex gap-4 flex-wrap">
                 {['titleFont', 'bodyFont'].map(key => (
                   <div key={key} className="flex-1 min-w-0">

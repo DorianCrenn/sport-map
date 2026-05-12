@@ -47,6 +47,22 @@ function injectGoogleFont(fontKey) {
   document.head.appendChild(link);
 }
 
+export function useClubAnalytics(clubId) {
+  const key = `club-views-${clubId}`;
+  const [views, setViews] = useState(() => {
+    try { return parseInt(localStorage.getItem(key) ?? '0', 10) || 0; } catch { return 0; }
+  });
+
+  useEffect(() => {
+    const next = views + 1;
+    setViews(next);
+    try { localStorage.setItem(key, String(next)); } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  return views;
+}
+
 export function useClubPage(club) {
   const storageKey = `club-page-${club.id}`;
   const typoKey    = `club-typography-${club.id}`;

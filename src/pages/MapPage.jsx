@@ -16,6 +16,7 @@ export default function MapPage({
   isFavorite, onToggleFavorite,
   isAttending, onToggleAttend,
   favoritesCount, onGoToFavoris, cityFilter,
+  focusEventId, onFocusDone,
 }) {
   const { currentUser } = useAuth();
   const [sportFilter, setSportFilter] = useState(null);
@@ -25,6 +26,7 @@ export default function MapPage({
   const [mapBounds, setMapBounds] = useState(null);
   const [modalEvent, setModalEvent] = useState(undefined);
   const [showAllSports, setShowAllSports] = useState(false);
+  const [upcomingOnly, setUpcomingOnly] = useState(true);
   const [flyTarget, setFlyTarget] = useState(null);
   const [geoError, setGeoError] = useState(null);
   const autoRequested = useRef(false);
@@ -89,15 +91,21 @@ export default function MapPage({
     cityFilter,
   });
 
+  const displayEvents = useMemo(() => {
+    if (!upcomingOnly) return filteredEvents;
+    const now = new Date();
+    return filteredEvents.filter(e => new Date(e.date) >= now);
+  }, [filteredEvents, upcomingOnly]);
+
   const selectedEvent = useMemo(
     () => allEvents.find((e) => e.id === selectedEventId) ?? null,
     [allEvents, selectedEventId]
   );
 
   const visibleEvents = useMemo(() => {
-    if (!mapBounds) return filteredEvents;
-    return filteredEvents.filter((e) => mapBounds.contains([e.lat, e.lng]));
-  }, [filteredEvents, mapBounds]);
+    if (!mapBounds) return displayEvents;
+    return displayEvents.filter((e) => mapBounds.contains([e.lat, e.lng]));
+  }, [displayEvents, mapBounds]);
 
   const handleBoundsChange = useCallback((bounds) => setMapBounds(bounds), []);
 
@@ -106,6 +114,14 @@ export default function MapPage({
       setSelectedEventId(null);
     }
   }, [filteredEvents, selectedEventId]);
+
+  useEffect(() => {
+    if (focusEventId) {
+      setSelectedEventId(focusEventId);
+      setUpcomingOnly(false);
+      onFocusDone?.();
+    }
+  }, [focusEventId]);
 
   function handleSave(formData) {
     if (modalEvent?._isNew) {
@@ -134,7 +150,7 @@ export default function MapPage({
         onShowAllSports={() => { setShowAllSports(true); setSportFilter(null); }}
         onHideSomeSports={() => { setShowAllSports(false); setSportFilter(null); }}
       />
-      <DateFilterBar active={dateRangeFilter} onChange={setDateRangeFilter} />
+      <DateFilterBar active={dateRangeFilter} onChange={setDateRangeFilter} upcomingOnly={upcomingOnly} onUpcomingOnlyChange={setUpcomingOnly} />
 
       {/* Geo error banner */}
       <AnimatePresence>
@@ -162,7 +178,7 @@ export default function MapPage({
 
       <div className="flex flex-1 min-h-0 relative">
         <MapView
-          events={filteredEvents}
+          events={displayEvents}
           selectedEventId={selectedEventId}
           onMarkerClick={(id) => setSelectedEventId((prev) => (prev === id ? null : id))}
           onMapClick={() => setSelectedEventId(null)}

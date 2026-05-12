@@ -11,7 +11,7 @@ function formatDate(iso) {
   return new Date(iso + 'T00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
-export default function DateFilterBar({ active, onChange }) {
+export default function DateFilterBar({ active, onChange, upcomingOnly = true, onUpcomingOnlyChange }) {
   const dateInputRef = useRef(null);
   const isSpecific = active && !PREDEFINED.find((o) => o.key === active);
 
@@ -65,6 +65,30 @@ export default function DateFilterBar({ active, onChange }) {
           {label}
         </motion.button>
       ))}
+
+      {/* Divider */}
+      <div style={{ width: 1, height: 16, backgroundColor: 'var(--sl-border-s)', flexShrink: 0, margin: '0 2px' }} />
+
+      {/* Upcoming toggle */}
+      {onUpcomingOnlyChange && (
+        <motion.button
+          whileTap={{ scale: 0.93 }}
+          onClick={() => onUpcomingOnlyChange(!upcomingOnly)}
+          title={upcomingOnly ? 'Afficher aussi les événements passés' : 'Masquer les événements passés'}
+          style={{
+            ...(upcomingOnly ? { backgroundColor: 'rgba(34,217,106,0.12)', color: 'var(--sl-green)', border: '1px solid rgba(34,217,106,0.3)' } : inactive),
+            padding: '4px 10px', borderRadius: 999,
+            fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+            flexShrink: 0, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 4,
+          }}
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          À venir
+        </motion.button>
+      )}
 
       <input
         ref={dateInputRef}

@@ -42,6 +42,7 @@ function AppInner() {
   const { allSports } = useSports();
   const [cityFilter, setCityFilter] = useState(null);
   const [selectedSearchClub, setSelectedSearchClub] = useState(null);
+  const [focusEventId, setFocusEventId] = useState(null);
 
   const allEvents = useMemo(
     () => [...EVENTS, ...userEvents, ...clubMatchEvents],
@@ -60,11 +61,17 @@ function AppInner() {
     return todayCount > 0 ? { favoris: todayCount } : {};
   }, [upcomingFavorites.today]);
 
-  const homeStats = useMemo(() => ({
-    clubs: userClubs.length + STATIC_CLUBS.length,
-    events: allEvents.length,
-    sports: Object.keys(allSports).length,
-  }), [userClubs, allEvents, allSports]);
+  const homeStats = useMemo(() => {
+    const now = new Date();
+    const weekEnd = new Date(now); weekEnd.setDate(now.getDate() + 7);
+    const thisWeek = allEvents.filter(e => { const d = new Date(e.date); return d >= now && d < weekEnd; }).length;
+    return {
+      clubs: userClubs.length + STATIC_CLUBS.length,
+      events: allEvents.length,
+      sports: Object.keys(allSports).length,
+      thisWeek,
+    };
+  }, [userClubs, allEvents, allSports]);
 
   const shouldShowOnboarding = !!currentUser && !currentUser.onboardingDone && !showAuth;
 
@@ -96,9 +103,11 @@ function AppInner() {
         <Header
           cities={communes}
           clubs={allClubs}
+          allEvents={allEvents}
           cityFilter={cityFilter}
           onCityFilter={(city) => { setCityFilter(city); setActiveTab('map'); }}
           onSelectClub={(club) => setSelectedSearchClub(club)}
+          onSelectEvent={(event) => { setFocusEventId(event.id); setActiveTab('map'); }}
           onClearCity={() => setCityFilter(null)}
           onTabChange={handleTabChange}
           onShowAuth={() => setShowAuth(true)}
@@ -141,6 +150,8 @@ function AppInner() {
                 favoritesCount={favorites.size}
                 onGoToFavoris={() => setActiveTab('favoris')}
                 cityFilter={cityFilter}
+                focusEventId={focusEventId}
+                onFocusDone={() => setFocusEventId(null)}
               />
             )}
             {activeTab === 'favoris' && (
