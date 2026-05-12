@@ -149,12 +149,12 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
         {/* Move within row */}
         {rowBlocks.length > 1 && (
           <div className="flex">
-            <button onClick={onMoveLeft} disabled={isFirst}
+            <button onClick={onMoveLeft} disabled={isFirst} aria-label="Déplacer le bloc à gauche"
               className="p-1 transition-colors cursor-pointer disabled:opacity-20"
               style={{ color: 'var(--sl-t3)' }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <button onClick={onMoveRight} disabled={isLast}
+            <button onClick={onMoveRight} disabled={isLast} aria-label="Déplacer le bloc à droite"
               className="p-1 transition-colors cursor-pointer disabled:opacity-20"
               style={{ color: 'var(--sl-t3)' }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -162,10 +162,10 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
           </div>
         )}
 
-        <button onClick={onToggle} className="p-1 transition-colors cursor-pointer" style={{ color: 'var(--sl-t3)' }}>
+        <button onClick={onToggle} aria-label={block.enabled ? 'Masquer le bloc' : 'Afficher le bloc'} aria-pressed={block.enabled} className="p-1 transition-colors cursor-pointer" style={{ color: 'var(--sl-t3)' }}>
           {block.enabled ? <EyeOn /> : <EyeOff />}
         </button>
-        <button onClick={onDelete} className="p-1 transition-colors cursor-pointer" style={{ color: '#ef4444' }}>
+        <button onClick={onDelete} aria-label="Supprimer le bloc" className="p-1 transition-colors cursor-pointer" style={{ color: '#ef4444' }}>
           <TrashIcon />
         </button>
       </div>
@@ -320,7 +320,7 @@ function TeamTrainingSection({ sessions, isEditing, onChange }) {
               <div className="w-px h-8 flex-shrink-0" style={{ backgroundColor: 'var(--sl-border)' }} />
               <div className="flex-1 text-sm truncate" style={{ color: 'var(--sl-t2)' }}>{s.location}</div>
               {isEditing && (
-                <button onClick={() => remove(s.id)}
+                <button onClick={() => remove(s.id)} aria-label="Supprimer ce créneau"
                   className="p-1.5 rounded-lg transition-colors cursor-pointer"
                   style={{ color: 'var(--sl-t3)' }}
                   onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'; }}
@@ -500,6 +500,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const { allSports: SPORTS } = useSports();
   const { isAdmin, isClubAdmin, currentUser } = useAuth();
   const canAddEvent = canAddEventProp ?? (isAdmin || isClubAdmin);
+  const canEdit = isAdmin || (isClubAdmin && currentUser?.clubId === club.id);
 
   const {
     blocks, isEditing, setIsEditing,
@@ -523,6 +524,10 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   useEffect(() => {
     localStorage.setItem(`club-trainings-${club.id}`, JSON.stringify(teamTrainings));
   }, [teamTrainings, club.id]);
+
+  useEffect(() => {
+    if (!canEdit && isEditing) setIsEditing(false);
+  }, [canEdit, isEditing, setIsEditing]);
 
   const allTeams = useMemo(
     () => (club.categories ?? []).flatMap(c => c.teams ?? []),
@@ -578,17 +583,20 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             Clubs
           </button>
-          <button
-            onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
-            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
-              isEditing ? 'bg-green-500 text-white hover:bg-green-400' : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
-            }`}
-          >
-            {isEditing
-              ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Terminé</>
-              : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg> Modifier</>
-            }
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
+              aria-label={isEditing ? 'Terminer la modification' : 'Modifier la page du club'}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
+                isEditing ? 'bg-green-500 text-white hover:bg-green-400' : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
+              }`}
+            >
+              {isEditing
+                ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Terminé</>
+                : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg> Modifier</>
+              }
+            </button>
+          )}
         </div>
 
         <div className="px-4 pb-5 flex items-center gap-4">

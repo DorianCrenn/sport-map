@@ -101,6 +101,7 @@ function buildEvent(form, currentUser, myClub, useSmartMode) {
     level: form.level, cupType: form.cupType,
     homeOrAway: form.homeOrAway, adversaire: form.adversaire,
     clubId: currentUser?.clubId ?? null,
+    creatorId: currentUser?.id ?? null,
     departmentId: 'finistere', regionId: 'brittany',
     standings: (homeTeam && awayTeam) ? {
       home: { team: homeTeam, rank: '-', points: null, wins: 0, draws: 0, losses: 0 },

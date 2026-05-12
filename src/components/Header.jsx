@@ -85,7 +85,7 @@ export default function Header({
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
               </svg>
               {cityFilter}
-              <button onClick={onClearCity} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', opacity: 0.7, display: 'flex', alignItems: 'center' }}>
+              <button onClick={onClearCity} aria-label="Retirer le filtre ville" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', opacity: 0.7, display: 'flex', alignItems: 'center' }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
@@ -113,7 +113,7 @@ export default function Header({
               }}
             />
             {query && (
-              <button onClick={() => { setQuery(''); setSearchOpen(false); inputRef.current?.focus(); }} style={{
+              <button onClick={() => { setQuery(''); setSearchOpen(false); inputRef.current?.focus(); }} aria-label="Effacer la recherche" style={{
                 position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                 width: 18, height: 18, borderRadius: '50%',
                 backgroundColor: 'rgba(255,255,255,0.12)', border: 'none', cursor: 'pointer',
@@ -220,6 +220,8 @@ export default function Header({
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => setProfileOpen(o => !o)}
+            aria-label={`Menu profil — ${currentUser.name}`}
+            aria-expanded={profileOpen}
             style={{
               width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
               backgroundColor: 'var(--sl-green)', color: '#fff',

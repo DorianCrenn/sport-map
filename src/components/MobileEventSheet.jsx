@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import SportIcon from './SportIcon.jsx';
 import PosterStudio from './PosterStudio.jsx';
@@ -87,6 +88,7 @@ export default function MobileEventSheet({
 }) {
   const { allSports: SPORTS } = useSports();
   const { share } = useShare();
+  const { currentUser, isAdmin } = useAuth();
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPoster, setShowPoster] = useState(false);
@@ -96,6 +98,7 @@ export default function MobileEventSheet({
   const fav = isFavorite?.(event.id) ?? false;
   const attending = isAttending?.(event.id) ?? false;
   const isPast = new Date(event.date) < new Date();
+  const canEditThis = event.source === 'user' && (!event.creatorId || event.creatorId === currentUser?.id || isAdmin);
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -332,11 +335,11 @@ export default function MobileEventSheet({
                 </div>
               )}
 
-              {event.source === 'user' && isPast && onUpdateEvent && (
+              {canEditThis && isPast && onUpdateEvent && (
                 <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />
               )}
 
-              {event.source === 'user' && (
+              {canEditThis && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                   <button onClick={() => onEdit(event)} style={{ flex: 1, padding: '11px 0', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#4da6ff', backgroundColor: 'rgba(77,166,255,0.10)' }}>Modifier</button>
                   <button onClick={() => onDelete(event.id)} style={{ flex: 1, padding: '11px 0', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.10)' }}>Supprimer</button>

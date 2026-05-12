@@ -2,6 +2,7 @@ import { forwardRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import SportIcon from './SportIcon.jsx';
 import PosterStudio from './PosterStudio.jsx';
@@ -221,6 +222,7 @@ function ICSBtn({ event }) {
 
 const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, onUpdateEvent, isFavorite, onToggleFavorite, isAttending, onToggleAttend }, ref) {
   const { allSports: SPORTS } = useSports();
+  const { currentUser, isAdmin } = useAuth();
   const [showPoster, setShowPoster] = useState(false);
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
@@ -228,6 +230,8 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const isUserEvent = event.source === 'user';
+  // Edit/delete only for the creator or an admin; fallback allows pre-creatorId events to remain editable
+  const canEditThis = isUserEvent && (!event.creatorId || event.creatorId === currentUser?.id || isAdmin);
   const isPast = dateObj < new Date();
   const hasStandings = !!event.standings;
   const showPoints = event.standings?.home?.points !== null && event.standings?.home?.points !== undefined;
@@ -266,12 +270,12 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
           <EventTypeBadge event={event} />
           <StatusBadge event={event} />
           {isUserEvent && <span style={{ fontSize: 10, color: '#4da6ff', fontWeight: 600, flexShrink: 0 }}>✦ Club</span>}
-          {isUserEvent && (
+          {canEditThis && (
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, flexShrink: 0 }}>
-              <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }} title="Modifier">
+              <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} aria-label="Modifier l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
-              <button onClick={(e) => { e.stopPropagation(); onDelete(event.id); }} style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }} title="Supprimer">
+              <button onClick={(e) => { e.stopPropagation(); onDelete(event.id); }} aria-label="Supprimer l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               </button>
             </div>
@@ -336,7 +340,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
                 </button>
               </div>
 
-              {isUserEvent && isPast && onUpdateEvent && (
+              {canEditThis && isPast && onUpdateEvent && (
                 <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />
               )}
 
@@ -365,8 +369,9 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
       {onToggleFavorite && (
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(event.id); }}
+          aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          aria-pressed={fav}
           style={{ padding: '6px 10px 6px 4px', border: 'none', cursor: 'pointer', backgroundColor: 'transparent', flexShrink: 0, alignSelf: 'flex-start', color: fav ? '#ef4444' : 'var(--sl-t3)' }}
-          title={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>

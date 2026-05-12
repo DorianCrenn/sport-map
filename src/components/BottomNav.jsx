@@ -121,6 +121,8 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                 <motion.button
                   whileTap={{ scale: 0.88 }}
                   onClick={() => setFabOpen(o => !o)}
+                  aria-label={fabOpen ? 'Fermer le menu rapide' : 'Ouvrir le menu rapide'}
+                  aria-expanded={fabOpen}
                   style={{
                     width: 50, height: 50, borderRadius: '50%',
                     backgroundColor: 'var(--sl-green)',
