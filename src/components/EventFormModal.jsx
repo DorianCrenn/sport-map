@@ -22,14 +22,53 @@ const TEAM_PRESETS = {
 };
 
 const CHAMPIONSHIP_LEVELS = {
-  Football:   ['Division Honneur', 'Promotion de Ligue', 'District D1', 'District D2', 'District D3', 'R1', 'R2', 'R3'],
-  Handball:   ['Nationale 3', 'Régionale 1', 'Régionale 2', 'Départementale'],
-  Basketball: ['Pro B', 'Nationale 2', 'Nationale 3', 'Régionale 1', 'Régionale 2', 'Départementale'],
-  Rugby:      ['Fédérale 1', 'Fédérale 2', 'Fédérale 3', 'Régionale 1', 'Régionale 2'],
-  default:    ['Nationale', 'Régionale 1', 'Régionale 2', 'Départementale'],
+  Football: [
+    { value: 'National', label: 'National' },
+    { value: 'R1',       label: 'R1 — Régional 1' },
+    { value: 'R2',       label: 'R2 — Régional 2' },
+    { value: 'R3',       label: 'R3 — Régional 3' },
+    { value: 'DH',       label: "DH — Division d'Honneur" },
+    { value: 'D1',       label: 'D1 — District 1' },
+    { value: 'D2',       label: 'D2 — District 2' },
+    { value: 'D3',       label: 'D3 — District 3' },
+  ],
+  Handball: [
+    { value: 'N3',   label: 'N3 — Nationale 3' },
+    { value: 'R1',   label: 'R1 — Régionale 1' },
+    { value: 'R2',   label: 'R2 — Régionale 2' },
+    { value: 'Dept', label: 'Départementale' },
+  ],
+  Basketball: [
+    { value: 'ProB', label: 'Pro B' },
+    { value: 'N2',   label: 'N2 — Nationale 2' },
+    { value: 'N3',   label: 'N3 — Nationale 3' },
+    { value: 'R1',   label: 'R1 — Régionale 1' },
+    { value: 'R2',   label: 'R2 — Régionale 2' },
+    { value: 'Dept', label: 'Départementale' },
+  ],
+  Rugby: [
+    { value: 'F1', label: 'F1 — Fédérale 1' },
+    { value: 'F2', label: 'F2 — Fédérale 2' },
+    { value: 'F3', label: 'F3 — Fédérale 3' },
+    { value: 'R1', label: 'R1 — Régionale 1' },
+    { value: 'R2', label: 'R2 — Régionale 2' },
+  ],
+  default: [
+    { value: 'National', label: 'National' },
+    { value: 'R1',       label: 'R1 — Régional 1' },
+    { value: 'R2',       label: 'R2 — Régional 2' },
+    { value: 'Dept',     label: 'Départemental' },
+  ],
 };
 
-const CUP_TYPES = ['Coupe de France', 'Coupe de Bretagne', 'Coupe du Finistère', 'Coupe régionale', 'Coupe de district', 'Tournoi amical'];
+const CUP_TYPES = [
+  { value: 'Coupe de France',    label: 'Coupe de France'    },
+  { value: 'Coupe de Bretagne',  label: 'Coupe de Bretagne'  },
+  { value: 'Coupe du Finistère', label: 'Coupe du Finistère' },
+  { value: 'Coupe régionale',    label: 'Coupe régionale'    },
+  { value: 'Coupe de district',  label: 'Coupe de district'  },
+  { value: 'Tournoi amical',     label: 'Tournoi amical'     },
+];
 
 function inferCategory(teamName) {
   if (!teamName) return '';
@@ -119,6 +158,76 @@ function Field({ label, children, hint }) {
       {children}
       {hint && <p style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 4 }}>{hint}</p>}
     </div>
+  );
+}
+
+function ChampionshipLevelPicker({ value, onChange, levels }) {
+  return (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {levels.map(opt => {
+        const sel = value === opt.value;
+        return (
+          <button key={opt.value} type="button" onClick={() => onChange(sel ? '' : opt.value)} title={opt.label}
+            style={{
+              padding: '6px 13px', borderRadius: 10, cursor: 'pointer',
+              border: `2px solid ${sel ? '#3b82f6' : 'var(--sl-border)'}`,
+              backgroundColor: sel ? 'rgba(59,130,246,0.12)' : 'var(--sl-surface)',
+              color: sel ? '#3b82f6' : 'var(--sl-t2)',
+              fontSize: 12, fontWeight: sel ? 800 : 600,
+              transition: 'all 0.12s', letterSpacing: sel ? '0.04em' : 0,
+            }}>
+            {opt.value}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function CupTypePicker({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {CUP_TYPES.map(opt => {
+        const sel = value === opt.value;
+        return (
+          <button key={opt.value} type="button" onClick={() => onChange(sel ? '' : opt.value)}
+            style={{
+              padding: '6px 11px', borderRadius: 10, cursor: 'pointer',
+              border: `2px solid ${sel ? '#f97316' : 'var(--sl-border)'}`,
+              backgroundColor: sel ? 'rgba(249,115,22,0.10)' : 'var(--sl-surface)',
+              color: sel ? '#f97316' : 'var(--sl-t2)',
+              fontSize: 11, fontWeight: sel ? 700 : 500,
+              transition: 'all 0.12s',
+            }}>
+            {opt.value}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ContextualTypeFields({ eventType, level, cupType, champLevels, onLevel, onCupType }) {
+  return (
+    <AnimatePresence mode="wait">
+      {eventType === 'championship' ? (
+        <motion.div key="champ"
+          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.16 }}>
+          <Field label="Niveau du championnat">
+            <ChampionshipLevelPicker value={level} onChange={onLevel} levels={champLevels} />
+          </Field>
+        </motion.div>
+      ) : eventType === 'cup' ? (
+        <motion.div key="cup"
+          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.16 }}>
+          <Field label="Type de coupe">
+            <CupTypePicker value={cupType} onChange={onCupType} />
+          </Field>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 
@@ -279,23 +388,12 @@ export default function EventFormModal({ event, onSave, onClose }) {
                   </div>
                 )}
 
-                {/* Level / Cup */}
-                {form.eventType === 'championship' && (
-                  <Field label="Niveau du championnat">
-                    <select value={form.level} onChange={e => set('level', e.target.value)} style={selectStyle}>
-                      <option value="">Sélectionner un niveau…</option>
-                      {champLevels.map(l => <option key={l} value={l}>{l}</option>)}
-                    </select>
-                  </Field>
-                )}
-                {form.eventType === 'cup' && (
-                  <Field label="Type de coupe">
-                    <select value={form.cupType} onChange={e => set('cupType', e.target.value)} style={selectStyle}>
-                      <option value="">Sélectionner une coupe…</option>
-                      {CUP_TYPES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </Field>
-                )}
+                {/* Level / Cup — animated */}
+                <ContextualTypeFields
+                  eventType={form.eventType} level={form.level} cupType={form.cupType}
+                  champLevels={champLevels}
+                  onLevel={v => set('level', v)} onCupType={v => set('cupType', v)}
+                />
 
                 {/* Domicile / Extérieur */}
                 <Field label="Réception">
@@ -368,6 +466,13 @@ export default function EventFormModal({ event, onSave, onClose }) {
                     <input type="text" value={form.category} onChange={e => set('category', e.target.value)} placeholder="Senior, U18…" style={inputStyle} readOnly={!!inferCategory(form.teamName)} />
                   </Field>
                 </div>
+
+                {/* Level / Cup — animated */}
+                <ContextualTypeFields
+                  eventType={form.eventType} level={form.level} cupType={form.cupType}
+                  champLevels={champLevels}
+                  onLevel={v => set('level', v)} onCupType={v => set('cupType', v)}
+                />
               </>
             )}
 

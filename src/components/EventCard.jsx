@@ -28,7 +28,26 @@ function getEffectiveStatus(event) {
 
 function EventTypeBadge({ event }) {
   const meta = EVENT_TYPE_META[event.eventType];
-  if (!meta) return event.level ? <span style={{ fontSize: 10, color: 'var(--sl-t3)', flexShrink: 0 }}>{event.level}</span> : null;
+  if (!meta) {
+    return event.level
+      ? <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', flexShrink: 0 }}>{event.level}</span>
+      : null;
+  }
+  if (event.eventType === 'championship') {
+    return (
+      <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 6, color: meta.color, backgroundColor: `${meta.color}20`, letterSpacing: '0.05em', flexShrink: 0 }}>
+        {event.level || meta.label}
+      </span>
+    );
+  }
+  if (event.eventType === 'cup' && event.cupType) {
+    const short = event.cupType.replace(/^Coupe (?:de |du |d'|des )?/i, '') || event.cupType;
+    return (
+      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6, color: meta.color, backgroundColor: `${meta.color}20`, flexShrink: 0, maxWidth: 82, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {short}
+      </span>
+    );
+  }
   return (
     <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6, color: meta.color, backgroundColor: `${meta.color}20`, flexShrink: 0 }}>
       {meta.label}
@@ -283,9 +302,21 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
         </div>
 
         {/* Title */}
-        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: event.score != null ? 4 : 5, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none' }}>
+        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 2, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none' }}>
           {event.title}
         </div>
+
+        {/* Championship / Cup subtitle */}
+        {event.eventType === 'championship' && (event.teamName || event.level) && (
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', opacity: 0.85, marginBottom: 4 }}>
+            {[event.teamName, event.level].filter(Boolean).join(' — ')}
+          </div>
+        )}
+        {event.eventType === 'cup' && event.cupType && (
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#f97316', opacity: 0.85, marginBottom: 4 }}>
+            {event.cupType}
+          </div>
+        )}
 
         {/* Score display */}
         {event.score != null && (

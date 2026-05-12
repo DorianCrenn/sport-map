@@ -103,6 +103,11 @@ export default function MobileEventSheet({
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const typeMeta = EVENT_TYPE_META[event.eventType];
+  const typeDisplay = event.eventType === 'championship'
+    ? (event.level || typeMeta?.label)
+    : event.eventType === 'cup' && event.cupType
+      ? event.cupType.replace(/^Coupe (?:de |du |d'|des )?/i, '') || event.cupType
+      : typeMeta?.label;
   const status = getEffectiveStatus(event);
   const statusMeta = STATUS_META[status];
 
@@ -199,8 +204,13 @@ export default function MobileEventSheet({
               </span>
             )}
             {typeMeta && (
-              <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 6, color: typeMeta.color, backgroundColor: `${typeMeta.color}20` }}>
-                {typeMeta.label}
+              <span style={{
+                fontSize: 11, padding: '3px 8px', borderRadius: 6,
+                color: typeMeta.color, backgroundColor: `${typeMeta.color}20`,
+                fontWeight: event.eventType === 'championship' ? 800 : 700,
+                letterSpacing: event.eventType === 'championship' && event.level ? '0.05em' : 0,
+              }}>
+                {typeDisplay}
               </span>
             )}
           </div>
@@ -217,9 +227,21 @@ export default function MobileEventSheet({
         </div>
 
         {/* Title */}
-        <h2 style={{ fontWeight: 800, fontSize: 20, lineHeight: 1.2, letterSpacing: '-0.02em', color: 'var(--sl-t1)', marginBottom: event.score != null ? 8 : 12, fontFamily: 'Inter, sans-serif' }}>
+        <h2 style={{ fontWeight: 800, fontSize: 20, lineHeight: 1.2, letterSpacing: '-0.02em', color: 'var(--sl-t1)', marginBottom: 4, fontFamily: 'Inter, sans-serif' }}>
           {event.title}
         </h2>
+
+        {/* Championship / Cup subtitle */}
+        {event.eventType === 'championship' && (event.teamName || event.level) && (
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#3b82f6', marginBottom: 10, opacity: 0.9 }}>
+            {[event.teamName, event.level].filter(Boolean).join(' — ')}
+          </div>
+        )}
+        {event.eventType === 'cup' && event.cupType && (
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#f97316', marginBottom: 10, opacity: 0.9 }}>
+            {event.cupType}
+          </div>
+        )}
 
         {/* Score display */}
         {event.score != null && (
