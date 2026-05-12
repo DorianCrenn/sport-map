@@ -4,6 +4,7 @@ import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import { downloadICS } from '../utils/exportICS.js';
 import SportIcon from './SportIcon.jsx';
+import PosterStudio from './PosterStudio.jsx';
 
 const EVENT_TYPE_META = {
   championship: { label: 'Championnat', color: '#3b82f6' },
@@ -220,6 +221,7 @@ function ICSBtn({ event }) {
 
 const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, onUpdateEvent, isFavorite, onToggleFavorite, isAttending, onToggleAttend }, ref) {
   const { allSports: SPORTS } = useSports();
+  const [showPoster, setShowPoster] = useState(false);
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
   const dateObj = new Date(event.date);
@@ -233,6 +235,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
   const status = getEffectiveStatus(event);
 
   return (
+    <>
     <motion.div
       ref={ref}
       layout
@@ -323,6 +326,14 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
                 <NavBtn event={event} />
                 <ShareBtn event={event} />
                 <ICSBtn event={event} />
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowPoster(true); }}
+                  aria-label="Créer une affiche"
+                  title="Créer une affiche"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </button>
               </div>
 
               {isUserEvent && isPast && onUpdateEvent && (
@@ -363,6 +374,9 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
         </button>
       )}
     </motion.div>
+
+    {showPoster && <PosterStudio event={event} onClose={() => setShowPoster(false)} />}
+  </>
   );
 });
 

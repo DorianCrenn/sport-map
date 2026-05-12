@@ -4,6 +4,7 @@ import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import { downloadICS } from '../utils/exportICS.js';
 import SportIcon from './SportIcon.jsx';
+import PosterStudio from './PosterStudio.jsx';
 
 const EVENT_TYPE_META = {
   championship: { label: 'Championnat', color: '#3b82f6' },
@@ -88,6 +89,7 @@ export default function MobileEventSheet({
   const { share } = useShare();
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showPoster, setShowPoster] = useState(false);
 
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
@@ -129,6 +131,7 @@ export default function MobileEventSheet({
   }
 
   return (
+    <>
     <motion.div
       drag={isExpanded ? false : 'y'}
       dragConstraints={{ top: 0, bottom: 0 }}
@@ -298,6 +301,9 @@ export default function MobileEventSheet({
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   Calendrier
                 </button>
+                <button onClick={() => setShowPoster(true)} aria-label="Créer une affiche" style={{ width: 44, padding: '10px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', color: 'var(--sl-t2)', flexShrink: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </button>
               </div>
 
               {event.description && (
@@ -341,6 +347,9 @@ export default function MobileEventSheet({
         </AnimatePresence>
       </div>
     </motion.div>
+
+    {showPoster && <PosterStudio event={event} onClose={() => setShowPoster(false)} />}
+  </>
   );
 }
 
