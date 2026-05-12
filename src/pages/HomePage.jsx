@@ -192,7 +192,7 @@ function PhoneMockup() {
             { label:'Accueil', icon:<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>, active: false },
             { label:'Carte',   icon:<><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></>, active: true },
             { label:'Actus',   icon:<><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2z"/><path d="M18 14h-8"/></>, active: false },
-            { label:'Clubs',   icon:<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 4 4v2"/><circle cx="9" cy="7" r="4"/></>, active: false },
+            { label:'Clubs',   icon:<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></>, active: false },
             { label:'Profil',  icon:<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>, active: false },
           ].map(({ label, icon, active }) => (
             <div key={label} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
