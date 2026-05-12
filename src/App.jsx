@@ -75,14 +75,6 @@ function AppInner() {
 
   const shouldShowOnboarding = !!currentUser && !currentUser.onboardingDone && !showAuth;
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', backgroundColor: 'var(--sl-bg)' }}>
-        <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid var(--sl-border)', borderTopColor: 'var(--sl-green)', animation: 'spin 0.8s linear infinite' }} />
-      </div>
-    );
-  }
-
   function handleTabChange(tab) {
     if (tab === 'profil' && !currentUser) {
       setShowAuth(true);
