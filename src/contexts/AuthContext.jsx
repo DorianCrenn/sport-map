@@ -35,15 +35,18 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const prof = await fetchProfile(session.user.id);
-        setAuthUser(session.user);
-        setProfile(prof);
-      }
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    let resolved = false;
 
+    // Failsafe: never block the UI more than 5s
+    const timeout = setTimeout(() => {
+      if (!resolved) { resolved = true; setLoading(false); }
+    }, 5000);
+
+    function resolve() {
+      if (!resolved) { resolved = true; clearTimeout(timeout); setLoading(false); }
+    }
+
+    // onAuthStateChange fires immediately with INITIAL_SESSION — no need for getSession()
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         const prof = await fetchProfile(session.user.id);
@@ -53,9 +56,10 @@ export function AuthProvider({ children }) {
         setAuthUser(null);
         setProfile(null);
       }
+      resolve();
     });
 
-    return () => subscription.unsubscribe();
+    return () => { subscription.unsubscribe(); clearTimeout(timeout); };
   }, []);
 
   const login = useCallback(async (email, password) => {
