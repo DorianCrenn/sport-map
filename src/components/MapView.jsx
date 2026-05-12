@@ -16,7 +16,35 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function MapController({ activeDepartment, userCoords, onBoundsChange, selectedEvent, onMapClick }) {
+// Pulsing user position marker
+function makeUserMarker() {
+  return L.divIcon({
+    html: `
+      <div style="position:relative;width:20px;height:20px">
+        <div class="geo-ring" style="
+          position:absolute;
+          inset:-4px;
+          background:#3b82f6;
+          border-radius:50%;
+          opacity:0.45;
+        "></div>
+        <div style="
+          position:absolute;
+          inset:0;
+          background:#3b82f6;
+          border:2.5px solid #fff;
+          border-radius:50%;
+          box-shadow:0 2px 8px rgba(59,130,246,0.5);
+        "></div>
+      </div>
+    `,
+    className: '',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+}
+
+function MapController({ activeDepartment, flyTarget, onBoundsChange, selectedEvent, onMapClick }) {
   const map = useMap();
 
   const reportBounds = useCallback(() => {
@@ -28,13 +56,19 @@ function MapController({ activeDepartment, userCoords, onBoundsChange, selectedE
   useMapEvent('click', () => { onMapClick?.(); });
 
   useEffect(() => { reportBounds(); }, [reportBounds]);
+
   useEffect(() => {
     const dept = DEPARTMENTS[activeDepartment];
     if (dept) map.flyTo(dept.center, dept.zoom, { duration: 1 });
   }, [activeDepartment, map]);
+
+  // flyTarget: { coords: {lat, lng}, zoom }
   useEffect(() => {
-    if (userCoords) map.flyTo([userCoords.lat, userCoords.lng], 13, { duration: 1.2 });
-  }, [userCoords, map]);
+    if (flyTarget?.coords) {
+      map.flyTo([flyTarget.coords.lat, flyTarget.coords.lng], flyTarget.zoom ?? 13, { duration: 1.3 });
+    }
+  }, [flyTarget, map]);
+
   useEffect(() => {
     if (selectedEvent) map.flyTo([selectedEvent.lat, selectedEvent.lng], 14, { duration: 0.8 });
   }, [selectedEvent, map]);
@@ -42,9 +76,13 @@ function MapController({ activeDepartment, userCoords, onBoundsChange, selectedE
   return null;
 }
 
-export default function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, onBoundsChange, selectedEvent, onMapClick, isFavorite }) {
+export default function MapView({
+  events, selectedEventId, onMarkerClick, activeDepartment,
+  userCoords, flyTarget, onBoundsChange, selectedEvent, onMapClick, isFavorite,
+}) {
   const { allSports } = useSports();
   const dept = DEPARTMENTS[activeDepartment] ?? DEPARTMENTS.finistere;
+  const userMarkerIcon = makeUserMarker();
 
   function clusterIcon(cluster) {
     const count = cluster.getChildCount();
@@ -57,19 +95,22 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
   }
 
   return (
-    <div className="flex-1 min-h-0">
+    <div className="flex-1 min-h-0" style={{ position: 'relative' }}>
       <MapContainer
         center={dept.center}
         zoom={dept.zoom}
         style={{ height: '100%', width: '100%' }}
+        preferCanvas={true}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+          keepBuffer={4}
         />
         <MapController
           activeDepartment={activeDepartment}
-          userCoords={userCoords}
+          flyTarget={flyTarget}
           onBoundsChange={onBoundsChange}
           selectedEvent={selectedEvent}
           onMapClick={onMapClick}
@@ -78,10 +119,13 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
         <MarkerClusterGroup
           chunkedLoading
           iconCreateFunction={clusterIcon}
-          maxClusterRadius={50}
+          maxClusterRadius={52}
           showCoverageOnHover={false}
           spiderfyOnMaxZoom={true}
+          disableClusteringAtZoom={16}
+          removeOutsideVisibleBounds={true}
           animate={true}
+          animateAddingMarkers={false}
         >
           {events.map((event) => (
             <Marker
@@ -97,12 +141,8 @@ export default function MapView({ events, selectedEventId, onMarkerClick, active
         {userCoords && (
           <Marker
             position={[userCoords.lat, userCoords.lng]}
-            icon={L.divIcon({
-              html: `<div style="width:16px;height:16px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3)"></div>`,
-              className: '',
-              iconSize: [16, 16],
-              iconAnchor: [8, 8],
-            })}
+            icon={userMarkerIcon}
+            zIndexOffset={1000}
           />
         )}
       </MapContainer>
