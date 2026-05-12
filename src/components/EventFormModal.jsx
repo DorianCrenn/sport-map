@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FINISTERE_CITIES, LEVEL_OPTIONS } from '../data/cities.js';
+import { LEVEL_OPTIONS } from '../data/cities.js';
 import { useSports } from '../hooks/useSports.js';
+import CityAutocomplete from './CityAutocomplete.jsx';
+
+const BREST = { name: 'Brest', lat: 48.3904, lng: -4.4861 };
 
 const EMPTY_FORM = {
   title: '',
   sport: 'Football',
   date: '',
   time: '15:00',
-  cityName: 'Brest',
+  cityName: BREST.name,
+  cityLat:  BREST.lat,
+  cityLng:  BREST.lng,
   venue: '',
   description: '',
   level: 'Amateur',
@@ -24,7 +29,9 @@ function toFormValues(event) {
     sport: event.sport ?? 'Football',
     date: d.toISOString().slice(0, 10),
     time: d.toTimeString().slice(0, 5),
-    cityName: event.city ?? 'Brest',
+    cityName: event.city ?? BREST.name,
+    cityLat:  event.lat  ?? BREST.lat,
+    cityLng:  event.lng  ?? BREST.lng,
     venue: event.venue ?? '',
     description: event.description ?? '',
     level: event.level ?? 'Amateur',
@@ -34,8 +41,6 @@ function toFormValues(event) {
 }
 
 function buildEvent(form) {
-  const city = FINISTERE_CITIES.find((c) => c.name === form.cityName) ?? FINISTERE_CITIES[0];
-  const sportGroup = form.sport; // sport ID = label in our schema
   const isTeamSport = ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport);
 
   const title =
@@ -46,11 +51,11 @@ function buildEvent(form) {
   return {
     title,
     sport: form.sport,
-    sportGroup,
+    sportGroup: form.sport,
     date: `${form.date}T${form.time}:00`,
-    city: city.name,
-    lat: city.lat,
-    lng: city.lng,
+    city: form.cityName,
+    lat: form.cityLat,
+    lng: form.cityLng,
     venue: form.venue,
     description: form.description,
     level: form.level,
@@ -208,9 +213,13 @@ export default function EventFormModal({ event, onSave, onClose }) {
             </div>
 
             <Field label="Ville *">
-              <select value={form.cityName} onChange={(e) => set('cityName', e.target.value)} className={inputCls}>
-                {FINISTERE_CITIES.map((c) => <option key={c.name} value={c.name}>{c.name}</option>)}
-              </select>
+              <CityAutocomplete
+                value={form.cityName}
+                onChange={v => set('cityName', v)}
+                onSelect={c => { set('cityName', c.nom); set('cityLat', c.lat); set('cityLng', c.lng); }}
+                placeholder="ex. Brest"
+                inputClassName={inputCls}
+              />
             </Field>
 
             <Field label="Stade / Salle / Lieu">

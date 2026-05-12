@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
+import CityAutocomplete from '../CityAutocomplete.jsx';
 
 export default function ClubRequestModal({ onSubmit, onClose }) {
   const { allSports: SPORTS } = useSports();
@@ -110,11 +111,12 @@ export default function ClubRequestModal({ onSubmit, onClose }) {
 
               <div>
                 <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Ville *</label>
-                <input
+                <CityAutocomplete
                   value={form.city}
-                  onChange={set('city')}
+                  onChange={v => setForm(p => ({ ...p, city: v }))}
+                  onSelect={c => { setForm(p => ({ ...p, city: c.nom })); setError(''); }}
                   placeholder="Ex: Brest"
-                  className="w-full px-3.5 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                  inputClassName="w-full px-3.5 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
                 />
               </div>
 
