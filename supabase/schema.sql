@@ -24,17 +24,28 @@ DROP POLICY IF EXISTS "profiles_select_own"    ON public.profiles;
 DROP POLICY IF EXISTS "profiles_select_public" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_insert_own"    ON public.profiles;
 DROP POLICY IF EXISTS "profiles_update_own"    ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_admin"  ON public.profiles;
 
 -- Profiles are publicly readable (no sensitive data — email is in auth.users)
 CREATE POLICY "profiles_select_public" ON public.profiles
   FOR SELECT USING (true);
 
--- Users can only create/edit their own profile
+-- Users can only create their own profile
 CREATE POLICY "profiles_insert_own" ON public.profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 
+-- Users can edit their own profile; admins/superadmins can edit any profile
 CREATE POLICY "profiles_update_own" ON public.profiles
   FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "profiles_update_admin" ON public.profiles
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid()
+        AND p.role IN ('admin', 'superadmin')
+    )
+  );
 
 
 -- ── Auto-create profile on signup ────────────────────────────

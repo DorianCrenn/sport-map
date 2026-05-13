@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useClubRequests } from '../hooks/useClubRequests.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useSports } from '../hooks/useSports.js';
+import { supabase } from '../lib/supabase.js';
 import SportIcon from '../components/SportIcon.jsx';
 import { SPORT_ICON_OPTIONS, SPORT_ICONS } from '../components/sportIcons.js';
 
@@ -139,7 +140,7 @@ function roleLabel(role) {
 }
 
 export default function AdminPage() {
-  const { users, updateUser, isAdmin, currentUser } = useAuth();
+  const { isAdmin, currentUser } = useAuth();
   const { requests, pendingRequests, reviewRequest } = useClubRequests();
   const { addClub } = useClubs();
   const { allSports, customSports, deletedDefaults, addSport, updateSport, deleteSport, restoreSport, toggleArchive } = useSports();
@@ -149,6 +150,19 @@ export default function AdminPage() {
   const [showSportForm, setShowSportForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
+  const [adminUsers, setAdminUsers] = useState([]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.from('profiles').select('*').order('created_at', { ascending: true })
+      .then(({ data }) => { if (data) setAdminUsers(data); });
+  }, [isAdmin]);
+
+  async function updateUserRole(userId, patch) {
+    const { error } = await supabase.from('profiles').update(patch).eq('id', userId);
+    if (!error) setAdminUsers(prev => prev.map(u => u.id === userId ? { ...u, ...patch } : u));
+  }
+
   if (!isAdmin) {
     return (
       <div className="h-full flex items-center justify-center bg-[#F1F5F9]">
@@ -157,19 +171,14 @@ export default function AdminPage() {
     );
   }
 
-  function approveRequest(req) {
-    const club = addClub({
+  async function approveRequest(req) {
+    const club = await addClub({
       name: req.clubName,
       sport: req.sport,
       city: req.city,
-      members: 0,
-      level: '',
-      contact: '',
       description: req.description,
-      isUserCreated: true,
-      ownerId: req.userId,
     });
-    updateUser(req.userId, { role: 'club_admin', clubId: club.id });
+    await updateUserRole(req.userId, { role: 'club_admin', club_id: club.id });
     reviewRequest(req.id, 'approved', reviewNote);
     setReviewingId(null);
     setReviewNote('');
@@ -182,8 +191,8 @@ export default function AdminPage() {
   }
 
   function toggleRole(user) {
-    if (user.role === 'user') updateUser(user.id, { role: 'admin' });
-    else if (user.role === 'admin' && user.id !== currentUser.id) updateUser(user.id, { role: 'user' });
+    if (user.role === 'user') updateUserRole(user.id, { role: 'admin' });
+    else if (user.role === 'admin' && user.id !== currentUser.id) updateUserRole(user.id, { role: 'user' });
   }
 
   const TABS = [
@@ -232,7 +241,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-2 gap-3">
               {[
                 {
-                  label: 'Utilisateurs', value: users.length, color: '#3b82f6', bg: '#eff6ff',
+                  label: 'Utilisateurs', value: adminUsers.length, color: '#3b82f6', bg: '#eff6ff',
                   icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
                 },
                 {
@@ -393,11 +402,11 @@ export default function AdminPage() {
         {/* ── USERS ── */}
         {tab === 'users' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-            <p className="text-xs text-gray-400 mb-3 font-medium">{users.length} utilisateur{users.length > 1 ? 's' : ''}</p>
-            {users.map(user => {
+            <p className="text-xs text-gray-400 mb-3 font-medium">{adminUsers.length} utilisateur{adminUsers.length > 1 ? 's' : ''}</p>
+            {adminUsers.map(user => {
               const color = roleColor(user.role);
               const label = roleLabel(user.role);
-              const isSelf = user.id === currentUser.id;
+              const isSelf = user.id === currentUser?.id;
               const canToggle = (user.role === 'user' || user.role === 'admin') && !isSelf;
 
               return (
@@ -412,7 +421,9 @@ export default function AdminPage() {
                       {user.name}
                       {isSelf && <span className="text-[9px] text-gray-400 font-normal">(vous)</span>}
                     </div>
-                    <div className="text-xs text-gray-400 truncate">{user.email}</div>
+                    <div className="text-xs text-gray-400 truncate">
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR') : '—'}
+                    </div>
                   </div>
                   {canToggle ? (
                     <button
