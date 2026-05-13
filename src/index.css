@@ -32,8 +32,8 @@
 
   /* Text — légèrement blue-tinted pour harmonie navy */
   --sl-t1:  #deeeff;
-  --sl-t2:  rgba(222,238,255,0.65);
-  --sl-t3:  rgba(222,238,255,0.38);
+  --sl-t2:  rgba(222,238,255,0.72);
+  --sl-t3:  rgba(222,238,255,0.50);
 
   /* Brand accents */
   --sl-green:      #22d96a;
@@ -129,16 +129,16 @@
   --sl-bar-border:      #F0F4F9;
   --sl-pill-bg:         #F1F5F9;
   --sl-pill-text:       #64748B;
-  --sl-pill-active-bg:  #0f5132;
+  --sl-pill-active-bg:  #0F1E3A;
   --sl-pill-active-txt: #FFFFFF;
 
   --sl-shadow:    0 2px 12px rgba(10,15,13,0.08);
   --sl-shadow-xl: 0 8px 32px rgba(10,15,13,0.12);
 
-  --sl-input-bg:     #F1F5F2;
-  --sl-input-border: #D4DDD6;
-  --sl-input-text:   #0a1a10;
-  --sl-input-placeholder: #94A3A0;
+  --sl-input-bg:          #F1F5F9;
+  --sl-input-border:      #CBD5E1;
+  --sl-input-text:        #0F1E3A;
+  --sl-input-placeholder: #94A3B8;
 
   /* Sport colors */
   --sl-sport-football:   #16a34a;
@@ -148,16 +148,16 @@
   --sl-sport-running:    #6d48d4;
   --sl-sport-cyclisme:   #1d7fc4;
 
-  /* Header stays dark — brand identity */
-  --sl-header-bg:     linear-gradient(90deg, #0a1a10 0%, #0f2a1a 100%);
-  --sl-header-shadow: 0 2px 12px rgba(10,15,13,0.2);
+  /* Header — deep navy, cohérent avec dark mode */
+  --sl-header-bg:     linear-gradient(90deg, #0a1628 0%, #0f1e38 100%);
+  --sl-header-shadow: 0 2px 12px rgba(10,22,40,0.25);
 
-  --sl-hero-bg:         linear-gradient(160deg, #0a1a10 0%, #0f2a1a 55%, #0a1a10 100%);
+  --sl-hero-bg:         linear-gradient(160deg, #060f20 0%, #0e1c3a 55%, #060f20 100%);
   --sl-hero-section-bg: #FFFFFF;
 
-  --sl-sidebar-bg: #F7FAF8;
+  --sl-sidebar-bg: #F7F9FC;
 
-  --sl-divider: #E8EEE9;
+  --sl-divider: #E8EEF6;
 
   --sl-popup-bg:     #FFFFFF;
   --sl-popup-border: #D4DDD6;

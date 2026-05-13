@@ -18,6 +18,9 @@ export default function OnboardingPage({ onDone }) {
   }
 
   function handleDone() {
+    if (currentUser?.id) {
+      localStorage.setItem(`sl_onboarded_${currentUser.id}`, '1');
+    }
     updateProfile({ favoriteSports: [...selected], onboardingDone: true });
     onDone();
   }

@@ -63,15 +63,17 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
               style={{ position: 'fixed', inset: 0, zIndex: 450 }}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              initial={{ opacity: 0, scale: 0.92, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 10 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+              exit={{ opacity: 0, scale: 0.92, y: 8 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 34 }}
               style={{
-                position: 'absolute', bottom: '100%', left: '50%',
+                position: 'fixed',
+                bottom: 'calc(env(safe-area-inset-bottom, 0px) + 82px)',
+                left: '50%',
                 transform: 'translateX(-50%)',
-                marginBottom: 16, width: 240, zIndex: 500,
-                backgroundColor: 'var(--sl-card)', borderRadius: 18,
+                width: 248, zIndex: 500,
+                backgroundColor: 'var(--sl-card)', borderRadius: 20,
                 border: '1px solid var(--sl-border-s)',
                 boxShadow: 'var(--sl-shadow-xl)',
                 overflow: 'hidden',

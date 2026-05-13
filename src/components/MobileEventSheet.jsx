@@ -161,15 +161,15 @@ export default function MobileEventSheet({
         touchAction: isExpanded ? 'auto' : 'none',
       }}
     >
-      {/* Drag handle + collapse button */}
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px 6px', position: 'relative' }}>
-        <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
-        {isExpanded && (
+      {/* Sticky header: drag handle + always-visible close + collapse */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 12px 8px', position: 'relative', gap: 0 }}>
+        {/* Collapse chevron — left, only when expanded */}
+        {isExpanded ? (
           <button
             onClick={() => setIsExpanded(false)}
             style={{
-              position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-              width: 28, height: 28, borderRadius: 8,
+              position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+              width: 32, height: 32, borderRadius: 10,
               backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'var(--sl-t3)',
@@ -179,7 +179,26 @@ export default function MobileEventSheet({
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
-        )}
+        ) : null}
+
+        {/* Drag handle */}
+        <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
+
+        {/* Close button — right, always visible */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+            width: 32, height: 32, borderRadius: 10,
+            backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--sl-t2)',
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
 
       {/* Sport color bar */}
@@ -214,16 +233,11 @@ export default function MobileEventSheet({
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            {onToggleFavorite && (
-              <button onClick={() => onToggleFavorite(event.id)} style={{ padding: 8, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: fav ? 'rgba(239,68,68,0.12)' : 'transparent', color: fav ? '#ef4444' : 'var(--sl-t3)' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              </button>
-            )}
-            <button onClick={onClose} style={{ padding: 8, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          {onToggleFavorite && (
+            <button onClick={() => onToggleFavorite(event.id)} style={{ padding: 8, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: fav ? 'rgba(239,68,68,0.12)' : 'transparent', color: fav ? '#ef4444' : 'var(--sl-t3)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
-          </div>
+          )}
         </div>
 
         {/* Title */}

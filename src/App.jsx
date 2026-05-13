@@ -73,7 +73,10 @@ function AppInner() {
     };
   }, [userClubs, allEvents, allSports]);
 
-  const shouldShowOnboarding = !!currentUser && !currentUser.onboardingDone && !showAuth;
+  const localOnboardingDone = currentUser?.id
+    ? !!localStorage.getItem(`sl_onboarded_${currentUser.id}`)
+    : false;
+  const shouldShowOnboarding = !!currentUser && !currentUser.onboardingDone && !localOnboardingDone && !showAuth;
 
   function handleTabChange(tab) {
     if (tab === 'profil' && !currentUser) {
