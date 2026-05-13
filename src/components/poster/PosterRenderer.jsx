@@ -1,3 +1,6 @@
+import TplSimple from './templates/TplSimple.jsx';
+import TplLight from './templates/TplLight.jsx';
+import TplColor from './templates/TplColor.jsx';
 import TplEditorial from './templates/TplEditorial.jsx';
 import TplImpact from './templates/TplImpact.jsx';
 import TplLuxe from './templates/TplLuxe.jsx';
@@ -15,11 +18,36 @@ import TplPulse from './templates/TplPulse.jsx';
 
 export const POSTER_TEMPLATES = [
   {
+    id: 'simple',
+    label: 'Classique',
+    desc: 'Sombre · Épuré · Gratuit',
+    icon: '◻',
+    color: '#3b82f6',
+    Component: TplSimple,
+  },
+  {
+    id: 'light',
+    label: 'Light',
+    desc: 'Clair · Éditorial · Gratuit',
+    icon: '◽',
+    color: '#E05C2A',
+    Component: TplLight,
+  },
+  {
+    id: 'color',
+    label: 'Color',
+    desc: 'Coloré · Dynamique · Gratuit',
+    icon: '◼',
+    color: '#22D96A',
+    Component: TplColor,
+  },
+  {
     id: 'editorial',
     label: 'Éditorial',
     desc: 'Navy · Or · Élégant',
     icon: '◆',
     color: '#D4AF37',
+    isPremium: true,
     Component: TplEditorial,
   },
   {
@@ -28,6 +56,7 @@ export const POSTER_TEMPLATES = [
     desc: 'Noir · Dynamique · Bold',
     icon: '⚡',
     color: '#22D96A',
+    isPremium: true,
     Component: TplImpact,
   },
   {
@@ -36,6 +65,7 @@ export const POSTER_TEMPLATES = [
     desc: 'Noir · Or · Premium',
     icon: '◈',
     color: '#D4AF37',
+    isPremium: true,
     Component: TplLuxe,
   },
   {
@@ -44,6 +74,7 @@ export const POSTER_TEMPLATES = [
     desc: 'Crème · Éditorial · Clair',
     icon: '○',
     color: '#B38B59',
+    isPremium: true,
     Component: TplBlanc,
   },
   {

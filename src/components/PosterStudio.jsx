@@ -5,6 +5,7 @@ import { useSports } from '../hooks/useSports.js';
 import { champLabel } from './poster/posterUtils.js';
 import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS } from './poster/PosterRenderer.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 // ── Sidebar tabs ───────────────────────────────────────────────────────────────
 
@@ -72,6 +73,8 @@ function ColorSwatch({ color, active, onClick }) {
 
 export default function PosterStudio({ event, onClose }) {
   const { allSports } = useSports();
+  const { currentUser } = useAuth();
+  const hasPremium = currentUser?.role === 'admin' || currentUser?.role === 'superadmin' || currentUser?.role === 'club_admin' || currentUser?.isPremium;
   const posterRef = useRef(null);
   const exportRef = useRef(null);
   const sponsorRef = useRef(null);
@@ -83,7 +86,7 @@ export default function PosterStudio({ event, onClose }) {
 
   // ── State ──
   const [format, setFormat] = useState('story');
-  const [templateId, setTemplateId] = useState('editorial');
+  const [templateId, setTemplateId] = useState('simple');
   const [activeTab, setActiveTab] = useState('template');
 
   // Visual
@@ -467,22 +470,37 @@ export default function PosterStudio({ event, onClose }) {
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                         {POSTER_TEMPLATES.map(t => {
                           const active = templateId === t.id;
+                          const locked = t.isPremium && !hasPremium;
                           return (
-                            <button key={t.id} onClick={() => setTemplateId(t.id)}
+                            <button key={t.id}
+                              onClick={() => {
+                                if (locked) return;
+                                setTemplateId(t.id);
+                              }}
                               style={{
-                                padding: '14px 12px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
-                                position: 'relative',
+                                padding: '14px 12px', borderRadius: 14, cursor: locked ? 'default' : 'pointer', textAlign: 'left',
+                                position: 'relative', overflow: 'hidden',
                                 border: `2px solid ${active ? t.color : 'var(--sl-border-s)'}`,
                                 backgroundColor: active ? `${t.color}12` : 'var(--sl-surface)',
                                 transition: 'all 0.15s',
+                                opacity: locked ? 0.65 : 1,
                               }}>
-                              {t.isPremium && (
+                              {locked && (
+                                <div style={{
+                                  position: 'absolute', inset: 0, borderRadius: 12,
+                                  backgroundColor: 'rgba(0,0,0,0.45)',
+                                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
+                                  backdropFilter: 'blur(1px)',
+                                }}>
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                  <span style={{ fontSize: 9, fontWeight: 800, color: '#D4AF37', letterSpacing: '0.06em' }}>PREMIUM</span>
+                                </div>
+                              )}
+                              {t.isPremium && !locked && (
                                 <div style={{
                                   position: 'absolute', top: 7, right: 7,
-                                  fontSize: 8, fontWeight: 800,
-                                  color: '#000', backgroundColor: '#D4AF37',
-                                  padding: '2px 5px', borderRadius: 5,
-                                  letterSpacing: '0.04em', lineHeight: 1.4,
+                                  fontSize: 9, lineHeight: 1,
+                                  color: '#D4AF37',
                                 }}>👑</div>
                               )}
                               <div style={{ fontSize: 22, marginBottom: 6 }}>{t.icon}</div>
