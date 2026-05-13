@@ -1,11 +1,12 @@
 import TplSimple from './templates/TplSimple.jsx';
 import TplLight from './templates/TplLight.jsx';
 import TplColor from './templates/TplColor.jsx';
+import TplElegant from './templates/TplElegant.jsx';
+import TplPrestige from './templates/TplPrestige.jsx';
 import TplEditorial from './templates/TplEditorial.jsx';
 import TplImpact from './templates/TplImpact.jsx';
 import TplLuxe from './templates/TplLuxe.jsx';
 import TplBlanc from './templates/TplBlanc.jsx';
-import TplSplit from './templates/TplSplit.jsx';
 import TplMagazine from './templates/TplMagazine.jsx';
 import TplNeon from './templates/TplNeon.jsx';
 import TplFluo from './templates/TplFluo.jsx';
@@ -13,7 +14,6 @@ import TplCinema from './templates/TplCinema.jsx';
 import TplRetro from './templates/TplRetro.jsx';
 import TplVivid from './templates/TplVivid.jsx';
 import TplBento from './templates/TplBento.jsx';
-import TplDark from './templates/TplDark.jsx';
 import TplPulse from './templates/TplPulse.jsx';
 
 export const POSTER_TEMPLATES = [
@@ -78,13 +78,13 @@ export const POSTER_TEMPLATES = [
     Component: TplBlanc,
   },
   {
-    id: 'split',
-    label: 'Duel',
-    desc: 'Sombre · Bilatéral · Épuré',
-    icon: '⊞',
-    color: '#3b82f6',
+    id: 'elegant',
+    label: 'Élégant',
+    desc: 'Crème · Serif · Raffiné',
+    icon: '◇',
+    color: '#C4922A',
     isPremium: true,
-    Component: TplSplit,
+    Component: TplElegant,
   },
   {
     id: 'magazine',
@@ -150,13 +150,13 @@ export const POSTER_TEMPLATES = [
     Component: TplBento,
   },
   {
-    id: 'dark',
-    label: 'Dark',
-    desc: 'Noir · Minimaliste · Luxe',
-    icon: '◯',
-    color: '#E2C97E',
+    id: 'prestige',
+    label: 'Prestige',
+    desc: 'Navy · Or · Serif · Luxe',
+    icon: '◈',
+    color: '#C8A96E',
     isPremium: true,
-    Component: TplDark,
+    Component: TplPrestige,
   },
   {
     id: 'pulse',
