@@ -1,16 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
-const url = import.meta.env.VITE_SUPABASE_URL;
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const DIRECT_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://placeholder.supabase.co';
+const KEY        = import.meta.env.VITE_SUPABASE_ANON_KEY ?? 'placeholder';
 
-window.__SB_URL = url;
-if (!url || !key) {
-  console.error('[Supabase] Variables manquantes.');
-}
+// In production, route through the app's own domain to bypass ad blockers.
+// vercel.json rewrites /sb-api/* → https://caikdkyrkrurjdlwrite.supabase.co/*
+const clientUrl = import.meta.env.PROD
+  ? `${window.location.origin}/sb-api`
+  : DIRECT_URL;
 
-export const supabase = createClient(
-  url ?? 'https://placeholder.supabase.co',
-  key ?? 'placeholder'
-);
-
-export const supabaseReady = !!url && !!key;
+export const supabase = createClient(clientUrl, KEY);

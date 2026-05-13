@@ -20,14 +20,16 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- Drop and recreate policies (idempotent)
-DROP POLICY IF EXISTS "profiles_select_own"  ON public.profiles;
-DROP POLICY IF EXISTS "profiles_insert_own"  ON public.profiles;
-DROP POLICY IF EXISTS "profiles_update_own"  ON public.profiles;
+DROP POLICY IF EXISTS "profiles_select_own"    ON public.profiles;
+DROP POLICY IF EXISTS "profiles_select_public" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_own"    ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_own"    ON public.profiles;
 
-CREATE POLICY "profiles_select_own" ON public.profiles
-  FOR SELECT USING (auth.uid() = id);
+-- Profiles are publicly readable (no sensitive data — email is in auth.users)
+CREATE POLICY "profiles_select_public" ON public.profiles
+  FOR SELECT USING (true);
 
--- Required: allows client-side fallback profile creation if trigger fails
+-- Users can only create/edit their own profile
 CREATE POLICY "profiles_insert_own" ON public.profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 

@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/sb-api/:path*",
+      "destination": "https://caikdkyrkrurjdlwrite.supabase.co/:path*"
+    }
+  ]
+}

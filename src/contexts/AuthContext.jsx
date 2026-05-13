@@ -41,17 +41,21 @@ async function fetchProfile(authUser) {
     if (attempt < 4) await new Promise(r => setTimeout(r, 500));
   }
 
-  // Fallback: trigger didn't fire — create profile client-side
-  // Requires the "profiles_insert_own" RLS policy
+  // Fallback: trigger didn't fire — create profile without overwriting existing data
   console.warn('[Auth] Profile not found after retries — creating fallback');
   const name = authUser.user_metadata?.name ?? authUser.email?.split('@')[0] ?? '';
-  const { data, error } = await supabase
+  await supabase
     .from('profiles')
-    .upsert({ id: userId, name }, { onConflict: 'id' })
-    .select()
-    .single();
+    .insert({ id: userId, name })
+    .then(() => {})
+    .catch(() => {}); // Ignore conflict (profile may already exist)
 
-  if (error) console.error('[Auth] Fallback profile creation failed:', error.message);
+  // Final fetch attempt after insert
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
   return data ?? null;
 }
 
