@@ -114,7 +114,7 @@ export default function TplElegant({ event, homeTeam, awayTeam, championship, ta
           <div style={{ width: 1, height: 14, backgroundColor: `${DARK}12` }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={DARK} strokeWidth="2" strokeLinecap="round" style={{ opacity: 0.3 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span style={{ fontSize: 10.5, fontWeight: 700, color: DARK }}>{(event?.venue || event?.city || '—').slice(0, 13)}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: DARK, wordBreak: 'break-word', lineHeight: 1.25 }}>{event?.venue || event?.city || '—'}</span>
           </div>
         </div>
 

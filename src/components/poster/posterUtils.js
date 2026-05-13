@@ -35,6 +35,14 @@ export function scaledFs(str = '', baseSize = 12, maxChars = 14, minSize = 8) {
   return Math.max(minSize, Math.round(baseSize * maxChars / str.length));
 }
 
+export function venueFs(text = '', base = 11) {
+  const len = text.length;
+  if (len > 20) return Math.max(7.5, Math.round(base * 0.7));
+  if (len > 15) return Math.round(base * 0.83);
+  if (len > 11) return Math.round(base * 0.92);
+  return base;
+}
+
 export function blockStyle(transforms, id) {
   const t = transforms?.[id];
   if (!t) return {};

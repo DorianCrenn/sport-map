@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 const BG = '#ECEAE5';
@@ -84,11 +84,11 @@ export default function TplBento({ event, homeTeam, awayTeam, championship, tagl
           {[
             { svg: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, val: `${dt.day} ${dt.month}` },
             { svg: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, val: dt.time },
-            { svg: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, val: (event?.venue || event?.city || '—').slice(0, 12) },
+            { svg: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, val: event?.venue || event?.city || '—' },
           ].map(({ svg, val }, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {svg}
-              <span style={{ fontSize: 11, fontWeight: 700, color: DARK, letterSpacing: '-0.01em' }}>{val}</span>
+              <span style={{ fontSize: i === 2 ? venueFs(val, 11) : 11, fontWeight: 700, color: DARK, letterSpacing: '-0.01em', wordBreak: i === 2 ? 'break-word' : undefined, lineHeight: i === 2 ? 1.25 : undefined }}>{val}</span>
             </div>
           ))}
         </div>

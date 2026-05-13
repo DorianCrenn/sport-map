@@ -114,7 +114,7 @@ export default function TplEditorial({ event, homeTeam, awayTeam, championship, 
             {[
               { type: 'date', label: 'Date', value: dt.short },
               { type: 'clock', label: 'Heure', value: dt.time },
-              { type: 'pin', label: 'Lieu', value: (event?.venue || event?.city || '—').slice(0, 15) },
+              { type: 'pin', label: 'Lieu', value: event?.venue || event?.city || '—' },
             ].map(({ type, label, value }) => (
               <div key={label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '9px 6px', textAlign: 'center' }}>
                 <div style={{ color: a + '70', marginBottom: 4, display: 'flex', justifyContent: 'center' }}><MetaIcon type={type} /></div>

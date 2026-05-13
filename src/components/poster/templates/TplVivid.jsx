@@ -92,7 +92,7 @@ export default function TplVivid({ event, homeTeam, awayTeam, championship, tagl
         <div style={{ height: 1, background: 'rgba(255,255,255,0.07)', marginBottom: 14 }} />
 
         <div data-block="meta" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: tagline ? 10 : 12, ...tr('meta') }}>
-          {[{ val: dt.short }, { val: dt.time }, { val: (event?.venue || event?.city || '—').slice(0, 14) }].map(({ val }, i) => (
+          {[{ val: dt.short }, { val: dt.time }, { val: event?.venue || event?.city || '—' }].map(({ val }, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.055)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{val}</span>
             </div>

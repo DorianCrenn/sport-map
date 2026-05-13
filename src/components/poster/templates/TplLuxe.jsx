@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 const GOLD = '#D4AF37';
@@ -117,11 +117,11 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
           {[
             { label: 'Date', value: dt.short },
             { label: 'Heure', value: dt.time },
-            { label: 'Stade', value: (event?.venue || event?.city || '—').slice(0, 12) },
-          ].map(({ label, value }) => (
+            { label: 'Stade', value: event?.venue || event?.city || '—' },
+          ].map(({ label, value }, i) => (
             <div key={label} style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: '0.28em', color: `${a}60`, textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
-              <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{value}</div>
+              <div style={{ fontSize: i === 2 ? venueFs(value, 10.5) : 10.5, fontWeight: 600, color: 'rgba(255,255,255,0.85)', wordBreak: i === 2 ? 'break-word' : undefined, lineHeight: i === 2 ? 1.25 : undefined }}>{value}</div>
             </div>
           ))}
         </div>

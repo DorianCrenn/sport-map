@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 
@@ -93,8 +93,8 @@ export default function TplColor({ event, homeTeam, awayTeam, championship, tagl
               <div style={{ fontSize: 12, fontWeight: 800, color: 'white' }}>{dt.time}</div>
               <div style={{ fontSize: 7.5, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 2 }}>Heure</div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: 'white' }}>{(event?.venue || event?.city || '—').slice(0, 13)}</div>
+            <div style={{ textAlign: 'right', maxWidth: 96 }}>
+              <div style={{ fontSize: venueFs(event?.venue || event?.city || '—', 10.5), fontWeight: 700, color: 'white', wordBreak: 'break-word', lineHeight: 1.25 }}>{event?.venue || event?.city || '—'}</div>
               <div style={{ fontSize: 7.5, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 2 }}>Lieu</div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 const BG = '#0B0908';
@@ -81,10 +81,10 @@ export default function TplMagazine({ event, homeTeam, awayTeam, championship, t
           {[
             { val: `${dt.day} ${dt.month}`, lbl: 'Date', align: 'left' },
             { val: dt.time, lbl: 'Heure', align: 'center' },
-            { val: (event?.venue || event?.city || '—').slice(0, 10), lbl: 'Lieu', align: 'right' },
+            { val: event?.venue || event?.city || '—', lbl: 'Lieu', align: 'right' },
           ].map(({ val, lbl, align }, i) => (
-            <div key={i} style={{ textAlign: align }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? a : `${CREAM}72`, letterSpacing: '0.04em' }}>{val}</div>
+            <div key={i} style={{ textAlign: align, maxWidth: i === 2 ? 96 : undefined }}>
+              <div style={{ fontSize: i === 2 ? venueFs(val, 11) : 11, fontWeight: 700, color: i === 0 ? a : `${CREAM}72`, letterSpacing: '0.04em', wordBreak: i === 2 ? 'break-word' : undefined, lineHeight: i === 2 ? 1.25 : undefined }}>{val}</div>
               <div style={{ fontSize: 7, fontWeight: 600, color: `${CREAM}30`, letterSpacing: '0.22em', textTransform: 'uppercase', marginTop: 2 }}>{lbl}</div>
             </div>
           ))}

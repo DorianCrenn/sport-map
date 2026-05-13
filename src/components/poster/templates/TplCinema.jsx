@@ -113,7 +113,7 @@ export default function TplCinema({ event, homeTeam, awayTeam, championship, tag
           <div data-block="meta" style={{ display: 'flex', gap: 18, alignItems: 'center', marginBottom: tagline ? 9 : 0, ...tr('meta') }}>
             <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.48)', letterSpacing: '0.04em' }}>{dt.short}</span>
             <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.48)', letterSpacing: '0.04em' }}>{dt.time}</span>
-            <span style={{ fontSize: 9.5, fontWeight: 600, color: 'rgba(255,255,255,0.32)', letterSpacing: '0.04em' }}>{(event?.venue || event?.city || '—').slice(0, 14)}</span>
+            <span style={{ fontSize: 9.5, fontWeight: 600, color: 'rgba(255,255,255,0.32)', letterSpacing: '0.04em', wordBreak: 'break-word', lineHeight: 1.3 }}>{event?.venue || event?.city || '—'}</span>
           </div>
 
           {tagline && (

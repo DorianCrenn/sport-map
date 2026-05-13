@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 const BG = '#12100E';
@@ -88,10 +88,10 @@ export default function TplRetro({ event, homeTeam, awayTeam, championship, tagl
         </div>
 
         <div data-block="meta" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: tagline ? 10 : 0, ...tr('meta') }}>
-          {[{ label: 'DATE', value: dt.short }, { label: 'HEURE', value: dt.time }, { label: 'LIEU', value: (event?.venue || event?.city || '—').slice(0, 12) }].map(({ label, value }, i) => (
+          {[{ label: 'DATE', value: dt.short }, { label: 'HEURE', value: dt.time }, { label: 'LIEU', value: event?.venue || event?.city || '—' }].map(({ label, value }, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 6.5, fontWeight: 700, color: `${a}55`, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: `${CREAM}78` }}>{value}</div>
+              <div style={{ fontSize: i === 2 ? venueFs(value, 10.5) : 10.5, fontWeight: 700, color: `${CREAM}78`, wordBreak: i === 2 ? 'break-word' : undefined, lineHeight: i === 2 ? 1.25 : undefined }}>{value}</div>
             </div>
           ))}
         </div>

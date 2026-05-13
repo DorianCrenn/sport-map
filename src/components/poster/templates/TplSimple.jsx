@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 
@@ -89,10 +89,10 @@ export default function TplSimple({ event, homeTeam, awayTeam, championship, tag
           {[
             { label: 'Date', value: `${dt.day} ${dt.month}` },
             { label: 'Heure', value: dt.time },
-            { label: 'Lieu', value: (event?.venue || event?.city || '—').slice(0, 12) },
+            { label: 'Lieu', value: event?.venue || event?.city || '—' },
           ].map(({ label, value }, i) => (
-            <div key={i} style={{ textAlign: i === 2 ? 'right' : i === 0 ? 'left' : 'center' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? a : 'rgba(255,255,255,0.7)' }}>{value}</div>
+            <div key={i} style={{ textAlign: i === 2 ? 'right' : i === 0 ? 'left' : 'center', maxWidth: i === 2 ? 96 : undefined }}>
+              <div style={{ fontSize: i === 2 ? venueFs(value, 11) : 11, fontWeight: 700, color: i === 0 ? a : 'rgba(255,255,255,0.7)', wordBreak: i === 2 ? 'break-word' : undefined, lineHeight: i === 2 ? 1.25 : undefined }}>{value}</div>
               <div style={{ fontSize: 7.5, fontWeight: 600, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 2 }}>{label}</div>
             </div>
           ))}

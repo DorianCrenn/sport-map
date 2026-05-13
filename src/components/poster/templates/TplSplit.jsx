@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 
@@ -84,11 +84,11 @@ export default function TplSplit({ event, homeTeam, awayTeam, championship, tagl
           {[
             { icon: <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round" style={{ opacity: 0.7 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, val: dt.short },
             { icon: <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round" style={{ opacity: 0.7 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, val: dt.time },
-            { icon: <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round" style={{ opacity: 0.7 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, val: (event?.venue || event?.city || '—').slice(0, 14) },
+            { icon: <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round" style={{ opacity: 0.7 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, val: event?.venue || event?.city || '—' },
           ].map(({ icon, val }, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               {icon}
-              <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.52)' }}>{val}</span>
+              <span style={{ fontSize: i === 2 ? venueFs(val, 10) : 10, fontWeight: 600, color: 'rgba(255,255,255,0.52)', wordBreak: i === 2 ? 'break-word' : undefined, lineHeight: i === 2 ? 1.25 : undefined }}>{val}</span>
             </div>
           ))}
         </div>

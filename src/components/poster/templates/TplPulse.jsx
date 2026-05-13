@@ -113,7 +113,7 @@ export default function TplPulse({ event, homeTeam, awayTeam, championship, tagl
         <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${a}30, transparent)`, marginBottom: 14 }} />
 
         <div data-block="meta" style={{ display: 'flex', justifyContent: 'center', gap: 16, alignItems: 'center', marginBottom: tagline ? 10 : 12, ...tr('meta') }}>
-          {[dt.short, dt.time, (event?.venue || event?.city || '—').slice(0, 14)].map((val, i) => (
+          {[dt.short, dt.time, event?.venue || event?.city || '—'].map((val, i) => (
             <span key={i} style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em' }}>{val}</span>
           ))}
         </div>

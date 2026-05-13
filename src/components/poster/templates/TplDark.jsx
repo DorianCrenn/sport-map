@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 
@@ -72,8 +72,8 @@ export default function TplDark({ event, homeTeam, awayTeam, championship, tagli
         <div style={{ height: '0.5px', backgroundColor: 'rgba(255,255,255,0.08)', margin: `${isStory ? 22 : 14}px 0 ${isStory ? 18 : 12}px` }} />
 
         <div data-block="meta" style={{ display: 'flex', gap: 20, alignItems: 'center', marginBottom: tagline ? 14 : 0, ...tr('meta') }}>
-          {[dt.short, dt.time, (event?.venue || event?.city || '—').slice(0, 16)].map((val, i) => (
-            <span key={i} style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>{val}</span>
+          {[dt.short, dt.time, event?.venue || event?.city || '—'].map((val, i) => (
+            <span key={i} style={{ fontSize: i === 2 ? venueFs(val, 10) : 10, fontWeight: 300, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em', wordBreak: i === 2 ? 'break-word' : undefined, lineHeight: i === 2 ? 1.25 : undefined }}>{val}</span>
           ))}
         </div>
 

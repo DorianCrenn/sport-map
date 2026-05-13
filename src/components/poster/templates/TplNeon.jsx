@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 
@@ -129,11 +129,11 @@ export default function TplNeon({ event, homeTeam, awayTeam, championship, tagli
           {[
             { lbl: 'DATE', val: dt.short },
             { lbl: 'HEURE', val: dt.time },
-            { lbl: 'LIEU', val: (event?.venue || event?.city || '—').slice(0, 10) },
+            { lbl: 'LIEU', val: event?.venue || event?.city || '—' },
           ].map(({ lbl, val }, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 7, fontWeight: 700, color: `${a}65`, letterSpacing: '0.3em', marginBottom: 3 }}>{lbl}</div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{val}</div>
+              <div style={{ fontSize: i === 2 ? venueFs(val, 10) : 10, fontWeight: 600, color: 'rgba(255,255,255,0.85)', wordBreak: i === 2 ? 'break-word' : undefined, lineHeight: i === 2 ? 1.25 : undefined }}>{val}</div>
             </div>
           ))}
         </div>
