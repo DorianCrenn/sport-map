@@ -239,7 +239,7 @@ function groupByDate(events) {
 
 export default function FavorisPage({ allEvents, favorites, onToggleFavorite }) {
   const favoriteEvents = useMemo(
-    () => allEvents.filter((e) => favorites.has(e.id)).sort((a, b) => new Date(a.date) - new Date(b.date)),
+    () => allEvents.filter((e) => favorites.has(String(e.id))).sort((a, b) => new Date(a.date) - new Date(b.date)),
     [allEvents, favorites]
   );
 
