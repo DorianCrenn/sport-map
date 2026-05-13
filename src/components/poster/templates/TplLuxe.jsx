@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 const GOLD = '#D4AF37';
@@ -12,7 +12,7 @@ function DoubleRule() {
   );
 }
 
-export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagline, accentColor, bgImage, format = 'story' }) {
+export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagline, accentColor, bgImage, format = 'story', transforms = {} }) {
   const h = H[format] || H.story;
   const { home, away } = parseVs(event?.title || '');
   const dt = fmtDate(event?.date);
@@ -21,6 +21,7 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
   const homeName = homeTeam?.name || home || 'FC Club';
   const awayName = awayTeam?.name || away || 'Adversaire';
   const isStory = format === 'story';
+  const tr = (id) => blockStyle(transforms, id);
 
   return (
     <div style={{
@@ -29,32 +30,26 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
       display: 'flex', flexDirection: 'column',
       padding: '26px 28px 22px', boxSizing: 'border-box',
     }}>
-      {/* Backgrounds */}
       <div style={{ position: 'absolute', inset: 0, background: '#060200' }} />
       {bgImage && <>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,2,0,0.87)' }} />
       </>}
-      {/* Corner glows */}
       <div style={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, background: `radial-gradient(circle, ${a}0C 0%, transparent 65%)` }} />
       <div style={{ position: 'absolute', bottom: -80, left: -80, width: 260, height: 260, background: `radial-gradient(circle, ${a}08 0%, transparent 65%)` }} />
-      {/* Thin gold border frame */}
       <div style={{ position: 'absolute', top: 14, left: 14, right: 14, bottom: 14, border: `0.5px solid ${a}18`, borderRadius: 4, pointerEvents: 'none' }} />
 
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-        {/* Championship label */}
-        <div style={{ textAlign: 'center', marginBottom: 14 }}>
+        <div data-block="champ" style={{ textAlign: 'center', marginBottom: 14, ...tr('champ') }}>
           <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.38em', color: `${a}70`, textTransform: 'uppercase' }}>
             — {truncate(champ, 22)} —
           </span>
         </div>
 
-        {/* Double rule top */}
         <DoubleRule />
         <div style={{ height: 14 }} />
 
-        {/* Sport icon circle */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
           <div style={{ width: 36, height: 36, borderRadius: '50%', border: `1px solid ${a}45`, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: `${a}0C` }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="1.5">
@@ -64,31 +59,20 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
           </div>
         </div>
 
-        {/* Title */}
-        <div style={{ textAlign: 'center', lineHeight: 0.88, marginBottom: 16 }}>
-          <div style={{ fontSize: isStory ? 80 : 66, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>
-            MATCH
-          </div>
-          <div style={{ fontSize: isStory ? 80 : 66, fontWeight: 200, color: a, letterSpacing: '-0.03em', fontStyle: 'italic', marginTop: -5 }}>
-            Day
-          </div>
+        <div data-block="title" style={{ textAlign: 'center', lineHeight: 0.88, marginBottom: 16, ...tr('title') }}>
+          <div style={{ fontSize: isStory ? 80 : 66, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>MATCH</div>
+          <div style={{ fontSize: isStory ? 80 : 66, fontWeight: 200, color: a, letterSpacing: '-0.03em', fontStyle: 'italic', marginTop: -5 }}>Day</div>
         </div>
 
-        {/* Double rule */}
-        <div style={{ marginBottom: 20 }}>
-          <DoubleRule />
-        </div>
+        <div style={{ marginBottom: 20 }}><DoubleRule /></div>
 
-        {/* VS Section */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}>
 
-            {/* Home */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            <div data-block="home-team" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, ...tr('home-team') }}>
               <div style={{
                 width: 78, height: 78, borderRadius: '50%',
-                border: `1.5px solid ${a}70`,
-                backgroundColor: `${a}0C`,
+                border: `1.5px solid ${a}70`, backgroundColor: `${a}0C`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: `0 0 0 1px ${a}20, 0 0 28px ${a}25, 0 8px 24px rgba(0,0,0,0.55)`,
               }}>
@@ -102,19 +86,16 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
               </span>
             </div>
 
-            {/* VS */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <div style={{ height: 32, width: '0.5px', background: `linear-gradient(to bottom, transparent, ${a}45, transparent)` }} />
               <span style={{ fontSize: 12, fontWeight: 200, color: `${a}90`, letterSpacing: '0.22em' }}>vs</span>
               <div style={{ height: 32, width: '0.5px', background: `linear-gradient(to bottom, transparent, ${a}45, transparent)` }} />
             </div>
 
-            {/* Away */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            <div data-block="away-team" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, ...tr('away-team') }}>
               <div style={{
                 width: 78, height: 78, borderRadius: '50%',
-                border: '1.5px solid rgba(255,255,255,0.18)',
-                backgroundColor: 'rgba(255,255,255,0.04)',
+                border: '1.5px solid rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.04)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
               }}>
@@ -130,40 +111,29 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
           </div>
         </div>
 
-        {/* Double rule before meta */}
-        <div style={{ marginBottom: 16 }}>
-          <DoubleRule />
-        </div>
+        <div style={{ marginBottom: 16 }}><DoubleRule /></div>
 
-        {/* Meta — 3 column elegant */}
-        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', marginBottom: 14 }}>
+        <div data-block="meta" style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', marginBottom: 14, ...tr('meta') }}>
           {[
             { label: 'Date', value: dt.short },
             { label: 'Heure', value: dt.time },
             { label: 'Stade', value: (event?.venue || event?.city || '—').slice(0, 12) },
-          ].map(({ label, value }, i) => (
+          ].map(({ label, value }) => (
             <div key={label} style={{ textAlign: 'center', flex: 1 }}>
-              {i > 0 && <div style={{ position: 'absolute' }} />}
               <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: '0.28em', color: `${a}60`, textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
               <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{value}</div>
             </div>
           ))}
         </div>
 
-        {/* Tagline */}
         {tagline && (
-          <div style={{ textAlign: 'center', marginBottom: 11 }}>
-            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.38em', color: `${a}65`, textTransform: 'uppercase' }}>
-              {tagline}
-            </span>
+          <div data-block="tagline" style={{ textAlign: 'center', marginBottom: 11, ...tr('tagline') }}>
+            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.38em', color: `${a}65`, textTransform: 'uppercase' }}>{tagline}</span>
           </div>
         )}
 
-        {/* Footer */}
         <div style={{ textAlign: 'center' }}>
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.32em', color: `${a}55`, textTransform: 'uppercase' }}>
-            SPORTLINK · FINISTÈRE
-          </span>
+          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.32em', color: `${a}55`, textTransform: 'uppercase' }}>SPORTLINK · FINISTÈRE</span>
         </div>
       </div>
     </div>

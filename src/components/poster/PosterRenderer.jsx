@@ -93,7 +93,7 @@ export const BASE_DIMS = {
   post:  { w: 360, h: 450 },
 };
 
-export default function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef }) {
+export default function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {} }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
@@ -102,7 +102,7 @@ export default function PosterRenderer({ templateId, data, format = 'story', pre
   const { Component } = tpl;
 
   return (
-    <div style={{ width: previewWidth, height: previewH, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+    <div ref={outerRef} style={{ width: previewWidth, height: previewH, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
       <div
         ref={innerRef}
         style={{
@@ -112,7 +112,7 @@ export default function PosterRenderer({ templateId, data, format = 'story', pre
           position: 'absolute', top: 0, left: 0,
         }}
       >
-        <Component {...data} format={format} />
+        <Component {...data} format={format} transforms={transforms} />
       </div>
     </div>
   );

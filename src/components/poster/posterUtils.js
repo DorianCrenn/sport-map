@@ -34,3 +34,16 @@ export function scaledFs(str = '', baseSize = 12, maxChars = 14, minSize = 8) {
   if (!str || str.length <= maxChars) return baseSize;
   return Math.max(minSize, Math.round(baseSize * maxChars / str.length));
 }
+
+export function blockStyle(transforms, id) {
+  const t = transforms?.[id];
+  if (!t) return {};
+  const parts = [];
+  if (t.dx || t.dy) parts.push(`translate(${t.dx ?? 0}px,${t.dy ?? 0}px)`);
+  if (t.scale && t.scale !== 1) parts.push(`scale(${t.scale})`);
+  if (t.rotation) parts.push(`rotate(${t.rotation}deg)`);
+  const s = {};
+  if (parts.length) s.transform = parts.join(' ');
+  if (t.opacity !== undefined) s.opacity = t.opacity;
+  return s;
+}

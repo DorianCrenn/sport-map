@@ -4,6 +4,7 @@ import { toBlob } from 'html-to-image';
 import { useSports } from '../hooks/useSports.js';
 import { champLabel } from './poster/posterUtils.js';
 import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS } from './poster/PosterRenderer.jsx';
+import PosterEditor from './poster/PosterEditor.jsx';
 
 // ── Sidebar tabs ───────────────────────────────────────────────────────────────
 
@@ -101,6 +102,10 @@ export default function PosterStudio({ event, onClose }) {
 
   // Pro
   const [sponsorSrc, setSponsorSrc] = useState('');
+
+  // Visual editor
+  const [transforms, setTransforms] = useState({});
+  const [editorOpen, setEditorOpen] = useState(false);
 
   // Export
   const [downloading, setDownloading] = useState(false);
@@ -202,6 +207,29 @@ export default function PosterStudio({ event, onClose }) {
         }}
         onClick={e => e.stopPropagation()}
       >
+        {/* ── Visual editor overlay ── */}
+        <AnimatePresence>
+          {editorOpen && (
+            <motion.div
+              key="editor"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              style={{ position: 'absolute', inset: 0, zIndex: 50, borderRadius: 'inherit' }}
+            >
+              <PosterEditor
+                templateId={templateId}
+                data={posterData}
+                format={format}
+                transforms={transforms}
+                onChange={(blockId, patch) => setTransforms(prev => ({ ...prev, [blockId]: patch }))}
+                onClose={() => setEditorOpen(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ── Header ── */}
         <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px 12px', borderBottom: '1px solid var(--sl-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -244,7 +272,7 @@ export default function PosterStudio({ event, onClose }) {
               </div>
 
               {/* Poster preview */}
-              <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <div style={{
                   width: PREVIEW_W, height: previewH,
                   borderRadius: 10, overflow: 'hidden',
@@ -258,8 +286,24 @@ export default function PosterStudio({ event, onClose }) {
                     format={format}
                     previewWidth={PREVIEW_W}
                     innerRef={posterRef}
+                    transforms={transforms}
                   />
                 </div>
+                {/* Edit button */}
+                <button
+                  onClick={() => setEditorOpen(true)}
+                  title="Éditeur visuel"
+                  style={{
+                    width: 32, height: 32, borderRadius: 9, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: `${accentColor}16`, border: `1.5px solid ${accentColor}50`,
+                    cursor: 'pointer', color: accentColor, transition: 'all 0.14s',
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                </button>
               </div>
             </div>
 
