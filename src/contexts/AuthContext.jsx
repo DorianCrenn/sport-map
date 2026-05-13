@@ -81,8 +81,11 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
-          const prof = await fetchProfile(session.user);
-          setAuthUser(session.user);
+          setAuthUser(session.user); // immediate — don't wait for profile
+          const prof = await Promise.race([
+            fetchProfile(session.user),
+            new Promise(resolve => setTimeout(() => resolve(null), 5000)),
+          ]);
           setProfile(prof);
         } else {
           setAuthUser(null);
@@ -98,12 +101,9 @@ export function AuthProvider({ children }) {
   // ── Auth actions ─────────────────────────────────────────────────────────
 
   const login = useCallback(async (email, password) => {
-    const timeoutErr = new Promise((_, rej) =>
-      setTimeout(() => rej(new Error('Supabase ne répond pas — projet pausé ou connexion bloquée')), 10000)
-    );
     const { data, error } = await Promise.race([
       supabase.auth.signInWithPassword({ email, password }),
-      timeoutErr,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('Supabase ne répond pas — projet pausé ou connexion bloquée')), 12000)),
     ]);
     if (error) {
       if (error.message.includes('Invalid login credentials'))
@@ -112,6 +112,13 @@ export function AuthProvider({ children }) {
         throw new Error('Confirmez votre email avant de vous connecter');
       throw new Error(error.message);
     }
+    // Update state immediately without waiting for onAuthStateChange
+    setAuthUser(data.user);
+    const prof = await Promise.race([
+      fetchProfile(data.user),
+      new Promise(resolve => setTimeout(() => resolve(null), 5000)),
+    ]);
+    setProfile(prof);
     return data.user;
   }, []);
 
