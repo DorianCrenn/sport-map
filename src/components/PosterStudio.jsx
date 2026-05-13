@@ -73,6 +73,7 @@ function ColorSwatch({ color, active, onClick }) {
 export default function PosterStudio({ event, onClose }) {
   const { allSports } = useSports();
   const posterRef = useRef(null);
+  const exportRef = useRef(null);
   const sponsorRef = useRef(null);
   const bgFileRef = useRef(null);
   const homeLogoRef = useRef(null);
@@ -106,6 +107,7 @@ export default function PosterStudio({ event, onClose }) {
   // Visual editor
   const [transforms, setTransforms] = useState({});
   const [editorOpen, setEditorOpen] = useState(false);
+  const [previewFull, setPreviewFull] = useState(false);
 
   // Export
   const [downloading, setDownloading] = useState(false);
@@ -130,7 +132,8 @@ export default function PosterStudio({ event, onClose }) {
 
   // ── Export helpers ──
   async function getBlob() {
-    const node = posterRef.current;
+    // Use the hidden full-size renderer (no CSS transform) for correct HD output
+    const node = exportRef.current;
     if (!node) return null;
     return toBlob(node, { pixelRatio: 3, cacheBust: true });
   }
@@ -207,6 +210,46 @@ export default function PosterStudio({ event, onClose }) {
         }}
         onClick={e => e.stopPropagation()}
       >
+        {/* ── Hidden full-size renderer for HD export (scale=1, no transform) ── */}
+        <div style={{ position: 'fixed', left: -9999, top: 0, width: w, height: h, pointerEvents: 'none', zIndex: -1 }}>
+          <PosterRenderer
+            templateId={templateId}
+            data={posterData}
+            format={format}
+            previewWidth={w}
+            innerRef={exportRef}
+            transforms={transforms}
+          />
+        </div>
+
+        {/* ── Fullscreen preview overlay ── */}
+        <AnimatePresence>
+          {previewFull && (
+            <motion.div
+              key="fullpreview"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.16 }}
+              style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, borderRadius: 'inherit' }}
+            >
+              <PosterRenderer
+                templateId={templateId}
+                data={posterData}
+                format={format}
+                previewWidth={Math.min(300, 320)}
+                transforms={transforms}
+              />
+              <button
+                onClick={() => setPreviewFull(false)}
+                style={{ padding: '9px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+              >
+                Fermer
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ── Visual editor overlay ── */}
         <AnimatePresence>
           {editorOpen && (
@@ -289,21 +332,37 @@ export default function PosterStudio({ event, onClose }) {
                     transforms={transforms}
                   />
                 </div>
-                {/* Edit button */}
-                <button
-                  onClick={() => setEditorOpen(true)}
-                  title="Éditeur visuel"
-                  style={{
-                    width: 32, height: 32, borderRadius: 9, flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: `${accentColor}16`, border: `1.5px solid ${accentColor}50`,
-                    cursor: 'pointer', color: accentColor, transition: 'all 0.14s',
-                  }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                  </svg>
-                </button>
+                {/* Fullscreen + Edit buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <button
+                    onClick={() => setPreviewFull(true)}
+                    title="Aperçu plein écran"
+                    style={{
+                      width: 32, height: 32, borderRadius: 9, flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      backgroundColor: 'var(--sl-surface)', border: '1.5px solid var(--sl-border-s)',
+                      cursor: 'pointer', color: 'var(--sl-t2)', transition: 'all 0.14s',
+                    }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setEditorOpen(true)}
+                    title="Éditeur visuel"
+                    style={{
+                      width: 32, height: 32, borderRadius: 9, flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      backgroundColor: `${accentColor}16`, border: `1.5px solid ${accentColor}50`,
+                      cursor: 'pointer', color: accentColor, transition: 'all 0.14s',
+                    }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
 

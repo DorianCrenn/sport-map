@@ -7,6 +7,11 @@ import TplMagazine from './templates/TplMagazine.jsx';
 import TplNeon from './templates/TplNeon.jsx';
 import TplFluo from './templates/TplFluo.jsx';
 import TplCinema from './templates/TplCinema.jsx';
+import TplRetro from './templates/TplRetro.jsx';
+import TplVivid from './templates/TplVivid.jsx';
+import TplBento from './templates/TplBento.jsx';
+import TplDark from './templates/TplDark.jsx';
+import TplPulse from './templates/TplPulse.jsx';
 
 export const POSTER_TEMPLATES = [
   {
@@ -85,6 +90,51 @@ export const POSTER_TEMPLATES = [
     color: '#D4B896',
     isPremium: true,
     Component: TplCinema,
+  },
+  {
+    id: 'retro',
+    label: 'Rétro',
+    desc: 'Sombre · Vintage · Orné',
+    icon: '✦',
+    color: '#D4A017',
+    isPremium: true,
+    Component: TplRetro,
+  },
+  {
+    id: 'vivid',
+    label: 'Vivid',
+    desc: 'Sombre · Coloré · Dynamique',
+    icon: '◆',
+    color: '#7C3AED',
+    isPremium: true,
+    Component: TplVivid,
+  },
+  {
+    id: 'bento',
+    label: 'Bento',
+    desc: 'Clair · Cartes · Moderne',
+    icon: '⊟',
+    color: '#2563EB',
+    isPremium: true,
+    Component: TplBento,
+  },
+  {
+    id: 'dark',
+    label: 'Dark',
+    desc: 'Noir · Minimaliste · Luxe',
+    icon: '◯',
+    color: '#E2C97E',
+    isPremium: true,
+    Component: TplDark,
+  },
+  {
+    id: 'pulse',
+    label: 'Pulse',
+    desc: 'Sombre · Cercles · Énergie',
+    icon: '◎',
+    color: '#10B981',
+    isPremium: true,
+    Component: TplPulse,
   },
 ];
 
