@@ -86,11 +86,11 @@ function ThemeToggle() {
 }
 
 export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAuth }) {
-  const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub } = useAuth();
+  const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs } = useAuth();
   const { allSports } = useSports();
   const { userClubs } = useClubs();
   const allClubs = [...userClubs, ...STATIC_CLUBS];
-  const followedClubIds = currentUser?.followedClubs ?? [];
+  const followedClubIds = followedClubs;
   const [editingSports, setEditingSports] = useState(false);
   const [selectedSports, setSelectedSports] = useState(new Set());
   const favCount = favorites?.size ?? 0;

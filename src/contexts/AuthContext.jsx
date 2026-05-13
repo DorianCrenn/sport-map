@@ -62,9 +62,10 @@ async function fetchProfile(authUser) {
 // ── Provider ─────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }) {
-  const [authUser, setAuthUser] = useState(null);
-  const [profile, setProfile]   = useState(null);
-  const [loading, setLoading]   = useState(true);
+  const [authUser, setAuthUser]         = useState(null);
+  const [profile, setProfile]           = useState(null);
+  const [loading, setLoading]           = useState(true);
+  const [followedClubs, setFollowedClubs] = useState([]);
 
   // ── Bootstrap ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -97,6 +98,14 @@ export function AuthProvider({ children }) {
 
     return () => { subscription.unsubscribe(); clearTimeout(failsafe); };
   }, []);
+
+  // Load followed clubs from localStorage whenever the user changes
+  useEffect(() => {
+    if (!authUser?.id) { setFollowedClubs([]); return; }
+    try {
+      setFollowedClubs(JSON.parse(localStorage.getItem(`sl-clubs-${authUser.id}`) ?? '[]'));
+    } catch { setFollowedClubs([]); }
+  }, [authUser?.id]);
 
   // ── Auth actions ─────────────────────────────────────────────────────────
 
@@ -202,25 +211,25 @@ export function AuthProvider({ children }) {
 
   // ── Club follow ───────────────────────────────────────────────────────────
 
-  const followClub = useCallback(async (clubId) => {
-    if (!authUser || !profile) return;
-    const followed = profile.followed_clubs ?? [];
-    if (followed.includes(clubId)) return;
-    const next = [...followed, clubId];
-    await supabase.from('profiles').update({ followed_clubs: next }).eq('id', authUser.id);
-    setProfile(prev => prev ? { ...prev, followed_clubs: next } : prev);
-  }, [authUser, profile]);
+  const followClub = useCallback((clubId) => {
+    if (!authUser?.id || followedClubs.includes(clubId)) return;
+    const next = [...followedClubs, clubId];
+    setFollowedClubs(next);
+    localStorage.setItem(`sl-clubs-${authUser.id}`, JSON.stringify(next));
+    // Background sync to Supabase (fire-and-forget)
+    supabase.from('profiles').update({ followed_clubs: next }).eq('id', authUser.id).then(() => {});
+  }, [authUser?.id, followedClubs]);
 
-  const unfollowClub = useCallback(async (clubId) => {
-    if (!authUser || !profile) return;
-    const next = (profile.followed_clubs ?? []).filter(id => id !== clubId);
-    await supabase.from('profiles').update({ followed_clubs: next }).eq('id', authUser.id);
-    setProfile(prev => prev ? { ...prev, followed_clubs: next } : prev);
-  }, [authUser, profile]);
+  const unfollowClub = useCallback((clubId) => {
+    if (!authUser?.id) return;
+    const next = followedClubs.filter(id => id !== clubId);
+    setFollowedClubs(next);
+    localStorage.setItem(`sl-clubs-${authUser.id}`, JSON.stringify(next));
+    // Background sync to Supabase (fire-and-forget)
+    supabase.from('profiles').update({ followed_clubs: next }).eq('id', authUser.id).then(() => {});
+  }, [authUser?.id, followedClubs]);
 
-  const isFollowingClub = useCallback((clubId) => {
-    return !!(profile?.followed_clubs ?? []).includes(clubId);
-  }, [profile]);
+  const isFollowingClub = useCallback((clubId) => followedClubs.includes(clubId), [followedClubs]);
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
@@ -234,7 +243,7 @@ export function AuthProvider({ children }) {
       currentUser, loading,
       login, register, logout, updateProfile,
       loginWithGoogle, loginWithProvider, requestPasswordReset,
-      followClub, unfollowClub, isFollowingClub,
+      followedClubs, followClub, unfollowClub, isFollowingClub,
       isAdmin, isClubAdmin, isLoggedIn,
     }}>
       {children}
