@@ -98,7 +98,13 @@ export function AuthProvider({ children }) {
   // ── Auth actions ─────────────────────────────────────────────────────────
 
   const login = useCallback(async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const timeoutErr = new Promise((_, rej) =>
+      setTimeout(() => rej(new Error('Supabase ne répond pas — projet pausé ou connexion bloquée')), 10000)
+    );
+    const { data, error } = await Promise.race([
+      supabase.auth.signInWithPassword({ email, password }),
+      timeoutErr,
+    ]);
     if (error) {
       if (error.message.includes('Invalid login credentials'))
         throw new Error('Email ou mot de passe incorrect');
