@@ -626,18 +626,18 @@ async function drawCanvas(canvas, ev, format, templateId, theme, sportColor, bgI
 
 // ── PosterStudio Component ────────────────────────────────────────────────────
 
-const TABS = [
-  { id: 'model',    label: 'Modèle',   icon: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="3" width="7" height="9" rx="1"/><rect x="9" y="3" width="13" height="5" rx="1"/><rect x="9" y="12" width="13" height="9" rx="1"/><rect x="2" y="16" width="7" height="5" rx="1"/></svg>
+const SIDEBAR_TABS = [
+  { id: 'model', label: 'Modèle', icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="3" width="7" height="9" rx="1"/><rect x="13" y="3" width="9" height="5" rx="1"/><rect x="13" y="12" width="9" height="9" rx="1"/><rect x="2" y="16" width="7" height="5" rx="1"/></svg>
   )},
-  { id: 'style',    label: 'Style',    icon: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 20a8 8 0 1 1 8-8c0 2.5-1 4-3 4s-3-1.5-3-4a4 4 0 1 0-4 4H12z"/></svg>
+  { id: 'style', label: 'Style', icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 20a8 8 0 1 1 8-8c0 2.5-1 4-3 4s-3-1.5-3-4a4 4 0 1 0-4 4H12z"/></svg>
   )},
-  { id: 'shapes',   label: 'Formes',   icon: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="12 2 22 20 2 20"/><rect x="4" y="9" width="6" height="6" rx="1"/></svg>
+  { id: 'shapes', label: 'Formes', icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="12 2 22 20 2 20"/><rect x="2" y="9" width="6" height="6" rx="1"/></svg>
   )},
-  { id: 'business', label: 'Business', icon: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+  { id: 'business', label: 'Pro', icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
   )},
 ];
 
@@ -758,8 +758,8 @@ export default function PosterStudio({ event, onClose }) {
 
   // ── Preview dimensions ──
   const isStory  = format.id === 'story';
-  const prevW    = isStory ? 188 : 256;
-  const prevH    = isStory ? 334 : 256;
+  const prevH    = isStory ? 200 : 170;
+  const prevW    = isStory ? Math.round(200 * 9 / 16) : 170;
 
   // ── UI helpers ──
   const SectionLabel = ({ children }) => (
@@ -840,288 +840,351 @@ export default function PosterStudio({ event, onClose }) {
           </button>
         </div>
 
-        {/* ── Body: Preview + Controls ── */}
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+        {/* ── Body ── */}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
 
-          {/* Preview + format switcher */}
-          <div style={{ flexShrink: 0, display: 'flex', gap: 14, padding: '14px 18px', alignItems: 'flex-start', borderBottom: '1px solid var(--sl-border)' }}>
-            {/* Canvas */}
-            <div style={{ flexShrink: 0, width: prevW, height: prevH, borderRadius: 12, overflow: 'hidden', boxShadow: '0 12px 40px rgba(0,0,0,0.5)', border: '1px solid var(--sl-border-s)', position: 'relative', backgroundColor: '#050810' }}>
-              <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: prevW, height: prevH }} />
-            </div>
+          {/* ── Canvas row: preview (left) + vertical sidebar (right) ── */}
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'stretch', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-bg)' }}>
 
-            {/* Right of preview */}
-            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {/* Format */}
-              <div>
-                <SectionLabel>Format</SectionLabel>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {FORMATS.map((f, i) => (
-                    <button key={f.id} onClick={() => setFormatIdx(i)}
-                      style={{ flex: 1, padding: '9px 0', borderRadius: 11, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: `1.5px solid ${i === formatIdx ? sportColor : 'var(--sl-border-s)'}`, backgroundColor: i === formatIdx ? `${sportColor}16` : 'var(--sl-surface)', color: i === formatIdx ? sportColor : 'var(--sl-t2)', transition: 'all 0.14s', textAlign: 'center' }}>
-                      {f.label}
-                      <div style={{ fontSize: 9, opacity: 0.65, marginTop: 1 }}>{f.ratio}</div>
-                    </button>
-                  ))}
+            {/* Canvas + format area */}
+            <div style={{ flex: 1, minWidth: 0, padding: '12px 10px 12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+              {/* Format + active template row */}
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                {FORMATS.map((f, i) => (
+                  <button key={f.id} onClick={() => setFormatIdx(i)}
+                    style={{ padding: '5px 10px', borderRadius: 9, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: `1.5px solid ${i === formatIdx ? sportColor : 'var(--sl-border-s)'}`, backgroundColor: i === formatIdx ? `${sportColor}16` : 'var(--sl-surface)', color: i === formatIdx ? sportColor : 'var(--sl-t2)', transition: 'all 0.14s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                    {f.label}
+                    <span style={{ fontSize: 8, opacity: 0.7 }}>{f.ratio}</span>
+                  </button>
+                ))}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '5px 9px', borderRadius: 9, backgroundColor: `${template.color}12`, border: `1px solid ${template.color}30`, overflow: 'hidden' }}>
+                  <span style={{ fontSize: 13, flexShrink: 0 }}>{template.icon}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: template.color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{template.label}</span>
                 </div>
               </div>
 
-              {/* Template preview pills */}
-              <div>
-                <SectionLabel>Modèle actif</SectionLabel>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 12, backgroundColor: `${template.color}14`, border: `1.5px solid ${template.color}` }}>
-                  <span style={{ fontSize: 18 }}>{template.icon}</span>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: template.color }}>{template.label}</div>
-                    <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{template.desc}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Text effects mini */}
-              <div>
-                <SectionLabel>Effets texte</SectionLabel>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => setTShadow(v => !v)}
-                    style={{ flex: 1, padding: '8px 6px', borderRadius: 10, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: `1.5px solid ${tShadow ? '#6366f1' : 'var(--sl-border-s)'}`, backgroundColor: tShadow ? 'rgba(99,102,241,0.12)' : 'var(--sl-surface)', color: tShadow ? '#6366f1' : 'var(--sl-t3)', transition: 'all 0.14s' }}>
-                    Ombre
-                  </button>
-                  <button onClick={() => setTStroke(v => !v)}
-                    style={{ flex: 1, padding: '8px 6px', borderRadius: 10, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: `1.5px solid ${tStroke ? '#ef4444' : 'var(--sl-border-s)'}`, backgroundColor: tStroke ? 'rgba(239,68,68,0.10)' : 'var(--sl-surface)', color: tStroke ? '#ef4444' : 'var(--sl-t3)', transition: 'all 0.14s' }}>
-                    Contour
-                  </button>
+              {/* Canvas preview */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+                <div style={{
+                  width: prevW, height: prevH, borderRadius: 10, overflow: 'hidden',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.45)', border: '1px solid var(--sl-border-s)',
+                  position: 'relative', backgroundColor: '#050810', flexShrink: 0,
+                }}>
+                  <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: prevW, height: prevH }} />
                 </div>
               </div>
             </div>
+
+            {/* ── Vertical Sidebar (62px) ── */}
+            <div style={{
+              width: 62, flexShrink: 0,
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              borderLeft: '1px solid var(--sl-border)',
+              paddingTop: 4, paddingBottom: 6,
+            }}>
+
+              {/* Tab icon buttons */}
+              {SIDEBAR_TABS.map(tab => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(isActive ? null : tab.id)}
+                    style={{
+                      width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      gap: 3, padding: '10px 0',
+                      background: isActive ? `${sportColor}12` : 'transparent',
+                      border: 'none',
+                      borderLeft: `2.5px solid ${isActive ? sportColor : 'transparent'}`,
+                      cursor: 'pointer',
+                      color: isActive ? sportColor : 'var(--sl-t3)',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {tab.icon}
+                    <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.01em' }}>{tab.label}</span>
+                  </button>
+                );
+              })}
+
+              {/* Spacer */}
+              <div style={{ flex: 1 }} />
+
+              {/* Separator */}
+              <div style={{ width: 34, height: 1, backgroundColor: 'var(--sl-border)', marginBottom: 8 }} />
+
+              {/* PNG download */}
+              <motion.button
+                whileTap={{ scale: 0.88 }}
+                onClick={handleDownload}
+                disabled={downloading}
+                title="Télécharger PNG HD"
+                style={{
+                  width: 42, height: 42, borderRadius: 12,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  gap: 2, cursor: downloading ? 'wait' : 'pointer',
+                  backgroundColor: downloading ? 'var(--sl-surface)' : `${sportColor}18`,
+                  border: `1.5px solid ${downloading ? 'var(--sl-border)' : sportColor + '55'}`,
+                  color: downloading ? 'var(--sl-t3)' : sportColor,
+                  transition: 'all 0.15s', marginBottom: 6,
+                }}
+              >
+                {downloading
+                  ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                }
+                <span style={{ fontSize: 8, fontWeight: 700 }}>{downloading ? 'OK' : 'PNG'}</span>
+              </motion.button>
+
+              {/* WhatsApp share */}
+              <motion.button
+                whileTap={{ scale: 0.88 }}
+                onClick={handleShareWhatsApp}
+                disabled={sharing}
+                title="Partager sur WhatsApp"
+                style={{
+                  width: 42, height: 42, borderRadius: 12,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  gap: 2, cursor: sharing ? 'wait' : 'pointer',
+                  backgroundColor: sharing ? 'rgba(37,211,102,0.06)' : 'rgba(37,211,102,0.14)',
+                  border: '1.5px solid rgba(37,211,102,0.38)',
+                  color: '#25D366',
+                  transition: 'all 0.15s', marginBottom: 4,
+                }}
+              >
+                {sharing
+                  ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/></svg>
+                  : <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.122 1.528 5.855L.057 23.882l6.233-1.635A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894c-1.897 0-3.66-.51-5.182-1.398l-.371-.22-3.851 1.01 1.029-3.763-.242-.387A9.855 9.855 0 012.106 12c0-5.457 4.437-9.894 9.894-9.894 5.457 0 9.894 4.437 9.894 9.894 0 5.457-4.437 9.894-9.894 9.894z"/></svg>
+                }
+                <span style={{ fontSize: 8, fontWeight: 700 }}>{sharing ? '…' : 'WA'}</span>
+              </motion.button>
+            </div>
           </div>
 
-          {/* ── Tab bar ── */}
-          <div style={{ flexShrink: 0, display: 'flex', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)' }}>
-            {TABS.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '10px 4px', cursor: 'pointer', background: 'none', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? sportColor : 'transparent'}`, color: activeTab === tab.id ? sportColor : 'var(--sl-t3)', transition: 'color 0.15s' }}>
-                {tab.icon}
-                <span style={{ fontSize: 9, fontWeight: 700 }}>{tab.label}</span>
-              </button>
-            ))}
-          </div>
+          {/* ── Animated panel (scrollable) ── */}
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+            <AnimatePresence mode="wait">
+              {activeTab ? (
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.14 }}
+                  style={{ padding: '14px 18px 28px' }}
+                >
 
-          {/* ── Tab content ── */}
-          <div style={{ flex: 1, padding: '14px 18px 20px', overflowY: 'auto' }}>
-
-            {/* ── MODÈLE TAB ── */}
-            {activeTab === 'model' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <SectionLabel>Choisir un modèle</SectionLabel>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {TEMPLATES.map((t, i) => (
-                    <button key={t.id} onClick={() => setTemplateIdx(i)}
-                      style={{
-                        gridColumn: i === 4 ? 'span 2' : 'span 1',
-                        padding: '12px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
-                        border: `2px solid ${i === templateIdx ? t.color : 'var(--sl-border-s)'}`,
-                        backgroundColor: i === templateIdx ? `${t.color}14` : 'var(--sl-surface)',
-                        transition: 'all 0.15s',
-                      }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 22 }}>{t.icon}</span>
-                        <div>
-                          <div style={{ fontSize: 12, fontWeight: 800, color: i === templateIdx ? t.color : 'var(--sl-t1)' }}>{t.label}</div>
-                          <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>{t.desc}</div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── STYLE TAB ── */}
-            {activeTab === 'style' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {/* Color themes */}
-                <div>
-                  <SectionLabel>Thème de couleur</SectionLabel>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
-                    {COLOR_THEMES.map((t, i) => {
-                      const bg = t.id === 'sport' ? sportColor : (t.bg ?? '#1a1200');
-                      const active = i === themeIdx;
-                      return (
-                        <button key={t.id} onClick={() => setThemeIdx(i)}
-                          style={{ padding: '9px 10px', borderRadius: 11, border: `1.5px solid ${active ? sportColor : 'var(--sl-border-s)'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, backgroundColor: active ? `${sportColor}12` : 'var(--sl-surface)', transition: 'all 0.14s' }}>
-                          <div style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, backgroundColor: bg, border: '1px solid rgba(255,255,255,0.12)', boxShadow: active ? `0 0 0 2px ${sportColor}` : 'none' }} />
-                          <span style={{ fontSize: 11, fontWeight: 600, color: active ? sportColor : 'var(--sl-t2)' }}>{t.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Background */}
-                <div>
-                  <SectionLabel>Image de fond</SectionLabel>
-                  <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
-                    {[['color', 'Couleur'], ['url', 'URL'], ['upload', 'Fichier']].map(([id, label]) => (
-                      <Chip key={id} active={bgMode === id} onClick={() => { setBgMode(id); if (id === 'color') clearBg(); }}>{label}</Chip>
-                    ))}
-                  </div>
-
-                  <AnimatePresence mode="wait">
-                    {bgMode === 'url' && (
-                      <motion.div key="url" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                        <input type="text" value={bgUrl} onChange={e => setBgUrl(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && applyBgUrl()}
-                          placeholder="https://…"
-                          style={{ flex: 1, padding: '9px 11px', borderRadius: 11, fontSize: 12, border: `1px solid ${bgErr ? '#ef4444' : 'var(--sl-border-s)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
-                        />
-                        <button onClick={applyBgUrl} style={{ padding: '9px 14px', borderRadius: 11, fontSize: 12, fontWeight: 700, backgroundColor: sportColor, color: '#fff', border: 'none', cursor: 'pointer' }}>OK</button>
-                        {bgSrc && <button onClick={clearBg} style={{ padding: '9px 10px', borderRadius: 11, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
-                      </motion.div>
-                    )}
-                    {bgMode === 'upload' && (
-                      <motion.div key="upload" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                        <button onClick={() => fileRef.current?.click()} style={{ flex: 1, padding: '10px 12px', borderRadius: 11, fontSize: 12, fontWeight: 600, backgroundColor: bgSrc ? `${sportColor}14` : 'var(--sl-surface)', border: bgSrc ? `1.5px solid ${sportColor}` : '1.5px dashed var(--sl-border-s)', color: bgSrc ? sportColor : 'var(--sl-t2)', cursor: 'pointer' }}>
-                          {bgSrc ? '✓ Image chargée' : '+ Choisir une image'}
-                        </button>
-                        {bgSrc && <button onClick={clearBg} style={{ padding: '10px 12px', borderRadius: 11, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
-                        <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {bgErr && <div style={{ padding: '7px 12px', borderRadius: 9, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#ef4444', marginBottom: 8 }}>Image non accessible — vérifiez le lien ou uploadez un fichier.</div>}
-
-                  {bgSrc && (
-                    <div>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', marginBottom: 6 }}>FILTRE IMAGE</div>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        {BG_FILTERS.map(f => (
-                          <Chip key={f.id} active={bgFilter === f.id} onClick={() => setBgFilter(f.id)}>{f.label}</Chip>
+                  {/* ── MODÈLE PANEL ── */}
+                  {activeTab === 'model' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <SectionLabel>Choisir un modèle</SectionLabel>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        {TEMPLATES.map((t, i) => (
+                          <button key={t.id} onClick={() => setTemplateIdx(i)}
+                            style={{
+                              gridColumn: i === 4 ? 'span 2' : 'span 1',
+                              padding: '12px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
+                              border: `2px solid ${i === templateIdx ? t.color : 'var(--sl-border-s)'}`,
+                              backgroundColor: i === templateIdx ? `${t.color}14` : 'var(--sl-surface)',
+                              transition: 'all 0.15s',
+                            }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ fontSize: 22 }}>{t.icon}</span>
+                              <div>
+                                <div style={{ fontSize: 12, fontWeight: 800, color: i === templateIdx ? t.color : 'var(--sl-t1)' }}>{t.label}</div>
+                                <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>{t.desc}</div>
+                              </div>
+                            </div>
+                          </button>
                         ))}
                       </div>
+                      <SectionLabel>Effets du texte</SectionLabel>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button onClick={() => setTShadow(v => !v)}
+                          style={{ flex: 1, padding: '9px 6px', borderRadius: 10, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: `1.5px solid ${tShadow ? '#6366f1' : 'var(--sl-border-s)'}`, backgroundColor: tShadow ? 'rgba(99,102,241,0.12)' : 'var(--sl-surface)', color: tShadow ? '#6366f1' : 'var(--sl-t3)', transition: 'all 0.14s' }}>
+                          🌑 Ombre
+                        </button>
+                        <button onClick={() => setTStroke(v => !v)}
+                          style={{ flex: 1, padding: '9px 6px', borderRadius: 10, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: `1.5px solid ${tStroke ? '#ef4444' : 'var(--sl-border-s)'}`, backgroundColor: tStroke ? 'rgba(239,68,68,0.10)' : 'var(--sl-surface)', color: tStroke ? '#ef4444' : 'var(--sl-t3)', transition: 'all 0.14s' }}>
+                          🔲 Contour
+                        </button>
+                      </div>
                     </div>
                   )}
-                </div>
 
-                {/* Text effects */}
-                <div>
-                  <SectionLabel>Effets du texte</SectionLabel>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <Toggle label="Ombre portée" value={tShadow} onChange={setTShadow} icon="🌑" />
-                    <Toggle label="Contour (stroke)" value={tStroke} onChange={setTStroke} icon="🔲" />
-                  </div>
-                </div>
-              </div>
-            )}
+                  {/* ── STYLE PANEL ── */}
+                  {activeTab === 'style' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      <div>
+                        <SectionLabel>Thème de couleur</SectionLabel>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+                          {COLOR_THEMES.map((t, i) => {
+                            const bg = t.id === 'sport' ? sportColor : (t.bg ?? '#1a1200');
+                            const active = i === themeIdx;
+                            return (
+                              <button key={t.id} onClick={() => setThemeIdx(i)}
+                                style={{ padding: '9px 10px', borderRadius: 11, border: `1.5px solid ${active ? sportColor : 'var(--sl-border-s)'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, backgroundColor: active ? `${sportColor}12` : 'var(--sl-surface)', transition: 'all 0.14s' }}>
+                                <div style={{ width: 18, height: 18, borderRadius: 6, flexShrink: 0, backgroundColor: bg, border: '1px solid rgba(255,255,255,0.12)', boxShadow: active ? `0 0 0 2px ${sportColor}` : 'none' }} />
+                                <span style={{ fontSize: 11, fontWeight: 600, color: active ? sportColor : 'var(--sl-t2)' }}>{t.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
 
-            {/* ── FORMES TAB ── */}
-            {activeTab === 'shapes' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div>
-                  <SectionLabel>Masque de forme sous le texte</SectionLabel>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    {SHAPES.map(s => (
-                      <button key={s.id} onClick={() => setShape(s.id)}
-                        style={{ padding: '11px', borderRadius: 12, cursor: 'pointer', textAlign: 'center', border: `1.5px solid ${shape === s.id ? sportColor : 'var(--sl-border-s)'}`, backgroundColor: shape === s.id ? `${sportColor}14` : 'var(--sl-surface)', color: shape === s.id ? sportColor : 'var(--sl-t1)', fontSize: 12, fontWeight: 700, transition: 'all 0.14s' }}>
-                        {s.id === 'none' && '✕ '}
-                        {s.id === 'diagonal' && '◪ '}
-                        {s.id === 'rounded' && '▬ '}
-                        {s.id === 'torn' && '〜 '}
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                      <div>
+                        <SectionLabel>Image de fond</SectionLabel>
+                        <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
+                          {[['color', 'Couleur'], ['url', 'URL'], ['upload', 'Fichier']].map(([id, label]) => (
+                            <Chip key={id} active={bgMode === id} onClick={() => { setBgMode(id); if (id === 'color') clearBg(); }}>{label}</Chip>
+                          ))}
+                        </div>
 
-                <div>
-                  <SectionLabel>Position du texte principal</SectionLabel>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {TEXT_POSITIONS.map(p => (
-                      <button key={p.id} onClick={() => setTextPos(p.id)}
-                        style={{ flex: 1, padding: '11px 0', borderRadius: 12, cursor: 'pointer', textAlign: 'center', border: `1.5px solid ${textPos === p.id ? sportColor : 'var(--sl-border-s)'}`, backgroundColor: textPos === p.id ? `${sportColor}14` : 'var(--sl-surface)', color: textPos === p.id ? sportColor : 'var(--sl-t1)', fontSize: 12, fontWeight: 700, transition: 'all 0.14s' }}>
-                        {p.id === 'top' ? '⬆️' : p.id === 'center' ? '⬛' : '⬇️'}<br />
-                        <span style={{ fontSize: 10, marginTop: 2 }}>{p.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+                        <AnimatePresence mode="wait">
+                          {bgMode === 'url' && (
+                            <motion.div key="url" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                              <input type="text" value={bgUrl} onChange={e => setBgUrl(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && applyBgUrl()}
+                                placeholder="https://…"
+                                style={{ flex: 1, padding: '9px 11px', borderRadius: 11, fontSize: 12, border: `1px solid ${bgErr ? '#ef4444' : 'var(--sl-border-s)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
+                              />
+                              <button onClick={applyBgUrl} style={{ padding: '9px 14px', borderRadius: 11, fontSize: 12, fontWeight: 700, backgroundColor: sportColor, color: '#fff', border: 'none', cursor: 'pointer' }}>OK</button>
+                              {bgSrc && <button onClick={clearBg} style={{ padding: '9px 10px', borderRadius: 11, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
+                            </motion.div>
+                          )}
+                          {bgMode === 'upload' && (
+                            <motion.div key="upload" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                              <button onClick={() => fileRef.current?.click()} style={{ flex: 1, padding: '10px 12px', borderRadius: 11, fontSize: 12, fontWeight: 600, backgroundColor: bgSrc ? `${sportColor}14` : 'var(--sl-surface)', border: bgSrc ? `1.5px solid ${sportColor}` : '1.5px dashed var(--sl-border-s)', color: bgSrc ? sportColor : 'var(--sl-t2)', cursor: 'pointer' }}>
+                                {bgSrc ? '✓ Image chargée' : '+ Choisir une image'}
+                              </button>
+                              {bgSrc && <button onClick={clearBg} style={{ padding: '10px 12px', borderRadius: 11, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
+                              <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
 
-            {/* ── BUSINESS TAB ── */}
-            {activeTab === 'business' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {/* Sponsor */}
-                <div>
-                  <SectionLabel>Logo partenaire du match</SectionLabel>
-                  <div style={{ padding: '12px', borderRadius: 14, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', marginBottom: 8 }}>
-                    <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: '0 0 10px', lineHeight: 1.5 }}>
-                      Le logo sera placé en bas à droite de l'affiche dans un encart blanc.
-                    </p>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <button onClick={() => sponsorRef.current?.click()}
-                        style={{ flex: 1, padding: '10px 12px', borderRadius: 11, fontSize: 12, fontWeight: 600, cursor: 'pointer', backgroundColor: sponsorSrc ? `${sportColor}14` : 'var(--sl-card)', border: sponsorSrc ? `1.5px solid ${sportColor}` : '1.5px dashed var(--sl-border-s)', color: sponsorSrc ? sportColor : 'var(--sl-t2)' }}>
-                        {sponsorSrc ? '✓ Logo chargé' : '+ Uploader le logo sponsor'}
-                      </button>
-                      {sponsorSrc && (
-                        <button onClick={() => setSponsorSrc('')}
-                          style={{ padding: '10px 12px', borderRadius: 11, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-card)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>
-                      )}
-                    </div>
-                    <input ref={sponsorRef} type="file" accept="image/*" onChange={handleSponsor} style={{ display: 'none' }} />
-                  </div>
-                  {sponsorSrc && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: `${sportColor}10`, border: `1px solid ${sportColor}30` }}>
-                      <img src={sponsorSrc} alt="Sponsor" style={{ height: 32, maxWidth: 80, objectFit: 'contain', borderRadius: 4 }} />
-                      <span style={{ fontSize: 11, color: 'var(--sl-green)', fontWeight: 600 }}>Logo actif — visible sur l'affiche</span>
-                    </div>
-                  )}
-                </div>
+                        {bgErr && <div style={{ padding: '7px 12px', borderRadius: 9, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#ef4444', marginBottom: 8 }}>Image non accessible — vérifiez le lien ou uploadez un fichier.</div>}
 
-                {/* QR Code */}
-                <div>
-                  <SectionLabel>QR Code intelligent</SectionLabel>
-                  <div style={{ padding: '12px', borderRadius: 14, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', marginBottom: 8 }}>
-                    <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: '0 0 10px', lineHeight: 1.5 }}>
-                      Un QR code renvoyant vers la fiche de l'événement sera placé en bas à gauche de l'affiche.
-                    </p>
-                    <Toggle label="Afficher le QR code" value={showQR} onChange={setShowQR} icon="📱" />
-                  </div>
-                  {showQR && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      <span style={{ fontSize: 11, color: '#3b82f6', fontWeight: 600 }}>Chargement du QR code au prochain rendu…</span>
+                        {bgSrc && (
+                          <div>
+                            <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', marginBottom: 6 }}>FILTRE IMAGE</div>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              {BG_FILTERS.map(f => (
+                                <Chip key={f.id} active={bgFilter === f.id} onClick={() => setBgFilter(f.id)}>{f.label}</Chip>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <SectionLabel>Effets du texte</SectionLabel>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <Toggle label="Ombre portée" value={tShadow} onChange={setTShadow} icon="🌑" />
+                          <Toggle label="Contour (stroke)" value={tStroke} onChange={setTStroke} icon="🔲" />
+                        </div>
+                      </div>
                     </div>
                   )}
-                </div>
-              </div>
-            )}
-          </div>
 
-          {/* ── Action buttons ── */}
-          <div style={{ flexShrink: 0, padding: '10px 18px 18px', display: 'flex', gap: 10, borderTop: '1px solid var(--sl-border)' }}>
-            <motion.button
-              whileTap={{ scale: 0.96 }} onClick={handleDownload} disabled={downloading}
-              style={{ flex: 1, padding: '14px 0', borderRadius: 14, border: 'none', cursor: downloading ? 'wait' : 'pointer', fontSize: 14, fontWeight: 800, backgroundColor: downloading ? 'var(--sl-green-dim)' : 'var(--sl-green)', color: downloading ? 'var(--sl-green)' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, boxShadow: downloading ? 'none' : 'var(--sl-green-glow)', transition: 'all 0.2s' }}
-            >
-              {downloading
-                ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Téléchargé !</>
-                : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PNG HD</>
-              }
-            </motion.button>
+                  {/* ── FORMES PANEL ── */}
+                  {activeTab === 'shapes' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      <div>
+                        <SectionLabel>Masque de forme sous le texte</SectionLabel>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                          {SHAPES.map(s => (
+                            <button key={s.id} onClick={() => setShape(s.id)}
+                              style={{ padding: '11px', borderRadius: 12, cursor: 'pointer', textAlign: 'center', border: `1.5px solid ${shape === s.id ? sportColor : 'var(--sl-border-s)'}`, backgroundColor: shape === s.id ? `${sportColor}14` : 'var(--sl-surface)', color: shape === s.id ? sportColor : 'var(--sl-t1)', fontSize: 12, fontWeight: 700, transition: 'all 0.14s' }}>
+                              {s.id === 'none' && '✕ '}
+                              {s.id === 'diagonal' && '◪ '}
+                              {s.id === 'rounded' && '▬ '}
+                              {s.id === 'torn' && '〜 '}
+                              {s.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-            <motion.button
-              whileTap={{ scale: 0.96 }} onClick={handleShareWhatsApp} disabled={sharing}
-              style={{ flex: 1, padding: '14px 0', borderRadius: 14, border: 'none', cursor: sharing ? 'wait' : 'pointer', fontSize: 14, fontWeight: 800, backgroundColor: sharing ? 'rgba(37,211,102,0.12)' : '#25D366', color: sharing ? '#25D366' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, transition: 'all 0.2s' }}
-            >
-              {sharing
-                ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/></svg>Envoi…</>
-                : <>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.122 1.528 5.855L.057 23.882l6.233-1.635A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894c-1.897 0-3.66-.51-5.182-1.398l-.371-.22-3.851 1.01 1.029-3.763-.242-.387A9.855 9.855 0 012.106 12c0-5.457 4.437-9.894 9.894-9.894 5.457 0 9.894 4.437 9.894 9.894 0 5.457-4.437 9.894-9.894 9.894z"/></svg>
-                    WhatsApp
-                  </>
-              }
-            </motion.button>
+                      <div>
+                        <SectionLabel>Position du texte principal</SectionLabel>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {TEXT_POSITIONS.map(p => (
+                            <button key={p.id} onClick={() => setTextPos(p.id)}
+                              style={{ flex: 1, padding: '11px 0', borderRadius: 12, cursor: 'pointer', textAlign: 'center', border: `1.5px solid ${textPos === p.id ? sportColor : 'var(--sl-border-s)'}`, backgroundColor: textPos === p.id ? `${sportColor}14` : 'var(--sl-surface)', color: textPos === p.id ? sportColor : 'var(--sl-t1)', fontSize: 12, fontWeight: 700, transition: 'all 0.14s' }}>
+                              {p.id === 'top' ? '⬆️' : p.id === 'center' ? '⬛' : '⬇️'}<br />
+                              <span style={{ fontSize: 10, marginTop: 2 }}>{p.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── BUSINESS PANEL ── */}
+                  {activeTab === 'business' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      <div>
+                        <SectionLabel>Logo partenaire du match</SectionLabel>
+                        <div style={{ padding: '12px', borderRadius: 14, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', marginBottom: 8 }}>
+                          <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: '0 0 10px', lineHeight: 1.5 }}>
+                            Le logo sera placé en bas à droite de l'affiche dans un encart blanc.
+                          </p>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <button onClick={() => sponsorRef.current?.click()}
+                              style={{ flex: 1, padding: '10px 12px', borderRadius: 11, fontSize: 12, fontWeight: 600, cursor: 'pointer', backgroundColor: sponsorSrc ? `${sportColor}14` : 'var(--sl-card)', border: sponsorSrc ? `1.5px solid ${sportColor}` : '1.5px dashed var(--sl-border-s)', color: sponsorSrc ? sportColor : 'var(--sl-t2)' }}>
+                              {sponsorSrc ? '✓ Logo chargé' : '+ Uploader le logo sponsor'}
+                            </button>
+                            {sponsorSrc && (
+                              <button onClick={() => setSponsorSrc('')}
+                                style={{ padding: '10px 12px', borderRadius: 11, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-card)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>
+                            )}
+                          </div>
+                          <input ref={sponsorRef} type="file" accept="image/*" onChange={handleSponsor} style={{ display: 'none' }} />
+                        </div>
+                        {sponsorSrc && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: `${sportColor}10`, border: `1px solid ${sportColor}30` }}>
+                            <img src={sponsorSrc} alt="Sponsor" style={{ height: 32, maxWidth: 80, objectFit: 'contain', borderRadius: 4 }} />
+                            <span style={{ fontSize: 11, color: 'var(--sl-green)', fontWeight: 600 }}>Logo actif — visible sur l'affiche</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <SectionLabel>QR Code intelligent</SectionLabel>
+                        <div style={{ padding: '12px', borderRadius: 14, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', marginBottom: 8 }}>
+                          <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: '0 0 10px', lineHeight: 1.5 }}>
+                            Un QR code renvoyant vers la fiche de l'événement sera placé en bas à gauche de l'affiche.
+                          </p>
+                          <Toggle label="Afficher le QR code" value={showQR} onChange={setShowQR} icon="📱" />
+                        </div>
+                        {showQR && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span style={{ fontSize: 11, color: '#3b82f6', fontWeight: 600 }}>Chargement du QR code au prochain rendu…</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '32px 24px', color: 'var(--sl-t3)', textAlign: 'center' }}
+                >
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12h6M12 9v6"/>
+                  </svg>
+                  <p style={{ fontSize: 12, margin: 0, lineHeight: 1.6 }}>Choisissez un onglet à droite pour personnaliser votre affiche</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </motion.div>
