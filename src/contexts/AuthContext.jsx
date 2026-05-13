@@ -3,88 +3,122 @@ import { supabase } from '../lib/supabase.js';
 
 const AuthContext = createContext(null);
 
+// ── Mapping ──────────────────────────────────────────────────────────────────
+
 function mapProfile(authUser, dbProfile) {
   if (!authUser) return null;
+  const meta = authUser.user_metadata ?? {};
   return {
-    id: authUser.id,
-    email: authUser.email,
-    name: dbProfile?.name ?? authUser.user_metadata?.name ?? authUser.email?.split('@')[0] ?? '',
-    role: dbProfile?.role ?? 'user',
-    avatar: dbProfile?.avatar_url ?? null,
+    id:             authUser.id,
+    email:          authUser.email,
+    name:           dbProfile?.name ?? meta.name ?? authUser.email?.split('@')[0] ?? '',
+    role:           dbProfile?.role ?? 'user',
+    avatar:         dbProfile?.avatar_url ?? null,
     favoriteSports: dbProfile?.favorite_sports ?? [],
-    followedClubs: dbProfile?.followed_clubs ?? [],
-    clubId: dbProfile?.club_id ?? null,
+    followedClubs:  dbProfile?.followed_clubs ?? [],
+    clubId:         dbProfile?.club_id ?? null,
     onboardingDone: dbProfile?.onboarding_done ?? false,
-    authProvider: dbProfile?.auth_provider ?? null,
-    createdAt: authUser.created_at,
+    authProvider:   dbProfile?.auth_provider ?? meta.authProvider ?? null,
+    createdAt:      authUser.created_at,
   };
 }
 
-async function fetchProfile(userId, retries = 4) {
-  for (let i = 0; i < retries; i++) {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+// ── Profile fetch with retry + fallback upsert ────────────────────────────────
+
+async function fetchProfile(authUser) {
+  const { id: userId } = authUser;
+
+  // Retry: the DB trigger may take a moment to create the profile after signup
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle(); // returns null (not error) when row doesn't exist
+
     if (data) return data;
-    if (i < retries - 1) await new Promise(r => setTimeout(r, 400));
+    if (error) console.warn('[Auth] fetchProfile error:', error.message);
+    if (attempt < 4) await new Promise(r => setTimeout(r, 500));
   }
-  return null;
+
+  // Fallback: trigger didn't fire — create profile client-side
+  // Requires the "profiles_insert_own" RLS policy
+  console.warn('[Auth] Profile not found after retries — creating fallback');
+  const name = authUser.user_metadata?.name ?? authUser.email?.split('@')[0] ?? '';
+  const { data, error } = await supabase
+    .from('profiles')
+    .upsert({ id: userId, name }, { onConflict: 'id' })
+    .select()
+    .single();
+
+  if (error) console.error('[Auth] Fallback profile creation failed:', error.message);
+  return data ?? null;
 }
+
+// ── Provider ─────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }) {
   const [authUser, setAuthUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile]   = useState(null);
+  const [loading, setLoading]   = useState(true);
 
+  // ── Bootstrap ────────────────────────────────────────────────────────────
   useEffect(() => {
     let resolved = false;
 
-    // Failsafe: never block the UI more than 5s
-    const timeout = setTimeout(() => {
+    const failsafe = setTimeout(() => {
       if (!resolved) { resolved = true; setLoading(false); }
-    }, 5000);
+    }, 6000);
 
-    function resolve() {
-      if (!resolved) { resolved = true; clearTimeout(timeout); setLoading(false); }
+    function done() {
+      if (!resolved) { resolved = true; clearTimeout(failsafe); setLoading(false); }
     }
 
-    // onAuthStateChange fires immediately with INITIAL_SESSION — no need for getSession()
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const prof = await fetchProfile(session.user.id);
-        setAuthUser(session.user);
-        setProfile(prof);
-      } else {
-        setAuthUser(null);
-        setProfile(null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const prof = await fetchProfile(session.user);
+          setAuthUser(session.user);
+          setProfile(prof);
+        } else {
+          setAuthUser(null);
+          setProfile(null);
+        }
+        done();
       }
-      resolve();
-    });
+    );
 
-    return () => { subscription.unsubscribe(); clearTimeout(timeout); };
+    return () => { subscription.unsubscribe(); clearTimeout(failsafe); };
   }, []);
 
+  // ── Auth actions ─────────────────────────────────────────────────────────
+
   const login = useCallback(async (email, password) => {
-    const withTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Délai dépassé — vérifiez votre connexion internet')), 10000)
-    );
-    const { data, error } = await Promise.race([
-      supabase.auth.signInWithPassword({ email, password }),
-      withTimeout,
-    ]);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      console.error('[Supabase login]', error);
+      if (error.message.includes('Invalid login credentials'))
+        throw new Error('Email ou mot de passe incorrect');
+      if (error.message.includes('Email not confirmed'))
+        throw new Error('Confirmez votre email avant de vous connecter');
       throw new Error(error.message);
     }
     return data.user;
   }, []);
 
+  // Returns { user, needsConfirmation }
   const register = useCallback(async ({ email, password, name }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { name } },
     });
-    if (error) throw new Error(error.message);
-    return data.user;
+    if (error) {
+      if (error.message.includes('already registered'))
+        throw new Error('Cet email est déjà utilisé');
+      throw new Error(error.message);
+    }
+    // session is null when email confirmation is required
+    return { user: data.user, needsConfirmation: !data.session };
   }, []);
 
   const logout = useCallback(async () => {
@@ -93,18 +127,25 @@ export function AuthProvider({ children }) {
 
   const updateProfile = useCallback(async (patch) => {
     if (!authUser) return;
+    const map = {
+      name:           'name',
+      avatar:         'avatar_url',
+      favoriteSports: 'favorite_sports',
+      followedClubs:  'followed_clubs',
+      clubId:         'club_id',
+      onboardingDone: 'onboarding_done',
+      role:           'role',
+    };
     const dbPatch = {};
-    if ('name' in patch) dbPatch.name = patch.name;
-    if ('avatar' in patch) dbPatch.avatar_url = patch.avatar;
-    if ('favoriteSports' in patch) dbPatch.favorite_sports = patch.favoriteSports;
-    if ('followedClubs' in patch) dbPatch.followed_clubs = patch.followedClubs;
-    if ('clubId' in patch) dbPatch.club_id = patch.clubId;
-    if ('onboardingDone' in patch) dbPatch.onboarding_done = patch.onboardingDone;
-    if ('role' in patch) dbPatch.role = patch.role;
-
-    await supabase.from('profiles').update(dbPatch).eq('id', authUser.id);
-    setProfile(prev => prev ? { ...prev, ...dbPatch } : prev);
+    for (const [key, col] of Object.entries(map)) {
+      if (key in patch) dbPatch[col] = patch[key];
+    }
+    const { error } = await supabase.from('profiles').update(dbPatch).eq('id', authUser.id);
+    if (error) console.error('[Auth] updateProfile error:', error.message);
+    else setProfile(prev => prev ? { ...prev, ...dbPatch } : prev);
   }, [authUser]);
+
+  // ── OAuth ─────────────────────────────────────────────────────────────────
 
   const loginWithGoogle = useCallback(async () => {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -114,63 +155,70 @@ export function AuthProvider({ children }) {
     if (error) throw new Error(error.message);
   }, []);
 
+  // Mock OAuth for Instagram (Supabase doesn't support it natively)
   const loginWithProvider = useCallback(async (email, provider) => {
-    const mockPassword = `mock_${btoa(email).slice(0, 16)}`;
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password: mockPassword,
-    });
-    if (!signInError) return signInData.user;
+    const mockPwd = `mock_${btoa(email).slice(0, 16)}`;
 
-    const namePart = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password: mockPassword,
-      options: { data: { name: namePart, authProvider: provider } },
+    // Try sign-in first
+    const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+      email, password: mockPwd,
     });
-    if (signUpError) throw new Error(signUpError.message);
-    return signUpData.user;
+    if (!signInErr) return { user: signInData.user, needsConfirmation: false };
+
+    // Auto-register if not found
+    const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+      email, password: mockPwd,
+      options: { data: { name, authProvider: provider } },
+    });
+    if (signUpErr) throw new Error(signUpErr.message);
+    return { user: signUpData.user, needsConfirmation: !signUpData.session };
   }, []);
 
   const requestPasswordReset = useCallback(async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}`,
+      redirectTo: window.location.origin,
     });
     if (error) throw new Error(error.message);
     return { email };
   }, []);
 
+  // ── Club follow ───────────────────────────────────────────────────────────
+
   const followClub = useCallback(async (clubId) => {
     if (!authUser || !profile) return;
     const followed = profile.followed_clubs ?? [];
     if (followed.includes(clubId)) return;
-    await supabase.from('profiles').update({ followed_clubs: [...followed, clubId] }).eq('id', authUser.id);
-    setProfile(prev => prev ? { ...prev, followed_clubs: [...(prev.followed_clubs ?? []), clubId] } : prev);
+    const next = [...followed, clubId];
+    await supabase.from('profiles').update({ followed_clubs: next }).eq('id', authUser.id);
+    setProfile(prev => prev ? { ...prev, followed_clubs: next } : prev);
   }, [authUser, profile]);
 
   const unfollowClub = useCallback(async (clubId) => {
     if (!authUser || !profile) return;
-    const followed = (profile.followed_clubs ?? []).filter(id => id !== clubId);
-    await supabase.from('profiles').update({ followed_clubs: followed }).eq('id', authUser.id);
-    setProfile(prev => prev ? { ...prev, followed_clubs: followed } : prev);
+    const next = (profile.followed_clubs ?? []).filter(id => id !== clubId);
+    await supabase.from('profiles').update({ followed_clubs: next }).eq('id', authUser.id);
+    setProfile(prev => prev ? { ...prev, followed_clubs: next } : prev);
   }, [authUser, profile]);
 
   const isFollowingClub = useCallback((clubId) => {
     return !!(profile?.followed_clubs ?? []).includes(clubId);
   }, [profile]);
 
+  // ── Derived state ─────────────────────────────────────────────────────────
+
   const currentUser = mapProfile(authUser, profile);
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
+  const isAdmin     = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const isClubAdmin = currentUser?.role === 'club_admin';
-  const isLoggedIn = !!currentUser;
+  const isLoggedIn  = !!currentUser;
 
   return (
     <AuthContext.Provider value={{
-      currentUser,
+      currentUser, loading,
       login, register, logout, updateProfile,
       loginWithGoogle, loginWithProvider, requestPasswordReset,
       followClub, unfollowClub, isFollowingClub,
-      isAdmin, isClubAdmin, isLoggedIn, loading,
+      isAdmin, isClubAdmin, isLoggedIn,
     }}>
       {children}
     </AuthContext.Provider>

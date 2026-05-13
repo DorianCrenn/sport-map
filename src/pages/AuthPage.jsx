@@ -195,7 +195,7 @@ function ForgotPasswordView({ onBack }) {
 
 export default function AuthPage({ onClose, onNeedOnboarding }) {
   const { login, register, loginWithGoogle } = useAuth();
-  const [mode, setMode] = useState('login');   // 'login' | 'register' | 'forgot'
+  const [mode, setMode] = useState('login');   // 'login' | 'register' | 'forgot' | 'confirm-email'
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -223,8 +223,16 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
         if (!form.name.trim()) throw new Error('Prénom ou surnom requis');
         if (form.password.length < 6) throw new Error('Mot de passe : 6 caractères minimum');
         if (form.password !== form.confirm) throw new Error('Les mots de passe ne correspondent pas');
-        await register({ name: form.name.trim(), email: form.email.trim(), password: form.password });
-        onNeedOnboarding?.();
+        const { needsConfirmation } = await register({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          password: form.password,
+        });
+        if (needsConfirmation) {
+          setMode('confirm-email');
+        } else {
+          onNeedOnboarding?.();
+        }
       }
     } catch (err) {
       setError(err.message);
@@ -243,10 +251,10 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
     }
   }
 
-  function handleOAuthDone(user) {
+  function handleOAuthDone({ needsConfirmation }) {
     setOauthProvider(null);
-    if (!user.onboardingDone) onNeedOnboarding?.();
-    else onClose();
+    if (needsConfirmation) { setMode('confirm-email'); return; }
+    onNeedOnboarding?.();
   }
 
   const inputCls = 'w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow';
@@ -297,8 +305,8 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
             </button>
           </div>
 
-          {/* Tab switcher (hidden in forgot mode) */}
-          {mode !== 'forgot' && (
+          {/* Tab switcher (hidden in forgot/confirm modes) */}
+          {mode !== 'forgot' && mode !== 'confirm-email' && (
             <div className="flex-shrink-0 px-5 mb-5">
               <div className="flex rounded-2xl p-1" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}>
                 {[['login', 'Connexion'], ['register', "S'inscrire"]].map(([id, label]) => (
@@ -321,6 +329,25 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
           <div className="flex-1 overflow-y-auto px-5 pb-8 min-h-0">
             <AnimatePresence mode="wait">
 
+              {/* Email confirmation screen */}
+              {mode === 'confirm-email' && (
+                <motion.div key="confirm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 py-4 text-center">
+                  <div className="text-5xl">📬</div>
+                  <h3 className="font-bold text-white text-lg font-oswald tracking-wide">Vérifiez votre email</h3>
+                  <p className="text-sm text-slate-400 leading-relaxed">
+                    Un lien de confirmation a été envoyé à votre adresse email.<br/>
+                    Cliquez dessus pour activer votre compte.
+                  </p>
+                  <button
+                    onClick={() => switchMode('login')}
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white mt-2"
+                    style={{ backgroundColor: '#22C55E' }}
+                  >
+                    Retour à la connexion
+                  </button>
+                </motion.div>
+              )}
+
               {/* Forgot password view */}
               {mode === 'forgot' && (
                 <motion.div key="forgot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -329,7 +356,7 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
               )}
 
               {/* Login / Register */}
-              {mode !== 'forgot' && (
+              {mode !== 'forgot' && mode !== 'confirm-email' && (
                 <motion.div
                   key={mode}
                   initial={{ opacity: 0, x: mode === 'login' ? -14 : 14 }}

@@ -1,9 +1,9 @@
 -- ============================================================
--- SportLink — Supabase Schema
+-- SportLink — Supabase Schema v2 (idempotent, safe to re-run)
 -- Run this in: Supabase Dashboard > SQL Editor > New Query
 -- ============================================================
 
--- ── Profiles (extends auth.users) ────────────────────────────
+-- ── Profiles ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.profiles (
   id               UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   name             TEXT,
@@ -19,13 +19,23 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+-- Drop and recreate policies (idempotent)
+DROP POLICY IF EXISTS "profiles_select_own"  ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_own"  ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_own"  ON public.profiles;
+
 CREATE POLICY "profiles_select_own" ON public.profiles
   FOR SELECT USING (auth.uid() = id);
+
+-- Required: allows client-side fallback profile creation if trigger fails
+CREATE POLICY "profiles_insert_own" ON public.profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
 
 CREATE POLICY "profiles_update_own" ON public.profiles
   FOR UPDATE USING (auth.uid() = id);
 
--- Auto-create profile on signup
+
+-- ── Auto-create profile on signup ────────────────────────────
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -67,21 +77,18 @@ CREATE TABLE IF NOT EXISTS public.events (
 
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "events_select_all" ON public.events
-  FOR SELECT USING (true);
+DROP POLICY IF EXISTS "events_select_all"   ON public.events;
+DROP POLICY IF EXISTS "events_insert_auth"  ON public.events;
+DROP POLICY IF EXISTS "events_update_own"   ON public.events;
+DROP POLICY IF EXISTS "events_delete_own"   ON public.events;
 
-CREATE POLICY "events_insert_auth" ON public.events
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "events_update_own" ON public.events
-  FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "events_delete_own" ON public.events
-  FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "events_select_all"  ON public.events FOR SELECT USING (true);
+CREATE POLICY "events_insert_auth" ON public.events FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "events_update_own"  ON public.events FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "events_delete_own"  ON public.events FOR DELETE USING (auth.uid() = user_id);
 
 
--- ── Favorites ─────────────────────────────────────────────────
--- event_id is TEXT (not UUID) to support static seed event IDs like 'e1'
+-- ── Favorites ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.favorites (
   user_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   event_id   TEXT NOT NULL,
@@ -91,12 +98,12 @@ CREATE TABLE IF NOT EXISTS public.favorites (
 
 ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "favorites_own" ON public.favorites;
 CREATE POLICY "favorites_own" ON public.favorites
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 
--- ── Attendees ─────────────────────────────────────────────────
+-- ── Attendees ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.attendees (
   user_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   event_id   TEXT NOT NULL,
@@ -106,9 +113,9 @@ CREATE TABLE IF NOT EXISTS public.attendees (
 
 ALTER TABLE public.attendees ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "attendees_own" ON public.attendees;
 CREATE POLICY "attendees_own" ON public.attendees
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 
 -- ── Clubs ────────────────────────────────────────────────────
@@ -128,34 +135,40 @@ CREATE TABLE IF NOT EXISTS public.clubs (
 
 ALTER TABLE public.clubs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "clubs_select_all" ON public.clubs
-  FOR SELECT USING (true);
+DROP POLICY IF EXISTS "clubs_select_all"   ON public.clubs;
+DROP POLICY IF EXISTS "clubs_insert_auth"  ON public.clubs;
+DROP POLICY IF EXISTS "clubs_update_own"   ON public.clubs;
+DROP POLICY IF EXISTS "clubs_delete_own"   ON public.clubs;
 
-CREATE POLICY "clubs_insert_auth" ON public.clubs
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "clubs_update_own" ON public.clubs
-  FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "clubs_delete_own" ON public.clubs
-  FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "clubs_select_all"  ON public.clubs FOR SELECT USING (true);
+CREATE POLICY "clubs_insert_auth" ON public.clubs FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "clubs_update_own"  ON public.clubs FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "clubs_delete_own"  ON public.clubs FOR DELETE USING (auth.uid() = user_id);
 
 
 -- ============================================================
--- AFTER RUNNING THIS SCHEMA:
---
--- 1. Create the admin account:
---    Go to Supabase Dashboard > Authentication > Users > Add user
---    Email: admin@sportlink.fr  Password: admin123
---
--- 2. Set admin role (run in SQL Editor after creating the user):
---    UPDATE public.profiles
---    SET role = 'superadmin', onboarding_done = true
---    WHERE id = (
---      SELECT id FROM auth.users WHERE email = 'admin@sportlink.fr'
---    );
---
--- 3. (Optional) Enable Google OAuth:
---    Go to Authentication > Providers > Google
---    Add your Google Client ID + Secret from Google Cloud Console
+-- ADMIN SETUP — run AFTER the schema above
+-- ============================================================
+
+-- Step 1: verify or create admin profile with superadmin role
+-- (safe to run multiple times)
+INSERT INTO public.profiles (id, name, role, onboarding_done)
+SELECT id, 'Super Admin', 'superadmin', true
+FROM auth.users
+WHERE email = 'admin@sportlink.fr'
+ON CONFLICT (id) DO UPDATE
+  SET role = 'superadmin', onboarding_done = true, name = 'Super Admin';
+
+-- Step 2: diagnostic — run this to verify the admin profile
+-- SELECT p.id, p.name, p.role, p.onboarding_done, u.email
+-- FROM public.profiles p
+-- JOIN auth.users u ON p.id = u.id
+-- WHERE u.email = 'admin@sportlink.fr';
+
+-- ============================================================
+-- SUPABASE AUTH SETTINGS (do in Dashboard UI, not SQL)
+-- Authentication > Configuration > Email:
+--   ✓ Disable "Confirm email" for dev/demo
+-- Authentication > Providers > Email:
+--   ✓ Enable email provider
 -- ============================================================
