@@ -32,6 +32,7 @@ function AppInner() {
   const [activeTab, setActiveTab] = useState('home');
   const [activeDepartment, setActiveDepartment] = useState('finistere');
   const [showAuth, setShowAuth] = useState(false);
+  const [pendingOnboarding, setPendingOnboarding] = useState(false);
 
   const { events: userEvents, addEvent, updateEvent, deleteEvent } = useLocalEvents();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
@@ -73,10 +74,7 @@ function AppInner() {
     };
   }, [userClubs, allEvents, allSports]);
 
-  const localOnboardingDone = currentUser?.id
-    ? !!localStorage.getItem(`sl_onboarded_${currentUser.id}`)
-    : false;
-  const shouldShowOnboarding = !!currentUser && !currentUser.onboardingDone && !localOnboardingDone && !showAuth;
+  const shouldShowOnboarding = !!currentUser && pendingOnboarding && !currentUser.onboardingDone && !showAuth;
 
   function handleTabChange(tab) {
     if (tab === 'profil' && !currentUser) {
@@ -93,11 +91,11 @@ function AppInner() {
 
   function handleNeedOnboarding() {
     setShowAuth(false);
+    setPendingOnboarding(true);
   }
 
   function handleOnboardingDone() {
-    // onboardingDone is set inside OnboardingPage via updateProfile
-    // shouldShowOnboarding will become false automatically
+    setPendingOnboarding(false);
   }
 
   return (
