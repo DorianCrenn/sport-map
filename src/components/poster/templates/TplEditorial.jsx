@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 
@@ -21,11 +21,11 @@ function TeamCircle({ name, logo, accent, isHome }) {
         }
       </div>
       <span style={{
-        fontSize: 9.5, fontWeight: 600, color: 'rgba(255,255,255,0.78)',
-        letterSpacing: '0.12em', textAlign: 'center', textTransform: 'uppercase',
-        lineHeight: 1.25, maxWidth: 82,
+        fontSize: scaledFs(name, 9.5, 12, 7), fontWeight: 600, color: 'rgba(255,255,255,0.78)',
+        letterSpacing: '0.1em', textAlign: 'center', textTransform: 'uppercase',
+        lineHeight: 1.25, maxWidth: 88, wordBreak: 'break-word',
       }}>
-        {name}
+        {truncate(name, 20)}
       </span>
     </div>
   );
@@ -93,7 +93,7 @@ export default function TplEditorial({ event, homeTeam, awayTeam, championship, 
         {/* Top badge row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
           <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.38em', color: a, textTransform: 'uppercase' }}>
-            {champ}
+            {truncate(champ, 26)}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', border: `1px solid ${a}80` }} />

@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 const GOLD = '#D4AF37';
@@ -45,8 +45,8 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
 
         {/* Championship label */}
         <div style={{ textAlign: 'center', marginBottom: 14 }}>
-          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.45em', color: `${a}70`, textTransform: 'uppercase' }}>
-            — {champ} —
+          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.38em', color: `${a}70`, textTransform: 'uppercase' }}>
+            — {truncate(champ, 22)} —
           </span>
         </div>
 
@@ -97,8 +97,8 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
                   : <span style={{ fontSize: 20, fontWeight: 600, color: a }}>{initials(homeName)}</span>
                 }
               </div>
-              <span style={{ fontSize: 9.5, fontWeight: 600, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', maxWidth: 84 }}>
-                {homeName}
+              <span style={{ fontSize: scaledFs(homeName, 9.5, 12, 7.5), fontWeight: 600, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', maxWidth: 90, wordBreak: 'break-word', lineHeight: 1.25 }}>
+                {truncate(homeName, 18)}
               </span>
             </div>
 
@@ -123,8 +123,8 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
                   : <span style={{ fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,0.45)' }}>{initials(awayName)}</span>
                 }
               </div>
-              <span style={{ fontSize: 9.5, fontWeight: 600, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', maxWidth: 84 }}>
-                {awayName}
+              <span style={{ fontSize: scaledFs(awayName, 9.5, 12, 7.5), fontWeight: 600, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', maxWidth: 90, wordBreak: 'break-word', lineHeight: 1.25 }}>
+                {truncate(awayName, 18)}
               </span>
             </div>
           </div>

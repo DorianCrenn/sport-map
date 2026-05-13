@@ -2,6 +2,11 @@ import TplEditorial from './templates/TplEditorial.jsx';
 import TplImpact from './templates/TplImpact.jsx';
 import TplLuxe from './templates/TplLuxe.jsx';
 import TplBlanc from './templates/TplBlanc.jsx';
+import TplSplit from './templates/TplSplit.jsx';
+import TplMagazine from './templates/TplMagazine.jsx';
+import TplNeon from './templates/TplNeon.jsx';
+import TplFluo from './templates/TplFluo.jsx';
+import TplCinema from './templates/TplCinema.jsx';
 
 export const POSTER_TEMPLATES = [
   {
@@ -35,6 +40,51 @@ export const POSTER_TEMPLATES = [
     icon: '○',
     color: '#B38B59',
     Component: TplBlanc,
+  },
+  {
+    id: 'split',
+    label: 'Duel',
+    desc: 'Sombre · Bilatéral · Épuré',
+    icon: '⊞',
+    color: '#3b82f6',
+    isPremium: true,
+    Component: TplSplit,
+  },
+  {
+    id: 'magazine',
+    label: 'Magazine',
+    desc: 'Sombre · Typo Forte · Éditorial',
+    icon: '▣',
+    color: '#C41E3A',
+    isPremium: true,
+    Component: TplMagazine,
+  },
+  {
+    id: 'neon',
+    label: 'Neon',
+    desc: 'Sombre · Glow · Futuriste',
+    icon: '◉',
+    color: '#00F5FF',
+    isPremium: true,
+    Component: TplNeon,
+  },
+  {
+    id: 'fluo',
+    label: 'Fluo',
+    desc: 'Jaune vif · Minimal · Swiss',
+    icon: '◐',
+    color: '#EDFF3A',
+    isPremium: true,
+    Component: TplFluo,
+  },
+  {
+    id: 'cinema',
+    label: 'Cinéma',
+    desc: 'Noir · Letterbox · Cinématique',
+    icon: '▬',
+    color: '#D4B896',
+    isPremium: true,
+    Component: TplCinema,
   },
 ];
 

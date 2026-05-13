@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 
@@ -18,8 +18,8 @@ function TeamBlock({ name, logo, accent, isHome }) {
           : <span style={{ fontSize: 20, fontWeight: 900, color: isHome ? accent : 'rgba(255,255,255,0.5)', letterSpacing: '-0.02em' }}>{init}</span>
         }
       </div>
-      <span style={{ fontSize: 9.5, fontWeight: 800, color: 'rgba(255,255,255,0.88)', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center' }}>
-        {name.slice(0, 14)}
+      <span style={{ fontSize: scaledFs(name, 9.5, 12, 7.5), fontWeight: 800, color: 'rgba(255,255,255,0.88)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', maxWidth: 96, wordBreak: 'break-word', lineHeight: 1.25 }}>
+        {truncate(name, 18)}
       </span>
     </div>
   );

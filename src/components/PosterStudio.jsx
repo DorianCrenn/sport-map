@@ -368,10 +368,20 @@ export default function PosterStudio({ event, onClose }) {
                             <button key={t.id} onClick={() => setTemplateId(t.id)}
                               style={{
                                 padding: '14px 12px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
+                                position: 'relative',
                                 border: `2px solid ${active ? t.color : 'var(--sl-border-s)'}`,
                                 backgroundColor: active ? `${t.color}12` : 'var(--sl-surface)',
                                 transition: 'all 0.15s',
                               }}>
+                              {t.isPremium && (
+                                <div style={{
+                                  position: 'absolute', top: 7, right: 7,
+                                  fontSize: 8, fontWeight: 800,
+                                  color: '#000', backgroundColor: '#D4AF37',
+                                  padding: '2px 5px', borderRadius: 5,
+                                  letterSpacing: '0.04em', lineHeight: 1.4,
+                                }}>👑</div>
+                              )}
                               <div style={{ fontSize: 22, marginBottom: 6 }}>{t.icon}</div>
                               <div style={{ fontSize: 13, fontWeight: 800, color: active ? t.color : 'var(--sl-t1)', marginBottom: 2 }}>{t.label}</div>
                               <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{t.desc}</div>

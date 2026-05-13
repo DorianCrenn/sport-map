@@ -25,3 +25,12 @@ export function champLabel(eventType, level = '') {
 export function initials(name = '') {
   return name.trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
 }
+
+export function truncate(str = '', maxLen = 20) {
+  return str.length > maxLen ? str.slice(0, maxLen - 1) + '…' : str;
+}
+
+export function scaledFs(str = '', baseSize = 12, maxChars = 14, minSize = 8) {
+  if (!str || str.length <= maxChars) return baseSize;
+  return Math.max(minSize, Math.round(baseSize * maxChars / str.length));
+}

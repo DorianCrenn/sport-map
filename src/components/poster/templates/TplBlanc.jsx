@@ -1,4 +1,4 @@
-import { parseVs, fmtDate, champLabel, initials } from '../posterUtils.js';
+import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
 const DARK = '#18100A';
@@ -19,8 +19,8 @@ function TeamCircleLight({ name, logo, accent }) {
           : <span style={{ fontSize: 20, fontWeight: 900, color: DARK }}>{init}</span>
         }
       </div>
-      <span style={{ fontSize: 9.5, fontWeight: 700, color: DARK, letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', maxWidth: 82 }}>
-        {name}
+      <span style={{ fontSize: scaledFs(name, 9.5, 12, 7.5), fontWeight: 700, color: DARK, letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', maxWidth: 88, wordBreak: 'break-word', lineHeight: 1.25 }}>
+        {truncate(name, 20)}
       </span>
     </div>
   );
