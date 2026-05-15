@@ -211,7 +211,7 @@ export default function MapPage({
         </div>
 
         {/* Mobile floating buttons */}
-        <div className="md:hidden" style={{ position: 'absolute', bottom: selectedEvent ? 'calc(52dvh + 14px)' : 16, left: 16, right: 16, zIndex: 999, pointerEvents: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', transition: 'bottom 0.3s ease' }}>
+        <div className="md:hidden" style={{ position: 'absolute', bottom: selectedEvent ? 'calc(52dvh + 14px + env(safe-area-inset-bottom, 0px))' : 'calc(16px + env(safe-area-inset-bottom, 0px))', left: 16, right: 16, zIndex: 999, pointerEvents: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', transition: 'bottom 0.3s ease' }}>
           {/* Favoris */}
           <button
             onClick={onGoToFavoris}
@@ -239,6 +239,7 @@ export default function MapPage({
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                 color: userCoords ? 'var(--sl-blue)' : 'var(--sl-t3)',
               }}
+              aria-label="Recentrer sur ma position"
               title="Recentrer"
             >
               {geoLoading

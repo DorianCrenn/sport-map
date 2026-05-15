@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
@@ -165,12 +165,25 @@ export default function MobileEventSheet({
   function handleDragEnd(_, info) {
     const { offset, velocity } = info;
     if (!isExpanded) {
-      // Collapsed: swipe up → expand, swipe down → close
       if (offset.y < -80 || velocity.y < -500) setIsExpanded(true);
       else if (offset.y > 80 || velocity.y > 400) onClose();
+    } else {
+      // In expanded mode: swipe down far enough collapses
+      if (offset.y > 120 || velocity.y > 600) setIsExpanded(false);
     }
-    // In expanded state we don't drag (scroll takes over)
   }
+
+  // Close on Escape key
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === 'Escape') {
+        if (isExpanded) setIsExpanded(false);
+        else onClose();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isExpanded, onClose]);
 
   return (
     <>
@@ -196,14 +209,15 @@ export default function MobileEventSheet({
       }}
     >
       {/* Sticky header: drag handle + always-visible close + collapse */}
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 12px 8px', position: 'relative', gap: 0 }}>
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 12px 6px', position: 'relative' }}>
         {/* Collapse chevron — left, only when expanded */}
         {isExpanded ? (
           <button
             onClick={() => setIsExpanded(false)}
+            aria-label="Réduire"
             style={{
-              position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-              width: 32, height: 32, borderRadius: 10,
+              position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+              width: 44, height: 44, borderRadius: 12,
               backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'var(--sl-t3)',
@@ -218,12 +232,13 @@ export default function MobileEventSheet({
         {/* Drag handle */}
         <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
 
-        {/* Close button — right, always visible */}
+        {/* Close button — right, always visible, 44×44 touch target */}
         <button
           onClick={onClose}
+          aria-label="Fermer"
           style={{
-            position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-            width: 32, height: 32, borderRadius: 10,
+            position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+            width: 44, height: 44, borderRadius: 12,
             backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--sl-t2)',

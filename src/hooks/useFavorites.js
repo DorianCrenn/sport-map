@@ -36,13 +36,23 @@ export function useFavorites() {
       adding ? next.add(strId) : next.delete(strId);
       save(userId, next);
 
-      // Background sync to Supabase (fire-and-forget)
       if (userId) {
-        if (adding) {
-          supabase.from('favorites').insert({ user_id: userId, event_id: strId }).then(() => {});
-        } else {
-          supabase.from('favorites').delete().eq('user_id', userId).eq('event_id', strId).then(() => {});
-        }
+        const op = adding
+          ? supabase.from('favorites').insert({ user_id: userId, event_id: strId })
+          : supabase.from('favorites').delete().eq('user_id', userId).eq('event_id', strId);
+
+        op.then(({ error }) => {
+          if (error) {
+            // Rollback local state on DB failure
+            console.error('[Favorites] sync failed, rolling back:', error.message);
+            setFavorites(curr => {
+              const rolled = new Set(curr);
+              adding ? rolled.delete(strId) : rolled.add(strId);
+              save(userId, rolled);
+              return rolled;
+            });
+          }
+        });
       }
 
       return next;

@@ -37,38 +37,55 @@ export function useClubs() {
   const [userClubs, setUserClubs] = useState([]);
 
   useEffect(() => {
+    let cancelled = false;
     supabase.from('clubs').select('*').order('created_at', { ascending: false })
       .then(({ data, error }) => {
-        if (!error && data) setUserClubs(data.map(mapFromDB));
+        if (cancelled) return;
+        if (error) { console.error('[Clubs] fetch failed:', error.message); return; }
+        if (data) setUserClubs(data.map(mapFromDB));
       });
+    return () => { cancelled = true; };
   }, []);
 
   const addClub = useCallback(async (data) => {
     const userId = currentUser?.id;
     const { data: saved, error } = await supabase
-      .from('clubs')
-      .insert(mapToDB(data, userId))
-      .select()
-      .single();
-    if (!error && saved) {
-      const club = mapFromDB(saved);
-      setUserClubs(prev => [club, ...prev]);
-      return club;
+      .from('clubs').insert(mapToDB(data, userId)).select().single();
+    if (error) {
+      console.error('[Clubs] addClub failed:', error.message);
+      throw error;
     }
-    const fallback = { ...data, id: `local_${Date.now()}`, isUserCreated: true };
-    setUserClubs(prev => [fallback, ...prev]);
-    return fallback;
+    const club = mapFromDB(saved);
+    setUserClubs(prev => [club, ...prev]);
+    return club;
   }, [currentUser?.id]);
 
   const updateClub = useCallback(async (id, patch) => {
-    setUserClubs(prev => prev.map(c => c.id === id ? { ...c, ...patch } : c));
-    await supabase.from('clubs').update(mapToDB(patch, currentUser?.id)).eq('id', id);
-  }, [currentUser?.id]);
+    const prev = userClubs.find(c => c.id === id);
+    setUserClubs(clubs => clubs.map(c => c.id === id ? { ...c, ...patch } : c));
+    try {
+      const { error } = await supabase
+        .from('clubs').update(mapToDB({ ...prev, ...patch }, currentUser?.id)).eq('id', id);
+      if (error) throw error;
+    } catch (err) {
+      console.error('[Clubs] updateClub failed, rolling back:', err.message);
+      if (prev) setUserClubs(clubs => clubs.map(c => c.id === id ? prev : c));
+      throw err;
+    }
+  }, [currentUser?.id, userClubs]);
 
   const deleteClub = useCallback(async (id) => {
-    setUserClubs(prev => prev.filter(c => c.id !== id));
-    await supabase.from('clubs').delete().eq('id', id);
-  }, []);
+    const prev = userClubs.find(c => c.id === id);
+    setUserClubs(clubs => clubs.filter(c => c.id !== id));
+    try {
+      const { error } = await supabase.from('clubs').delete().eq('id', id);
+      if (error) throw error;
+    } catch (err) {
+      console.error('[Clubs] deleteClub failed, rolling back:', err.message);
+      if (prev) setUserClubs(clubs => [prev, ...clubs]);
+      throw err;
+    }
+  }, [userClubs]);
 
   return { userClubs, addClub, updateClub, deleteClub };
 }

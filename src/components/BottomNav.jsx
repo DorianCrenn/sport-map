@@ -126,7 +126,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                   aria-label={fabOpen ? 'Fermer le menu rapide' : 'Ouvrir le menu rapide'}
                   aria-expanded={fabOpen}
                   style={{
-                    width: 50, height: 50, borderRadius: '50%',
+                    width: 52, height: 52, borderRadius: '50%',
                     backgroundColor: 'var(--sl-green)',
                     border: `3px solid var(--sl-bg)`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -134,7 +134,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                     boxShadow: fabOpen
                       ? '0 0 0 3px rgba(34,217,106,0.35), 0 6px 20px rgba(34,217,106,0.45)'
                       : '0 0 0 1px rgba(34,217,106,0.25), 0 4px 16px rgba(34,217,106,0.4)',
-                    marginTop: -14,
+                    position: 'relative', bottom: 10,
                     transition: 'box-shadow 0.2s',
                     zIndex: 10,
                   }}

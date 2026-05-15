@@ -44,10 +44,14 @@ export function useLocalEvents() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
+    let cancelled = false;
     supabase.from('events').select('*').order('date', { ascending: true })
       .then(({ data, error }) => {
-        if (!error && data) setEvents(data.map(mapFromDB));
+        if (cancelled) return;
+        if (error) { console.error('[Events] fetch failed:', error.message); return; }
+        if (data) setEvents(data.map(mapFromDB));
       });
+    return () => { cancelled = true; };
   }, []);
 
   const addEvent = useCallback(async (data) => {
@@ -58,28 +62,44 @@ export function useLocalEvents() {
 
     try {
       const { data: saved, error } = await supabase
-        .from('events')
-        .insert(mapToDB(data, userId))
-        .select()
-        .single();
-      if (!error && saved) {
-        const real = mapFromDB(saved);
-        setEvents(prev => prev.map(e => e.id === tempId ? real : e));
-        return real;
-      }
-    } catch {}
-    return tempEvent;
+        .from('events').insert(mapToDB(data, userId)).select().single();
+      if (error) throw error;
+      const real = mapFromDB(saved);
+      setEvents(prev => prev.map(e => e.id === tempId ? real : e));
+      return real;
+    } catch (err) {
+      console.error('[Events] addEvent failed, rolling back:', err.message);
+      setEvents(prev => prev.filter(e => e.id !== tempId));
+      throw err;
+    }
   }, [currentUser?.id]);
 
   const updateEvent = useCallback(async (id, data) => {
-    setEvents(prev => prev.map(e => e.id === id ? { ...e, ...data } : e));
-    await supabase.from('events').update(mapToDB(data, currentUser?.id)).eq('id', id);
-  }, [currentUser?.id]);
+    const prev = events.find(e => e.id === id);
+    setEvents(evs => evs.map(e => e.id === id ? { ...e, ...data } : e));
+    try {
+      const { error } = await supabase
+        .from('events').update(mapToDB({ ...prev, ...data }, currentUser?.id)).eq('id', id);
+      if (error) throw error;
+    } catch (err) {
+      console.error('[Events] updateEvent failed, rolling back:', err.message);
+      if (prev) setEvents(evs => evs.map(e => e.id === id ? prev : e));
+      throw err;
+    }
+  }, [currentUser?.id, events]);
 
   const deleteEvent = useCallback(async (id) => {
-    setEvents(prev => prev.filter(e => e.id !== id));
-    await supabase.from('events').delete().eq('id', id);
-  }, []);
+    const prev = events.find(e => e.id === id);
+    setEvents(evs => evs.filter(e => e.id !== id));
+    try {
+      const { error } = await supabase.from('events').delete().eq('id', id);
+      if (error) throw error;
+    } catch (err) {
+      console.error('[Events] deleteEvent failed, rolling back:', err.message);
+      if (prev) setEvents(evs => [...evs, prev].sort((a, b) => new Date(a.date) - new Date(b.date)));
+      throw err;
+    }
+  }, [events]);
 
   return { events, addEvent, updateEvent, deleteEvent };
 }
