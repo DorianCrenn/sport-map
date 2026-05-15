@@ -81,6 +81,40 @@ function QuickScoreEdit({ event, onUpdateEvent }) {
   );
 }
 
+function FollowClubButton({ event }) {
+  const { isLoggedIn, isFollowingClub, followClub, unfollowClub } = useAuth();
+  const { allSports: SPORTS } = useSports();
+  if (!isLoggedIn || !event.clubId) return null;
+  const following = isFollowingClub(event.clubId);
+  const sportColor = SPORTS[event.sport]?.color ?? '#22d96a';
+  return (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={() => following
+        ? unfollowClub(event.clubId)
+        : followClub(event.clubId, { teams: 'all', notif: { match: true, news: true } })
+      }
+      style={{
+        width: '100%', padding: '11px 0', borderRadius: 12, cursor: 'pointer',
+        fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        backgroundColor: following ? `${sportColor}15` : 'var(--sl-surface)',
+        color: following ? sportColor : 'var(--sl-t2)',
+        border: `1px solid ${following ? sportColor : 'var(--sl-border-s)'}`,
+        transition: 'all 0.18s',
+        marginBottom: 8,
+      }}
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill={following ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      {following
+        ? `Vous suivez ${event.clubName ?? 'ce club'} ✓`
+        : `Suivre ${event.clubName ?? 'ce club'}`
+      }
+    </motion.button>
+  );
+}
+
 export default function MobileEventSheet({
   event, onClose, onEdit, onDelete, onUpdateEvent,
   isFavorite, onToggleFavorite,
@@ -305,6 +339,9 @@ export default function MobileEventSheet({
             M'y rendre
           </button>
         </div>
+
+        {/* Follow club — when event belongs to a tracked club */}
+        <FollowClubButton event={event} />
 
         {/* Hint to expand if collapsed */}
         {!isExpanded && (

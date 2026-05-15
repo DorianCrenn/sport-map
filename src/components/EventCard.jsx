@@ -239,6 +239,37 @@ function ICSBtn({ event }) {
   );
 }
 
+function FollowClubPill({ event }) {
+  const { isLoggedIn, isFollowingClub, followClub, unfollowClub } = useAuth();
+  if (!isLoggedIn || !event.clubId) return null;
+  const following = isFollowingClub(event.clubId);
+  return (
+    <motion.button
+      whileTap={{ scale: 0.88 }}
+      onClick={e => {
+        e.stopPropagation();
+        following ? unfollowClub(event.clubId) : followClub(event.clubId, { teams: 'all', notif: { match: true, news: true } });
+      }}
+      title={following ? `Ne plus suivre ${event.clubName ?? 'ce club'}` : `Suivre ${event.clubName ?? 'ce club'}`}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 4,
+        padding: '3px 8px', borderRadius: 20, border: 'none', cursor: 'pointer',
+        fontSize: 10, fontWeight: 700,
+        backgroundColor: following ? 'rgba(34,217,106,0.15)' : 'var(--sl-surface)',
+        color: following ? 'var(--sl-green)' : 'var(--sl-t3)',
+        transition: 'all 0.15s',
+        flexShrink: 0,
+      }}
+    >
+      {following
+        ? <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        : <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      }
+      {following ? 'Suivi' : 'Suivre'}
+    </motion.button>
+  );
+}
+
 const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, onUpdateEvent, isFavorite, onToggleFavorite, isAttending, onToggleAttend }, ref) {
   const { allSports: SPORTS } = useSports();
   const { currentUser, isAdmin } = useAuth();
@@ -289,6 +320,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
           <EventTypeBadge event={event} />
           <StatusBadge event={event} />
           {isUserEvent && <span style={{ fontSize: 10, color: '#4da6ff', fontWeight: 600, flexShrink: 0 }}>✦ Club</span>}
+          {event.clubId && !isUserEvent && <FollowClubPill event={event} />}
           {canEditThis && (
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, flexShrink: 0 }}>
               <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} aria-label="Modifier l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}>
