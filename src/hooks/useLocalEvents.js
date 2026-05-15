@@ -17,6 +17,7 @@ function mapFromDB(row) {
     category: row.category ?? '',
     clubId: row.club_id ?? null,
     userId: row.user_id,
+    score: row.score ?? null,
     source: 'user',
   };
 }
@@ -34,6 +35,7 @@ function mapToDB(data, userId) {
     team_name: data.teamName ?? '',
     category: data.category ?? '',
     club_id: data.clubId ?? null,
+    score: data.score ?? null,
     user_id: userId,
     source: 'user',
   };

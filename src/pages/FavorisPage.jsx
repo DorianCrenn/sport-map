@@ -185,7 +185,9 @@ function exportAllICS(events) {
 // ── Tab 1: Matchs favoris ─────────────────────────────────────────────────────
 function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite }) {
   const groups = useMemo(() => groupByDate(favoriteEvents), [favoriteEvents]);
-  const hasGroups = Object.values(groups).some(g => g.length > 0);
+  const [showPast, setShowPast] = useState(false);
+  const hasUpcoming = groups.today.length + groups.tomorrow.length + groups.thisWeek.length + groups.later.length > 0;
+  const hasAny = hasUpcoming || groups.past.length > 0;
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px 24px' }}>
       <NotifBanner favoriteEvents={upcomingFavorites} />
@@ -202,7 +204,7 @@ function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite }) {
         </div>
       )}
       <AnimatePresence mode="popLayout">
-        {!hasGroups ? (
+        {!hasAny ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', marginTop: 72 }}>
             <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round" style={{ marginBottom: 14 }}>
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -216,7 +218,30 @@ function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite }) {
             {groups.tomorrow.length > 0  && <DateGroup label="Demain"        events={groups.tomorrow} onToggleFavorite={onToggleFavorite} accent="#3b82f6" />}
             {groups.thisWeek.length > 0  && <DateGroup label="Cette semaine" events={groups.thisWeek} onToggleFavorite={onToggleFavorite} accent="#f97316" />}
             {groups.later.length > 0     && <DateGroup label="Plus tard"     events={groups.later}    onToggleFavorite={onToggleFavorite} />}
-            {groups.past.length > 0      && <DateGroup label="Passés"        events={groups.past}     onToggleFavorite={onToggleFavorite} />}
+            {groups.past.length > 0 && (
+              <>
+                <button
+                  onClick={() => setShowPast(p => !p)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, marginBottom: showPast ? 0 : 8, padding: '8px 0', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  <div style={{ height: 1, flex: 1, backgroundColor: 'var(--sl-divider)' }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '3px 10px', borderRadius: 999, color: 'var(--sl-t3)', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    {showPast ? 'Masquer les passés' : `Passés (${groups.past.length})`}
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transition: 'transform 0.2s', transform: showPast ? 'rotate(180deg)' : 'none' }}>
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </span>
+                  <div style={{ height: 1, flex: 1, backgroundColor: 'var(--sl-divider)' }} />
+                </button>
+                <AnimatePresence>
+                  {showPast && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
+                      <DateGroup label="Passés" events={groups.past} onToggleFavorite={onToggleFavorite} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
