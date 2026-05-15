@@ -99,7 +99,7 @@ function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
       {block.type === 'upcoming-events' && <UpcomingEventsBlock  data={block.data} allEvents={allEvents} club={club} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'training'        && <TrainingBlock        data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
       {block.type === 'image'           && <ImageBlock           data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
-      {block.type === 'matches'         && <MatchesBlock         data={block.data} isEditing={isEditing} onUpdate={patch => onUpdate(patch)} club={club} />}
+      {block.type === 'matches'         && <MatchesBlock         data={block.data} isEditing={isEditing} onUpdate={patch => onUpdate(patch)} club={club} allEvents={allEvents} />}
       {block.type === 'about'           && (isEditing
         ? <AboutBlockEditor block={block} onChange={updated => onUpdate(updated.data)} />
         : <AboutBlockView   block={block} />
@@ -432,6 +432,7 @@ function TeamView({ team, blocks, isEditing, updateBlock, addBlock, club, traini
             onUpdate={patch => updateBlock(matchesBlock.id, patch)}
             club={club}
             filterTeamId={team.id}
+            allEvents={allEvents}
           />
         ) : isEditing ? (
           <button onClick={() => addBlock('matches', null)}

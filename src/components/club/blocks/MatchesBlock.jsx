@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function uid() { return `m_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`; }
@@ -59,6 +59,7 @@ function MatchCard({ match, club, isEditing, onEdit, onRemove }) {
               {match.isHome ? 'DOM' : 'EXT'}
             </span>
             {teamLabel && <span className="text-[9px] text-gray-400 font-medium truncate max-w-[80px]">{teamLabel}</span>}
+            {match._fromMap && <span className="text-[8px] font-bold px-1 py-0.5 rounded" style={{ backgroundColor: '#EFF6FF', color: '#3b82f6' }}>carte</span>}
             {match.time && <span className="text-[9px] text-gray-400">· {match.time}</span>}
             {match.competition && <span className="text-[9px] text-gray-400 truncate">· {match.competition}</span>}
           </div>
@@ -89,7 +90,7 @@ function MatchCard({ match, club, isEditing, onEdit, onRemove }) {
             <span className="text-[10px] text-gray-300">–</span>
           )}
 
-          {isEditing && (
+          {isEditing && !match._fromMap && (
             <div className="flex items-center gap-0.5 ml-1">
               <button onClick={onEdit}
                 className="p-1.5 text-gray-300 hover:text-blue-500 transition-colors rounded-lg hover:bg-blue-50">
@@ -257,12 +258,54 @@ function MatchForm({ initial, allTeams, onSave, onCancel }) {
   );
 }
 
-export default function MatchesBlock({ data, onUpdate, isEditing, club, filterTeamId }) {
+function eventToMatch(event, club) {
+  const isHome = event.city === club?.city;
+  const titleParts = event.title?.split(' vs ') ?? [];
+  const opponent = isHome
+    ? (event.standings?.away?.team ?? titleParts.at(-1)?.trim() ?? '')
+    : (event.standings?.home?.team ?? titleParts.at(0)?.trim() ?? '');
+  return {
+    id: `ev_${event.id}`,
+    date: event.date?.slice(0, 10) ?? '',
+    time: event.date?.slice(11, 16) ?? '',
+    opponent,
+    isHome,
+    competition: event.level ?? '',
+    teamId: '',
+    teamName: event.teamName ?? '',
+    venue: event.venue ?? '',
+    scoreHome: '',
+    scoreAway: '',
+    _fromMap: true,
+  };
+}
+
+export default function MatchesBlock({ data, onUpdate, isEditing, club, filterTeamId, allEvents }) {
   const allTeams = (club?.categories ?? []).flatMap(c => c.teams ?? []);
-  const allMatches = data?.matches ?? [];
+  const filterTeam = filterTeamId ? allTeams.find(t => t.id === filterTeamId) : null;
+
+  const manualMatches = data?.matches ?? [];
+
+  const mapMatches = useMemo(() => {
+    if (!allEvents?.length || !club) return [];
+    return allEvents
+      .filter(e => String(e.clubId) === String(club.id))
+      .map(e => eventToMatch(e, club));
+  }, [allEvents, club]);
+
+  // Manual matches take priority — skip map events on same date+teamName
+  const manualKeys = new Set(manualMatches.map(m => `${m.date}_${m.teamName}`));
+  const merged = [
+    ...manualMatches,
+    ...mapMatches.filter(m => !manualKeys.has(`${m.date}_${m.teamName}`)),
+  ];
+
   const matches = filterTeamId
-    ? allMatches.filter(m => m.teamId === filterTeamId)
-    : allMatches;
+    ? merged.filter(m =>
+        m.teamId === filterTeamId ||
+        (m._fromMap && m.teamName === filterTeam?.name)
+      )
+    : merged;
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
