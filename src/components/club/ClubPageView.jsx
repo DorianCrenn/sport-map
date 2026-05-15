@@ -588,7 +588,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', stiffness: 340, damping: 36 }}
-      className="absolute inset-0 flex flex-col z-10"
+      className="absolute inset-0 flex flex-col z-20"
       style={{ backgroundColor: 'var(--sl-bg)' }}
     >
       {/* ── Header ── */}
