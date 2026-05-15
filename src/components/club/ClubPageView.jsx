@@ -625,9 +625,9 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
         <div className="px-4 pb-5 flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-base font-oswald flex-shrink-0"
-            style={{ backgroundColor: club.logo ? 'transparent' : (sportData?.color ?? '#64748b'), boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)' }}>
+            style={{ backgroundColor: club.logo ? '#fff' : (sportData?.color ?? '#64748b'), boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)', padding: club.logo ? 4 : 0 }}>
             {club.logo
-              ? <img src={club.logo} alt={club.name} className="w-full h-full object-cover" />
+              ? <img src={club.logo} alt={club.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.style.backgroundColor = sportData?.color ?? '#64748b'; e.currentTarget.parentElement.textContent = club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3); }} />
               : club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
           </div>
           <div className="flex-1 min-w-0">
@@ -669,56 +669,50 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             </div>
           </div>
 
-          <div className="flex-shrink-0 flex gap-2">
-            {/* Follow button */}
+          <div className="flex-shrink-0 flex gap-1.5">
+            {/* Follow */}
             <button
               onClick={() => isLoggedIn ? setShowFollowModal(true) : null}
               title={isFollowing ? 'Modifier le suivi' : 'Suivre ce club'}
               className="flex flex-col items-center gap-1 p-2 rounded-xl transition-colors cursor-pointer"
-              style={{ backgroundColor: isFollowing ? `${sportData?.color ?? '#22C55E'}20` : 'rgba(255,255,255,0.08)' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = isFollowing ? `${sportData?.color ?? '#22C55E'}30` : 'rgba(255,255,255,0.15)'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = isFollowing ? `${sportData?.color ?? '#22C55E'}20` : 'rgba(255,255,255,0.08)'; }}
+              style={{ backgroundColor: isFollowing ? `${sportData?.color ?? '#22C55E'}25` : 'rgba(255,255,255,0.08)' }}
             >
               <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: isFollowing ? `${sportData?.color ?? '#22C55E'}30` : 'rgba(255,255,255,0.1)' }}>
-                {isFollowing ? (
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill={sportData?.color ?? '#22C55E'} stroke={sportData?.color ?? '#22C55E'} strokeWidth="1.5" strokeLinecap="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                  </svg>
-                ) : (
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                  </svg>
-                )}
+                <svg width="17" height="17" viewBox="0 0 24 24" fill={isFollowing ? (sportData?.color ?? '#22C55E') : 'none'} stroke={isFollowing ? (sportData?.color ?? '#22C55E') : '#cbd5e1'} strokeWidth="2" strokeLinecap="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
               </div>
-              <span className="text-[9px] font-medium leading-tight text-center" style={{ color: isFollowing ? (sportData?.color ?? '#22C55E') : '#94a3b8' }}>
+              <span className="text-[9px] font-medium" style={{ color: isFollowing ? (sportData?.color ?? '#22C55E') : '#94a3b8' }}>
                 {isFollowing ? 'Suivi' : 'Suivre'}
               </span>
             </button>
 
+            {/* Poster */}
             <button
               onClick={() => setShowPoster(true)}
-              className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors group cursor-pointer"
+              className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors cursor-pointer"
               title="Créer l'affiche du prochain match"
             >
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors" style={{ backgroundColor: `${sportData?.color ?? '#22C55E'}25` }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${sportData?.color ?? '#22C55E'}25` }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={sportData?.color ?? '#22C55E'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                 </svg>
               </div>
-              <span className="text-[9px] font-medium leading-tight text-center" style={{ color: sportData?.color ?? '#22C55E' }}>Affiche</span>
+              <span className="text-[9px] font-medium" style={{ color: sportData?.color ?? '#22C55E' }}>Affiche</span>
             </button>
 
+            {/* Contact — icône seule, tooltip complet */}
             {club.contact && (
               <a href={`mailto:${club.contact}`}
-                className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors group"
+                className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors"
                 title={`Contacter ${club.name}`}>
-                <div className="w-9 h-9 rounded-xl bg-slate-700 group-hover:bg-slate-600 flex items-center justify-center transition-colors">
+                <div className="w-9 h-9 rounded-xl bg-slate-700 hover:bg-slate-600 flex items-center justify-center transition-colors">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                     <polyline points="22,6 12,13 2,6"/>
                   </svg>
                 </div>
-                <span className="text-[9px] text-slate-400 font-medium leading-tight text-center">Contacter<br/>le club</span>
+                <span className="text-[9px] text-slate-400 font-medium">Contact</span>
               </a>
             )}
           </div>
