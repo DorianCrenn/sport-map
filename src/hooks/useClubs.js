@@ -47,6 +47,22 @@ export function useClubs() {
     return () => { cancelled = true; };
   }, []);
 
+  useEffect(() => {
+    const channel = supabase
+      .channel('clubs-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clubs' }, ({ new: row }) => {
+        setUserClubs(prev => prev.some(c => c.id === row.id) ? prev : [mapFromDB(row), ...prev]);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'clubs' }, ({ new: row }) => {
+        setUserClubs(prev => prev.map(c => c.id === row.id ? mapFromDB(row) : c));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'clubs' }, ({ old: row }) => {
+        setUserClubs(prev => prev.filter(c => c.id !== row.id));
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, []);
+
   const addClub = useCallback(async (data) => {
     const userId = currentUser?.id;
     const { data: saved, error } = await supabase

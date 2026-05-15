@@ -2,6 +2,21 @@ import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import EventCard from './EventCard.jsx';
 
+function SkeletonCard() {
+  return (
+    <div style={{ borderRadius: 16, padding: '12px 14px', marginBottom: 8, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--sl-border)', flexShrink: 0, animation: 'sl-pulse 1.4s ease-in-out infinite' }} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}>
+          <div style={{ width: '70%', height: 12, borderRadius: 6, backgroundColor: 'var(--sl-border)', animation: 'sl-pulse 1.4s ease-in-out infinite' }} />
+          <div style={{ width: '45%', height: 10, borderRadius: 6, backgroundColor: 'var(--sl-border)', animation: 'sl-pulse 1.4s ease-in-out infinite 0.1s' }} />
+          <div style={{ width: '55%', height: 10, borderRadius: 6, backgroundColor: 'var(--sl-border)', animation: 'sl-pulse 1.4s ease-in-out infinite 0.2s' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EventSidebar({
   events,
   selectedEventId,
@@ -17,6 +32,7 @@ export default function EventSidebar({
   onToggleFavorite,
   isAttending,
   onToggleAttend,
+  loading,
 }) {
   const cardRefs = useRef({});
 
@@ -87,7 +103,9 @@ export default function EventSidebar({
 
       {/* Event list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
-        {events.length === 0 ? (
+        {loading ? (
+          <>{[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}</>
+        ) : events.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: 48 }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
             <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--sl-t2)' }}>Aucun événement trouvé</p>

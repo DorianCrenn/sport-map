@@ -436,7 +436,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                   boxShadow: `0 0 0 2px var(--sl-card), 0 0 0 3px var(--sl-border-s)`,
                 }}>
                   {club.logo
-                    ? <img src={club.logo} alt={club.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     : initials}
                 </div>
 

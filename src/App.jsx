@@ -35,7 +35,11 @@ function AppInner() {
   const [showAuth, setShowAuth] = useState(false);
   const [pendingOnboarding, setPendingOnboarding] = useState(false);
 
-  const { events: userEvents, addEvent, updateEvent, deleteEvent } = useLocalEvents();
+  const { events: userEvents, loading: eventsLoading, addEvent, updateEvent, deleteEvent } = useLocalEvents();
+
+  async function bulkAddEvents(events) {
+    for (const ev of events) await addEvent(ev);
+  }
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { toggle: toggleAttend, isAttending } = useAttendees();
   const [showNewEventForm, setShowNewEventForm] = useState(false);
@@ -155,6 +159,7 @@ function AppInner() {
                 cityFilter={cityFilter}
                 focusEventId={focusEventId}
                 onFocusDone={() => setFocusEventId(null)}
+                eventsLoading={eventsLoading}
               />
             )}
             {activeTab === 'favoris' && (
@@ -196,6 +201,7 @@ function AppInner() {
             key="fab-event-form"
             event={{ _isNew: true }}
             onSave={(data) => { addEvent(data); setShowNewEventForm(false); setActiveTab('map'); }}
+            onBulkSave={async (events) => { await bulkAddEvents(events); setShowNewEventForm(false); setActiveTab('map'); }}
             onClose={() => setShowNewEventForm(false)}
           />
         )}

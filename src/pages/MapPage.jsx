@@ -17,6 +17,7 @@ export default function MapPage({
   isAttending, onToggleAttend,
   favoritesCount, onGoToFavoris, cityFilter,
   focusEventId, onFocusDone,
+  eventsLoading,
 }) {
   const { currentUser } = useAuth();
   const [sportFilter, setSportFilter] = useState(null);
@@ -133,6 +134,11 @@ export default function MapPage({
     setModalEvent(undefined);
   }
 
+  async function handleBulkSave(events) {
+    for (const ev of events) await onAddEvent(ev);
+    setModalEvent(undefined);
+  }
+
   function handleDeleteEvent(id) {
     onDeleteEvent(id);
     if (selectedEventId === id) setSelectedEventId(null);
@@ -196,6 +202,7 @@ export default function MapPage({
             events={visibleEvents}
             selectedEventId={selectedEventId}
             onEventSelect={(id) => setSelectedEventId((prev) => (prev === id ? null : id))}
+            loading={eventsLoading}
             onGeolocate={handleRecentrer}
             geoLoading={geoLoading}
             canAddEvent={canAddEvent}
@@ -289,6 +296,7 @@ export default function MapPage({
         <EventFormModal
           event={modalEvent}
           onSave={handleSave}
+          onBulkSave={handleBulkSave}
           onClose={() => setModalEvent(undefined)}
         />
       )}

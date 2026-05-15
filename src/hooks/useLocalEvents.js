@@ -44,16 +44,37 @@ function mapToDB(data, userId) {
 export function useLocalEvents() {
   const { currentUser } = useAuth();
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     supabase.from('events').select('*').order('date', { ascending: true })
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error) { console.error('[Events] fetch failed:', error.message); return; }
+        if (error) { console.error('[Events] fetch failed:', error.message); }
         if (data) setEvents(data.map(mapFromDB));
+        setLoading(false);
       });
     return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('events-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, ({ new: row }) => {
+        setEvents(prev => {
+          if (prev.some(e => e.id === row.id)) return prev;
+          return [...prev, mapFromDB(row)].sort((a, b) => new Date(a.date) - new Date(b.date));
+        });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, ({ new: row }) => {
+        setEvents(prev => prev.map(e => e.id === row.id ? mapFromDB(row) : e));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, ({ old: row }) => {
+        setEvents(prev => prev.filter(e => e.id !== row.id));
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
   }, []);
 
   const addEvent = useCallback(async (data) => {
@@ -103,5 +124,5 @@ export function useLocalEvents() {
     }
   }, [events]);
 
-  return { events, addEvent, updateEvent, deleteEvent };
+  return { events, loading, addEvent, updateEvent, deleteEvent };
 }

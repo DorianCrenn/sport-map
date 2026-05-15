@@ -15,6 +15,7 @@ import { AboutBlockEditor, AboutBlockView } from './blocks/AboutBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 import EventFormModal from '../EventFormModal.jsx';
 import PosterStudio from '../PosterStudio.jsx';
+import { downloadClubICS } from '../../utils/exportICS.js';
 
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
@@ -577,10 +578,19 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   }
 
   function handleTeamEventSave(formData) {
-    if (onAddEvent) {
-      onAddEvent(formData);
-    }
+    if (onAddEvent) onAddEvent(formData);
     setTeamEventModal(undefined);
+  }
+
+  async function handleBulkTeamEventSave(events) {
+    if (onAddEvent) for (const ev of events) await onAddEvent(ev);
+    setTeamEventModal(undefined);
+  }
+
+  function handleExportICS() {
+    const now = new Date();
+    const upcoming = (allEvents ?? []).filter(e => e.clubId === club.id && new Date(e.date) >= now);
+    downloadClubICS(upcoming, club.name);
   }
 
   return (
@@ -628,7 +638,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-base font-oswald flex-shrink-0"
             style={{ backgroundColor: club.logo ? '#fff' : (sportData?.color ?? '#64748b'), boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)', padding: club.logo ? 4 : 0 }}>
             {club.logo
-              ? <img src={club.logo} alt={club.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.style.backgroundColor = sportData?.color ?? '#64748b'; e.currentTarget.parentElement.textContent = club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3); }} />
+              ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.style.backgroundColor = sportData?.color ?? '#64748b'; e.currentTarget.parentElement.textContent = club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3); }} />
               : club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
           </div>
           <div className="flex-1 min-w-0">
@@ -700,6 +710,20 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                 </svg>
               </div>
               <span className="text-[9px] font-medium" style={{ color: sportData?.color ?? '#22C55E' }}>Affiche</span>
+            </button>
+
+            {/* ICS export */}
+            <button
+              onClick={handleExportICS}
+              className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors cursor-pointer"
+              title="Exporter le calendrier .ics"
+            >
+              <div className="w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+              <span className="text-[9px] text-slate-400 font-medium">Agenda</span>
             </button>
 
             {/* Contact — icône seule, tooltip complet */}
@@ -906,6 +930,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         <EventFormModal
           event={teamEventModal}
           onSave={handleTeamEventSave}
+          onBulkSave={handleBulkTeamEventSave}
           onClose={() => setTeamEventModal(undefined)}
         />
       )}

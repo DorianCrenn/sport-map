@@ -94,7 +94,21 @@ const EMPTY_FORM = {
   eventType: 'championship', teamName: '', category: '',
   level: '', cupType: '', homeOrAway: 'home', adversaire: '',
   homeTeam: '', awayTeam: '',
+  recurrenceEnabled: false, recurrenceFreq: 'weekly', recurrenceUntil: '',
 };
+
+function generateRecurring(base, freq, untilStr) {
+  const step = freq === 'biweekly' ? 14 : 7;
+  const seriesId = `series_${Date.now()}`;
+  const until = new Date(untilStr + 'T23:59:59');
+  const events = [];
+  let cur = new Date(base.date);
+  while (cur <= until && events.length < 52) {
+    events.push({ ...base, date: cur.toISOString().slice(0, 16), seriesId });
+    cur = new Date(cur.getTime() + step * 86400000);
+  }
+  return events;
+}
 
 function toFormValues(event, defaults = {}) {
   if (!event || event._isNew) {
@@ -258,7 +272,7 @@ function EventTypeRadio({ value, onChange }) {
   );
 }
 
-export default function EventFormModal({ event, onSave, onClose }) {
+export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
   const { currentUser, isClubAdmin } = useAuth();
   const { allSports } = useSports();
   const { userClubs } = useClubs();
@@ -303,10 +317,15 @@ export default function EventFormModal({ event, onSave, onClose }) {
     });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!form.date) return;
-    onSave(buildEvent(form, currentUser, myClub, useSmartMode));
+    const base = buildEvent(form, currentUser, myClub, useSmartMode);
+    if (!isEdit && form.recurrenceEnabled && form.recurrenceUntil && onBulkSave) {
+      const events = generateRecurring(base, form.recurrenceFreq, form.recurrenceUntil);
+      if (events.length > 0) { await onBulkSave(events); return; }
+    }
+    onSave(base);
   }
 
   const teamPresets = useSmartMode && myClub
@@ -494,6 +513,51 @@ export default function EventFormModal({ event, onSave, onClose }) {
                 <input type="time" required value={form.time} onChange={e => set('time', e.target.value)} style={{ ...inputStyle, colorScheme: 'dark' }} />
               </Field>
             </div>
+
+            {/* Recurrence */}
+            {!isEdit && (
+              <div style={{ borderRadius: 14, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+                <button
+                  type="button"
+                  onClick={() => set('recurrenceEnabled', !form.recurrenceEnabled)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: form.recurrenceEnabled ? 'rgba(59,130,246,0.08)' : 'var(--sl-surface)', border: 'none', cursor: 'pointer', color: form.recurrenceEnabled ? '#3b82f6' : 'var(--sl-t2)' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.82"/></svg>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>Récurrence</span>
+                  </div>
+                  <div style={{ width: 36, height: 20, borderRadius: 999, backgroundColor: form.recurrenceEnabled ? '#3b82f6' : 'var(--sl-border)', position: 'relative', transition: 'background-color 0.2s', flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', top: 2, left: form.recurrenceEnabled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', backgroundColor: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                  </div>
+                </button>
+                {form.recurrenceEnabled && (
+                  <div style={{ padding: '12px 14px', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <Field label="Fréquence">
+                        <select value={form.recurrenceFreq} onChange={e => set('recurrenceFreq', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                          <option value="weekly">Chaque semaine</option>
+                          <option value="biweekly">Toutes les 2 semaines</option>
+                        </select>
+                      </Field>
+                      <Field label="Jusqu'au">
+                        <input type="date" value={form.recurrenceUntil} onChange={e => set('recurrenceUntil', e.target.value)} min={form.date || undefined} style={{ ...inputStyle, colorScheme: 'dark' }} />
+                      </Field>
+                    </div>
+                    {form.date && form.recurrenceUntil && (() => {
+                      const step = form.recurrenceFreq === 'biweekly' ? 14 : 7;
+                      const until = new Date(form.recurrenceUntil + 'T23:59:59');
+                      let count = 0, cur = new Date(form.date);
+                      while (cur <= until && count < 52) { count++; cur = new Date(cur.getTime() + step * 86400000); }
+                      return count > 0 ? (
+                        <p style={{ fontSize: 11, color: '#3b82f6', fontWeight: 600 }}>
+                          {count} occurrence{count > 1 ? 's' : ''} seront créées
+                        </p>
+                      ) : null;
+                    })()}
+                  </div>
+                )}
+              </div>
+            )}
 
             <Field label="Ville *">
               <CityAutocomplete
