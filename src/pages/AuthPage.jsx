@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Z } from '../constants/zIndex.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
@@ -201,6 +202,12 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
   const [loading, setLoading] = useState(false);
   const [oauthProvider, setOauthProvider] = useState(null); // null | 'google' | 'instagram'
 
+  useEffect(() => {
+    const handleKey = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
   function set(k) {
     return e => { setForm(p => ({ ...p, [k]: e.target.value })); setError(''); };
   }
@@ -267,8 +274,8 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center p-0 md:p-6"
-        style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
+        className="fixed inset-0 flex flex-col justify-end md:items-center md:justify-center p-0 md:p-6"
+        style={{ backgroundColor: 'rgba(0,0,0,0.65)', zIndex: Z.auth }}
         onClick={e => e.target === e.currentTarget && onClose()}
       >
         <motion.div
@@ -296,8 +303,9 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
             <SportLinkLogo size={100} onDark />
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white transition-colors cursor-pointer"
-              style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}
+              aria-label="Fermer"
+              className="rounded-xl text-slate-400 hover:text-white transition-colors cursor-pointer"
+              style={{ backgroundColor: 'rgba(255,255,255,0.07)', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

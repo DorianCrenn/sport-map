@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Z } from '../constants/zIndex.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EVENT_TYPES } from '../data/cities.js';
 import { STATIC_CLUBS } from '../data/clubs.js';
@@ -287,6 +288,12 @@ export default function EventFormModal({ event, onSave, onClose }) {
     setForm(vals);
   }, [event]);
 
+  useEffect(() => {
+    const handleKey = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
   function set(field, value) {
     setForm(prev => {
       const next = { ...prev, [field]: value };
@@ -318,7 +325,7 @@ export default function EventFormModal({ event, onSave, onClose }) {
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.65)', zIndex: 2000 }}
+        style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.65)', zIndex: Z.formModal }}
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <motion.div
@@ -349,7 +356,7 @@ export default function EventFormModal({ event, onSave, onClose }) {
                 </div>
               )}
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
+            <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>

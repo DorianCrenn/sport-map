@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { Z } from '../constants/zIndex.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import SportIcon from './SportIcon.jsx';
@@ -31,6 +32,12 @@ export default function FollowModal({ club, allEvents = [], currentFollow = null
     currentFollow?.notif ?? { match: true, news: true }
   );
 
+  useEffect(() => {
+    const handleKey = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
   function toggleTeam(name) {
     setSelectedTeams(prev => {
       const next = new Set(prev);
@@ -55,7 +62,7 @@ export default function FollowModal({ club, allEvents = [], currentFollow = null
         exit={{ opacity: 0 }}
         onClick={e => { if (e.target === e.currentTarget) onClose(); }}
         style={{
-          position: 'fixed', inset: 0, zIndex: 9100,
+          position: 'fixed', inset: 0, zIndex: Z.followModal,
           backgroundColor: 'rgba(0,0,0,0.65)',
           backdropFilter: 'blur(6px)',
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
@@ -94,7 +101,7 @@ export default function FollowModal({ club, allEvents = [], currentFollow = null
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {club.logo
-                    ? <img src={club.logo} alt="" style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 8 }} />
+                    ? <img src={club.logo} alt={club.name} style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 8 }} />
                     : <SportIcon sport={club.sport} size={22} color={sportColor} />
                   }
                 </div>
@@ -105,7 +112,8 @@ export default function FollowModal({ club, allEvents = [], currentFollow = null
               </div>
               <button
                 onClick={onClose}
-                style={{ width: 32, height: 32, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)', flexShrink: 0 }}
+                aria-label="Fermer"
+                style={{ width: 44, height: 44, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)', flexShrink: 0 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>

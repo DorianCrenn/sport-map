@@ -285,7 +285,7 @@ function ClubsTab({ allEvents, allClubs, follows, onFollowClub, onUnfollowClub, 
               >
                 <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, backgroundColor: `${sportColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {club.logo
-                    ? <img src={club.logo} alt="" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} />
+                    ? <img src={club.logo} alt={club.name} style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} />
                     : <SportIcon sport={club.sport} size={20} color={sportColor} />
                   }
                 </div>

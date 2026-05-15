@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 import { useSports } from '../hooks/useSports.js';
 import { champLabel } from './poster/posterUtils.js';
+import { Z } from '../constants/zIndex.js';
 import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS } from './poster/PosterRenderer.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -198,7 +199,7 @@ export default function PosterStudio({ event, onClose }) {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: 'fixed', inset: 0, zIndex: 2500, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+      style={{ position: 'fixed', inset: 0, zIndex: Z.posterStudio, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <motion.div
