@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase.js';
 
 const AuthContext = createContext(null);
@@ -62,10 +62,11 @@ async function fetchProfile(authUser) {
 // ── Provider ─────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }) {
-  const [authUser, setAuthUser]         = useState(null);
-  const [profile, setProfile]           = useState(null);
-  const [loading, setLoading]           = useState(true);
-  const [followedClubs, setFollowedClubs] = useState([]);
+  const [authUser, setAuthUser] = useState(null);
+  const [profile, setProfile]   = useState(null);
+  const [loading, setLoading]   = useState(true);
+  // follows = [{ clubId: string, teams: 'all' | string[], notif: { match: boolean, news: boolean } }]
+  const [follows, setFollows] = useState([]);
 
   // ── Bootstrap ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -99,12 +100,24 @@ export function AuthProvider({ children }) {
     return () => { subscription.unsubscribe(); clearTimeout(failsafe); };
   }, []);
 
-  // Load followed clubs from localStorage whenever the user changes
+  // Load follows from localStorage on user change (migrates legacy sl-clubs-* format)
   useEffect(() => {
-    if (!authUser?.id) { setFollowedClubs([]); return; }
+    if (!authUser?.id) { setFollows([]); return; }
     try {
-      setFollowedClubs(JSON.parse(localStorage.getItem(`sl-clubs-${authUser.id}`) ?? '[]'));
-    } catch { setFollowedClubs([]); }
+      const raw = localStorage.getItem(`sl-follows-${authUser.id}`);
+      if (raw) { setFollows(JSON.parse(raw)); return; }
+      // Migrate from legacy key
+      const legacy = localStorage.getItem(`sl-clubs-${authUser.id}`);
+      if (legacy) {
+        const migrated = JSON.parse(legacy).map(id => ({
+          clubId: String(id), teams: 'all', notif: { match: true, news: true },
+        }));
+        setFollows(migrated);
+        localStorage.setItem(`sl-follows-${authUser.id}`, JSON.stringify(migrated));
+        return;
+      }
+    } catch { /* ignore */ }
+    setFollows([]);
   }, [authUser?.id]);
 
   // ── Auth actions ─────────────────────────────────────────────────────────
@@ -211,25 +224,36 @@ export function AuthProvider({ children }) {
 
   // ── Club follow ───────────────────────────────────────────────────────────
 
-  const followClub = useCallback((clubId) => {
-    if (!authUser?.id || followedClubs.includes(clubId)) return;
-    const next = [...followedClubs, clubId];
-    setFollowedClubs(next);
-    localStorage.setItem(`sl-clubs-${authUser.id}`, JSON.stringify(next));
-    // Background sync to Supabase (fire-and-forget)
-    supabase.from('profiles').update({ followed_clubs: next }).eq('id', authUser.id).then(() => {});
-  }, [authUser?.id, followedClubs]);
+  function _saveFollows(userId, next) {
+    localStorage.setItem(`sl-follows-${userId}`, JSON.stringify(next));
+    supabase.from('profiles').update({ followed_clubs: next.map(f => f.clubId) }).eq('id', userId).then(() => {});
+  }
+
+  const followClub = useCallback((clubId, options = {}) => {
+    if (!authUser?.id || follows.some(f => String(f.clubId) === String(clubId))) return;
+    const item = { clubId: String(clubId), teams: options.teams ?? 'all', notif: options.notif ?? { match: true, news: true } };
+    const next = [...follows, item];
+    setFollows(next);
+    _saveFollows(authUser.id, next);
+  }, [authUser?.id, follows]);
 
   const unfollowClub = useCallback((clubId) => {
     if (!authUser?.id) return;
-    const next = followedClubs.filter(id => id !== clubId);
-    setFollowedClubs(next);
-    localStorage.setItem(`sl-clubs-${authUser.id}`, JSON.stringify(next));
-    // Background sync to Supabase (fire-and-forget)
-    supabase.from('profiles').update({ followed_clubs: next }).eq('id', authUser.id).then(() => {});
-  }, [authUser?.id, followedClubs]);
+    const next = follows.filter(f => String(f.clubId) !== String(clubId));
+    setFollows(next);
+    _saveFollows(authUser.id, next);
+  }, [authUser?.id, follows]);
 
-  const isFollowingClub = useCallback((clubId) => followedClubs.includes(clubId), [followedClubs]);
+  const updateFollow = useCallback((clubId, patch) => {
+    if (!authUser?.id) return;
+    const next = follows.map(f => String(f.clubId) === String(clubId) ? { ...f, ...patch } : f);
+    setFollows(next);
+    _saveFollows(authUser.id, next);
+  }, [authUser?.id, follows]);
+
+  const isFollowingClub = useCallback((clubId) => follows.some(f => String(f.clubId) === String(clubId)), [follows]);
+  const getFollow = useCallback((clubId) => follows.find(f => String(f.clubId) === String(clubId)) ?? null, [follows]);
+  const followedClubs = useMemo(() => follows.map(f => f.clubId), [follows]);
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
@@ -243,7 +267,7 @@ export function AuthProvider({ children }) {
       currentUser, loading,
       login, register, logout, updateProfile,
       loginWithGoogle, loginWithProvider, requestPasswordReset,
-      followedClubs, followClub, unfollowClub, isFollowingClub,
+      follows, followedClubs, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow,
       isAdmin, isClubAdmin, isLoggedIn,
     }}>
       {children}

@@ -156,7 +156,7 @@ function AppInner() {
               />
             )}
             {activeTab === 'favoris' && (
-              <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} />
+              <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} allClubs={allClubs} />
             )}
             {activeTab === 'news' && <NewsPage />}
             {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEvent} canAddEvent={isAdmin || isClubAdmin} />}

@@ -4,6 +4,7 @@ import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useClubPage, useClubAnalytics, FONT_OPTIONS } from '../../hooks/useClubPage.js';
 import SportIcon from '../SportIcon.jsx';
+import FollowModal from '../FollowModal.jsx';
 import TitleBlock from './blocks/TitleBlock.jsx';
 import TextBlock from './blocks/TextBlock.jsx';
 import UpcomingEventsBlock from './blocks/UpcomingEventsBlock.jsx';
@@ -499,9 +500,12 @@ function PendingResultsBanner({ count, isEditing }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canAddEvent: canAddEventProp }) {
   const { allSports: SPORTS } = useSports();
-  const { isAdmin, isClubAdmin, currentUser } = useAuth();
+  const { isAdmin, isClubAdmin, currentUser, isLoggedIn, follows, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow } = useAuth();
   const canAddEvent = canAddEventProp ?? (isAdmin || isClubAdmin);
   const canEdit = isAdmin || (isClubAdmin && currentUser?.clubId === club.id);
+  const [showFollowModal, setShowFollowModal] = useState(false);
+  const isFollowing = isFollowingClub(club.id);
+  const currentFollow = getFollow(club.id);
 
   const pageViews = useClubAnalytics(club.id);
 
@@ -666,6 +670,31 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           </div>
 
           <div className="flex-shrink-0 flex gap-2">
+            {/* Follow button */}
+            <button
+              onClick={() => isLoggedIn ? setShowFollowModal(true) : null}
+              title={isFollowing ? 'Modifier le suivi' : 'Suivre ce club'}
+              className="flex flex-col items-center gap-1 p-2 rounded-xl transition-colors cursor-pointer"
+              style={{ backgroundColor: isFollowing ? `${sportData?.color ?? '#22C55E'}20` : 'rgba(255,255,255,0.08)' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = isFollowing ? `${sportData?.color ?? '#22C55E'}30` : 'rgba(255,255,255,0.15)'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = isFollowing ? `${sportData?.color ?? '#22C55E'}20` : 'rgba(255,255,255,0.08)'; }}
+            >
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: isFollowing ? `${sportData?.color ?? '#22C55E'}30` : 'rgba(255,255,255,0.1)' }}>
+                {isFollowing ? (
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill={sportData?.color ?? '#22C55E'} stroke={sportData?.color ?? '#22C55E'} strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                ) : (
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                )}
+              </div>
+              <span className="text-[9px] font-medium leading-tight text-center" style={{ color: isFollowing ? (sportData?.color ?? '#22C55E') : '#94a3b8' }}>
+                {isFollowing ? 'Suivi' : 'Suivre'}
+              </span>
+            </button>
+
             <button
               onClick={() => setShowPoster(true)}
               className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors group cursor-pointer"
@@ -888,6 +917,24 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
       {/* Poster studio modal */}
       {showPoster && <PosterStudio event={posterEvent} onClose={() => setShowPoster(false)} />}
+
+      {/* Follow modal */}
+      {showFollowModal && (
+        <FollowModal
+          club={club}
+          allEvents={allEvents ?? []}
+          currentFollow={currentFollow}
+          onSave={(options) => {
+            if (isFollowing) {
+              updateFollow(club.id, options);
+            } else {
+              followClub(club.id, options);
+            }
+            setShowFollowModal(false);
+          }}
+          onClose={() => setShowFollowModal(false)}
+        />
+      )}
     </motion.div>
   );
 }
