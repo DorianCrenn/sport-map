@@ -27,7 +27,7 @@ const ADMIN = {
   icon: (a) => <svg width="21" height="21" viewBox="0 0 24 24" fill={a ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
 };
 
-export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent }) {
+export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV }) {
   const { isAdmin, isClubAdmin } = useAuth();
   const canFab = isAdmin || isClubAdmin;
   const [fabOpen, setFabOpen] = useState(false);
@@ -43,6 +43,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
   function handleFabAction(action) {
     setFabOpen(false);
     if (action === 'event') onAddEvent?.();
+    if (action === 'csv')   onImportCSV?.();
     if (action === 'clubs') onTabChange?.('clubs');
     if (action === 'map') onTabChange?.('map');
   }
@@ -91,6 +92,12 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                   label="Mon club"
                   color="var(--sl-blue)"
                   onClick={() => handleFabAction('clubs')}
+                />
+                <FabAction
+                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>}
+                  label="Importer un CSV"
+                  color="#a855f7"
+                  onClick={() => handleFabAction('csv')}
                 />
                 <FabAction
                   icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>}

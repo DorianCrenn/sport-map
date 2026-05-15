@@ -26,6 +26,7 @@ import AdminPage from './pages/AdminPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import OnboardingPage from './pages/OnboardingPage.jsx';
 import EventFormModal from './components/EventFormModal.jsx';
+import CSVImportModal from './components/CSVImportModal.jsx';
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading } = useAuth();
@@ -38,6 +39,7 @@ function AppInner() {
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { toggle: toggleAttend, isAttending } = useAttendees();
   const [showNewEventForm, setShowNewEventForm] = useState(false);
+  const [showCSVImport, setShowCSVImport] = useState(false);
   const clubMatchEvents = useClubMatches();
   const { userClubs } = useClubs();
   const { allSports } = useSports();
@@ -173,7 +175,7 @@ function AppInner() {
         </AnimatePresence>
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} />
 
       <AnimatePresence>
         {showAuth && (
@@ -195,6 +197,13 @@ function AppInner() {
             event={{ _isNew: true }}
             onSave={(data) => { addEvent(data); setShowNewEventForm(false); setActiveTab('map'); }}
             onClose={() => setShowNewEventForm(false)}
+          />
+        )}
+        {showCSVImport && (
+          <CSVImportModal
+            key="csv-import"
+            onSave={addEvent}
+            onClose={() => setShowCSVImport(false)}
           />
         )}
         {selectedSearchClub && (
