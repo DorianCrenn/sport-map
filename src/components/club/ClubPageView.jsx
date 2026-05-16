@@ -14,9 +14,11 @@ import MatchesBlock from './blocks/MatchesBlock.jsx';
 import { AboutBlockEditor, AboutBlockView } from './blocks/AboutBlock.jsx';
 import { GalleryBlockEditor, GalleryBlockView } from './blocks/GalleryBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
+import ClubManagersPanel from './ClubManagersPanel.jsx';
 import EventFormModal from '../EventFormModal.jsx';
 import PosterStudio from '../PosterStudio.jsx';
 import { downloadClubICS } from '../../utils/exportICS.js';
+import { useClubManagers } from '../../hooks/useClubManagers.js';
 
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
@@ -615,7 +617,9 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const { allSports: SPORTS } = useSports();
   const { isAdmin, isClubAdmin, currentUser, isLoggedIn, follows, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow } = useAuth();
   const canAddEvent = canAddEventProp ?? (isAdmin || isClubAdmin);
-  const canEdit = isAdmin || (isClubAdmin && currentUser?.clubId === club.id);
+  const isOwner = isAdmin || (isClubAdmin && currentUser?.clubId === club.id);
+  const { managers, addManager, removeManager, isManager } = useClubManagers(club.id);
+  const canEdit = isOwner || isManager(currentUser?.email);
   const [showFollowModal, setShowFollowModal] = useState(false);
   const isFollowing = isFollowingClub(club.id);
   const currentFollow = getFollow(club.id);
@@ -631,6 +635,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   } = useClubPage(club);
 
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
+  const [showManagersPanel, setShowManagersPanel] = useState(false);
   const [activeTeamId, setActiveTeamId] = useState(null);
   const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
   const [showPoster, setShowPoster] = useState(false);
@@ -729,20 +734,42 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             Clubs
           </button>
-          {canEdit && (
-            <button
-              onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
-              aria-label={isEditing ? 'Terminer la modification' : 'Modifier la page du club'}
-              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
-                isEditing ? 'bg-green-500 text-white hover:bg-green-400' : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
-              }`}
-            >
-              {isEditing
-                ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Terminé</>
-                : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg> Modifier</>
-              }
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {isOwner && isEditing && (
+              <button
+                onClick={() => setShowManagersPanel(true)}
+                aria-label="Gérer les gestionnaires du club"
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                {managers.length > 0 && (
+                  <span className="text-[10px] font-bold px-1 py-0.5 rounded-full bg-blue-500 text-white leading-none">
+                    {managers.length}
+                  </span>
+                )}
+                Équipe
+              </button>
+            )}
+            {canEdit && (
+              <button
+                onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
+                aria-label={isEditing ? 'Terminer la modification' : 'Modifier la page du club'}
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
+                  isEditing ? 'bg-green-500 text-white hover:bg-green-400' : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
+                }`}
+              >
+                {isEditing
+                  ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Terminé</>
+                  : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg> Modifier</>
+                }
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="px-4 pb-5 flex items-center gap-4">
@@ -1049,6 +1076,18 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
       {/* Poster studio modal */}
       {showPoster && <PosterStudio event={posterEvent} onClose={() => setShowPoster(false)} />}
+
+      {/* Managers panel */}
+      {showManagersPanel && (
+        <ClubManagersPanel
+          managers={managers}
+          ownerEmail={currentUser?.email}
+          ownerName={currentUser?.name}
+          onAdd={addManager}
+          onRemove={removeManager}
+          onClose={() => setShowManagersPanel(false)}
+        />
+      )}
 
       {/* Follow modal */}
       {showFollowModal && (
