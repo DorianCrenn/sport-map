@@ -35,6 +35,10 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
       : inFavoritesMode ? favoriteSports.includes(c.sport)
       : true;
     return matchSearch && matchSport;
+  }).sort((a, b) => {
+    const aF = isFollowingClub(a.id) ? 0 : 1;
+    const bF = isFollowingClub(b.id) ? 0 : 1;
+    return aF - bF;
   });
 
   const myClub = isClubAdmin && currentUser?.clubId
@@ -451,6 +455,14 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                         backgroundColor: 'var(--sl-green-dim)', color: 'var(--sl-green)',
                       }}>
                         {isAdmin ? 'Géré' : 'Mon club'}
+                      </span>
+                    )}
+                    {!own && isFollowingClub(club.id) && (
+                      <span style={{
+                        fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, flexShrink: 0,
+                        backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6',
+                      }}>
+                        Suivi
                       </span>
                     )}
                   </div>

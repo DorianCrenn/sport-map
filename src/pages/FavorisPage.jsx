@@ -45,57 +45,140 @@ function ShareBtn({ event }) {
   );
 }
 
+// ── Event type meta ───────────────────────────────────────────────────────────
+const EV_TYPE_META = {
+  championship: { label: 'Championnat', color: '#3b82f6' },
+  cup:          { label: 'Coupe',       color: '#f97316' },
+  friendly:     { label: 'Amical',      color: '#22d96a' },
+};
+
 // ── Favorite event card ───────────────────────────────────────────────────────
-function FavoriteCard({ event, onToggleFavorite }) {
+function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }) {
   const { allSports: SPORTS } = useSports();
   const sportColor = SPORTS[event.sport]?.color ?? '#22d96a';
   const dateObj = new Date(event.date);
   const isPast   = dateObj < new Date();
   const timeStr  = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const dateShort = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+  const attending = isAttending?.(event.id) ?? false;
+  const typeMeta  = EV_TYPE_META[event.eventType];
+
+  function handleNav() {
+    const addr = encodeURIComponent([event.venue, event.city].filter(Boolean).join(', '));
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    window.open(isIOS ? `maps://maps.apple.com/?q=${addr}` : `https://maps.google.com/?q=${addr}`, '_blank');
+  }
 
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: isPast ? 0.5 : 1, y: 0 }}
+      animate={{ opacity: isPast ? 0.55 : 1, y: 0 }}
       exit={{ opacity: 0, x: -24 }}
       transition={{ duration: 0.18 }}
       style={{
-        borderRadius: 14, padding: '12px 10px 12px 0', marginBottom: 8,
+        borderRadius: 14, marginBottom: 8,
         backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
-        display: 'flex', alignItems: 'stretch', overflow: 'hidden',
+        display: 'flex', overflow: 'hidden',
       }}
     >
-      <div style={{ width: 3, flexShrink: 0, backgroundColor: sportColor, borderRadius: '0 3px 3px 0', marginRight: 12, alignSelf: 'stretch' }} />
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, backgroundColor: `${sportColor}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <SportIcon sport={event.sport} size={20} color={sportColor} />
+      {/* Left sport color bar */}
+      <div style={{ width: 3, flexShrink: 0, backgroundColor: sportColor }} />
+
+      {/* Content */}
+      <div style={{ flex: 1, minWidth: 0, padding: '11px 12px' }}>
+
+        {/* Badges + remove heart */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: '#fff', backgroundColor: sportColor, flexShrink: 0 }}>{event.sport}</span>
+          {typeMeta && (
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: typeMeta.color, backgroundColor: `${typeMeta.color}18`, flexShrink: 0 }}>
+              {event.eventType === 'championship' && event.level ? event.level : typeMeta.label}
+            </span>
+          )}
+          {isPast && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 6, color: '#64748b', backgroundColor: 'rgba(100,116,139,0.1)', flexShrink: 0 }}>Terminé</span>}
+          <button onClick={() => onToggleFavorite(event.id)} title="Retirer des favoris"
+            style={{ marginLeft: 'auto', padding: 5, borderRadius: 8, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <HeartSvg filled size={13} />
+          </button>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: sportColor, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{event.sport}</div>
-          <div style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.3, color: 'var(--sl-t1)', marginBottom: 5 }}>{event.title}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--sl-t2)' }}>
-            <CalSvg /><span>{dateShort} · {timeStr}</span>
+
+        {/* Title */}
+        <div style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.3, color: 'var(--sl-t1)', marginBottom: 3 }}>{event.title}</div>
+
+        {/* Championship team/level subtitle */}
+        {event.eventType === 'championship' && (event.teamName || event.level) && (
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', marginBottom: 4 }}>
+            {[event.teamName, event.level].filter(Boolean).join(' — ')}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>
-            <PinSvg /><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.venue || event.city}</span>
+        )}
+        {event.eventType === 'cup' && event.cupType && (
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#f97316', marginBottom: 4 }}>{event.cupType}</div>
+        )}
+
+        {/* Score */}
+        {event.score != null && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.home}</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--sl-t3)' }}>—</span>
+            <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.away}</span>
           </div>
+        )}
+
+        {/* Date + venue */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 11, color: 'var(--sl-t2)', marginBottom: 10 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}><CalSvg />{dateShort} · {timeStr}</span>
+          {(event.venue || event.city) && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden' }}>
+              <PinSvg /><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.venue || event.city}</span>
+            </span>
+          )}
         </div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0, paddingRight: 2 }}>
-        <ShareBtn event={event} />
-        <button onClick={() => onToggleFavorite(event.id)} title="Retirer des favoris"
-          style={{ padding: 7, borderRadius: 10, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)' }}>
-          <HeartSvg filled />
-        </button>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            onClick={() => onToggleAttend?.(event.id)}
+            style={{
+              flex: 1, padding: '7px 4px', borderRadius: 10, cursor: 'pointer',
+              fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+              backgroundColor: attending ? 'var(--sl-green-dim)' : 'var(--sl-surface)',
+              color: attending ? 'var(--sl-green)' : 'var(--sl-t2)',
+              border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`,
+              transition: 'all 0.15s',
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill={attending ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            {attending ? "J'y serai ✓" : "J'y serai"}
+          </button>
+          <button
+            onClick={handleNav}
+            style={{
+              flex: 1, padding: '7px 4px', borderRadius: 10, cursor: 'pointer',
+              fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+              backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
+              border: '1px solid var(--sl-border-s)',
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            M'y rendre
+          </button>
+          <ShareBtn event={event} />
+          <button onClick={() => downloadICS(event)} title="Ajouter au calendrier"
+            style={{ width: 34, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CalSvg size={12} />
+          </button>
+        </div>
       </div>
     </motion.div>
   );
 }
 
 // ── Date group ────────────────────────────────────────────────────────────────
-function DateGroup({ label, events, onToggleFavorite, accent }) {
+function DateGroup({ label, events, onToggleFavorite, accent, isAttending, onToggleAttend }) {
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
@@ -105,7 +188,7 @@ function DateGroup({ label, events, onToggleFavorite, accent }) {
         </span>
         <div style={{ height: 1, flex: 1, backgroundColor: 'var(--sl-divider)' }} />
       </div>
-      {events.map(e => <FavoriteCard key={e.id} event={e} onToggleFavorite={onToggleFavorite} />)}
+      {events.map(e => <FavoriteCard key={e.id} event={e} onToggleFavorite={onToggleFavorite} isAttending={isAttending} onToggleAttend={onToggleAttend} />)}
     </div>
   );
 }
@@ -183,7 +266,7 @@ function exportAllICS(events) {
 }
 
 // ── Tab 1: Matchs favoris ─────────────────────────────────────────────────────
-function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite }) {
+function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite, isAttending, onToggleAttend }) {
   const groups = useMemo(() => groupByDate(favoriteEvents), [favoriteEvents]);
   const [showPast, setShowPast] = useState(false);
   const hasUpcoming = groups.today.length + groups.tomorrow.length + groups.thisWeek.length + groups.later.length > 0;
@@ -214,10 +297,10 @@ function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite }) {
           </motion.div>
         ) : (
           <motion.div key="groups" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            {groups.today.length > 0    && <DateGroup label="Aujourd'hui"   events={groups.today}    onToggleFavorite={onToggleFavorite} accent="var(--sl-green)" />}
-            {groups.tomorrow.length > 0  && <DateGroup label="Demain"        events={groups.tomorrow} onToggleFavorite={onToggleFavorite} accent="#3b82f6" />}
-            {groups.thisWeek.length > 0  && <DateGroup label="Cette semaine" events={groups.thisWeek} onToggleFavorite={onToggleFavorite} accent="#f97316" />}
-            {groups.later.length > 0     && <DateGroup label="Plus tard"     events={groups.later}    onToggleFavorite={onToggleFavorite} />}
+            {groups.today.length > 0    && <DateGroup label="Aujourd'hui"   events={groups.today}    onToggleFavorite={onToggleFavorite} accent="var(--sl-green)" isAttending={isAttending} onToggleAttend={onToggleAttend} />}
+            {groups.tomorrow.length > 0  && <DateGroup label="Demain"        events={groups.tomorrow} onToggleFavorite={onToggleFavorite} accent="#3b82f6" isAttending={isAttending} onToggleAttend={onToggleAttend} />}
+            {groups.thisWeek.length > 0  && <DateGroup label="Cette semaine" events={groups.thisWeek} onToggleFavorite={onToggleFavorite} accent="#f97316" isAttending={isAttending} onToggleAttend={onToggleAttend} />}
+            {groups.later.length > 0     && <DateGroup label="Plus tard"     events={groups.later}    onToggleFavorite={onToggleFavorite} isAttending={isAttending} onToggleAttend={onToggleAttend} />}
             {groups.past.length > 0 && (
               <>
                 <button
@@ -236,7 +319,7 @@ function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite }) {
                 <AnimatePresence>
                   {showPast && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
-                      <DateGroup label="Passés" events={groups.past} onToggleFavorite={onToggleFavorite} />
+                      <DateGroup label="Passés" events={groups.past} onToggleFavorite={onToggleFavorite} isAttending={isAttending} onToggleAttend={onToggleAttend} />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -591,7 +674,7 @@ const TABS = [
 ];
 
 // ── Main page ─────────────────────────────────────────────────────────────────
-export default function FavorisPage({ allEvents, favorites, onToggleFavorite, allClubs = [] }) {
+export default function FavorisPage({ allEvents, favorites, onToggleFavorite, allClubs = [], isAttending, onToggleAttend }) {
   const { follows, followedClubs, unfollowClub, updateFollow, isLoggedIn } = useAuth();
   const [activeTab, setActiveTab] = useState('matchs');
 
@@ -656,6 +739,8 @@ export default function FavorisPage({ allEvents, favorites, onToggleFavorite, al
               favoriteEvents={favoriteEvents}
               upcomingFavorites={upcomingFavorites}
               onToggleFavorite={onToggleFavorite}
+              isAttending={isAttending}
+              onToggleAttend={onToggleAttend}
             />
           )}
           {activeTab === 'clubs' && (
