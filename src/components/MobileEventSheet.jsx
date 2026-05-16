@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
+import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import SportIcon from './SportIcon.jsx';
 import PosterStudio from './PosterStudio.jsx';
 
@@ -126,6 +127,8 @@ export default function MobileEventSheet({
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPoster, setShowPoster] = useState(false);
+  const sheetRef = useRef(null);
+  useFocusTrap(sheetRef, isExpanded);
 
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
@@ -188,6 +191,10 @@ export default function MobileEventSheet({
   return (
     <>
     <motion.div
+      ref={sheetRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Détails de l'événement"
       drag={isExpanded ? false : 'y'}
       dragConstraints={{ top: 0, bottom: 0 }}
       dragElastic={{ top: 0.2, bottom: 0.4 }}

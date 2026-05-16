@@ -12,6 +12,7 @@ import TrainingBlock from './blocks/TrainingBlock.jsx';
 import ImageBlock from './blocks/ImageBlock.jsx';
 import MatchesBlock from './blocks/MatchesBlock.jsx';
 import { AboutBlockEditor, AboutBlockView } from './blocks/AboutBlock.jsx';
+import { GalleryBlockEditor, GalleryBlockView } from './blocks/GalleryBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 import EventFormModal from '../EventFormModal.jsx';
 import PosterStudio from '../PosterStudio.jsx';
@@ -20,7 +21,7 @@ import { downloadClubICS } from '../../utils/exportICS.js';
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
   'upcoming-events': 'Événements', training: 'Entraînements',
-  image: 'Image', matches: 'Matchs', about: 'À propos',
+  image: 'Image', matches: 'Matchs', about: 'À propos', gallery: 'Galerie',
 };
 
 // ── Span helpers ──────────────────────────────────────────────────────────────
@@ -104,6 +105,10 @@ function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
       {block.type === 'about'           && (isEditing
         ? <AboutBlockEditor block={block} onChange={updated => onUpdate(updated.data)} />
         : <AboutBlockView   block={block} />
+      )}
+      {block.type === 'gallery'         && (isEditing
+        ? <GalleryBlockEditor block={block} onChange={data => onUpdate(data)} />
+        : <GalleryBlockView   block={block} />
       )}
     </>
   );

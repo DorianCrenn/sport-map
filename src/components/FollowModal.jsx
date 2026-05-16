@@ -1,13 +1,16 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Z } from '../constants/zIndex.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
+import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import SportIcon from './SportIcon.jsx';
 
 export default function FollowModal({ club, allEvents = [], currentFollow = null, onSave, onClose }) {
   const { allSports: SPORTS } = useSports();
   const sportData  = SPORTS[club.sport];
   const sportColor = sportData?.color ?? '#22d96a';
+  const dialogRef = useRef(null);
+  useFocusTrap(dialogRef);
 
   // Collect unique team names from events + club.categories
   const availableTeams = useMemo(() => {
@@ -69,7 +72,11 @@ export default function FollowModal({ club, allEvents = [], currentFollow = null
         }}
       >
         <motion.div
+          ref={dialogRef}
           key="follow-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="follow-modal-title"
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
@@ -106,7 +113,7 @@ export default function FollowModal({ club, allEvents = [], currentFollow = null
                   }
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--sl-t1)', lineHeight: 1.2 }}>{club.name}</div>
+                  <div id="follow-modal-title" style={{ fontWeight: 700, fontSize: 16, color: 'var(--sl-t1)', lineHeight: 1.2 }}>{club.name}</div>
                   <div style={{ fontSize: 12, color: 'var(--sl-t3)', marginTop: 2 }}>{club.sport} · {club.city}</div>
                 </div>
               </div>

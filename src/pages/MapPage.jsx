@@ -108,6 +108,16 @@ export default function MapPage({
     return displayEvents.filter((e) => mapBounds.contains([e.lat, e.lng]));
   }, [displayEvents, mapBounds]);
 
+  const pendingScores = useMemo(() => {
+    if (!canAddEvent) return 0;
+    const now = new Date();
+    return allEvents.filter(e =>
+      (e.eventType === 'championship' || e.eventType === 'cup') &&
+      new Date(e.date) < now &&
+      e.score == null
+    ).length;
+  }, [allEvents, canAddEvent]);
+
   const handleBoundsChange = useCallback((bounds) => setMapBounds(bounds), []);
 
   useEffect(() => {
@@ -206,6 +216,7 @@ export default function MapPage({
             onGeolocate={handleRecentrer}
             geoLoading={geoLoading}
             canAddEvent={canAddEvent}
+            pendingScores={pendingScores}
             onAddEvent={() => setModalEvent({ _isNew: true })}
             onEditEvent={(event) => setModalEvent(event)}
             onDeleteEvent={handleDeleteEvent}

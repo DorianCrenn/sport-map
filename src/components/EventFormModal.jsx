@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Z } from '../constants/zIndex.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EVENT_TYPES } from '../data/cities.js';
@@ -6,6 +6,7 @@ import { STATIC_CLUBS } from '../data/clubs.js';
 import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import CityAutocomplete from './CityAutocomplete.jsx';
 import SportIcon from './SportIcon.jsx';
 
@@ -281,6 +282,8 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
   const useSmartMode = !!(isClubAdmin && myClub);
   const isEdit = !!event && !event?._isNew;
   const sportOptions = Object.values(allSports).filter(s => !s.isArchived).map(s => s.label);
+  const dialogRef = useRef(null);
+  useFocusTrap(dialogRef);
 
   const [form, setForm] = useState(() => {
     const vals = toFormValues(event, {
@@ -348,6 +351,10 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="event-form-heading"
           initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 340, damping: 34 }}
           style={{
@@ -365,7 +372,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 14px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>
+              <h2 id="event-form-heading" style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>
                 {isEdit ? 'Modifier l\'événement' : 'Nouvel événement'}
               </h2>
               {useSmartMode && myClub && (

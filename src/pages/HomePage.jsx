@@ -399,8 +399,28 @@ function FeaturesSection({ stats = {}, onNavigate }) {
         ))}
       </div>
 
-      <div className="text-center mt-6">
-        <p style={{ fontSize:11, color:'var(--sl-t3)' }}>Finistère (29) · Version 1.0.0</p>
+      <div className="mt-8 rounded-2xl p-4" style={{ border: '1px dashed var(--sl-border-s)', backgroundColor: 'var(--sl-surface)' }}>
+        <div className="flex items-center gap-2 mb-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--sl-t3)' }}>Couverture territoriale</span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1 rounded-full font-bold" style={{ fontSize: 11, padding: '3px 10px', backgroundColor: 'rgba(34,217,106,0.15)', color: '#22d96a' }}>
+            ✓ Finistère (29)
+          </span>
+          <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>·</span>
+          <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Bientôt :</span>
+          {['Côtes-d\'Armor (22)', 'Morbihan (56)', 'Ille-et-Vilaine (35)'].map(dep => (
+            <span key={dep} className="inline-flex items-center rounded-full" style={{ fontSize: 11, padding: '3px 10px', backgroundColor: 'var(--sl-border)', color: 'var(--sl-t3)' }}>
+              {dep}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="text-center mt-4">
+        <p style={{ fontSize:11, color:'var(--sl-t3)' }}>SportLink · Version 1.0.0</p>
       </div>
     </div>
   );

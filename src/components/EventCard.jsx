@@ -298,6 +298,12 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.16 }}
       onClick={onSelect}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect?.(); } }}
+      tabIndex={0}
+      role="button"
+      aria-pressed={isSelected}
+      aria-label={event.title}
+      className="event-card-focusable"
       style={{
         backgroundColor: 'var(--sl-card)',
         borderRadius: 14, padding: '12px 12px 12px 0', marginBottom: 8,
@@ -305,6 +311,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
         border: `1.5px solid ${isSelected ? sportColor : 'var(--sl-border)'}`,
         boxShadow: isSelected ? `0 0 0 1px ${sportColor}25, 0 4px 16px ${sportColor}15` : 'none',
         display: 'flex', alignItems: 'stretch', gap: 0, overflow: 'hidden',
+        outline: 'none',
       }}
     >
       {/* Sport color accent bar */}

@@ -1,6 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import EventCard from './EventCard.jsx';
+
+const PAGE_SIZE = 30;
 
 function SkeletonCard() {
   return (
@@ -24,6 +26,7 @@ export default function EventSidebar({
   onGeolocate,
   geoLoading,
   canAddEvent,
+  pendingScores = 0,
   onAddEvent,
   onEditEvent,
   onDeleteEvent,
@@ -34,7 +37,24 @@ export default function EventSidebar({
   onToggleAttend,
   loading,
 }) {
-  const cardRefs = useRef({});
+  const cardRefs  = useRef({});
+  const sentinelRef = useRef(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Reset pagination when event list changes
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [events]);
+
+  // IntersectionObserver: load more when sentinel enters viewport
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisibleCount(n => n + PAGE_SIZE); },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [events]);
 
   useEffect(() => {
     if (selectedEventId !== null && cardRefs.current[selectedEventId]) {
@@ -99,6 +119,22 @@ export default function EventSidebar({
             Ajouter un événement
           </button>
         )}
+
+        {pendingScores > 0 && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '7px 10px', borderRadius: 10, marginTop: 6,
+            backgroundColor: 'rgba(245,158,11,0.10)',
+            border: '1px solid rgba(245,158,11,0.25)',
+          }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: '#f59e0b', lineHeight: 1.35 }}>
+              {pendingScores} match{pendingScores > 1 ? 's' : ''} passé{pendingScores > 1 ? 's' : ''} sans score
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Event list */}
@@ -112,24 +148,33 @@ export default function EventSidebar({
             <p style={{ fontSize: 12, marginTop: 4, color: 'var(--sl-t3)' }}>Essayez d'autres filtres</p>
           </div>
         ) : (
-          <AnimatePresence mode="popLayout">
-            {events.map((event) => (
-              <EventCard
-                key={event.id}
-                ref={(el) => { cardRefs.current[event.id] = el; }}
-                event={event}
-                isSelected={event.id === selectedEventId}
-                onSelect={() => onEventSelect(event.id)}
-                onEdit={onEditEvent}
-                onDelete={onDeleteEvent}
-                onUpdateEvent={onUpdateEvent}
-                isFavorite={isFavorite}
-                onToggleFavorite={onToggleFavorite}
-                isAttending={isAttending}
-                onToggleAttend={onToggleAttend}
-              />
-            ))}
-          </AnimatePresence>
+          <>
+            <AnimatePresence mode="popLayout">
+              {events.slice(0, visibleCount).map((event) => (
+                <EventCard
+                  key={event.id}
+                  ref={(el) => { cardRefs.current[event.id] = el; }}
+                  event={event}
+                  isSelected={event.id === selectedEventId}
+                  onSelect={() => onEventSelect(event.id)}
+                  onEdit={onEditEvent}
+                  onDelete={onDeleteEvent}
+                  onUpdateEvent={onUpdateEvent}
+                  isFavorite={isFavorite}
+                  onToggleFavorite={onToggleFavorite}
+                  isAttending={isAttending}
+                  onToggleAttend={onToggleAttend}
+                />
+              ))}
+            </AnimatePresence>
+            {visibleCount < events.length && (
+              <div ref={sentinelRef} style={{ padding: '12px 0', textAlign: 'center' }}>
+                <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>
+                  {events.length - visibleCount} événement{events.length - visibleCount > 1 ? 's' : ''} de plus…
+                </span>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
