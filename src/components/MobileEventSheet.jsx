@@ -200,7 +200,7 @@ export default function MobileEventSheet({
       dragElastic={{ top: 0.2, bottom: 0.4 }}
       onDragEnd={handleDragEnd}
       initial={{ y: '100%' }}
-      animate={{ y: 0, height: isExpanded ? '88dvh' : '52dvh' }}
+      animate={{ y: 0, height: isExpanded ? '100%' : '52dvh' }}
       exit={{ y: '100%' }}
       transition={{ type: 'spring', stiffness: 380, damping: 40 }}
       style={{
