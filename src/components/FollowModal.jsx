@@ -108,7 +108,7 @@ export default function FollowModal({ club, allEvents = [], currentFollow = null
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {club.logo
-                    ? <img src={club.logo} alt={club.name} style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 8 }} />
+                    ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 8 }} onError={e => { e.currentTarget.style.display = 'none'; }} />
                     : <SportIcon sport={club.sport} size={22} color={sportColor} />
                   }
                 </div>

@@ -129,8 +129,8 @@ export default function ImageBlock({ data, isEditing, onUpdate }) {
 
   return (
     <figure className="m-0">
-      <div className="rounded-xl overflow-hidden" style={{ aspectRatio: ratio !== 'auto' ? ratio : undefined }}>
-        <img src={src} alt={caption || ''} className="w-full h-full" style={{ objectFit: fit }} />
+      <div className="rounded-xl overflow-hidden img-skeleton" style={{ aspectRatio: ratio !== 'auto' ? ratio : undefined }}>
+        <img src={src} alt={caption || ''} loading="lazy" className="w-full h-full" style={{ objectFit: fit }} />
       </div>
       {caption && (
         <figcaption className="text-xs text-gray-400 text-center mt-2 italic">{caption}</figcaption>

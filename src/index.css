@@ -281,6 +281,17 @@ a:focus:not(:focus-visible) {
   outline-offset: 2px;
 }
 
+/* Lazy image skeleton shimmer — applies to the wrapper container, not the img */
+@keyframes img-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.img-skeleton {
+  background: linear-gradient(90deg, var(--sl-border) 25%, var(--sl-surface) 50%, var(--sl-border) 75%);
+  background-size: 800px 100%;
+  animation: img-shimmer 1.4s ease-in-out infinite;
+}
+
 /* ═══════════════════════════════════════════════════════════
    BASE
    ═══════════════════════════════════════════════════════════ */

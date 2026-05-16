@@ -113,11 +113,11 @@ export function GalleryBlockView({ block }) {
             key={i}
             onClick={() => setLightbox(i)}
             aria-label={`Agrandir la photo ${i + 1}`}
+            className="img-skeleton"
             style={{
               display: 'block', padding: 0, border: 'none', cursor: 'zoom-in',
               aspectRatio: cols === 1 ? '16/9' : '1',
               borderRadius: 10, overflow: 'hidden',
-              backgroundColor: 'var(--sl-border)',
             }}
           >
             <img
