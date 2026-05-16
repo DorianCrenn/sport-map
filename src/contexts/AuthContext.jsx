@@ -18,6 +18,7 @@ function mapProfile(authUser, dbProfile) {
     followedClubs:  dbProfile?.followed_clubs ?? [],
     clubId:         dbProfile?.club_id ?? null,
     onboardingDone: dbProfile?.onboarding_done ?? false,
+    digestOptIn:    dbProfile?.digest_opt_in ?? false,
     authProvider:   dbProfile?.auth_provider ?? meta.authProvider ?? null,
     createdAt:      authUser.created_at,
   };
@@ -173,6 +174,7 @@ export function AuthProvider({ children }) {
       followedClubs:  'followed_clubs',
       clubId:         'club_id',
       onboardingDone: 'onboarding_done',
+      digestOptIn:    'digest_opt_in',
       role:           'role',
     };
     const dbPatch = {};

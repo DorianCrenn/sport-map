@@ -433,6 +433,42 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
           </div>
         )}
 
+        {/* Digest hebdo opt-in */}
+        <motion.button
+          onClick={() => updateProfile({ digestOptIn: !currentUser.digestOptIn })}
+          className="flex items-center justify-between w-full rounded-2xl p-4 cursor-pointer"
+          style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)' }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: currentUser.digestOptIn ? 'rgba(34,197,94,0.12)' : 'var(--sl-surface)' }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+                stroke={currentUser.digestOptIn ? '#22C55E' : 'var(--sl-t3)'}
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <div>
+              <div className="text-sm font-semibold font-poppins text-left" style={{ color: 'var(--sl-t1)' }}>
+                Digest hebdo
+              </div>
+              <div className="text-xs text-left" style={{ color: 'var(--sl-t2)' }}>
+                Reçois les matchs du week-end par email
+              </div>
+            </div>
+          </div>
+          <div className="relative flex-shrink-0 rounded-full transition-colors"
+            style={{ width: 46, height: 26, backgroundColor: currentUser.digestOptIn ? '#22d96a' : 'var(--sl-border-s)' }}>
+            <motion.div layout className="absolute top-1 rounded-full"
+              style={{ width: 18, height: 18, backgroundColor: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }}
+              animate={{ left: currentUser.digestOptIn ? 24 : 4 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            />
+          </div>
+        </motion.button>
+
         {/* Logout */}
         <button
           onClick={() => logout()}

@@ -3,6 +3,30 @@
 -- À exécuter dans l'éditeur SQL Supabase (Dashboard > SQL Editor)
 -- ══════════════════════════════════════════════════════════
 
+-- ── 0. Opt-in digest hebdo sur les profils ───────────────
+
+alter table public.profiles
+  add column if not exists digest_opt_in boolean not null default false;
+
+-- ── Cron : envoyer le digest chaque vendredi à 17h UTC ──
+-- (nécessite pg_cron + pg_net activés dans Supabase Dashboard > Extensions)
+-- Remplacez <YOUR_ANON_KEY> par votre clé anon Supabase
+
+-- select cron.schedule(
+--   'weekly-digest',
+--   '0 17 * * 5',
+--   $$
+--   select net.http_post(
+--     url    := 'https://caikdkyrkrurjdlwrite.supabase.co/functions/v1/send-weekly-digest',
+--     headers := jsonb_build_object(
+--       'Content-Type',  'application/json',
+--       'Authorization', 'Bearer <YOUR_ANON_KEY>'
+--     ),
+--     body   := '{}'::jsonb
+--   );
+--   $$
+-- );
+
 -- ── 1. Pages de clubs (blocs + typographie) ──────────────
 
 create table if not exists public.club_pages (
