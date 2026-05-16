@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Z } from '../constants/zIndex.js';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // Shared city autocomplete using geo.api.gouv.fr
@@ -104,7 +105,7 @@ export default function CityAutocomplete({
             initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.12 }}
             className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden"
-            style={{ zIndex: 3500, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border-s)', boxShadow: 'var(--sl-shadow-xl)' }}
+            style={{ zIndex: Z.dropdown, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border-s)', boxShadow: 'var(--sl-shadow-xl)' }}
           >
             {suggestions.map(c => (
               <button

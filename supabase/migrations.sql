@@ -9,8 +9,8 @@ alter table public.profiles
   add column if not exists digest_opt_in boolean not null default false;
 
 -- ── Cron : envoyer le digest chaque vendredi à 17h UTC ──
--- (nécessite pg_cron + pg_net activés dans Supabase Dashboard > Extensions)
--- Remplacez <YOUR_ANON_KEY> par votre clé anon Supabase
+-- Prérequis : activer pg_cron + pg_net dans Dashboard > Database > Extensions
+-- Puis exécuter ce bloc dans SQL Editor :
 
 -- select cron.schedule(
 --   'weekly-digest',
@@ -20,7 +20,7 @@ alter table public.profiles
 --     url    := 'https://caikdkyrkrurjdlwrite.supabase.co/functions/v1/send-weekly-digest',
 --     headers := jsonb_build_object(
 --       'Content-Type',  'application/json',
---       'Authorization', 'Bearer <YOUR_ANON_KEY>'
+--       'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhaWtka3lya3J1cmpkbHdyaXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MTU3NTQsImV4cCI6MjA5NDE5MTc1NH0.34joetC3Vh4DrryJ2jUFvZPp8AMFCUoWBi6GVy2xrpA'
 --     ),
 --     body   := '{}'::jsonb
 --   );

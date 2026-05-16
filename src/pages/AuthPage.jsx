@@ -62,7 +62,7 @@ function OAuthMockModal({ provider, onDone, onClose }) {
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.75)', zIndex: 3000 }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.75)', zIndex: Z.auth }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <motion.div

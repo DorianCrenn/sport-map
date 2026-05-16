@@ -1,0 +1,5 @@
+[api]
+enabled = true
+
+[functions.send-weekly-digest]
+enabled = true
