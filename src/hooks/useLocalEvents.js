@@ -60,7 +60,7 @@ export function useLocalEvents() {
 
   useEffect(() => {
     const channel = supabase
-      .channel('events-realtime')
+      .channel('events-realtime-' + Math.random().toString(36).slice(2))
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, ({ new: row }) => {
         setEvents(prev => {
           if (prev.some(e => e.id === row.id)) return prev;

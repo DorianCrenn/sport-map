@@ -49,7 +49,7 @@ export function useClubs() {
 
   useEffect(() => {
     const channel = supabase
-      .channel('clubs-realtime')
+      .channel('clubs-realtime-' + Math.random().toString(36).slice(2))
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clubs' }, ({ new: row }) => {
         setUserClubs(prev => prev.some(c => c.id === row.id) ? prev : [mapFromDB(row), ...prev]);
       })
