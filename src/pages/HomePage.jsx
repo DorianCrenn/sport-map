@@ -3,6 +3,74 @@ import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 
+// ── Social proof strip ────────────────────────────────────────────────────────
+function SocialProofStrip({ clubs = [], thisWeek = 0 }) {
+  const { allSports } = useSports();
+  const visible = clubs.slice(0, 7);
+  const extra   = clubs.length - visible.length;
+
+  if (clubs.length === 0) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}
+    >
+      {/* Overlapping avatars */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {visible.map((club, i) => {
+          const color = allSports[club.sport]?.color ?? '#64748b';
+          const init  = club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+          return (
+            <div
+              key={club.id}
+              title={club.name}
+              style={{
+                width: 28, height: 28, borderRadius: '50%',
+                backgroundColor: color,
+                border: '2px solid rgba(255,255,255,0.18)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 9, fontWeight: 800, color: '#fff',
+                marginLeft: i === 0 ? 0 : -8,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+                zIndex: visible.length - i,
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              {club.logo
+                ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
+                : init}
+            </div>
+          );
+        })}
+        {extra > 0 && (
+          <div style={{
+            width: 28, height: 28, borderRadius: '50%', marginLeft: -8,
+            backgroundColor: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.18)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.85)',
+          }}>
+            +{extra}
+          </div>
+        )}
+      </div>
+
+      {/* Text */}
+      <div style={{ lineHeight: 1.35 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.9)', display: 'block' }}>
+          {clubs.length} club{clubs.length > 1 ? 's' : ''} actifs
+        </span>
+        {thisWeek > 0 && (
+          <span style={{ fontSize: 11, color: '#22d96a', fontWeight: 600 }}>
+            {thisWeek} événement{thisWeek > 1 ? 's' : ''} cette semaine
+          </span>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 // Grille 4×3 couvrant tout le hero — bords + centre
 const FLOAT_SLOTS = [
   // Colonne gauche
@@ -339,7 +407,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function HomePage({ onNavigate, stats }) {
+export default function HomePage({ onNavigate, stats, clubs = [] }) {
   return (
     <div className="h-full overflow-y-auto" style={{ background: 'var(--sl-hero-bg)' }}>
 
@@ -392,6 +460,11 @@ export default function HomePage({ onNavigate, stats }) {
               Les clubs
             </motion.button>
           </motion.div>
+
+          {/* Social proof */}
+          <div className="relative mt-6">
+            <SocialProofStrip clubs={clubs} thisWeek={stats?.thisWeek ?? 0} />
+          </div>
         </div>
 
         {/* Phone */}
@@ -466,7 +539,7 @@ export default function HomePage({ onNavigate, stats }) {
             </div>
 
             {/* Stats mini */}
-            <div className="flex gap-8">
+            <div className="flex gap-8 mb-10">
               {[
                 { value: stats?.clubs ?? 0,    label:'Clubs', color:'#22d96a' },
                 { value: stats?.events ?? 0,   label:'Événements', color:'#3B82F6' },
@@ -479,6 +552,9 @@ export default function HomePage({ onNavigate, stats }) {
                 </div>
               ))}
             </div>
+
+            {/* Social proof */}
+            <SocialProofStrip clubs={clubs} thisWeek={stats?.thisWeek ?? 0} />
           </motion.div>
 
           {/* Colonne droite — phone */}

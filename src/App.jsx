@@ -140,7 +140,7 @@ function AppInner() {
             style={{ position: 'absolute', inset: 0 }}
           >
             {activeTab === 'home' && (
-              <HomePage onNavigate={setActiveTab} stats={homeStats} />
+              <HomePage onNavigate={setActiveTab} stats={homeStats} clubs={allClubs} />
             )}
             {activeTab === 'map' && (
               <MapPage
