@@ -6,13 +6,8 @@ function lsKey(userId) {
   return userId ? `sl-favs-${userId}` : 'sl-favs-anon';
 }
 
-function load(userId) {
-  try { return new Set(JSON.parse(localStorage.getItem(lsKey(userId)) ?? '[]')); }
-  catch { return new Set(); }
-}
-
 function save(userId, set) {
-  localStorage.setItem(lsKey(userId), JSON.stringify([...set]));
+  try { localStorage.setItem(lsKey(userId), JSON.stringify([...set])); } catch {}
 }
 
 export function useFavorites() {
@@ -20,18 +15,44 @@ export function useFavorites() {
   const userId = currentUser?.id ?? null;
   const prevUserId = useRef(undefined);
 
-  const [favorites, setFavorites] = useState(() => load(null));
+  const [favorites, setFavorites] = useState(() => new Set());
+
+  // ── Load from Supabase on user change (source of truth) ──────────────────
 
   useEffect(() => {
     if (userId === prevUserId.current) return;
     prevUserId.current = userId;
-    setFavorites(load(userId));
+
+    if (!userId) {
+      setFavorites(new Set());
+      return;
+    }
+
+    supabase
+      .from('favorites')
+      .select('event_id')
+      .eq('user_id', userId)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[Favorites] fetch failed, using cache:', error.message);
+          try {
+            const cached = JSON.parse(localStorage.getItem(lsKey(userId)) ?? '[]');
+            setFavorites(new Set(cached.map(String)));
+          } catch { setFavorites(new Set()); }
+          return;
+        }
+        const serverSet = new Set((data ?? []).map(r => String(r.event_id)));
+        setFavorites(serverSet);
+        save(userId, serverSet);
+      });
   }, [userId]);
+
+  // ── Toggle (optimistic + Supabase) ───────────────────────────────────────
 
   const toggleFavorite = useCallback((id) => {
     const strId = String(id);
     setFavorites(prev => {
-      const next = new Set(prev);
+      const next   = new Set(prev);
       const adding = !next.has(strId);
       adding ? next.add(strId) : next.delete(strId);
       save(userId, next);
@@ -43,7 +64,6 @@ export function useFavorites() {
 
         op.then(({ error }) => {
           if (error) {
-            // Rollback local state on DB failure
             console.error('[Favorites] sync failed, rolling back:', error.message);
             setFavorites(curr => {
               const rolled = new Set(curr);

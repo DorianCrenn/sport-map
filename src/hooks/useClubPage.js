@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { supabase } from '../lib/supabase.js';
 
 function uid()    { return `b_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`; }
 function genRowId() { return `r_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`; }
@@ -47,6 +48,8 @@ function injectGoogleFont(fontKey) {
   document.head.appendChild(link);
 }
 
+// ── Analytics (localStorage, per-browser) ───────────────────────────────────
+
 export function useClubAnalytics(clubId) {
   const key = `club-views-${clubId}`;
   const [views, setViews] = useState(() => {
@@ -63,46 +66,101 @@ export function useClubAnalytics(clubId) {
   return views;
 }
 
+// ── Club page hook (Supabase-backed) ────────────────────────────────────────
+
 export function useClubPage(club) {
-  const storageKey = `club-page-${club.id}`;
-  const typoKey    = `club-typography-${club.id}`;
+  const [blocks, setBlocks]           = useState(() => defaultBlocks(club));
+  const [typography, setTypoState]    = useState(DEFAULT_TYPOGRAPHY);
+  const [isEditing, setIsEditing]     = useState(false);
+  const [loaded, setLoaded]           = useState(false);
 
-  const [blocks, setBlocks] = useState(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (!raw) return defaultBlocks(club);
-      const parsed = JSON.parse(raw);
-      // migrate: ensure rowId and span on every block
-      return parsed.map(b => ({ rowId: genRowId(), span: 12, ...b }));
-    } catch {
-      return defaultBlocks(club);
-    }
-  });
+  const latestRef  = useRef({ blocks: defaultBlocks(club), typography: DEFAULT_TYPOGRAPHY });
+  const saveTimer  = useRef(null);
+  const clubIdStr  = String(club.id);
 
-  const [isEditing, setIsEditing] = useState(false);
-
-  const [typography, setTypographyState] = useState(() => {
-    try {
-      const raw = localStorage.getItem(typoKey);
-      return raw ? { ...DEFAULT_TYPOGRAPHY, ...JSON.parse(raw) } : DEFAULT_TYPOGRAPHY;
-    } catch { return DEFAULT_TYPOGRAPHY; }
-  });
+  // ── Load from Supabase ────────────────────────────────────────────────────
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(blocks));
-  }, [blocks, storageKey]);
+    let cancelled = false;
+    supabase
+      .from('club_pages')
+      .select('blocks, typography')
+      .eq('club_id', clubIdStr)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.error('[ClubPage] fetch failed, using localStorage:', error.message);
+          try {
+            const raw = localStorage.getItem(`club-page-${clubIdStr}`);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              const migrated = parsed.map(b => ({ rowId: genRowId(), span: 12, ...b }));
+              setBlocks(migrated);
+              latestRef.current.blocks = migrated;
+            }
+            const typoRaw = localStorage.getItem(`club-typography-${clubIdStr}`);
+            if (typoRaw) {
+              const t = { ...DEFAULT_TYPOGRAPHY, ...JSON.parse(typoRaw) };
+              setTypoState(t);
+              latestRef.current.typography = t;
+            }
+          } catch {}
+        } else if (data) {
+          const saved = data.blocks ?? [];
+          const b = saved.length > 0
+            ? saved.map(bl => ({ rowId: genRowId(), span: 12, ...bl }))
+            : defaultBlocks(club);
+          const t = { ...DEFAULT_TYPOGRAPHY, ...(data.typography ?? {}) };
+          setBlocks(b);
+          setTypoState(t);
+          latestRef.current = { blocks: b, typography: t };
+        }
+        setLoaded(true);
+      });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clubIdStr]);
+
+  // ── Debounced save ────────────────────────────────────────────────────────
+
+  const scheduleSave = useCallback(() => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      const { blocks: b, typography: t } = latestRef.current;
+      const { error } = await supabase
+        .from('club_pages')
+        .upsert(
+          { club_id: clubIdStr, blocks: b, typography: t, updated_at: new Date().toISOString() },
+          { onConflict: 'club_id' }
+        );
+      if (error) {
+        console.error('[ClubPage] save failed, fallback to localStorage:', error.message);
+        try {
+          localStorage.setItem(`club-page-${clubIdStr}`, JSON.stringify(b));
+          localStorage.setItem(`club-typography-${clubIdStr}`, JSON.stringify(t));
+        } catch {}
+      }
+    }, 1500);
+  }, [clubIdStr]);
 
   useEffect(() => {
-    localStorage.setItem(typoKey, JSON.stringify(typography));
+    latestRef.current.blocks = blocks;
+    if (loaded) scheduleSave();
+  }, [blocks, loaded, scheduleSave]);
+
+  useEffect(() => {
+    latestRef.current.typography = typography;
     injectGoogleFont(typography.titleFont);
     injectGoogleFont(typography.bodyFont);
-  }, [typography, typoKey]);
+    if (loaded) scheduleSave();
+  }, [typography, loaded, scheduleSave]);
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
   const setTypography = useCallback((patch) => {
-    setTypographyState(prev => ({ ...prev, ...patch }));
+    setTypoState(prev => ({ ...prev, ...patch }));
   }, []);
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   const addBlock = (type, afterId = null) => {
     const block = { id: uid(), type, data: defaultData(type, club), enabled: true, span: 12, rowId: genRowId() };
@@ -115,20 +173,14 @@ export function useClubPage(club) {
     });
   };
 
-  // Add a block to an existing row (fills the remaining span)
   const addBlockToRow = (rowId, type) => {
     setBlocks(prev => {
       const rowBlocks = prev.filter(b => b.rowId === rowId);
       const usedSpan  = rowBlocks.reduce((s, b) => s + (b.span ?? 12), 0);
       const remaining = 12 - usedSpan;
       if (remaining <= 0) return prev;
-
-      // Allocate span: prefer equal split
-      const newSpan = remaining;
-      const newBlock = { id: uid(), type, data: defaultData(type, club), enabled: true, span: newSpan, rowId };
-
-      // Insert right after the last block of this row
-      const lastIdx = prev.reduce((acc, b, i) => b.rowId === rowId ? i : acc, -1);
+      const newBlock = { id: uid(), type, data: defaultData(type, club), enabled: true, span: remaining, rowId };
+      const lastIdx  = prev.reduce((acc, b, i) => b.rowId === rowId ? i : acc, -1);
       const next = [...prev];
       next.splice(lastIdx + 1, 0, newBlock);
       return next;
@@ -144,50 +196,33 @@ export function useClubPage(club) {
       if (!block) return prev;
       const rowBlocks = prev.filter(b => b.rowId === block.rowId);
       const otherSpan = rowBlocks.filter(b => b.id !== id).reduce((s, b) => s + (b.span ?? 12), 0);
-
-      // Going full-width but others exist → move to own row
-      if (newSpan === 12 && rowBlocks.length > 1) {
+      if (newSpan === 12 && rowBlocks.length > 1)
         return prev.map(b => b.id === id ? { ...b, span: 12, rowId: genRowId() } : b);
-      }
-      // Would overflow → deny
       if (otherSpan + newSpan > 12) return prev;
-
       return prev.map(b => b.id === id ? { ...b, span: newSpan } : b);
     });
   };
 
-  // Swap block left or right within its row
   const moveBlockInRow = (id, dir) => {
     setBlocks(prev => {
-      const block     = prev.find(b => b.id === id);
+      const block    = prev.find(b => b.id === id);
       if (!block) return prev;
-      const rowIds    = prev.filter(b => b.rowId === block.rowId).map(b => b.id);
-      const pos       = rowIds.indexOf(id);
+      const rowIds   = prev.filter(b => b.rowId === block.rowId).map(b => b.id);
+      const pos      = rowIds.indexOf(id);
       const targetPos = pos + (dir === 'left' ? -1 : 1);
       if (targetPos < 0 || targetPos >= rowIds.length) return prev;
-
-      const targetId  = rowIds[targetPos];
       const i1 = prev.findIndex(b => b.id === id);
-      const i2 = prev.findIndex(b => b.id === targetId);
+      const i2 = prev.findIndex(b => b.id === rowIds[targetPos]);
       const next = [...prev];
       [next[i1], next[i2]] = [next[i2], next[i1]];
       return next;
     });
   };
 
-  const deleteBlock = (id) =>
-    setBlocks(prev => prev.filter(b => b.id !== id));
-
-  // Reorder entire rows (accepts flat blocks array or rows array)
-  const reorderRows = (newRows) => {
-    // newRows is an array of {rowId, blocks:[]} — flatten
-    setBlocks(newRows.flatMap(r => r.blocks));
-  };
-
-  const toggleBlock = (id) =>
-    setBlocks(prev => prev.map(b => b.id === id ? { ...b, enabled: !b.enabled } : b));
-
-  const resetPage = () => setBlocks(defaultBlocks(club));
+  const deleteBlock  = (id) => setBlocks(prev => prev.filter(b => b.id !== id));
+  const reorderRows  = (newRows) => setBlocks(newRows.flatMap(r => r.blocks));
+  const toggleBlock  = (id) => setBlocks(prev => prev.map(b => b.id === id ? { ...b, enabled: !b.enabled } : b));
+  const resetPage    = () => setBlocks(defaultBlocks(club));
 
   return {
     blocks, isEditing, setIsEditing,

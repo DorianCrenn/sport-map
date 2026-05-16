@@ -25,7 +25,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
   const [error, setError]   = useState('');
   const [success, setSuccess] = useState('');
 
-  function handleAdd() {
+  async function handleAdd() {
     const normalized = email.trim().toLowerCase();
     if (!normalized) return;
     if (!normalized.includes('@')) { setError('Email invalide'); return; }
@@ -33,7 +33,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
       setError("C'est déjà le propriétaire du club");
       return;
     }
-    const ok = onAdd(normalized);
+    const ok = await onAdd(normalized);
     if (!ok) { setError('Cet email est déjà gestionnaire'); return; }
     setEmail('');
     setError('');

@@ -19,6 +19,7 @@ import EventFormModal from '../EventFormModal.jsx';
 import PosterStudio from '../PosterStudio.jsx';
 import { downloadClubICS } from '../../utils/exportICS.js';
 import { useClubManagers } from '../../hooks/useClubManagers.js';
+import { useClubTrainings } from '../../hooks/useClubTrainings.js';
 
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
@@ -640,16 +641,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
   const [showPoster, setShowPoster] = useState(false);
 
-  const [teamTrainings, setTeamTrainings] = useState(() => {
-    try {
-      const raw = localStorage.getItem(`club-trainings-${club.id}`);
-      return raw ? JSON.parse(raw) : {};
-    } catch { return {}; }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(`club-trainings-${club.id}`, JSON.stringify(teamTrainings));
-  }, [teamTrainings, club.id]);
+  const [teamTrainings, setTeamTrainings] = useClubTrainings(club.id);
 
   useEffect(() => {
     if (!canEdit && isEditing) setIsEditing(false);
