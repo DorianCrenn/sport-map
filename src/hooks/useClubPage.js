@@ -115,6 +115,22 @@ export function useClubPage(club) {
           setBlocks(b);
           setTypoState(t);
           latestRef.current = { blocks: b, typography: t };
+        } else {
+          // No Supabase row yet — migrate localStorage data if any
+          try {
+            const raw     = localStorage.getItem(`club-page-${clubIdStr}`);
+            const typoRaw = localStorage.getItem(`club-typography-${clubIdStr}`);
+            if (raw) {
+              const b = JSON.parse(raw).map(bl => ({ rowId: genRowId(), span: 12, ...bl }));
+              const t = typoRaw ? { ...DEFAULT_TYPOGRAPHY, ...JSON.parse(typoRaw) } : DEFAULT_TYPOGRAPHY;
+              setBlocks(b);
+              setTypoState(t);
+              latestRef.current = { blocks: b, typography: t };
+              supabase.from('club_pages')
+                .upsert({ club_id: clubIdStr, blocks: b, typography: t }, { onConflict: 'club_id' })
+                .then(({ error }) => { if (error) console.error('[ClubPage] migration upsert failed:', error.message); });
+            }
+          } catch {}
         }
         setLoaded(true);
       });

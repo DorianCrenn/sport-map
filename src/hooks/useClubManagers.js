@@ -23,7 +23,23 @@ export function useClubManagers(clubId) {
           } catch {}
           return;
         }
-        if (data) setManagers(data.map(r => ({ email: r.email, name: r.name, addedAt: r.added_at })));
+        if (data && data.length > 0) {
+          setManagers(data.map(r => ({ email: r.email, name: r.name, addedAt: r.added_at })));
+        } else if (data && data.length === 0) {
+          // No Supabase rows yet — migrate localStorage data if any
+          try {
+            const raw = localStorage.getItem(`club-managers-${clubId}`);
+            if (raw) {
+              const local = JSON.parse(raw);
+              if (local.length > 0) {
+                setManagers(local);
+                const inserts = local.map(m => ({ club_id: String(clubId), email: m.email, name: m.name }));
+                supabase.from('club_managers').insert(inserts)
+                  .then(({ error }) => { if (error) console.error('[Managers] migration insert failed:', error.message); });
+              }
+            }
+          } catch {}
+        }
       });
     return () => { cancelled = true; };
   }, [clubId]);

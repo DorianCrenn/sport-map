@@ -28,10 +28,27 @@ export function useClubTrainings(clubId) {
               latestRef.current = parsed;
             }
           } catch {}
-        } else if (data) {
+        } else if (data && data.length > 0) {
           const map = Object.fromEntries(data.map(r => [r.team_id, r.sessions]));
           setTrainingsState(map);
           latestRef.current = map;
+        } else if (data && data.length === 0) {
+          // No Supabase rows yet — migrate localStorage data if any
+          try {
+            const raw = localStorage.getItem(`club-trainings-${clubIdStr}`);
+            if (raw) {
+              const map = JSON.parse(raw);
+              if (Object.keys(map).length > 0) {
+                setTrainingsState(map);
+                latestRef.current = map;
+                const upserts = Object.entries(map).map(([teamId, sessions]) => ({
+                  club_id: clubIdStr, team_id: teamId, sessions,
+                }));
+                supabase.from('club_trainings').upsert(upserts, { onConflict: 'club_id,team_id' })
+                  .then(({ error }) => { if (error) console.error('[Trainings] migration upsert failed:', error.message); });
+              }
+            }
+          } catch {}
         }
         loaded.current = true;
       });
