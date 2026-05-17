@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sportlink-v1';
+const CACHE_NAME = 'sportlink-v2';
 const SHELL = [
   '/',
   '/src/main.jsx',
@@ -21,6 +21,11 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (!e.request.url.startsWith(self.location.origin)) return;
+
+  // Never intercept OAuth callbacks — let Supabase PKCE exchange work natively
+  const url = new URL(e.request.url);
+  const isOAuthCallback = url.searchParams.has('code') || url.searchParams.has('error') || url.hash.includes('access_token');
+  if (e.request.mode === 'navigate' && isOAuthCallback) return;
 
   e.respondWith(
     fetch(e.request)
