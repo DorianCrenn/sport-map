@@ -251,10 +251,13 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
   async function handleGoogleLogin() {
     try {
       await loginWithGoogle();
-      // Supabase redirects the browser to Google — no further action needed
-    } catch {
-      // Provider not enabled in Supabase → fallback to mock email modal
-      setOauthProvider('google');
+      onClose();
+    } catch (err) {
+      if (err.message === 'popup-blocked') {
+        // Popup blocked by browser → fallback to mock email modal
+        setOauthProvider('google');
+      }
+      // 'cancelled' = user closed popup without logging in → do nothing
     }
   }
 

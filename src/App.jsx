@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { supabase } from './lib/supabase.js';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { useToast } from './contexts/ToastContext.jsx';
@@ -297,7 +298,30 @@ function AppInner() {
   );
 }
 
+// Handles the OAuth callback when Google redirects back into a popup window.
+// Exchanges the PKCE code and closes the popup; the main window picks up the
+// new session via the Supabase storage event listener.
+function OAuthPopupCallback() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const p = code
+      ? supabase.auth.exchangeCodeForSession(code)
+      : Promise.resolve();
+    p.finally(() => window.close());
+  }, []);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', background: '#0a1628', color: 'white', fontSize: 15, fontFamily: 'sans-serif' }}>
+      Connexion Google…
+    </div>
+  );
+}
+
 export default function App() {
+  const params = new URLSearchParams(window.location.search);
+  if (window.opener && (params.has('code') || params.has('error'))) {
+    return <OAuthPopupCallback />;
+  }
   return (
     <AuthProvider>
       <SportsProvider>

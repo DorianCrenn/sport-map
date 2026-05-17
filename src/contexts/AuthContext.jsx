@@ -209,13 +209,25 @@ export function AuthProvider({ children }) {
 
   // ── OAuth ─────────────────────────────────────────────────────────────────
 
-  const loginWithGoogle = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
+  const loginWithGoogle = useCallback(() => new Promise(async (resolve, reject) => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: window.location.origin, skipBrowserRedirect: true },
     });
-    if (error) throw new Error(error.message);
-  }, []);
+    if (error) { reject(new Error(error.message)); return; }
+    if (!data?.url) { reject(new Error('URL OAuth manquante')); return; }
+
+    const popup = window.open(data.url, 'sl-google-oauth', 'width=520,height=620,scrollbars=yes');
+    if (!popup) { reject(new Error('popup-blocked')); return; }
+
+    const poll = setInterval(async () => {
+      if (!popup.closed) return;
+      clearInterval(poll);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) resolve(session);
+      else reject(new Error('cancelled'));
+    }, 400);
+  }), []);
 
   // Mock OAuth for Instagram (Supabase doesn't support it natively)
   const loginWithProvider = useCallback(async (email, provider) => {
