@@ -252,9 +252,8 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
     try {
       await loginWithGoogle();
       // Supabase redirects the browser to Google — no further action needed
-    } catch {
-      // Google provider not configured in Supabase → mock flow
-      setOauthProvider('google');
+    } catch (err) {
+      setError(`Google OAuth : ${err.message}`);
     }
   }
 
