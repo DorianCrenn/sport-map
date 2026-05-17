@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useAttendeeCount } from '../contexts/AttendeeCountContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import FollowModal from '../components/FollowModal.jsx';
 import SportIcon from '../components/SportIcon.jsx';
@@ -55,8 +56,9 @@ const EV_TYPE_META = {
 // ── Favorite event card ───────────────────────────────────────────────────────
 function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }) {
   const { allSports: SPORTS } = useSports();
-  const sportColor = SPORTS[event.sport]?.color ?? '#22d96a';
-  const dateObj = new Date(event.date);
+  const sportColor    = SPORTS[event.sport]?.color ?? '#22d96a';
+  const attendeeCount = useAttendeeCount(event.id);
+  const dateObj  = new Date(event.date);
   const isPast   = dateObj < new Date();
   const timeStr  = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const dateShort = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -126,7 +128,7 @@ function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }) 
         )}
 
         {/* Date + venue */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 11, color: 'var(--sl-t2)', marginBottom: 10 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 11, color: 'var(--sl-t2)', marginBottom: attendeeCount > 0 ? 6 : 10 }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}><CalSvg />{dateShort} · {timeStr}</span>
           {(event.venue || event.city) && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden' }}>
@@ -134,6 +136,15 @@ function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }) 
             </span>
           )}
         </div>
+        {attendeeCount > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: 'var(--sl-green)', marginBottom: 8 }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            {attendeeCount} personne{attendeeCount > 1 ? 's' : ''} J'y serai
+          </div>
+        )}
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 6 }}>

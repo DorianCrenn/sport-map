@@ -3,6 +3,7 @@ import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useClubPage, useClubAnalytics, FONT_OPTIONS } from '../../hooks/useClubPage.js';
+import { supabase } from '../../lib/supabase.js';
 import SportIcon from '../SportIcon.jsx';
 import FollowModal from '../FollowModal.jsx';
 import TitleBlock from './blocks/TitleBlock.jsx';
@@ -15,6 +16,7 @@ import { AboutBlockEditor, AboutBlockView } from './blocks/AboutBlock.jsx';
 import { GalleryBlockEditor, GalleryBlockView } from './blocks/GalleryBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 import ClubManagersPanel from './ClubManagersPanel.jsx';
+import ClubDashboard from './ClubDashboard.jsx';
 import EventFormModal from '../EventFormModal.jsx';
 import PosterStudio from '../PosterStudio.jsx';
 import { downloadClubICS } from '../../utils/exportICS.js';
@@ -637,6 +639,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
   const [showManagersPanel, setShowManagersPanel] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
   const [activeTeamId, setActiveTeamId] = useState(null);
   const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
   const [showPoster, setShowPoster] = useState(false);
@@ -646,6 +649,25 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   useEffect(() => {
     if (!canEdit && isEditing) setIsEditing(false);
   }, [canEdit, isEditing, setIsEditing]);
+
+  // Track page view to Supabase — throttled to 1 per session per club
+  useEffect(() => {
+    const sessionKey = `cpv_${club.id}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, '1');
+    supabase
+      .from('club_page_views')
+      .insert({ club_id: String(club.id), user_id: currentUser?.id ?? null, session_id: sessionKey })
+      .then(({ error }) => {
+        if (error) console.warn('[ClubPageView] view track failed:', error.message);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [club.id]);
+
+  const clubEventIds = useMemo(
+    () => (allEvents ?? []).filter(e => String(e.clubId) === String(club.id)).map(e => e.id),
+    [allEvents, club.id]
+  );
 
   const allTeams = useMemo(
     () => (club.categories ?? []).flatMap(c => c.teams ?? []),
@@ -727,6 +749,22 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             Clubs
           </button>
           <div className="flex items-center gap-2">
+            {isOwner && (
+              <button
+                onClick={() => setShowDashboard(true)}
+                aria-label="Tableau de bord du club"
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="6" height="6" rx="1"/><rect x="16" y="3" width="6" height="6" rx="1"/>
+                  <rect x="2" y="15" width="6" height="6" rx="1"/><rect x="16" y="15" width="6" height="6" rx="1"/>
+                  <line x1="11" y1="6" x2="13" y2="6"/><line x1="11" y1="18" x2="13" y2="18"/>
+                  <line x1="6" y1="11" x2="6" y2="13"/><line x1="18" y1="11" x2="18" y2="13"/>
+                  <line x1="11" y1="12" x2="13" y2="12"/>
+                </svg>
+                Stats
+              </button>
+            )}
             {isOwner && isEditing && (
               <button
                 onClick={() => setShowManagersPanel(true)}
@@ -1098,6 +1136,19 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           onClose={() => setShowFollowModal(false)}
         />
       )}
+
+      {/* Club dashboard slide-in */}
+      <AnimatePresence>
+        {showDashboard && (
+          <ClubDashboard
+            key="club-dashboard"
+            club={club}
+            clubEventIds={clubEventIds}
+            allEvents={allEvents}
+            onClose={() => setShowDashboard(false)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

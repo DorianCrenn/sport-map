@@ -72,10 +72,11 @@ export function AuthProvider({ children }) {
   // ── Bootstrap ────────────────────────────────────────────────────────────
   useEffect(() => {
     let resolved = false;
+    let fetchSeq = 0; // guards against stale auth-event races
 
     const failsafe = setTimeout(() => {
       if (!resolved) { resolved = true; setLoading(false); }
-    }, 6000);
+    }, 8000);
 
     function done() {
       if (!resolved) { resolved = true; clearTimeout(failsafe); setLoading(false); }
@@ -83,13 +84,16 @@ export function AuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        const seq = ++fetchSeq; // each event gets a unique sequence number
+
         if (session?.user) {
           setAuthUser(session.user); // immediate — don't wait for profile
           const prof = await Promise.race([
             fetchProfile(session.user),
-            new Promise(resolve => setTimeout(() => resolve(null), 5000)),
+            new Promise(resolve => setTimeout(() => resolve(null), 8000)),
           ]);
-          setProfile(prof);
+          // Discard result if a newer auth event started while we were fetching
+          if (seq === fetchSeq) setProfile(prof);
         } else {
           setAuthUser(null);
           setProfile(null);

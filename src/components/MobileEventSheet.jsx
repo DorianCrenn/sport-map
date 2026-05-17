@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useAttendeeCount } from '../contexts/AttendeeCountContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import SportIcon from './SportIcon.jsx';
@@ -124,6 +125,7 @@ export default function MobileEventSheet({
   const { allSports: SPORTS } = useSports();
   const { share } = useShare();
   const { currentUser, isAdmin } = useAuth();
+  const attendeeCount = useAttendeeCount(event.id);
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPoster, setShowPoster] = useState(false);
@@ -355,6 +357,11 @@ export default function MobileEventSheet({
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
             {attending ? "J'y serai ✓" : "J'y serai"}
+            {attendeeCount > 0 && (
+              <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 999, backgroundColor: attending ? 'rgba(255,255,255,0.2)' : 'var(--sl-green-dim)', color: attending ? 'white' : 'var(--sl-green)' }}>
+                {attendeeCount}
+              </span>
+            )}
           </motion.button>
           <button onClick={handleNav} style={{ padding: '12px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
