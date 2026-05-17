@@ -195,7 +195,7 @@ function ForgotPasswordView({ onBack }) {
 // ── Main AuthPage ──────────────────────────────────────────────────────────
 
 export default function AuthPage({ onClose, onNeedOnboarding }) {
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
   const [mode, setMode] = useState('login');   // 'login' | 'register' | 'forgot' | 'confirm-email'
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
@@ -248,8 +248,14 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
     }
   }
 
-  function handleGoogleLogin() {
-    setOauthProvider('google');
+  async function handleGoogleLogin() {
+    try {
+      await loginWithGoogle();
+      // Supabase redirects the browser to Google — no further action needed
+    } catch {
+      // Google provider not configured in Supabase → mock flow
+      setOauthProvider('google');
+    }
   }
 
   function handleOAuthDone({ needsConfirmation }) {
