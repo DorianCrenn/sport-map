@@ -195,7 +195,7 @@ function ForgotPasswordView({ onBack }) {
 // ── Main AuthPage ──────────────────────────────────────────────────────────
 
 export default function AuthPage({ onClose, onNeedOnboarding }) {
-  const { login, register, loginWithGoogle } = useAuth();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState('login');   // 'login' | 'register' | 'forgot' | 'confirm-email'
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
@@ -248,14 +248,8 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
     }
   }
 
-  async function handleGoogleLogin() {
-    try {
-      await loginWithGoogle();
-      // Page redirects to Google — no further action needed here
-    } catch (err) {
-      // Google OAuth not configured: fall back to mock modal
-      setOauthProvider('google');
-    }
+  function handleGoogleLogin() {
+    setOauthProvider('google');
   }
 
   function handleOAuthDone({ needsConfirmation }) {
