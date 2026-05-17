@@ -326,3 +326,46 @@ button, [role="button"] {
 .leaflet-popup-tip-container {
   display: none;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   SAFE AREA — iOS notch / Dynamic Island / Android nav bar
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --safe-top:    env(safe-area-inset-top,    0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left,   0px);
+  --safe-right:  env(safe-area-inset-right,  0px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE — arbitrary Tailwind values not covered above
+   ═══════════════════════════════════════════════════════════ */
+html:not([data-theme="light"]) {
+  /* bg-[#F1F5F9] used in AdminPage outer wrapper */
+  .bg-\[\#F1F5F9\] { background-color: var(--sl-bg) !important; }
+  /* bg-[#0F1E3A] — already dark, just keep consistent */
+  .bg-\[\#0F1E3A\] { background-color: var(--sl-surface) !important; }
+
+  /* AdminPage textarea / input overrides */
+  textarea.rounded-xl, input.rounded-xl {
+    background-color: var(--sl-surface) !important;
+    border-color: var(--sl-border-s) !important;
+    color: var(--sl-t1) !important;
+  }
+  textarea::placeholder, input::placeholder {
+    color: var(--sl-input-placeholder) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE — tap target helpers (WCAG 2.5.5)
+   Use .sl-tap on interactive buttons that need ≥44px touch area
+   ═══════════════════════════════════════════════════════════ */
+.sl-tap {
+  position: relative;
+}
+.sl-tap::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}

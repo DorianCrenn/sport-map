@@ -4,6 +4,7 @@ import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useAttendeeCount } from '../contexts/AttendeeCountContext.jsx';
+import { useToast } from '../contexts/ToastContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import SportIcon from './SportIcon.jsx';
 import PosterStudio from './PosterStudio.jsx';
@@ -122,7 +123,12 @@ function ShareBtn({ event }) {
 
 function AttendBtn({ event, isAttending, onToggle }) {
   const attending = isAttending?.(event.id) ?? false;
-  function handleClick(e) { e.stopPropagation(); onToggle?.(event.id); }
+  const { toast } = useToast();
+  function handleClick(e) {
+    e.stopPropagation();
+    onToggle?.(event.id);
+    toast({ message: attending ? 'Inscription retirée' : "Tu y seras !" });
+  }
   return (
     <motion.button
       whileTap={{ scale: 0.9 }}
@@ -274,6 +280,7 @@ function FollowClubPill({ event }) {
 const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, onUpdateEvent, isFavorite, onToggleFavorite, isAttending, onToggleAttend }, ref) {
   const { allSports: SPORTS } = useSports();
   const { currentUser, isAdmin } = useAuth();
+  const { toast } = useToast();
   const attendeeCount = useAttendeeCount(event.id);
   const [showPoster, setShowPoster] = useState(false);
   const group = SPORTS[event.sport];
@@ -446,13 +453,18 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
         </AnimatePresence>
       </div>
 
-      {/* Favorite button */}
+      {/* Favorite button — min 44px tap target */}
       {onToggleFavorite && (
         <button
-          onClick={(e) => { e.stopPropagation(); onToggleFavorite(event.id); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            const adding = !fav;
+            onToggleFavorite(event.id);
+            toast({ message: adding ? 'Ajouté aux favoris' : 'Retiré des favoris' });
+          }}
           aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
           aria-pressed={fav}
-          style={{ padding: '6px 10px 6px 4px', border: 'none', cursor: 'pointer', backgroundColor: 'transparent', flexShrink: 0, alignSelf: 'flex-start', color: fav ? '#ef4444' : 'var(--sl-t3)' }}
+          style={{ minWidth: 44, minHeight: 44, padding: '0 10px 0 4px', border: 'none', cursor: 'pointer', backgroundColor: 'transparent', flexShrink: 0, alignSelf: 'flex-start', color: fav ? '#ef4444' : 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>

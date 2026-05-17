@@ -33,7 +33,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
       initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-2xl border border-green-100 p-3 shadow-sm"
     >
-      <h3 className="font-bold text-xs font-poppins mb-3" style={{ color: '#0F1E3A' }}>
+      <h3 className="font-bold text-xs font-poppins mb-3" style={{ color: 'var(--sl-t1)' }}>
         {saveLabel === 'Ajouter' ? 'Nouveau sport' : 'Modifier le sport'}
       </h3>
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -215,7 +215,7 @@ export default function AdminPage() {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <h1 className="text-xl font-bold font-poppins" style={{ color: '#0F1E3A' }}>Administration</h1>
+          <h1 className="text-xl font-bold font-poppins" style={{ color: 'var(--sl-t1)' }}>Administration</h1>
         </div>
         <div className="flex overflow-x-auto">
           {TABS.map(t => (
@@ -261,7 +261,7 @@ export default function AdminPage() {
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2.5" style={{ backgroundColor: bg, color }}>
                     {icon}
                   </div>
-                  <div className="text-2xl font-bold font-poppins mb-0.5" style={{ color: '#0F1E3A' }}>{value}</div>
+                  <div className="text-2xl font-bold font-poppins mb-0.5" style={{ color: 'var(--sl-t1)' }}>{value}</div>
                   <div className="text-xs text-gray-400 font-medium leading-tight">{label}</div>
                 </div>
               ))}

@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
+import { useToast } from './contexts/ToastContext.jsx';
 import { SportsProvider } from './contexts/SportsContext.jsx';
 import { EVENTS } from './data/events.js';
 import { STATIC_CLUBS } from './data/clubs.js';
@@ -35,10 +36,18 @@ function AppInner() {
   const [showAuth, setShowAuth] = useState(false);
   const [pendingOnboarding, setPendingOnboarding] = useState(false);
 
+  const { toast } = useToast();
   const { events: userEvents, loading: eventsLoading, addEvent, updateEvent, deleteEvent } = useLocalEvents();
+
+  const addEventWithToast = useCallback(async (data) => {
+    const result = await addEvent(data);
+    toast({ message: 'Événement créé !' });
+    return result;
+  }, [addEvent, toast]);
 
   async function bulkAddEvents(events) {
     for (const ev of events) await addEvent(ev);
+    toast({ message: `${events.length} événement${events.length > 1 ? 's' : ''} importé${events.length > 1 ? 's' : ''} !` });
   }
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { toggle: toggleAttend, isAttending } = useAttendees();
@@ -147,7 +156,7 @@ function AppInner() {
                 allEvents={allEvents}
                 activeDepartment={activeDepartment}
                 canAddEvent={isAdmin || isClubAdmin}
-                onAddEvent={addEvent}
+                onAddEvent={addEventWithToast}
                 onUpdateEvent={updateEvent}
                 onDeleteEvent={deleteEvent}
                 isFavorite={isFavorite}
@@ -166,7 +175,7 @@ function AppInner() {
               <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} allClubs={allClubs} isAttending={isAttending} onToggleAttend={toggleAttend} />
             )}
             {activeTab === 'news' && <NewsPage />}
-            {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEvent} canAddEvent={isAdmin || isClubAdmin} />}
+            {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} />}
             {activeTab === 'profil' && (
               <ProfilPage
                 favorites={favorites}
@@ -200,7 +209,7 @@ function AppInner() {
           <EventFormModal
             key="fab-event-form"
             event={{ _isNew: true }}
-            onSave={(data) => { addEvent(data); setShowNewEventForm(false); setActiveTab('map'); }}
+            onSave={(data) => { addEventWithToast(data); setShowNewEventForm(false); setActiveTab('map'); }}
             onBulkSave={async (events) => { await bulkAddEvents(events); setShowNewEventForm(false); setActiveTab('map'); }}
             onClose={() => setShowNewEventForm(false)}
           />
@@ -208,7 +217,7 @@ function AppInner() {
         {showCSVImport && (
           <CSVImportModal
             key="csv-import"
-            onSave={addEvent}
+            onSave={addEventWithToast}
             onClose={() => setShowCSVImport(false)}
           />
         )}

@@ -29,7 +29,17 @@ export function AttendeeCountProvider({ children }) {
 
     const channel = supabase
       .channel('attendee-count-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendees' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendees' }, (payload) => {
+        const row = payload.new?.event_id ? payload.new : payload.old;
+        if (!row?.event_id) { load(); return; }
+        const id = String(row.event_id);
+        setCounts(prev => {
+          const curr = prev[id] ?? 0;
+          if (payload.eventType === 'INSERT') return { ...prev, [id]: curr + 1 };
+          if (payload.eventType === 'DELETE') return { ...prev, [id]: Math.max(0, curr - 1) };
+          return prev;
+        });
+      })
       .subscribe();
 
     return () => {
