@@ -110,6 +110,18 @@ export function AuthProvider({ children }) {
     return () => { subscription.unsubscribe(); clearTimeout(failsafe); };
   }, []);
 
+  // Retry profile fetch if auth loaded but profile is still null (cold-start recovery)
+  useEffect(() => {
+    if (!authUser?.id || profile) return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      if (cancelled) return;
+      const prof = await fetchProfile(authUser);
+      if (!cancelled && prof) setProfile(prof);
+    }, 4000);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [authUser?.id, profile]);
+
   // Load follows from localStorage on user change (migrates legacy sl-clubs-* format)
   useEffect(() => {
     if (!authUser?.id) { setFollows([]); return; }
@@ -144,13 +156,12 @@ export function AuthProvider({ children }) {
         throw new Error('Confirmez votre email avant de vous connecter');
       throw new Error(error.message);
     }
-    // Update state immediately without waiting for onAuthStateChange
     setAuthUser(data.user);
     const prof = await Promise.race([
       fetchProfile(data.user),
-      new Promise(resolve => setTimeout(() => resolve(null), 5000)),
+      new Promise(resolve => setTimeout(() => resolve(null), 12000)),
     ]);
-    setProfile(prof);
+    if (prof !== null) setProfile(prof);
     return data.user;
   }, []);
 
