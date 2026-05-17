@@ -350,7 +350,9 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
   }
 
   const teamPresets = useSmartMode && myClub
-    ? (myClub.categories ?? []).flatMap(c => c.teams?.map(t => t.name) ?? [])
+    ? (myClub.categories?.length > 0
+        ? myClub.categories.flatMap(c => c.teams?.map(t => t.name) ?? [])
+        : TEAM_PRESETS[myClub.sport] ?? [])
     : TEAM_PRESETS[form.sport] ?? [];
   const champLevels = CHAMPIONSHIP_LEVELS[form.sport] ?? CHAMPIONSHIP_LEVELS.default;
   const inputStyle = {
@@ -434,10 +436,20 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
 
                 {/* Mon équipe */}
                 <Field label="Mon équipe">
-                  <select value={form.teamName} onChange={e => set('teamName', e.target.value)} style={selectStyle}>
-                    <option value="">Sélectionner une équipe…</option>
-                    {teamPresets.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      list="team-presets-list"
+                      value={form.teamName}
+                      onChange={e => set('teamName', e.target.value)}
+                      placeholder={teamPresets.length > 0 ? 'Choisir ou saisir une équipe…' : 'Seniors A, U13 B…'}
+                      style={inputStyle}
+                      autoComplete="off"
+                    />
+                    <datalist id="team-presets-list">
+                      {teamPresets.map(t => <option key={t} value={t} />)}
+                    </datalist>
+                  </div>
                 </Field>
 
                 {/* Catégorie auto */}

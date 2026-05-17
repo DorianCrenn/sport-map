@@ -13,6 +13,7 @@ function mapFromDB(row) {
     website: row.website ?? '',
     phone: row.phone ?? '',
     email: row.email ?? '',
+    categories: row.categories ?? [],
     userId: row.user_id,
     isUserCreated: true,
   };
@@ -28,6 +29,7 @@ function mapToDB(data, userId) {
     website: data.website ?? '',
     phone: data.phone ?? '',
     email: data.email ?? '',
+    categories: data.categories ?? [],
     user_id: userId,
   };
 }
