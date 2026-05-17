@@ -9,4 +9,6 @@ const clientUrl = import.meta.env.PROD
   ? `${window.location.origin}/sb-api`
   : SUPABASE_URL;
 
-export const supabase = createClient(clientUrl, SUPABASE_ANON_KEY);
+export const supabase = createClient(clientUrl, SUPABASE_ANON_KEY, {
+  realtime: { enabled: false },
+});
