@@ -24,12 +24,13 @@ create policy "club_teams_select_all" on public.club_teams
   for select using (true);
 
 -- Only the club owner / admins can insert/update/delete
+-- profiles.club_id is text, so cast to uuid for comparison
 create policy "club_teams_insert_club_admin" on public.club_teams
   for insert with check (
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-        and (role = 'admin' or club_id = club_teams.club_id)
+        and (role = 'admin' or club_id::uuid = club_teams.club_id)
     )
   );
 
@@ -38,7 +39,7 @@ create policy "club_teams_update_club_admin" on public.club_teams
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-        and (role = 'admin' or club_id = club_teams.club_id)
+        and (role = 'admin' or club_id::uuid = club_teams.club_id)
     )
   );
 
@@ -47,6 +48,6 @@ create policy "club_teams_delete_club_admin" on public.club_teams
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-        and (role = 'admin' or club_id = club_teams.club_id)
+        and (role = 'admin' or club_id::uuid = club_teams.club_id)
     )
   );
