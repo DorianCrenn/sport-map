@@ -65,7 +65,7 @@ function AppInner() {
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasShownBadge = useRef(false);
   const clubMatchEvents = useClubMatches();
-  const { userClubs } = useClubs();
+  const { userClubs, updateClub } = useClubs();
   const { allSports } = useSports();
   const [cityFilter, setCityFilter] = useState(null);
   const [selectedSearchClub, setSelectedSearchClub] = useState(null);
@@ -325,6 +325,10 @@ function AppInner() {
             onBack={() => setSelectedSearchClub(null)}
             onAddEvent={addEvent}
             canAddEvent={isAdmin || isClubAdmin}
+            onUpdateClub={async (data) => {
+              await updateClub(selectedSearchClub.id, data);
+              setSelectedSearchClub(prev => ({ ...prev, ...data }));
+            }}
           />
         )}
         {showBadgeModal && newBadges.length > 0 && (

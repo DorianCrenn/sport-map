@@ -17,6 +17,7 @@ import { GalleryBlockEditor, GalleryBlockView } from './blocks/GalleryBlock.jsx'
 import AddBlockMenu from './AddBlockMenu.jsx';
 import ClubManagersPanel from './ClubManagersPanel.jsx';
 import ClubDashboard from './ClubDashboard.jsx';
+import ClubFormModal from './ClubFormModal.jsx';
 import EventFormModal from '../EventFormModal.jsx';
 import PosterStudio from '../PosterStudio.jsx';
 import { downloadClubICS } from '../../utils/exportICS.js';
@@ -617,7 +618,7 @@ function PendingResultsBanner({ count, isEditing }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canAddEvent: canAddEventProp }) {
+export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canAddEvent: canAddEventProp, onUpdateClub }) {
   const { allSports: SPORTS } = useSports();
   const { isAdmin, isClubAdmin, currentUser, isLoggedIn, follows, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow } = useAuth();
   const { share } = useShare();
@@ -646,6 +647,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
   const [showPoster, setShowPoster] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [showEditInfo, setShowEditInfo] = useState(false);
 
   async function handleShareClub() {
     const url = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
@@ -816,6 +818,19 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                   </span>
                 )}
                 Équipe
+              </button>
+            )}
+            {canEdit && onUpdateClub && (
+              <button
+                onClick={() => setShowEditInfo(true)}
+                aria-label="Modifier les informations du club"
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-600 text-slate-200 hover:bg-slate-500"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Équipes
               </button>
             )}
             {canEdit && (
@@ -1126,6 +1141,15 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           </div>
         )}
       </div>
+
+      {/* Edit club info modal (name, categories, teams…) */}
+      {showEditInfo && onUpdateClub && (
+        <ClubFormModal
+          club={club}
+          onSave={async (data) => { await onUpdateClub(data); setShowEditInfo(false); }}
+          onClose={() => setShowEditInfo(false)}
+        />
+      )}
 
       {/* Team event modal */}
       {teamEventModal !== undefined && (

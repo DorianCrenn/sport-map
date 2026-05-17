@@ -105,6 +105,10 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             onBack={() => setSelectedClub(null)}
             onAddEvent={onAddEvent}
             canAddEvent={canAddEvent}
+            onUpdateClub={async (data) => {
+              await updateClub(selectedClub.id, data);
+              setSelectedClub(prev => ({ ...prev, ...data }));
+            }}
           />
         )}
       </AnimatePresence>
