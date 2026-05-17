@@ -722,7 +722,18 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   }
 
   function handleAddEventForTeam(team) {
-    setTeamEventModal({ _isNew: true, defaultTeam: team.name, defaultCategory: team.category ?? '' });
+    const parentCat = (club.categories ?? []).find(cat =>
+      cat.teams?.some(t => t.id === team.id)
+    );
+    setTeamEventModal({
+      _isNew: true,
+      defaultTeam:     team.name,
+      defaultCategory: parentCat?.name ?? team.category ?? '',
+      defaultLevel:    team.level ?? '',
+      defaultSport:    club.sport,
+      defaultCity:     club.city,
+      defaultHomeOrAway: 'home',
+    });
   }
 
   function handleTeamEventSave(formData) {

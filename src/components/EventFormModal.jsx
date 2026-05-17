@@ -8,6 +8,7 @@ import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import CityAutocomplete from './CityAutocomplete.jsx';
+import VenueAutocomplete from './VenueAutocomplete.jsx';
 import SportIcon from './SportIcon.jsx';
 
 const BREST = { name: 'Brest', lat: 48.3904, lng: -4.4861 };
@@ -113,7 +114,17 @@ function generateRecurring(base, freq, untilStr) {
 
 function toFormValues(event, defaults = {}) {
   if (!event || event._isNew) {
-    return { ...EMPTY_FORM, teamName: defaults.teamName ?? '', category: defaults.category ?? '' };
+    return {
+      ...EMPTY_FORM,
+      sport:      defaults.sport      ?? EMPTY_FORM.sport,
+      teamName:   defaults.teamName   ?? '',
+      category:   defaults.category   ?? '',
+      level:      defaults.level      ?? '',
+      homeOrAway: defaults.homeOrAway ?? EMPTY_FORM.homeOrAway,
+      cityName:   defaults.cityName   ?? EMPTY_FORM.cityName,
+      cityLat:    defaults.cityLat    ?? EMPTY_FORM.cityLat,
+      cityLng:    defaults.cityLng    ?? EMPTY_FORM.cityLng,
+    };
   }
   const d = new Date(event.date);
   return {
@@ -285,25 +296,32 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
   const dialogRef = useRef(null);
   useFocusTrap(dialogRef);
 
-  const [form, setForm] = useState(() => {
-    const vals = toFormValues(event, {
-      teamName: event?._isNew ? event.defaultTeam : undefined,
-      category: event?._isNew ? event.defaultCategory : undefined,
-    });
-    if (useSmartMode && myClub && !isEdit) {
-      vals.sport = myClub.sport;
+  const buildDefaults = useCallback((ev) => {
+    if (!ev?._isNew) return {};
+    const defaults = {
+      teamName:   ev.defaultTeam      ?? undefined,
+      category:   ev.defaultCategory  ?? undefined,
+      level:      ev.defaultLevel     ?? undefined,
+      sport:      ev.defaultSport     ?? undefined,
+      homeOrAway: ev.defaultHomeOrAway ?? undefined,
+    };
+    // City: prefer explicit default, fall back to club city in smart mode
+    if (ev.defaultCity) {
+      defaults.cityName = ev.defaultCity;
+      // Keep BREST coords as default — user can refine via CityAutocomplete
+    } else if (useSmartMode && myClub?.city) {
+      defaults.cityName = myClub.city;
     }
-    return vals;
-  });
+    // Smart mode always forces club sport
+    if (useSmartMode && myClub) defaults.sport = myClub.sport;
+    return defaults;
+  }, [useSmartMode, myClub]);
+
+  const [form, setForm] = useState(() => toFormValues(event, buildDefaults(event)));
 
   useEffect(() => {
-    const vals = toFormValues(event, {
-      teamName: event?._isNew ? event.defaultTeam : undefined,
-      category: event?._isNew ? event.defaultCategory : undefined,
-    });
-    if (useSmartMode && myClub && !isEdit) vals.sport = myClub.sport;
-    setForm(vals);
-  }, [event]);
+    setForm(toFormValues(event, buildDefaults(event)));
+  }, [event]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handleKey = e => { if (e.key === 'Escape') onClose(); };
@@ -375,12 +393,19 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
               <h2 id="event-form-heading" style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>
                 {isEdit ? 'Modifier l\'événement' : 'Nouvel événement'}
               </h2>
-              {useSmartMode && myClub && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--sl-green)' }} />
-                  <span style={{ fontSize: 11, color: 'var(--sl-green)', fontWeight: 600 }}>{myClub.name}</span>
-                </div>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                {useSmartMode && myClub && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'var(--sl-green)' }} />
+                    <span style={{ fontSize: 11, color: 'var(--sl-green)', fontWeight: 600 }}>{myClub.name}</span>
+                  </div>
+                )}
+                {event?._isNew && event?.defaultTeam && (
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.25)' }}>
+                    {event.defaultTeam}{event.defaultLevel ? ` · ${event.defaultLevel}` : ''}
+                  </span>
+                )}
+              </div>
             </div>
             <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -576,7 +601,20 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
             </Field>
 
             <Field label="Stade / Salle / Lieu">
-              <input type="text" value={form.venue} onChange={e => set('venue', e.target.value)} placeholder="Stade municipal, Salle omnisports…" style={inputStyle} />
+              <VenueAutocomplete
+                value={form.venue}
+                onChange={v => set('venue', v)}
+                onSelect={({ name, city, lat, lng }) => {
+                  set('venue', name);
+                  if (city && !form.cityName) set('cityName', city);
+                  if (lat && lng && (form.cityLat === BREST.lat && form.cityLng === BREST.lng)) {
+                    set('cityLat', lat);
+                    set('cityLng', lng);
+                  }
+                }}
+                placeholder="Stade municipal, Salle omnisports…"
+                style={inputStyle}
+              />
             </Field>
 
             <Field label="Description">
