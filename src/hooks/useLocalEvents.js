@@ -60,7 +60,7 @@ export function useLocalEvents() {
 
   useEffect(() => {
     const channel = supabase
-      .channel('events-realtime-' + Math.random().toString(36).slice(2))
+      .channel('events-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, ({ new: row }) => {
         setEvents(prev => {
           if (prev.some(e => e.id === row.id)) return prev;
@@ -102,7 +102,7 @@ export function useLocalEvents() {
     setEvents(evs => evs.map(e => e.id === id ? { ...e, ...data } : e));
     try {
       const { error } = await supabase
-        .from('events').update(mapToDB({ ...prev, ...data }, currentUser?.id)).eq('id', id);
+        .from('events').update(mapToDB({ ...prev, ...data }, prev?.userId)).eq('id', id);
       if (error) throw error;
     } catch (err) {
       console.error('[Events] updateEvent failed, rolling back:', err.message);

@@ -192,10 +192,9 @@ export function AuthProvider({ children }) {
       avatar:         'avatar_url',
       favoriteSports: 'favorite_sports',
       followedClubs:  'followed_clubs',
-      clubId:         'club_id',
       onboardingDone: 'onboarding_done',
       digestOptIn:    'digest_opt_in',
-      role:           'role',
+      // role et clubId intentionnellement absents — modifiables uniquement via AdminPage
     };
     const dbPatch = {};
     for (const [key, col] of Object.entries(map)) {
@@ -279,7 +278,7 @@ export function AuthProvider({ children }) {
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
-  const currentUser = mapProfile(authUser, profile);
+  const currentUser = useMemo(() => mapProfile(authUser, profile), [authUser, profile]);
   const isAdmin     = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const isClubAdmin = currentUser?.role === 'club_admin';
   const isLoggedIn  = !!currentUser;
