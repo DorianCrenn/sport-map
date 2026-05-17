@@ -201,17 +201,51 @@ export default function ProfilPage({ favorites, userEvents, earnedBadges = [], o
               {currentUser.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'}
             </div>
           )}
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: '#eef2ef', letterSpacing: '-0.02em', lineHeight: 1.2, fontFamily: 'Inter, sans-serif', margin: 0 }}>
               {currentUser.name}
             </h2>
             <p style={{ fontSize: 12, color: 'rgba(238,242,239,0.5)', margin: '3px 0 8px' }}>{currentUser.email}</p>
-            <span style={{
-              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
-              backgroundColor: roleBadge.bg, color: roleBadge.color,
-            }}>
-              {roleBadge.label}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                backgroundColor: roleBadge.bg, color: roleBadge.color, flexShrink: 0,
+              }}>
+                {roleBadge.label}
+              </span>
+
+              {/* Compact badge strip */}
+              <button
+                onClick={() => setPreviewBadges(BADGE_ORDER)}
+                title="Voir mes badges"
+                style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                {BADGE_ORDER.map(id => {
+                  const def = BADGE_DEFS[id];
+                  const isEarned = earnedBadges.includes(id);
+                  return (
+                    <span
+                      key={id}
+                      title={def.name}
+                      style={{
+                        width: 24, height: 24, borderRadius: 8, fontSize: 12,
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: isEarned ? `${def.color}25` : 'rgba(255,255,255,0.06)',
+                        border: `1.5px solid ${isEarned ? def.color + '70' : 'rgba(255,255,255,0.1)'}`,
+                        opacity: isEarned ? 1 : 0.4,
+                        transition: 'all 0.2s',
+                        position: 'relative',
+                      }}
+                    >
+                      {isEarned ? def.icon : '🔒'}
+                    </span>
+                  );
+                })}
+                <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(238,242,239,0.4)', marginLeft: 2 }}>
+                  {earnedBadges.length}/{BADGE_ORDER.length}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -239,78 +273,6 @@ export default function ProfilPage({ favorites, userEvents, earnedBadges = [], o
               <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
             </motion.div>
           ))}
-        </div>
-
-        {/* Badges */}
-        <div style={{
-          borderRadius: 16, padding: '14px 14px 16px',
-          backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
-          boxShadow: 'var(--sl-shadow)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t2)', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>
-              Mes badges
-            </h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600 }}>
-                {earnedBadges.length}/{BADGE_ORDER.length}
-              </span>
-              <button
-                onClick={() => setPreviewBadges(BADGE_ORDER)}
-                style={{
-                  fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                  backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)',
-                }}
-                title="Prévisualiser l'animation badges"
-              >
-                ▶ Aperçu
-              </button>
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-            {BADGE_ORDER.map(id => {
-              const def = BADGE_DEFS[id];
-              const isEarned = earnedBadges.includes(id);
-              return (
-                <motion.div
-                  key={id}
-                  whileTap={isEarned ? { scale: 0.93 } : {}}
-                  title={`${def.name} — ${def.description}`}
-                  style={{ textAlign: 'center', cursor: 'default' }}
-                >
-                  <div style={{
-                    width: '100%', aspectRatio: '1 / 1',
-                    borderRadius: 12,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 22,
-                    backgroundColor: isEarned ? `${def.color}18` : 'var(--sl-surface)',
-                    border: `1.5px solid ${isEarned ? def.color : 'var(--sl-border)'}`,
-                    opacity: isEarned ? 1 : 0.45,
-                    position: 'relative',
-                    transition: 'all 0.3s',
-                    boxShadow: isEarned ? `0 0 10px ${def.glow}` : 'none',
-                  }}>
-                    {def.icon}
-                    {!isEarned && (
-                      <span style={{ position: 'absolute', bottom: 2, right: 3, fontSize: 8, lineHeight: 1 }}>🔒</span>
-                    )}
-                  </div>
-                  <p style={{
-                    fontSize: 9, marginTop: 5, fontWeight: 600, lineHeight: 1.2,
-                    color: isEarned ? 'var(--sl-t1)' : 'var(--sl-t3)',
-                    overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-                  }}>
-                    {def.name}
-                  </p>
-                </motion.div>
-              );
-            })}
-          </div>
-          {earnedBadges.length === 0 && (
-            <p style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 10, textAlign: 'center', lineHeight: 1.5 }}>
-              Clique sur "J'y serai" pour débloquer ton premier badge !
-            </p>
-          )}
         </div>
 
         {/* Theme toggle */}
