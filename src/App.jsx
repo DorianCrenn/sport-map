@@ -77,10 +77,14 @@ function AppInner() {
 
   const { earned: earnedBadges, newBadges, markSeen } = useBadges({ attending, allEvents });
 
-  // ── Deep linking: #club/:id ───────────────────────────────────────────────
+  // ── Deep linking: #club/:id and #event/:id ───────────────────────────────
+  const pendingEventDeepLink = useRef(null);
+
   useEffect(() => {
-    const match = window.location.hash.match(/^#club\/(.+)$/);
-    if (match) pendingDeepLink.current = match[1];
+    const clubMatch  = window.location.hash.match(/^#club\/(.+)$/);
+    const eventMatch = window.location.hash.match(/^#event\/(.+)$/);
+    if (clubMatch)  pendingDeepLink.current      = clubMatch[1];
+    if (eventMatch) pendingEventDeepLink.current = eventMatch[1];
   }, []);
 
   useEffect(() => {
@@ -88,6 +92,18 @@ function AppInner() {
     const club = allClubs.find(c => String(c.id) === pendingDeepLink.current);
     if (club) { setSelectedSearchClub(club); pendingDeepLink.current = null; }
   }, [allClubs]);
+
+  useEffect(() => {
+    if (!pendingEventDeepLink.current || allEvents.length === 0) return;
+    const id = pendingEventDeepLink.current;
+    const event = allEvents.find(e => String(e.id) === id);
+    if (event) {
+      setFocusEventId(event.id);
+      setActiveTab('map');
+      window.history.replaceState(null, '', window.location.pathname);
+      pendingEventDeepLink.current = null;
+    }
+  }, [allEvents]);
 
   useEffect(() => {
     if (selectedSearchClub) {

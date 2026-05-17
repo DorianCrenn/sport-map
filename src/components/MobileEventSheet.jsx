@@ -156,7 +156,8 @@ export default function MobileEventSheet({
     const lines = [event.title, `📅 ${dateStr} à ${timeStr}`];
     const venue = event.venue || event.city;
     if (venue) lines.push(`📍 ${venue}`);
-    const result = await share({ title: event.title, text: lines.join('\n'), url: window.location.href });
+    const eventUrl = `${window.location.origin}${window.location.pathname}#event/${event.id}`;
+    const result = await share({ title: event.title, text: lines.join('\n'), url: eventUrl });
     if (result.success && result.method === 'clipboard') {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
