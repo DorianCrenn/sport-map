@@ -127,10 +127,12 @@ export default function MobileEventSheet({
   const { currentUser, isAdmin } = useAuth();
   const attendeeCount = useAttendeeCount(event.id);
   const [copied, setCopied] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [snapPoint, setSnapPoint] = useState('detail');
   const [showPoster, setShowPoster] = useState(false);
   const sheetRef = useRef(null);
-  useFocusTrap(sheetRef, isExpanded);
+  useFocusTrap(sheetRef, snapPoint === 'full');
+
+  const SNAP_H = { peek: '108px', detail: '52dvh', full: '100%' };
 
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
@@ -169,26 +171,27 @@ export default function MobileEventSheet({
 
   function handleDragEnd(_, info) {
     const { offset, velocity } = info;
-    if (!isExpanded) {
-      if (offset.y < -80 || velocity.y < -500) setIsExpanded(true);
-      else if (offset.y > 80 || velocity.y > 400) onClose();
+    if (snapPoint === 'peek') {
+      if (offset.y < -50 || velocity.y < -400) setSnapPoint('detail');
+      else if (offset.y > 40 || velocity.y > 300) onClose();
+    } else if (snapPoint === 'detail') {
+      if (offset.y < -80 || velocity.y < -500) setSnapPoint('full');
+      else if (offset.y > 80 || velocity.y > 400) setSnapPoint('peek');
     } else {
-      // In expanded mode: swipe down far enough collapses
-      if (offset.y > 120 || velocity.y > 600) setIsExpanded(false);
+      if (offset.y > 120 || velocity.y > 600) setSnapPoint('detail');
     }
   }
 
   // Close on Escape key
   useEffect(() => {
     function onKey(e) {
-      if (e.key === 'Escape') {
-        if (isExpanded) setIsExpanded(false);
-        else onClose();
-      }
+      if (e.key !== 'Escape') return;
+      if (snapPoint === 'full') setSnapPoint('detail');
+      else onClose();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [isExpanded, onClose]);
+  }, [snapPoint, onClose]);
 
   return (
     <>
@@ -197,12 +200,12 @@ export default function MobileEventSheet({
       role="dialog"
       aria-modal="true"
       aria-label="Détails de l'événement"
-      drag={isExpanded ? false : 'y'}
+      drag={snapPoint === 'full' ? false : 'y'}
       dragConstraints={{ top: 0, bottom: 0 }}
       dragElastic={{ top: 0.2, bottom: 0.4 }}
       onDragEnd={handleDragEnd}
       initial={{ y: '100%' }}
-      animate={{ y: 0, height: isExpanded ? '100%' : '52dvh' }}
+      animate={{ y: 0, height: SNAP_H[snapPoint] }}
       exit={{ y: '100%' }}
       transition={{ type: 'spring', stiffness: 380, damping: 40 }}
       style={{
@@ -214,15 +217,15 @@ export default function MobileEventSheet({
         border: '1px solid var(--sl-border)', borderBottom: 'none',
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
-        touchAction: isExpanded ? 'auto' : 'none',
+        touchAction: snapPoint === 'full' ? 'auto' : 'none',
       }}
     >
       {/* Sticky header: drag handle + always-visible close + collapse */}
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 12px 6px', position: 'relative' }}>
-        {/* Collapse chevron — left, only when expanded */}
-        {isExpanded ? (
+        {/* Collapse chevron — left, only when full */}
+        {snapPoint === 'full' ? (
           <button
-            onClick={() => setIsExpanded(false)}
+            onClick={() => setSnapPoint('detail')}
             aria-label="Réduire"
             style={{
               position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
@@ -264,7 +267,7 @@ export default function MobileEventSheet({
 
       {/* Scrollable content */}
       <div style={{
-        flex: 1, overflowY: isExpanded ? 'auto' : 'hidden',
+        flex: 1, overflowY: snapPoint === 'full' ? 'auto' : 'hidden',
         padding: '16px 16px 32px',
         WebkitOverflowScrolling: 'touch',
       }}>
@@ -372,10 +375,10 @@ export default function MobileEventSheet({
         {/* Follow club — when event belongs to a tracked club */}
         <FollowClubButton event={event} />
 
-        {/* Hint to expand if collapsed */}
-        {!isExpanded && (
+        {/* Hint to expand — only in detail mode */}
+        {snapPoint === 'detail' && (
           <button
-            onClick={() => setIsExpanded(true)}
+            onClick={() => setSnapPoint('full')}
             style={{
               width: '100%', padding: '9px 0', borderRadius: 10,
               backgroundColor: 'var(--sl-surface)',
@@ -389,9 +392,9 @@ export default function MobileEventSheet({
           </button>
         )}
 
-        {/* Expanded content */}
+        {/* Full content — only in full mode */}
         <AnimatePresence>
-          {isExpanded && (
+          {snapPoint === 'full' && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

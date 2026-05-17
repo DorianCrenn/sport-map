@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { useToast } from './contexts/ToastContext.jsx';
@@ -6,6 +6,7 @@ import { SportsProvider } from './contexts/SportsContext.jsx';
 import { EVENTS } from './data/events.js';
 import { STATIC_CLUBS } from './data/clubs.js';
 import { useLocalEvents } from './hooks/useLocalEvents.js';
+import { useBadges } from './hooks/useBadges.js';
 import { useFavorites } from './hooks/useFavorites.js';
 import { useAttendees } from './hooks/useAttendees.js';
 import { useClubMatches } from './hooks/useClubMatches.js';
@@ -28,6 +29,8 @@ import AuthPage from './pages/AuthPage.jsx';
 import OnboardingPage from './pages/OnboardingPage.jsx';
 import EventFormModal from './components/EventFormModal.jsx';
 import CSVImportModal from './components/CSVImportModal.jsx';
+import BadgeUnlockModal from './components/BadgeUnlockModal.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading } = useAuth();
@@ -37,7 +40,7 @@ function AppInner() {
   const [pendingOnboarding, setPendingOnboarding] = useState(false);
 
   const { toast } = useToast();
-  const { events: userEvents, loading: eventsLoading, addEvent, updateEvent, deleteEvent } = useLocalEvents();
+  const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent } = useLocalEvents();
 
   const addEventWithToast = useCallback(async (data) => {
     const result = await addEvent(data);
@@ -45,20 +48,24 @@ function AppInner() {
     return result;
   }, [addEvent, toast]);
 
-  async function bulkAddEvents(events) {
-    for (const ev of events) await addEvent(ev);
-    toast({ message: `${events.length} événement${events.length > 1 ? 's' : ''} importé${events.length > 1 ? 's' : ''} !` });
-  }
+  const bulkAddEvents = useCallback(async (events) => {
+    const saved = await addEventsBatch(events);
+    toast({ message: `${saved.length} événement${saved.length > 1 ? 's' : ''} importé${saved.length > 1 ? 's' : ''} !` });
+    return saved;
+  }, [addEventsBatch, toast]);
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
-  const { toggle: toggleAttend, isAttending } = useAttendees();
+  const { attending, toggle: toggleAttend, isAttending } = useAttendees();
   const [showNewEventForm, setShowNewEventForm] = useState(false);
   const [showCSVImport, setShowCSVImport] = useState(false);
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  const hasShownBadge = useRef(false);
   const clubMatchEvents = useClubMatches();
   const { userClubs } = useClubs();
   const { allSports } = useSports();
   const [cityFilter, setCityFilter] = useState(null);
   const [selectedSearchClub, setSelectedSearchClub] = useState(null);
   const [focusEventId, setFocusEventId] = useState(null);
+  const pendingDeepLink = useRef(null);
 
   const allEvents = useMemo(
     () => [...EVENTS, ...userEvents, ...clubMatchEvents],
@@ -66,6 +73,39 @@ function AppInner() {
   );
 
   const allClubs = useMemo(() => [...userClubs, ...STATIC_CLUBS], [userClubs]);
+
+  const { earned: earnedBadges, newBadges, markSeen } = useBadges({ attending, allEvents });
+
+  // ── Deep linking: #club/:id ───────────────────────────────────────────────
+  useEffect(() => {
+    const match = window.location.hash.match(/^#club\/(.+)$/);
+    if (match) pendingDeepLink.current = match[1];
+  }, []);
+
+  useEffect(() => {
+    if (!pendingDeepLink.current || allClubs.length === 0) return;
+    const club = allClubs.find(c => String(c.id) === pendingDeepLink.current);
+    if (club) { setSelectedSearchClub(club); pendingDeepLink.current = null; }
+  }, [allClubs]);
+
+  useEffect(() => {
+    if (selectedSearchClub) {
+      window.history.replaceState(null, '', `#club/${selectedSearchClub.id}`);
+      document.title = `${selectedSearchClub.name} — SportLink`;
+    } else {
+      window.history.replaceState(null, '', window.location.pathname);
+      document.title = 'SportLink — Le sport près de toi';
+    }
+  }, [selectedSearchClub]);
+
+  // Badge modal — reset guard on user change, fire once when new badges are detected
+  useEffect(() => { hasShownBadge.current = false; }, [currentUser?.id]);
+  useEffect(() => {
+    if (newBadges.length > 0 && currentUser && !hasShownBadge.current) {
+      hasShownBadge.current = true;
+      setShowBadgeModal(true);
+    }
+  }, [newBadges.length, currentUser?.id]);
 
   // Fetch all communes for active departments from geo.api.gouv.fr
   const { communes } = useCommunes([activeDepartment]);
@@ -109,8 +149,9 @@ function AppInner() {
     setPendingOnboarding(true);
   }
 
-  function handleOnboardingDone() {
+  function handleOnboardingDone(selectedSports) {
     setPendingOnboarding(false);
+    if (selectedSports?.length > 0) setActiveTab('map');
   }
 
   return (
@@ -149,42 +190,55 @@ function AppInner() {
             style={{ position: 'absolute', inset: 0 }}
           >
             {activeTab === 'home' && (
-              <HomePage onNavigate={setActiveTab} stats={homeStats} clubs={allClubs} />
+              <ErrorBoundary name="Accueil">
+                <HomePage onNavigate={setActiveTab} stats={homeStats} clubs={allClubs} allEvents={allEvents} />
+              </ErrorBoundary>
             )}
             {activeTab === 'map' && (
-              <MapPage
-                allEvents={allEvents}
-                activeDepartment={activeDepartment}
-                canAddEvent={isAdmin || isClubAdmin}
-                onAddEvent={addEventWithToast}
-                onUpdateEvent={updateEvent}
-                onDeleteEvent={deleteEvent}
-                isFavorite={isFavorite}
-                onToggleFavorite={toggleFavorite}
-                isAttending={isAttending}
-                onToggleAttend={toggleAttend}
-                favoritesCount={favorites.size}
-                onGoToFavoris={() => setActiveTab('favoris')}
-                cityFilter={cityFilter}
-                focusEventId={focusEventId}
-                onFocusDone={() => setFocusEventId(null)}
-                eventsLoading={eventsLoading}
-              />
+              <ErrorBoundary name="Carte">
+                <MapPage
+                  allEvents={allEvents}
+                  activeDepartment={activeDepartment}
+                  canAddEvent={isAdmin || isClubAdmin}
+                  onAddEvent={addEventWithToast}
+                  onUpdateEvent={updateEvent}
+                  onDeleteEvent={deleteEvent}
+                  isFavorite={isFavorite}
+                  onToggleFavorite={toggleFavorite}
+                  isAttending={isAttending}
+                  onToggleAttend={toggleAttend}
+                  favoritesCount={favorites.size}
+                  onGoToFavoris={() => setActiveTab('favoris')}
+                  cityFilter={cityFilter}
+                  focusEventId={focusEventId}
+                  onFocusDone={() => setFocusEventId(null)}
+                  eventsLoading={eventsLoading}
+                />
+              </ErrorBoundary>
             )}
             {activeTab === 'favoris' && (
-              <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} allClubs={allClubs} isAttending={isAttending} onToggleAttend={toggleAttend} />
+              <ErrorBoundary name="Favoris">
+                <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} allClubs={allClubs} isAttending={isAttending} onToggleAttend={toggleAttend} />
+              </ErrorBoundary>
             )}
-            {activeTab === 'news' && <NewsPage />}
-            {activeTab === 'clubs' && <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} />}
+            {activeTab === 'news' && <ErrorBoundary name="Actualités"><NewsPage /></ErrorBoundary>}
+            {activeTab === 'clubs' && (
+              <ErrorBoundary name="Clubs">
+                <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} />
+              </ErrorBoundary>
+            )}
             {activeTab === 'profil' && (
-              <ProfilPage
-                favorites={favorites}
-                userEvents={userEvents}
-                onNavigate={handleTabChange}
-                onShowAuth={() => setShowAuth(true)}
-              />
+              <ErrorBoundary name="Profil">
+                <ProfilPage
+                  favorites={favorites}
+                  userEvents={userEvents}
+                  earnedBadges={earnedBadges}
+                  onNavigate={handleTabChange}
+                  onShowAuth={() => setShowAuth(true)}
+                />
+              </ErrorBoundary>
             )}
-            {activeTab === 'admin' && isAdmin && <AdminPage />}
+            {activeTab === 'admin' && isAdmin && <ErrorBoundary name="Admin"><AdminPage /></ErrorBoundary>}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -217,7 +271,7 @@ function AppInner() {
         {showCSVImport && (
           <CSVImportModal
             key="csv-import"
-            onSave={addEventWithToast}
+            onBulkSave={bulkAddEvents}
             onClose={() => setShowCSVImport(false)}
           />
         )}
@@ -229,6 +283,13 @@ function AppInner() {
             onBack={() => setSelectedSearchClub(null)}
             onAddEvent={addEvent}
             canAddEvent={isAdmin || isClubAdmin}
+          />
+        )}
+        {showBadgeModal && newBadges.length > 0 && (
+          <BadgeUnlockModal
+            key="badge-modal"
+            badges={newBadges}
+            onDone={() => { markSeen(); setShowBadgeModal(false); }}
           />
         )}
       </AnimatePresence>

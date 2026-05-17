@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
@@ -350,6 +351,179 @@ function ClubBanner({ onNavigate }) {
   );
 }
 
+// ── Recent results + next matches feed ───────────────────────────────────────
+const EVENT_TYPE_COLOR = { championship: '#3b82f6', cup: '#f97316', friendly: '#22d96a' };
+const EVENT_TYPE_LABEL = { championship: 'Championnat', cup: 'Coupe', friendly: 'Amical' };
+
+function ResultCard({ event, sports }) {
+  const sport = sports[event.sport];
+  const sportColor = sport?.color ?? '#64748b';
+  const isPast = new Date(event.date) < new Date();
+  const hasScore = event.score != null;
+  const typeColor = EVENT_TYPE_COLOR[event.eventType] ?? '#64748b';
+  const typeLabel = EVENT_TYPE_LABEL[event.eventType] ?? event.eventType ?? '';
+  const dateStr = new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+  const timeStr = new Date(event.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <div style={{
+      borderRadius: 14, padding: '12px 14px',
+      backgroundColor: 'var(--sl-card)',
+      border: '1px solid var(--sl-border)',
+      display: 'flex', alignItems: 'center', gap: 12,
+      minWidth: 0,
+    }}>
+      {/* Sport dot */}
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+        backgroundColor: `${sportColor}18`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {SPORT_ICONS[event.sport]
+          ? <svg width="18" height="18" viewBox="0 0 24 24" style={{ color: sportColor }}>
+              <g dangerouslySetInnerHTML={{ __html: SPORT_ICONS[event.sport] }} />
+            </svg>
+          : <span style={{ fontSize: 10, fontWeight: 800, color: sportColor }}>
+              {event.sport?.slice(0, 2).toUpperCase()}
+            </span>
+        }
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
+          <span style={{
+            fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5,
+            backgroundColor: `${typeColor}18`, color: typeColor,
+          }}>
+            {typeLabel}
+          </span>
+          {event.teamName && (
+            <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)' }}>
+              {event.teamName}
+            </span>
+          )}
+        </div>
+        <div style={{
+          fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
+          {event.title}
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>
+          {dateStr}{isPast ? '' : ` · ${timeStr}`}
+          {event.city && ` · ${event.city}`}
+        </div>
+      </div>
+
+      {/* Score or time */}
+      {hasScore ? (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+          padding: '6px 10px', borderRadius: 10,
+          backgroundColor: 'var(--sl-surface)',
+        }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>
+            {event.score.home}
+          </span>
+          <span style={{ fontSize: 12, color: 'var(--sl-t3)', fontWeight: 600 }}>–</span>
+          <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>
+            {event.score.away}
+          </span>
+        </div>
+      ) : !isPast ? (
+        <div style={{
+          fontSize: 11, fontWeight: 700, color: sportColor, flexShrink: 0,
+          padding: '4px 8px', borderRadius: 8, backgroundColor: `${sportColor}12`,
+        }}>
+          {timeStr}
+        </div>
+      ) : (
+        <div style={{
+          fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', flexShrink: 0,
+          padding: '3px 7px', borderRadius: 8, backgroundColor: 'var(--sl-surface)',
+        }}>
+          Terminé
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RecentResultsFeed({ allEvents, onNavigate }) {
+  const { allSports } = useSports();
+
+  const { recent, upcoming } = useMemo(() => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now); sevenDaysAgo.setDate(now.getDate() - 7);
+    const sevenDaysAhead = new Date(now); sevenDaysAhead.setDate(now.getDate() + 7);
+
+    const recent = allEvents
+      .filter(e => {
+        const d = new Date(e.date);
+        return d >= sevenDaysAgo && d < now && (e.score != null || d >= new Date(now - 3 * 86400000));
+      })
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 5);
+
+    const upcoming = allEvents
+      .filter(e => {
+        const d = new Date(e.date);
+        return d >= now && d < sevenDaysAhead;
+      })
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(0, 5);
+
+    return { recent, upcoming };
+  }, [allEvents]);
+
+  if (recent.length === 0 && upcoming.length === 0) return null;
+
+  return (
+    <FadeUp>
+      <div style={{ marginTop: 28 }}>
+        {recent.length > 0 && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.01em', margin: 0 }}>
+                Résultats récents
+              </h3>
+              <button
+                onClick={() => onNavigate('map')}
+                style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                Voir tout →
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: upcoming.length > 0 ? 20 : 0 }}>
+              {recent.map(e => <ResultCard key={e.id} event={e} sports={allSports} />)}
+            </div>
+          </>
+        )}
+
+        {upcoming.length > 0 && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.01em', margin: 0 }}>
+                Prochains matchs
+              </h3>
+              <button
+                onClick={() => onNavigate('map')}
+                style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-blue)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                Sur la carte →
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {upcoming.map(e => <ResultCard key={e.id} event={e} sports={allSports} />)}
+            </div>
+          </>
+        )}
+      </div>
+    </FadeUp>
+  );
+}
+
 // ── Stats + Features ──────────────────────────────────────────────────────────
 function FeaturesSection({ stats = {}, onNavigate }) {
   const { clubs = 0, events = 0, sports = 0, thisWeek = 0 } = stats;
@@ -427,7 +601,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function HomePage({ onNavigate, stats, clubs = [] }) {
+export default function HomePage({ onNavigate, stats, clubs = [], allEvents = [] }) {
   return (
     <div className="h-full overflow-y-auto" style={{ background: 'var(--sl-hero-bg)' }}>
 
@@ -496,6 +670,9 @@ export default function HomePage({ onNavigate, stats, clubs = [] }) {
 
         {/* Themed section */}
         <div style={{ backgroundColor:'var(--sl-hero-section-bg)', borderRadius:'24px 24px 0 0', marginTop:'-8px', position:'relative', zIndex:1 }}>
+          <div className="px-5 pt-5">
+            <RecentResultsFeed allEvents={allEvents} onNavigate={onNavigate} />
+          </div>
           <FeaturesSection stats={stats} onNavigate={onNavigate} />
         </div>
       </div>
@@ -591,6 +768,11 @@ export default function HomePage({ onNavigate, stats, clubs = [] }) {
         {/* Features + extra sections — themed */}
         <div style={{ backgroundColor:'var(--sl-hero-section-bg)', position:'relative', zIndex:1 }}>
           <div className="max-w-5xl mx-auto">
+
+            {/* Recent results + upcoming — desktop */}
+            <div className="px-12 pt-10">
+              <RecentResultsFeed allEvents={allEvents} onNavigate={onNavigate} />
+            </div>
 
             {/* How it works — desktop */}
             <div className="px-12 pt-10 pb-10">

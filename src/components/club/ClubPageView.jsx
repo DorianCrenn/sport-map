@@ -643,6 +643,15 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [activeTeamId, setActiveTeamId] = useState(null);
   const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
   const [showPoster, setShowPoster] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  function handleShareClub() {
+    const url = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2200);
+    }).catch(() => {});
+  }
 
   const [teamTrainings, setTeamTrainings] = useClubTrainings(club.id);
 
@@ -749,6 +758,23 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             Clubs
           </button>
           <div className="flex items-center gap-2">
+            {/* Share / deeplink button */}
+            <button
+              onClick={handleShareClub}
+              aria-label="Copier le lien du club"
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+              style={{
+                backgroundColor: linkCopied ? 'rgba(34,217,106,0.25)' : 'rgba(255,255,255,0.1)',
+                color: linkCopied ? '#22d96a' : 'rgba(255,255,255,0.7)',
+              }}
+            >
+              {linkCopied
+                ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              }
+              {linkCopied ? 'Copié !' : 'Partager'}
+            </button>
+
             {isOwner && (
               <button
                 onClick={() => setShowDashboard(true)}
@@ -996,7 +1022,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       )}
 
       {/* ── Content ── */}
-      <div className="flex-1 overflow-y-auto" style={{ '--club-font-title': `"${typography.titleFont}", sans-serif`, '--club-font-body': `"${typography.bodyFont}", sans-serif` }}>
+      <div className="flex-1 overflow-y-auto" style={{ overscrollBehavior: 'contain', '--club-font-title': `"${typography.titleFont}", sans-serif`, '--club-font-body': `"${typography.bodyFont}", sans-serif` }}>
         {activeTeam ? (
           <TeamView
             key={activeTeam.id}

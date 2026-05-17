@@ -95,7 +95,7 @@ function rowToEvent(row, club) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function CSVImportModal({ onSave, onClose }) {
+export default function CSVImportModal({ onBulkSave, onClose }) {
   const { userClubs } = useClubs();
   const { allSports: SPORTS } = useSports();
   const myClub = userClubs[0] ?? null;
@@ -133,16 +133,12 @@ export default function CSVImportModal({ onSave, onClose }) {
 
   async function handleImport() {
     setImporting(true);
-    const res = [];
-    for (const row of validRows) {
-      try {
-        await onSave(row._event);
-        res.push({ title: row._event.title, ok: true });
-      } catch (err) {
-        res.push({ title: row._event.title, ok: false, error: err.message });
-      }
+    try {
+      await onBulkSave(validRows.map(r => r._event));
+      setResults(validRows.map(r => ({ title: r._event.title, ok: true })));
+    } catch (err) {
+      setResults(validRows.map(r => ({ title: r._event.title, ok: false, error: err.message })));
     }
-    setResults(res);
     setImporting(false);
   }
 

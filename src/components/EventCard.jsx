@@ -1,4 +1,4 @@
-import { forwardRef, useState, useEffect } from 'react';
+import { forwardRef, memo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
@@ -478,4 +478,4 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
   );
 });
 
-export default EventCard;
+export default memo(EventCard);

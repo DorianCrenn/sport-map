@@ -22,22 +22,14 @@ const PROFIL = {
   id: 'profil', label: 'Profil',
   icon: (a) => <svg width="22" height="22" viewBox="0 0 24 24" fill={a ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
 };
-const ADMIN = {
-  id: 'admin', label: 'Admin',
-  icon: (a) => <svg width="21" height="21" viewBox="0 0 24 24" fill={a ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
-};
-
 export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV }) {
   const { isAdmin, isClubAdmin } = useAuth();
   const canFab = isAdmin || isClubAdmin;
   const [fabOpen, setFabOpen] = useState(false);
 
-  // Layout: with FAB → [Home, Map, FAB, Clubs, Profil or Admin]
-  // Without FAB → [Home, Map, Favoris, Clubs, Profil] + Admin if isAdmin
+  // Always 5 slots. Admin access is via Profil → "Tableau de bord"
   const tabs = canFab
-    ? [HOME, MAP, null /* FAB slot */, CLUBS, isAdmin ? ADMIN : PROFIL]
-    : isAdmin
-    ? [HOME, MAP, FAVORIS, CLUBS, PROFIL, ADMIN]
+    ? [HOME, MAP, null /* FAB slot */, CLUBS, PROFIL]
     : [HOME, MAP, FAVORIS, CLUBS, PROFIL];
 
   function handleFabAction(action) {
@@ -157,8 +149,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
           }
 
           const active = activeTab === tab.id;
-          const isAdminTab = tab.id === 'admin';
-          const activeColor = isAdminTab ? '#4da6ff' : 'var(--sl-green)';
+          const activeColor = 'var(--sl-green)';
           const color = active ? activeColor : 'var(--sl-nav-inactive)';
           const badgeCount = badgeCounts[tab.id] || 0;
 

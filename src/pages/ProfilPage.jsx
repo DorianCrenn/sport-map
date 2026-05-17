@@ -7,6 +7,8 @@ import { useTheme } from '../contexts/ThemeContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import { STATIC_CLUBS } from '../data/clubs.js';
+import { BADGE_DEFS, BADGE_ORDER } from '../hooks/useBadges.js';
+import BadgeUnlockModal from '../components/BadgeUnlockModal.jsx';
 
 // ── Theme toggle switch ────────────────────────────────────────────────────────
 function ThemeToggle() {
@@ -85,7 +87,7 @@ function ThemeToggle() {
   );
 }
 
-export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAuth }) {
+export default function ProfilPage({ favorites, userEvents, earnedBadges = [], onNavigate, onShowAuth }) {
   const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs } = useAuth();
   const { allSports } = useSports();
   const { userClubs } = useClubs();
@@ -93,6 +95,7 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
   const followedClubIds = followedClubs;
   const [editingSports, setEditingSports] = useState(false);
   const [selectedSports, setSelectedSports] = useState(new Set());
+  const [previewBadges, setPreviewBadges] = useState(null);
   const favCount = favorites?.size ?? 0;
   const eventCount = userEvents?.length ?? 0;
   const favSports = currentUser?.favoriteSports ?? [];
@@ -236,6 +239,78 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
               <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
             </motion.div>
           ))}
+        </div>
+
+        {/* Badges */}
+        <div style={{
+          borderRadius: 16, padding: '14px 14px 16px',
+          backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+          boxShadow: 'var(--sl-shadow)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t2)', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>
+              Mes badges
+            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600 }}>
+                {earnedBadges.length}/{BADGE_ORDER.length}
+              </span>
+              <button
+                onClick={() => setPreviewBadges(BADGE_ORDER)}
+                style={{
+                  fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                  backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)',
+                }}
+                title="Prévisualiser l'animation badges"
+              >
+                ▶ Aperçu
+              </button>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+            {BADGE_ORDER.map(id => {
+              const def = BADGE_DEFS[id];
+              const isEarned = earnedBadges.includes(id);
+              return (
+                <motion.div
+                  key={id}
+                  whileTap={isEarned ? { scale: 0.93 } : {}}
+                  title={`${def.name} — ${def.description}`}
+                  style={{ textAlign: 'center', cursor: 'default' }}
+                >
+                  <div style={{
+                    width: '100%', aspectRatio: '1 / 1',
+                    borderRadius: 12,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22,
+                    backgroundColor: isEarned ? `${def.color}18` : 'var(--sl-surface)',
+                    border: `1.5px solid ${isEarned ? def.color : 'var(--sl-border)'}`,
+                    opacity: isEarned ? 1 : 0.45,
+                    position: 'relative',
+                    transition: 'all 0.3s',
+                    boxShadow: isEarned ? `0 0 10px ${def.glow}` : 'none',
+                  }}>
+                    {def.icon}
+                    {!isEarned && (
+                      <span style={{ position: 'absolute', bottom: 2, right: 3, fontSize: 8, lineHeight: 1 }}>🔒</span>
+                    )}
+                  </div>
+                  <p style={{
+                    fontSize: 9, marginTop: 5, fontWeight: 600, lineHeight: 1.2,
+                    color: isEarned ? 'var(--sl-t1)' : 'var(--sl-t3)',
+                    overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+                  }}>
+                    {def.name}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
+          {earnedBadges.length === 0 && (
+            <p style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 10, textAlign: 'center', lineHeight: 1.5 }}>
+              Clique sur "J'y serai" pour débloquer ton premier badge !
+            </p>
+          )}
         </div>
 
         {/* Theme toggle */}
@@ -487,6 +562,16 @@ export default function ProfilPage({ favorites, userEvents, onNavigate, onShowAu
 
         <p className="text-xs text-center pt-1" style={{ color: 'var(--sl-t3)' }}>SportLink v1.0.0 · Finistère (29)</p>
       </div>
+
+      {/* Badge preview modal (temporary — dev only) */}
+      <AnimatePresence>
+        {previewBadges && (
+          <BadgeUnlockModal
+            badges={previewBadges}
+            onDone={() => setPreviewBadges(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -20,6 +20,7 @@ function mapProfile(authUser, dbProfile) {
     onboardingDone: dbProfile?.onboarding_done ?? false,
     digestOptIn:    dbProfile?.digest_opt_in ?? false,
     authProvider:   dbProfile?.auth_provider ?? meta.authProvider ?? null,
+    badges:         dbProfile?.badges ?? [],
     createdAt:      authUser.created_at,
   };
 }
@@ -194,6 +195,7 @@ export function AuthProvider({ children }) {
       followedClubs:  'followed_clubs',
       onboardingDone: 'onboarding_done',
       digestOptIn:    'digest_opt_in',
+      badges:         'badges',
       // role et clubId intentionnellement absents — modifiables uniquement via AdminPage
     };
     const dbPatch = {};

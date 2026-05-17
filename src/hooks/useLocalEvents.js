@@ -124,5 +124,19 @@ export function useLocalEvents() {
     }
   }, [events]);
 
-  return { events, loading, addEvent, updateEvent, deleteEvent };
+  const addEventsBatch = useCallback(async (eventsData) => {
+    const userId = currentUser?.id;
+    const rows = eventsData.map(data => mapToDB(data, userId));
+    const { data: saved, error } = await supabase.from('events').insert(rows).select();
+    if (error) throw error;
+    const realEvents = (saved ?? []).map(mapFromDB);
+    setEvents(prev => {
+      const ids = new Set(realEvents.map(e => e.id));
+      return [...prev.filter(e => !ids.has(e.id)), ...realEvents]
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+    });
+    return realEvents;
+  }, [currentUser?.id]);
+
+  return { events, loading, addEvent, addEventsBatch, updateEvent, deleteEvent };
 }

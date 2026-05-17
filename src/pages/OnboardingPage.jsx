@@ -22,7 +22,7 @@ export default function OnboardingPage({ onDone }) {
       localStorage.setItem(`sl_onboarded_${currentUser.id}`, '1');
     }
     updateProfile({ favoriteSports: [...selected], onboardingDone: true });
-    onDone();
+    onDone([...selected]);
   }
 
   const firstName = currentUser?.name?.split(' ')[0] ?? '';
