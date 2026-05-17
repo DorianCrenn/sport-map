@@ -35,7 +35,11 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, _setActiveTab] = useState(() => sessionStorage.getItem('sl-tab') || 'home');
+  const setActiveTab = useCallback((tab) => {
+    sessionStorage.setItem('sl-tab', tab);
+    _setActiveTab(tab);
+  }, []);
   const [activeDepartment, setActiveDepartment] = useState('finistere');
   const [showAuth, setShowAuth] = useState(false);
   const [pendingOnboarding, setPendingOnboarding] = useState(false);
