@@ -160,7 +160,8 @@ export default function AdminPage() {
 
   async function updateUserRole(userId, patch) {
     const { error } = await supabase.from('profiles').update(patch).eq('id', userId);
-    if (!error) setAdminUsers(prev => prev.map(u => u.id === userId ? { ...u, ...patch } : u));
+    if (error) throw new Error(error.message);
+    setAdminUsers(prev => prev.map(u => u.id === userId ? { ...u, ...patch } : u));
   }
 
   if (!isAdmin) {
@@ -172,16 +173,21 @@ export default function AdminPage() {
   }
 
   async function approveRequest(req) {
-    const club = await addClub({
-      name: req.clubName,
-      sport: req.sport,
-      city: req.city,
-      description: req.description,
-    });
-    await updateUserRole(req.userId, { role: 'club_admin', club_id: club.id });
-    reviewRequest(req.id, 'approved', reviewNote);
-    setReviewingId(null);
-    setReviewNote('');
+    try {
+      const club = await addClub({
+        name: req.clubName,
+        sport: req.sport,
+        city: req.city,
+        description: req.description,
+      });
+      await updateUserRole(req.userId, { role: 'club_admin', club_id: club.id });
+      reviewRequest(req.id, 'approved', reviewNote);
+      setReviewingId(null);
+      setReviewNote('');
+    } catch (err) {
+      console.error('[AdminPage] approveRequest failed:', err.message);
+      alert(`Erreur lors de l'approbation : ${err.message}\n\nVérifiez les politiques RLS Supabase (profiles).`);
+    }
   }
 
   function rejectRequest(reqId) {

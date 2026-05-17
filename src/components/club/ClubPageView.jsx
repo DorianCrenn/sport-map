@@ -22,6 +22,7 @@ import PosterStudio from '../PosterStudio.jsx';
 import { downloadClubICS } from '../../utils/exportICS.js';
 import { useClubManagers } from '../../hooks/useClubManagers.js';
 import { useClubTrainings } from '../../hooks/useClubTrainings.js';
+import { useShare } from '../../hooks/useShare.js';
 
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
@@ -619,6 +620,7 @@ function PendingResultsBanner({ count, isEditing }) {
 export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canAddEvent: canAddEventProp }) {
   const { allSports: SPORTS } = useSports();
   const { isAdmin, isClubAdmin, currentUser, isLoggedIn, follows, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow } = useAuth();
+  const { share } = useShare();
   const canAddEvent = canAddEventProp ?? (isAdmin || isClubAdmin);
   const isOwner = isAdmin || (isClubAdmin && currentUser?.clubId === club.id);
   const { managers, addManager, removeManager, isManager } = useClubManagers(club.id);
@@ -645,12 +647,17 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [showPoster, setShowPoster] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  function handleShareClub() {
+  async function handleShareClub() {
     const url = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
-    navigator.clipboard.writeText(url).then(() => {
+    const result = await share({
+      title: club.name,
+      text: `${club.name} — ${club.city}`,
+      url,
+    });
+    if (result.success) {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2200);
-    }).catch(() => {});
+    }
   }
 
   const [teamTrainings, setTeamTrainings] = useClubTrainings(club.id);

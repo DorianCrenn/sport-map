@@ -379,28 +379,57 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                 style={{
                   marginBottom: 10, borderRadius: 14, padding: '12px 14px',
                   display: 'flex', alignItems: 'center', gap: 12,
-                  backgroundColor: myRequest.status === 'pending' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.08)',
-                  border: `1px solid ${myRequest.status === 'pending' ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.25)'}`,
+                  backgroundColor: myRequest.status === 'pending'
+                    ? 'rgba(245,158,11,0.1)'
+                    : myRequest.status === 'rejected'
+                      ? 'rgba(239,68,68,0.08)'
+                      : 'rgba(34,197,94,0.08)',
+                  border: `1px solid ${
+                    myRequest.status === 'pending'
+                      ? 'rgba(245,158,11,0.3)'
+                      : myRequest.status === 'rejected'
+                        ? 'rgba(239,68,68,0.25)'
+                        : 'rgba(34,197,94,0.25)'
+                  }`,
                 }}
               >
                 <div style={{
                   width: 40, height: 40, borderRadius: 10, flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  backgroundColor: myRequest.status === 'pending' ? '#f59e0b' : '#ef4444',
+                  backgroundColor: myRequest.status === 'pending'
+                    ? '#f59e0b'
+                    : myRequest.status === 'rejected'
+                      ? '#ef4444'
+                      : '#22c55e',
                 }}>
                   {myRequest.status === 'pending' ? (
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
                       <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                     </svg>
-                  ) : (
+                  ) : myRequest.status === 'rejected' ? (
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
                       <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="10"/><polyline points="16 8 11 14 8 11"/>
                     </svg>
                   )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: myRequest.status === 'pending' ? '#f59e0b' : '#ef4444' }}>
-                    {myRequest.status === 'pending' ? "Demande en cours d'examen" : 'Demande refusée'}
+                  <div style={{
+                    fontWeight: 700, fontSize: 13,
+                    color: myRequest.status === 'pending'
+                      ? '#f59e0b'
+                      : myRequest.status === 'rejected'
+                        ? '#ef4444'
+                        : '#22c55e',
+                  }}>
+                    {myRequest.status === 'pending'
+                      ? "Demande en cours d'examen"
+                      : myRequest.status === 'rejected'
+                        ? 'Demande refusée'
+                        : 'Demande approuvée — synchronisation en cours'}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--sl-t2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {myRequest.clubName}
