@@ -84,16 +84,21 @@ export function AuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        const seq = ++fetchSeq; // each event gets a unique sequence number
+        const seq = ++fetchSeq;
 
         if (session?.user) {
-          setAuthUser(session.user); // immediate — don't wait for profile
+          setAuthUser(session.user);
+          // TOKEN_REFRESHED only rotates the JWT — the profile data hasn't changed
+          if (event === 'TOKEN_REFRESHED') { done(); return; }
+
           const prof = await Promise.race([
             fetchProfile(session.user),
-            new Promise(resolve => setTimeout(() => resolve(null), 8000)),
+            new Promise(resolve => setTimeout(() => resolve(null), 10000)),
           ]);
-          // Discard result if a newer auth event started while we were fetching
-          if (seq === fetchSeq) setProfile(prof);
+          if (seq === fetchSeq) {
+            // Never overwrite a valid profile with a timeout null
+            setProfile(prev => prof !== null ? prof : prev);
+          }
         } else {
           setAuthUser(null);
           setProfile(null);
