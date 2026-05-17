@@ -87,10 +87,31 @@ function AppInner() {
   useEffect(() => {
     const clubMatch  = window.location.hash.match(/^#club\/(.+)$/);
     const eventMatch = window.location.hash.match(/^#event\/(.+)$/);
-    if (clubMatch)  pendingDeepLink.current      = clubMatch[1];
     if (eventMatch) pendingEventDeepLink.current = eventMatch[1];
+
+    if (clubMatch) {
+      const id = clubMatch[1];
+      // 1) Check static clubs immediately (no async needed)
+      const staticClub = STATIC_CLUBS.find(c => String(c.id) === id);
+      if (staticClub) { setSelectedSearchClub(staticClub); return; }
+      // 2) For Supabase clubs (UUID), fetch directly — don't wait for allClubs
+      pendingDeepLink.current = id;
+      supabase.from('clubs').select('*').eq('id', id).maybeSingle()
+        .then(({ data }) => {
+          if (!data) return;
+          setSelectedSearchClub({
+            id: data.id, name: data.name, sport: data.sport,
+            city: data.city ?? '', description: data.description ?? '',
+            logoUrl: data.logo_url ?? null, website: data.website ?? '',
+            phone: data.phone ?? '', email: data.email ?? '',
+            userId: data.user_id, isUserCreated: true,
+          });
+          pendingDeepLink.current = null;
+        });
+    }
   }, []);
 
+  // Fallback: if the club arrives via the normal useClubs sync (e.g. realtime)
   useEffect(() => {
     if (!pendingDeepLink.current || allClubs.length === 0) return;
     const club = allClubs.find(c => String(c.id) === pendingDeepLink.current);
