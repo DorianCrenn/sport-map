@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Z } from '../constants/zIndex.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useToast } from '../contexts/ToastContext.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 
 // ── OAuth provider buttons ──────────────────────────────────────────────────
@@ -196,6 +197,7 @@ function ForgotPasswordView({ onBack }) {
 
 export default function AuthPage({ onClose, onNeedOnboarding }) {
   const { login, register, loginWithGoogle } = useAuth();
+  const { toast } = useToast();
   const [mode, setMode] = useState('login');   // 'login' | 'register' | 'forgot' | 'confirm-email'
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
@@ -225,6 +227,7 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
     try {
       if (mode === 'login') {
         await login(form.email.trim(), form.password);
+        toast({ message: 'Connexion réussie !' });
         onClose();
       } else {
         if (!form.name.trim()) throw new Error('Prénom ou surnom requis');
@@ -238,6 +241,7 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
         if (needsConfirmation) {
           setMode('confirm-email');
         } else {
+          toast({ message: 'Compte créé ! Bienvenue 🎉', type: 'success' });
           onNeedOnboarding?.();
         }
       }
@@ -251,6 +255,7 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
   async function handleGoogleLogin() {
     try {
       await loginWithGoogle();
+      toast({ message: 'Connecté avec Google !' });
       onClose();
     } catch (err) {
       if (err.message === 'popup-blocked') {
@@ -262,8 +267,10 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
   }
 
   function handleOAuthDone({ needsConfirmation }) {
+    const provider = oauthProvider;
     setOauthProvider(null);
     if (needsConfirmation) { setMode('confirm-email'); return; }
+    toast({ message: `Connecté avec ${provider === 'google' ? 'Google' : 'Instagram'} !` });
     onNeedOnboarding?.();
   }
 

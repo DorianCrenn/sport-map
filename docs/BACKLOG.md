@@ -199,13 +199,13 @@
 - **Criticité** : HAUTE — frein à l'adoption par les clubs
 - **Complexité** : L
 - **À faire** :
-  - ⬜ Pré-remplissage depuis contexte (sport, club, équipe, niveau)
-  - ⬜ Auto-sélection équipe/niveau depuis le profil club_admin
-  - ⬜ Aide saisie lieu avancée (Google Places ou Mapbox Geocoding)
-  - ⬜ Logique domicile/extérieur automatique (club détecté = domicile)
+  - ✅ Pré-remplissage depuis contexte (sport, club, équipe, niveau) — buildDefaults() dans EventFormModal
+  - ✅ Auto-sélection équipe/niveau depuis le profil club_admin — première équipe auto-sélectionnée
+  - ✅ Aide saisie lieu avancée — VenueAutocomplete (Photon/OSM) déjà implémenté
+  - ✅ Logique domicile/extérieur automatique — champ homeOrAway avec club auto
   - ⬜ Sélection rapide adversaire (recherche parmi clubs connus)
-  - ⬜ Saisie score rapide post-match (depuis le listing événements passés)
-  - ⬜ Duplication événement (recréer le même match pour la prochaine journée)
+  - ✅ Saisie score rapide post-match — QuickScoreEdit déjà implémenté
+  - ✅ Duplication événement — bouton ⎘ dans EventCard, modal pré-rempli date vide
 - **Note** : eventType (championship/cup/friendly) + teamName + category déjà implémentés ✅
 
 ---

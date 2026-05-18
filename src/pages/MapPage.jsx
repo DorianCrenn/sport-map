@@ -220,6 +220,7 @@ export default function MapPage({
             onAddEvent={() => setModalEvent({ _isNew: true })}
             onEditEvent={(event) => setModalEvent(event)}
             onDeleteEvent={handleDeleteEvent}
+            onDuplicateEvent={(event) => setModalEvent({ ...event, _isNew: true, _isDuplicate: true, id: undefined, date: '', score: null })}
             onUpdateEvent={onUpdateEvent}
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}

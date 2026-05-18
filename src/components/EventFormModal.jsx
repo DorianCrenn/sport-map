@@ -113,7 +113,7 @@ function generateRecurring(base, freq, untilStr) {
 }
 
 function toFormValues(event, defaults = {}) {
-  if (!event || event._isNew) {
+  if (!event || (event._isNew && !event._isDuplicate)) {
     return {
       ...EMPTY_FORM,
       sport:      defaults.sport      ?? EMPTY_FORM.sport,
@@ -124,6 +124,21 @@ function toFormValues(event, defaults = {}) {
       cityName:   defaults.cityName   ?? EMPTY_FORM.cityName,
       cityLat:    defaults.cityLat    ?? EMPTY_FORM.cityLat,
       cityLng:    defaults.cityLng    ?? EMPTY_FORM.cityLng,
+    };
+  }
+  // Duplicate: keep all fields but clear date and score
+  if (event._isNew && event._isDuplicate) {
+    return {
+      ...EMPTY_FORM,
+      title: event.title ?? '', sport: event.sport ?? 'Football',
+      date: '', time: new Date(event.date || Date.now()).toTimeString().slice(0, 5),
+      cityName: event.city ?? BREST.name, cityLat: event.lat ?? BREST.lat, cityLng: event.lng ?? BREST.lng,
+      venue: event.venue ?? '', description: event.description ?? '',
+      eventType: event.eventType ?? 'championship',
+      teamName: event.teamName ?? '', category: event.category ?? '',
+      level: event.level ?? '', cupType: event.cupType ?? '',
+      homeOrAway: event.homeOrAway ?? 'home', adversaire: event.adversaire ?? '',
+      homeTeam: event.standings?.home?.team ?? '', awayTeam: event.standings?.away?.team ?? '',
     };
   }
   const d = new Date(event.date);
@@ -313,7 +328,17 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
       defaults.cityName = myClub.city;
     }
     // Smart mode always forces club sport
-    if (useSmartMode && myClub) defaults.sport = myClub.sport;
+    if (useSmartMode && myClub) {
+      defaults.sport = myClub.sport;
+      // Auto-select first team if not already specified
+      if (!defaults.teamName) {
+        const teams = myClub.categories?.flatMap(c => c.teams?.map(t => t.name) ?? []) ?? [];
+        if (teams.length > 0) {
+          defaults.teamName = teams[0];
+          defaults.category = inferCategory(teams[0]);
+        }
+      }
+    }
     return defaults;
   }, [useSmartMode, myClub]);
 
@@ -393,7 +418,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 14px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
             <div>
               <h2 id="event-form-heading" style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>
-                {isEdit ? 'Modifier l\'événement' : 'Nouvel événement'}
+                {isEdit ? 'Modifier l\'événement' : event?._isDuplicate ? 'Dupliquer l\'événement' : 'Nouvel événement'}
               </h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                 {useSmartMode && myClub && (

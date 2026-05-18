@@ -4,6 +4,7 @@ import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
+import { useToast } from '../contexts/ToastContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import { STATIC_CLUBS } from '../data/clubs.js';
@@ -89,6 +90,7 @@ function ThemeToggle() {
 
 export default function ProfilPage({ favorites, userEvents, earnedBadges = [], onNavigate, onShowAuth, onMyRides, rideNotifCount = 0 }) {
   const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs } = useAuth();
+  const { toast } = useToast();
   const { allSports } = useSports();
   const { userClubs } = useClubs();
   const allClubs = [...userClubs, ...STATIC_CLUBS];
@@ -389,7 +391,7 @@ export default function ProfilPage({ favorites, userEvents, earnedBadges = [], o
                   Annuler
                 </button>
                 <button
-                  onClick={() => { updateProfile({ favoriteSports: [...selectedSports] }); setEditingSports(false); }}
+                  onClick={() => { updateProfile({ favoriteSports: [...selectedSports] }); setEditingSports(false); toast({ message: 'Sports favoris mis à jour !' }); }}
                   className="text-xs font-bold px-2.5 py-1 rounded-lg text-white"
                   style={{ backgroundColor: 'var(--sl-green)' }}
                 >
@@ -536,7 +538,7 @@ export default function ProfilPage({ favorites, userEvents, earnedBadges = [], o
 
         {/* Logout */}
         <button
-          onClick={() => logout()}
+          onClick={() => { logout(); toast({ message: 'À bientôt !', type: 'info' }); }}
           className="w-full rounded-2xl p-4 flex items-center gap-3 transition-colors"
           style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)' }}
         >
