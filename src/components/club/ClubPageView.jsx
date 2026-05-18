@@ -842,20 +842,6 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                 Équipes
               </button>
             )}
-            {canEdit && (
-              <button
-                onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
-                aria-label={isEditing ? 'Terminer la modification' : 'Modifier la page du club'}
-                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
-                  isEditing ? 'bg-green-500 text-white hover:bg-green-400' : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
-                }`}
-              >
-                {isEditing
-                  ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Terminé</>
-                  : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg> Modifier</>
-                }
-              </button>
-            )}
           </div>
         </div>
 
@@ -1215,6 +1201,48 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           />
         )}
       </AnimatePresence>
+
+      {/* Floating edit FAB */}
+      {canEdit && (
+        <motion.button
+          key={isEditing ? 'done' : 'edit'}
+          initial={{ scale: 0.8, opacity: 0, y: 8 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          whileTap={{ scale: 0.93 }}
+          onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
+          aria-label={isEditing ? 'Terminer la modification' : 'Modifier la page du club'}
+          style={{
+            position: 'absolute', bottom: 20, right: 16, zIndex: 30,
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '12px 20px', borderRadius: 18, border: 'none', cursor: 'pointer',
+            fontSize: 13, fontWeight: 700,
+            backgroundColor: isEditing ? 'var(--sl-green)' : 'rgba(15,30,58,0.92)',
+            color: isEditing ? '#fff' : '#cbd5e1',
+            boxShadow: isEditing
+              ? '0 4px 20px rgba(34,217,106,0.45)'
+              : '0 4px 24px rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          {isEditing ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Terminé
+            </>
+          ) : (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
+              </svg>
+              Modifier la page
+            </>
+          )}
+        </motion.button>
+      )}
     </motion.div>
   );
 }

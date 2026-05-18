@@ -8,6 +8,7 @@ import { downloadICS } from '../utils/exportICS.js';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import SportIcon from './SportIcon.jsx';
 import PosterStudio from './PosterStudio.jsx';
+import RideSection from './rides/RideSection.jsx';
 
 const EVENT_TYPE_META = {
   championship: { label: 'Championnat', color: '#3b82f6' },
@@ -376,6 +377,9 @@ export default function MobileEventSheet({
         {/* Follow club — when event belongs to a tracked club */}
         <FollowClubButton event={event} />
 
+        {/* Ride teaser — compact, only in detail/peek mode */}
+        {snapPoint !== 'full' && <RideSection event={event} snapPoint={snapPoint} />}
+
         {/* Hint to expand — only in detail mode */}
         {snapPoint === 'detail' && (
           <button
@@ -440,6 +444,8 @@ export default function MobileEventSheet({
                   })}
                 </div>
               )}
+
+              <RideSection event={event} snapPoint="full" />
 
               {canEditThis && isPast && onUpdateEvent && (
                 <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />

@@ -98,37 +98,51 @@ const BLOCK_TYPES = [
 export default function AddBlockMenu({ onAdd, onCancel }) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.97, y: -6 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97, y: -6 }}
-      transition={{ duration: 0.15 }}
-      className="bg-white border border-gray-200 rounded-2xl shadow-lg p-4 mb-4"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
+      style={{ overflow: 'hidden', marginBottom: 12 }}
     >
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-semibold text-gray-800">Choisir un bloc</span>
-        <button
-          onClick={onCancel}
-          className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          Annuler
-        </button>
-      </div>
-      <div className="space-y-1">
-        {BLOCK_TYPES.map(({ type, label, desc, icon }) => (
+      <div style={{
+        borderRadius: 18, border: '1px solid var(--sl-border)',
+        backgroundColor: 'var(--sl-card)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+        padding: 14,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Choisir un type de bloc
+          </span>
           <button
-            key={type}
-            onClick={() => onAdd(type)}
-            className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 text-left transition-colors group"
+            onClick={onCancel}
+            style={{ fontSize: 11, color: 'var(--sl-t3)', padding: '3px 10px', borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer' }}
           >
-            <span className="text-gray-400 group-hover:text-slate-700 transition-colors flex-shrink-0">
-              {icon}
-            </span>
-            <div>
-              <div className="text-sm font-medium text-gray-800">{label}</div>
-              <div className="text-xs text-gray-400">{desc}</div>
-            </div>
+            Annuler
           </button>
-        ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+          {BLOCK_TYPES.map(({ type, label, desc, icon }) => (
+            <button
+              key={type}
+              onClick={() => onAdd(type)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 12px', borderRadius: 12, textAlign: 'left',
+                border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)',
+                cursor: 'pointer', transition: 'all 0.12s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.backgroundColor = 'rgba(59,130,246,0.06)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.backgroundColor = 'var(--sl-surface)'; }}
+            >
+              <span style={{ color: 'var(--sl-t3)', flexShrink: 0 }}>{icon}</span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
+                <div style={{ fontSize: 10, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{desc}</div>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </motion.div>
   );

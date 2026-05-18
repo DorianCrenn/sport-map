@@ -32,6 +32,8 @@ import EventFormModal from './components/EventFormModal.jsx';
 import CSVImportModal from './components/CSVImportModal.jsx';
 import BadgeUnlockModal from './components/BadgeUnlockModal.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
+import MyRidesPage from './pages/MyRidesPage.jsx';
+import { useRideNotifications } from './hooks/useRideNotifications.js';
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading } = useAuth();
@@ -46,6 +48,8 @@ function AppInner() {
 
   const { toast } = useToast();
   const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent } = useLocalEvents();
+  const { unreadCount: rideNotifCount } = useRideNotifications();
+  const [showMyRides, setShowMyRides] = useState(false);
 
   const addEventWithToast = useCallback(async (data) => {
     const result = await addEvent(data);
@@ -277,6 +281,8 @@ function AppInner() {
                   earnedBadges={earnedBadges}
                   onNavigate={handleTabChange}
                   onShowAuth={() => setShowAuth(true)}
+                  onMyRides={() => setShowMyRides(true)}
+                  rideNotifCount={rideNotifCount}
                 />
               </ErrorBoundary>
             )}
@@ -336,6 +342,12 @@ function AppInner() {
             key="badge-modal"
             badges={newBadges}
             onDone={() => { markSeen(); setShowBadgeModal(false); }}
+          />
+        )}
+        {showMyRides && (
+          <MyRidesPage
+            key="my-rides"
+            onBack={() => setShowMyRides(false)}
           />
         )}
       </AnimatePresence>

@@ -1,0 +1,325 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useMyRides } from '../hooks/useRides.js';
+import { useRideNotifications } from '../hooks/useRideNotifications.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import { supabase } from '../lib/supabase.js';
+import RideCard from '../components/rides/RideCard.jsx';
+
+const TABS = [
+  { key: 'driving',   label: 'Mes trajets',   icon: '🚗' },
+  { key: 'passenger', label: 'Mes demandes',  icon: '🙋' },
+  { key: 'notifs',    label: 'Notifications', icon: '🔔' },
+];
+
+const STATUS_META = {
+  pending:   { label: 'En attente', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+  accepted:  { label: 'Acceptée',   color: '#22d96a', bg: 'rgba(34,217,106,0.12)' },
+  refused:   { label: 'Refusée',    color: '#ef4444', bg: 'rgba(239,68,68,0.1)'  },
+  cancelled: { label: 'Annulée',    color: '#64748b', bg: 'rgba(100,116,139,0.1)' },
+};
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 60)   return `il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24)   return `il y a ${h} h`;
+  return `il y a ${Math.floor(h / 24)} j`;
+}
+
+function EmptyState({ icon, title, subtitle }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+      <div style={{ fontSize: 40, marginBottom: 12 }}>{icon}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>{title}</div>
+      <div style={{ fontSize: 13, color: 'var(--sl-t3)', lineHeight: 1.5 }}>{subtitle}</div>
+    </div>
+  );
+}
+
+export default function MyRidesPage({ onBack }) {
+  const { currentUser } = useAuth();
+  const { myDriving, myPassenger, loading, refetch } = useMyRides();
+  const { notifications, unreadCount, markAllRead, markRead } = useRideNotifications();
+  const [activeTab, setActiveTab] = useState('driving');
+
+  // Actions (used by driving tab)
+  async function handleAccept(requestId, rideId, passengerId, passengerName) {
+    const { error } = await supabase
+      .from('ride_requests')
+      .update({ status: 'accepted' })
+      .eq('id', requestId);
+    if (error) return;
+    // Check if full
+    const ride = myDriving.find(r => r.id === rideId);
+    if (ride && ride.takenSeats + 1 >= ride.availableSeats) {
+      await supabase.from('rides').update({ status: 'full' }).eq('id', rideId);
+    }
+    await supabase.from('ride_notifications').insert({
+      user_id: passengerId, type: 'request_accepted', ride_id: rideId, request_id: requestId,
+      data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
+    });
+    refetch();
+  }
+
+  async function handleRefuse(requestId, rideId, passengerId) {
+    await supabase.from('ride_requests').update({ status: 'refused' }).eq('id', requestId);
+    const ride = myDriving.find(r => r.id === rideId);
+    await supabase.from('ride_notifications').insert({
+      user_id: passengerId, type: 'request_refused', ride_id: rideId, request_id: requestId,
+      data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
+    });
+    refetch();
+  }
+
+  async function handleCancelRide(rideId) {
+    const ride = myDriving.find(r => r.id === rideId);
+    await supabase.from('rides').update({ status: 'cancelled' }).eq('id', rideId);
+    const accepted = ride?.requests.filter(r => r.status === 'accepted') ?? [];
+    if (accepted.length > 0) {
+      await supabase.from('ride_notifications').insert(
+        accepted.map(r => ({
+          user_id: r.passengerId, type: 'ride_cancelled', ride_id: rideId,
+          data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
+        }))
+      );
+    }
+    refetch();
+  }
+
+  async function handleCancelRequest(requestId, rideId) {
+    await supabase.from('ride_requests').update({ status: 'cancelled' }).eq('id', requestId);
+    refetch();
+  }
+
+  const activeDriving   = myDriving.filter(r => r.status !== 'cancelled' && r.status !== 'completed');
+  const pastDriving     = myDriving.filter(r => r.status === 'cancelled' || r.status === 'completed');
+  const activePassenger = myPassenger.filter(r => r.status !== 'cancelled');
+  const pastPassenger   = myPassenger.filter(r => r.status === 'cancelled');
+
+  return (
+    <motion.div
+      initial={{ x: '100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '100%' }}
+      transition={{ type: 'spring', stiffness: 340, damping: 36 }}
+      style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)' }}
+    >
+      {/* Header */}
+      <div style={{ flexShrink: 0, backgroundColor: 'var(--sl-card)', borderBottom: '1px solid var(--sl-border)', padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={onBack}
+            style={{ width: 40, height: 40, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>
+              🚗 Mes covoiturages
+            </h1>
+            <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: '2px 0 0' }}>
+              Trajets proposés et demandes envoyées
+            </p>
+          </div>
+        </div>
+
+        {/* Tab bar */}
+        <div style={{ display: 'flex', gap: 4, marginTop: 14 }}>
+          {TABS.map(tab => {
+            const isActive = activeTab === tab.key;
+            const badge = tab.key === 'notifs' ? unreadCount : 0;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => { setActiveTab(tab.key); if (tab.key === 'notifs' && unreadCount > 0) markAllRead(); }}
+                style={{
+                  flex: 1, padding: '9px 4px', borderRadius: 12, cursor: 'pointer',
+                  border: `2px solid ${isActive ? 'var(--sl-green)' : 'var(--sl-border)'}`,
+                  backgroundColor: isActive ? 'rgba(34,217,106,0.1)' : 'var(--sl-surface)',
+                  color: isActive ? 'var(--sl-green)' : 'var(--sl-t2)',
+                  fontSize: 11, fontWeight: isActive ? 700 : 500,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  position: 'relative', transition: 'all 0.15s',
+                }}
+              >
+                {tab.icon} {tab.label}
+                {badge > 0 && (
+                  <span style={{
+                    position: 'absolute', top: -5, right: -4,
+                    minWidth: 16, height: 16, borderRadius: 999, padding: '0 4px',
+                    backgroundColor: '#ef4444', color: '#fff',
+                    fontSize: 9, fontWeight: 800,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>{badge}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px 32px' }}>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--sl-t3)', fontSize: 13 }}>Chargement…</div>
+        ) : (
+          <AnimatePresence mode="wait">
+
+            {/* ── Mes trajets (driver) ── */}
+            {activeTab === 'driving' && (
+              <motion.div key="driving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {activeDriving.length === 0 && pastDriving.length === 0 ? (
+                  <EmptyState icon="🚗" title="Aucun trajet proposé" subtitle="Vos trajets proposés apparaîtront ici." />
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {activeDriving.length > 0 && (
+                      <>
+                        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', padding: '0 2px' }}>
+                          Actifs — {activeDriving.length}
+                        </div>
+                        {activeDriving.map(ride => (
+                          <RideCard
+                            key={ride.id} ride={ride} currentUser={currentUser}
+                            onAccept={(reqId, passId, passName) => handleAccept(reqId, ride.id, passId, passName)}
+                            onRefuse={(reqId, passId) => handleRefuse(reqId, ride.id, passId)}
+                            onCancel={() => handleCancelRide(ride.id)}
+                            onCancelRequest={(reqId) => handleCancelRequest(reqId, ride.id)}
+                          />
+                        ))}
+                      </>
+                    )}
+                    {pastDriving.length > 0 && (
+                      <>
+                        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', padding: '0 2px', marginTop: 8 }}>
+                          Historique — {pastDriving.length}
+                        </div>
+                        {pastDriving.map(ride => (
+                          <RideCard key={ride.id} ride={ride} currentUser={currentUser} compact />
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* ── Mes demandes (passenger) ── */}
+            {activeTab === 'passenger' && (
+              <motion.div key="passenger" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {myPassenger.length === 0 ? (
+                  <EmptyState icon="🙋" title="Aucune demande envoyée" subtitle="Les covoiturages que vous demandez à rejoindre apparaîtront ici." />
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {activePassenger.map(req => {
+                      const meta = STATUS_META[req.status];
+                      return (
+                        <div key={req.id} style={{ borderRadius: 16, padding: '14px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+                          {/* Ride info */}
+                          {req.ride && (
+                            <div style={{ marginBottom: 10 }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 3 }}>
+                                📍 {req.ride.departureLocation}
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>
+                                Conducteur : {req.ride.driverName}
+                              </div>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{
+                              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                              backgroundColor: meta?.bg, color: meta?.text,
+                            }}>
+                              {meta?.label ?? req.status}
+                            </span>
+                            {(req.status === 'pending' || req.status === 'accepted') && (
+                              <button
+                                onClick={() => handleCancelRequest(req.id, req.rideId)}
+                                style={{ fontSize: 11, color: 'var(--sl-t3)', background: 'none', border: '1px solid var(--sl-border)', padding: '4px 10px', borderRadius: 8, cursor: 'pointer' }}
+                              >
+                                Se désister
+                              </button>
+                            )}
+                          </div>
+                          {req.message && (
+                            <p style={{ fontSize: 11, color: 'var(--sl-t2)', marginTop: 8, marginBottom: 0, borderLeft: '2px solid var(--sl-border)', paddingLeft: 10 }}>
+                              "{req.message}"
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {pastPassenger.length > 0 && (
+                      <>
+                        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', padding: '4px 2px', marginTop: 4 }}>
+                          Annulées — {pastPassenger.length}
+                        </div>
+                        {pastPassenger.map(req => (
+                          <div key={req.id} style={{ borderRadius: 14, padding: '12px', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', opacity: 0.6 }}>
+                            {req.ride && <div style={{ fontSize: 12, color: 'var(--sl-t2)' }}>📍 {req.ride.departureLocation} — {req.ride.driverName}</div>}
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginTop: 4, display: 'block' }}>Annulée</span>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* ── Notifications ── */}
+            {activeTab === 'notifs' && (
+              <motion.div key="notifs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {notifications.length === 0 ? (
+                  <EmptyState icon="🔔" title="Aucune notification" subtitle="Vos notifications de covoiturage apparaîtront ici." />
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {notifications.map(notif => (
+                      <div
+                        key={notif.id}
+                        onClick={() => !notif.read && markRead(notif.id)}
+                        style={{
+                          borderRadius: 14, padding: '12px 14px',
+                          backgroundColor: notif.read ? 'var(--sl-surface)' : 'var(--sl-card)',
+                          border: `1px solid ${notif.read ? 'var(--sl-border)' : 'rgba(34,217,106,0.2)'}`,
+                          cursor: notif.read ? 'default' : 'pointer',
+                          display: 'flex', alignItems: 'flex-start', gap: 10,
+                        }}
+                      >
+                        <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>{notif.icon}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: notif.read ? 500 : 700, color: 'var(--sl-t1)', lineHeight: 1.4 }}>
+                            {notif.label}
+                          </div>
+                          {notif.data.rideLocation && (
+                            <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>
+                              📍 {notif.data.rideLocation}
+                            </div>
+                          )}
+                          {(notif.data.driverName || notif.data.passengerName) && (
+                            <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>
+                              {notif.data.driverName ? `Conducteur : ${notif.data.driverName}` : `Passager : ${notif.data.passengerName}`}
+                            </div>
+                          )}
+                          <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 4 }}>{timeAgo(notif.createdAt)}</div>
+                        </div>
+                        {!notif.read && (
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--sl-green)', flexShrink: 0, marginTop: 4 }} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        )}
+      </div>
+    </motion.div>
+  );
+}

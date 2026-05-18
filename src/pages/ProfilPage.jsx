@@ -87,7 +87,7 @@ function ThemeToggle() {
   );
 }
 
-export default function ProfilPage({ favorites, userEvents, earnedBadges = [], onNavigate, onShowAuth }) {
+export default function ProfilPage({ favorites, userEvents, earnedBadges = [], onNavigate, onShowAuth, onMyRides, rideNotifCount = 0 }) {
   const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs } = useAuth();
   const { allSports } = useSports();
   const { userClubs } = useClubs();
@@ -334,6 +334,34 @@ export default function ProfilPage({ favorites, userEvents, earnedBadges = [], o
             <div className="flex-1">
               <div className="text-sm font-semibold font-poppins" style={{ color: 'var(--sl-t1)' }}>Mes favoris</div>
               <div className="text-xs" style={{ color: 'var(--sl-t2)' }}>{favCount} événement{favCount > 1 ? 's' : ''} sauvegardé{favCount > 1 ? 's' : ''}</div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        )}
+
+        {/* Mes covoiturages shortcut */}
+        {onMyRides && (
+          <button
+            onClick={onMyRides}
+            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-colors cursor-pointer"
+            style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)' }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(34,217,106,0.12)', position: 'relative' }}>
+              <span style={{ fontSize: 20 }}>🚗</span>
+              {rideNotifCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: -4, right: -4,
+                  minWidth: 18, height: 18, borderRadius: 999, padding: '0 4px',
+                  backgroundColor: '#ef4444', color: '#fff',
+                  fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {rideNotifCount > 9 ? '9+' : rideNotifCount}
+                </span>
+              )}
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-semibold font-poppins" style={{ color: 'var(--sl-t1)' }}>Mes covoiturages</div>
+              <div className="text-xs" style={{ color: 'var(--sl-t2)' }}>Trajets, demandes et notifications</div>
             </div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
