@@ -48,9 +48,9 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
       paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       background: 'var(--sl-bg)',
     }}>
-      {/* FAB quick-action popover */}
+      {/* FAB quick-action popover — hidden entirely when any full-screen overlay is active */}
       <AnimatePresence>
-        {fabOpen && (
+        {fabOpen && !overlayOpen && (
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -159,7 +159,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
             <motion.button
               key={tab.id}
               whileTap={{ scale: 0.86 }}
-              onClick={() => onTabChange(tab.id)}
+              onClick={() => { setFabOpen(false); onTabChange(tab.id); }}
               style={{
                 flex: 1, display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
