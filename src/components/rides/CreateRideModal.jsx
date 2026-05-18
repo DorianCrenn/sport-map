@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
+import VenueAutocomplete from '../VenueAutocomplete.jsx';
 
 const EQUIPMENT_OPTIONS = [
   { key: 'bike',    label: '🚲 Vélo' },
@@ -135,13 +136,15 @@ export default function CreateRideModal({ event, onSave, onClose }) {
 
           {/* Departure */}
           <Field label="Lieu de départ *">
-            <input
-              type="text"
-              required
-              autoFocus
+            <VenueAutocomplete
               value={form.departureLocation}
-              onChange={e => set('departureLocation', e.target.value)}
-              placeholder="ex. Parking Leclerc Brest, Gare de Quimper…"
+              onChange={v => set('departureLocation', v)}
+              onSelect={({ name, city, lat, lng }) => {
+                set('departureLocation', city ? `${name}, ${city}` : name);
+                set('departureLat', lat);
+                set('departureLng', lng);
+              }}
+              placeholder="ex. Parking Leclerc, Gare de Quimper…"
               style={inputStyle}
             />
           </Field>

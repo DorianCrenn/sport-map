@@ -57,14 +57,21 @@ export default function VenueAutocomplete({ value, onChange, onSelect, placehold
 
   function typeLabel(p) {
     const t = p.type || p.osm_value || '';
-    if (t === 'stadium')        return 'Stade';
-    if (t === 'sports_centre')  return 'Centre sportif';
-    if (t === 'pitch')          return 'Terrain';
-    if (t === 'gym')            return 'Gymnase';
-    if (t === 'swimming_pool')  return 'Piscine';
-    if (t === 'sports_hall')    return 'Salle';
+    if (t === 'stadium')          return 'Stade';
+    if (t === 'sports_centre')    return 'Centre sportif';
+    if (t === 'pitch')            return 'Terrain';
+    if (t === 'gym')              return 'Gymnase';
+    if (t === 'swimming_pool')    return 'Piscine';
+    if (t === 'sports_hall')      return 'Salle';
     if (t === 'community_centre') return 'Salle communale';
     if (t === 'school' || t === 'college') return 'Établissement';
+    if (t === 'parking')          return 'Parking';
+    if (t === 'train_station' || t === 'railway') return 'Gare';
+    if (t === 'bus_stop' || t === 'bus_station')  return 'Arrêt bus';
+    if (t === 'supermarket' || t === 'convenience' || t === 'mall') return 'Commerce';
+    if (t === 'fuel')             return 'Station-service';
+    if (t === 'restaurant' || t === 'cafe' || t === 'fast_food') return 'Restauration';
+    if (t === 'house' || t === 'street' || t === 'road') return 'Adresse';
     return '';
   }
 
