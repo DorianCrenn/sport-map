@@ -299,11 +299,9 @@ function AppInner() {
         </AnimatePresence>
 
         {/* MyRidesPage lives inside the content area so BottomNav stays visible */}
-        <AnimatePresence>
-          {showMyRides && (
-            <MyRidesPage key="my-rides" onBack={() => setShowMyRides(false)} />
-          )}
-        </AnimatePresence>
+        {showMyRides && (
+          <MyRidesPage onBack={() => setShowMyRides(false)} />
+        )}
       </div>
 
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements} />
