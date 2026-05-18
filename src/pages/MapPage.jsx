@@ -192,7 +192,7 @@ export default function MapPage({
         )}
       </AnimatePresence>
 
-      <div className="flex flex-1 min-h-0 relative">
+      <div className="flex flex-1 min-h-0 relative sl-map-container">
         <MapView
           events={displayEvents}
           selectedEventId={selectedEventId}

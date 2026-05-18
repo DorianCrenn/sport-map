@@ -30,6 +30,25 @@ CREATE POLICY "profiles_update_admin"
   ON public.profiles FOR UPDATE
   USING (public.sl_is_admin());
 
+-- Trigger SECURITY DEFINER : protège role/club_id contre escalade même en appel API direct.
+-- S'exécute AVANT UPDATE, hors RLS → pas de récursion infinie.
+CREATE OR REPLACE FUNCTION public.profiles_guard_immutable()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  -- Non-admins ne peuvent pas changer role ou club_id (même via API Supabase directe)
+  IF NOT public.sl_is_admin() THEN
+    NEW.role    := OLD.role;
+    NEW.club_id := OLD.club_id;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS profiles_guard_immutable_trigger ON public.profiles;
+CREATE TRIGGER profiles_guard_immutable_trigger
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.profiles_guard_immutable();
+
 -- ── events ───────────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS "events_select_public"        ON public.events;

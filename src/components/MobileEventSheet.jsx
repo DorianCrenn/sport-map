@@ -305,18 +305,18 @@ export default function MobileEventSheet({
         </div>
 
         {/* Title */}
-        <h2 style={{ fontWeight: 800, fontSize: 20, lineHeight: 1.2, letterSpacing: '-0.02em', color: 'var(--sl-t1)', marginBottom: 4, fontFamily: 'Inter, sans-serif' }}>
+        <h2 style={{ fontWeight: 800, fontSize: 20, lineHeight: 1.2, letterSpacing: '-0.02em', color: 'var(--sl-t1)', marginBottom: 4, fontFamily: 'Inter, sans-serif', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           {event.title}
         </h2>
 
         {/* Championship / Cup subtitle */}
         {event.eventType === 'championship' && (event.teamName || event.level) && (
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#3b82f6', marginBottom: 10, opacity: 0.9 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#3b82f6', marginBottom: 10, opacity: 0.9, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {[event.teamName, event.level].filter(Boolean).join(' — ')}
           </div>
         )}
         {event.eventType === 'cup' && event.cupType && (
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#f97316', marginBottom: 10, opacity: 0.9 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#f97316', marginBottom: 10, opacity: 0.9, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {event.cupType}
           </div>
         )}

@@ -64,7 +64,7 @@ export default function EventSidebar({
 
   return (
     <div style={{
-      width: 380, display: 'flex', flexDirection: 'column', flexShrink: 0,
+      width: 'var(--sl-sidebar-width, 380px)', display: 'flex', flexDirection: 'column', flexShrink: 0,
       backgroundColor: 'var(--sl-sidebar-bg)',
       borderLeft: '1px solid var(--sl-border)',
     }}>

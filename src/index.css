@@ -397,3 +397,33 @@ html:not([data-theme="light"]) {
   position: absolute;
   inset: -6px;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   TABLET — sidebar responsive width + touch improvements
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --sl-sidebar-width: 380px;
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  :root {
+    --sl-sidebar-width: 300px;
+  }
+
+  /* Prevent 300ms tap delay on tablet */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+/* Map container must never overflow on any screen size */
+.sl-map-container {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Leaflet map — ensure it fills its container on small screens */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+}

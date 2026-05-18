@@ -25,8 +25,32 @@ DROP POLICY IF EXISTS "ca_select"  ON public.club_announcements;
 DROP POLICY IF EXISTS "ca_insert"  ON public.club_announcements;
 DROP POLICY IF EXISTS "ca_delete"  ON public.club_announcements;
 
+-- Lecture : tout utilisateur authentifié (pour afficher les annonces de ses clubs suivis)
 CREATE POLICY "ca_select"  ON public.club_announcements FOR SELECT USING (auth.uid() IS NOT NULL);
-CREATE POLICY "ca_insert"  ON public.club_announcements FOR INSERT WITH CHECK (auth.uid() = author_id);
+
+-- Insertion : uniquement le propriétaire du club, un club_admin assigné à ce club, ou un admin
+CREATE POLICY "ca_insert"  ON public.club_announcements FOR INSERT
+  WITH CHECK (
+    auth.uid() = author_id
+    AND (
+      -- Propriétaire du club (créé via Supabase)
+      EXISTS (
+        SELECT 1 FROM public.clubs
+        WHERE clubs.id::text = club_announcements.club_id
+          AND clubs.user_id = auth.uid()
+      )
+      -- Club admin dont le profile.club_id correspond
+      OR EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE id = auth.uid()
+          AND role = 'club_admin'
+          AND club_id = club_announcements.club_id
+      )
+      -- Admin global
+      OR public.sl_is_admin()
+    )
+  );
+
 CREATE POLICY "ca_delete"  ON public.club_announcements FOR DELETE USING (auth.uid() = author_id OR public.sl_is_admin());
 
 -- ── Reads tracking ────────────────────────────────────────────────────────────

@@ -351,18 +351,18 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
         </div>
 
         {/* Title */}
-        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 2, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none' }}>
+        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 2, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           {event.title}
         </div>
 
         {/* Championship / Cup subtitle */}
         {event.eventType === 'championship' && (event.teamName || event.level) && (
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', opacity: 0.85, marginBottom: 4 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', opacity: 0.85, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {[event.teamName, event.level].filter(Boolean).join(' — ')}
           </div>
         )}
         {event.eventType === 'cup' && event.cupType && (
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#f97316', opacity: 0.85, marginBottom: 4 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#f97316', opacity: 0.85, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {event.cupType}
           </div>
         )}

@@ -55,16 +55,16 @@
 ### EPIC-P0-1 🔴 Refonte Auth / RBAC / Sécurité
 - **Objectif** : Zéro faille permissions. Perte de confiance → abandon total du produit.
 - **Sous-tâches** :
-  - ⬜ SEC-001 — Clé Supabase hors du repo (`.env.local`)
-  - ⬜ SEC-002 — RLS `club_managers` (fuite emails)
-  - ⬜ SEC-003 — `events_insert` restreint aux admins/club_admins
-  - ⬜ SEC-004 — Retirer `role`/`clubId` de `updateProfile`
+  - ✅ SEC-001 — Clé Supabase hors du repo (`.env.local`)
+  - ✅ SEC-002 — RLS `club_managers` (fuite emails)
+  - ✅ SEC-003 — `events_insert` restreint aux admins/club_admins
+  - ✅ SEC-004 — Retirer `role`/`clubId` de `updateProfile` + trigger BEFORE UPDATE SECURITY DEFINER
   - 🔄 BUG-001 — Rôle admin cassé sur cold start (fix poussé, validation en attente)
-  - ⬜ BUG-002 — Policies SQL en conflit (`schema.sql` vs `rls_policies.sql`)
-  - ⬜ — Vérifier RLS sur toutes les tables (rides, announcements, club_pages, club_trainings)
-  - ⬜ — Vérifier permissions upload/storage Supabase
-  - ⬜ — Vérifier accès modification clubs/events côté API (bypass frontend)
-  - ⬜ — Vérifier persistance sessions + expiry tokens
+  - ✅ BUG-002 — Policies SQL en conflit (`schema.sql` vs `rls_policies.sql`)
+  - ✅ — Vérifier RLS sur toutes les tables (rides, announcements, club_pages, club_trainings)
+  - ✅ — Vérifier permissions upload/storage Supabase (aucun bucket utilisé — images via URL externe)
+  - ✅ — Vérifier accès modification clubs/events côté API (trigger SECURITY DEFINER + RLS policies)
+  - ✅ — Vérifier persistance sessions + expiry tokens (onAuthStateChange + TOKEN_REFRESHED handler)
 
 ---
 
@@ -139,13 +139,13 @@
 ### EPIC-P0-2 🔴 Audit complet base de données
 - **Objectif** : Les équipes doivent devenir de vraies entités persistées, réutilisables partout.
 - **Sous-tâches** :
-  - ⬜ Vérifier sauvegarde équipes (actuellement stockées en JSONB dans `clubs.categories`)
-  - ⬜ Vérifier sauvegarde événements (cohérence `user_id`, `club_id`)
-  - ⬜ Vérifier sauvegarde favoris (localStorage vs Supabase `follows`)
-  - ⬜ Vérifier sauvegarde pages clubs (`club_pages` JSONB)
+  - ✅ Vérifier sauvegarde équipes (JSONB dans `clubs.categories` — fonctionnel)
+  - ✅ Vérifier sauvegarde événements (cohérence `user_id`, `club_id` — validé en seed.sql)
+  - ✅ Vérifier sauvegarde favoris (Supabase source of truth + localStorage fallback)
+  - ✅ Vérifier sauvegarde pages clubs (`club_pages` JSONB — RLS en place)
   - ✅ ARCH-001 — Migration données statiques `events.js`/`clubs.js` → seed SQL
-  - ⬜ PERF-006 — Table `club_follows` dédiée (remplacer `profiles.followed_clubs`)
-  - ⬜ Cohérence relations SQL + intégrité référentielle
+  - ⬜ PERF-006 — Table `club_follows` dédiée (remplacer `profiles.followed_clubs`) → P5
+  - ✅ Cohérence relations SQL + intégrité référentielle (seed.sql + `ON CONFLICT (static_id) DO NOTHING`)
 
 ---
 
@@ -163,11 +163,11 @@
   - ✅ MOBILE-001 — Safe-area insets systématiques (Dynamic Island iOS)
   - ✅ MOBILE-002 — Scroll imbriqués iOS Safari (`overscroll-behavior: contain`)
   - ✅ MOBILE-003 — Tap targets minimum 44px sur tous les boutons
-  - ⬜ Débordements textes dans EventCard et MobileEventSheet
-  - ⬜ Bottom sheet snap points progressifs (UX-002)
-  - ⬜ Boutons inaccessibles / trop petits sur Android/iOS
-  - ⬜ Overflow map sur petits écrans
-  - ⬜ Problèmes tablette (layout 768px+)
+  - ✅ Débordements textes dans EventCard et MobileEventSheet
+  - ✅ Bottom sheet snap points progressifs (UX-002) — peek/detail/full déjà implémenté
+  - 🔄 Boutons inaccessibles / trop petits sur Android/iOS
+  - ✅ Overflow map sur petits écrans
+  - ✅ Problèmes tablette (layout 768px+)
 
 ---
 
