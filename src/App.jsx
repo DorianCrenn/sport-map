@@ -214,6 +214,8 @@ function AppInner() {
           onClearCity={() => setCityFilter(null)}
           onTabChange={handleTabChange}
           onShowAuth={() => setShowAuth(true)}
+          onMyRides={() => setShowMyRides(true)}
+          rideNotifCount={rideNotifCount}
         />
       )}
 

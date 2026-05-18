@@ -13,10 +13,10 @@ const TABS = [
 ];
 
 const STATUS_META = {
-  pending:   { label: 'En attente', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-  accepted:  { label: 'Acceptée',   color: '#22d96a', bg: 'rgba(34,217,106,0.12)' },
-  refused:   { label: 'Refusée',    color: '#ef4444', bg: 'rgba(239,68,68,0.1)'  },
-  cancelled: { label: 'Annulée',    color: '#64748b', bg: 'rgba(100,116,139,0.1)' },
+  pending:   { label: '⏳ En attente', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+  accepted:  { label: '✅ Acceptée',   color: '#22d96a', bg: 'rgba(34,217,106,0.12)' },
+  refused:   { label: '❌ Refusée',    color: '#ef4444', bg: 'rgba(239,68,68,0.1)'  },
+  cancelled: { label: '↩ Annulée',    color: '#64748b', bg: 'rgba(100,116,139,0.1)' },
 };
 
 function timeAgo(dateStr) {
@@ -217,38 +217,59 @@ export default function MyRidesPage({ onBack }) {
                     {activePassenger.map(req => {
                       const meta = STATUS_META[req.status];
                       return (
-                        <div key={req.id} style={{ borderRadius: 16, padding: '14px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
-                          {/* Ride info */}
-                          {req.ride && (
-                            <div style={{ marginBottom: 10 }}>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 3 }}>
-                                📍 {req.ride.departureLocation}
-                              </div>
-                              <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>
-                                Conducteur : {req.ride.driverName}
-                              </div>
-                            </div>
-                          )}
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div key={req.id} style={{
+                          borderRadius: 16, padding: '14px',
+                          backgroundColor: 'var(--sl-card)',
+                          border: `1px solid ${req.status === 'accepted' ? 'rgba(34,217,106,0.25)' : 'var(--sl-border)'}`,
+                        }}>
+                          {/* Status badge */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                             <span style={{
                               fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
-                              backgroundColor: meta?.bg, color: meta?.text,
+                              backgroundColor: meta?.bg, color: meta?.color,
                             }}>
                               {meta?.label ?? req.status}
                             </span>
-                            {(req.status === 'pending' || req.status === 'accepted') && (
-                              <button
-                                onClick={() => handleCancelRequest(req.id, req.rideId)}
-                                style={{ fontSize: 11, color: 'var(--sl-t3)', background: 'none', border: '1px solid var(--sl-border)', padding: '4px 10px', borderRadius: 8, cursor: 'pointer' }}
-                              >
-                                Se désister
-                              </button>
-                            )}
+                            <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{timeAgo(req.createdAt)}</span>
                           </div>
+
+                          {/* Ride info */}
+                          {req.ride && (
+                            <div style={{ marginBottom: 10 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>
+                                  {req.ride.departureLocation}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <div style={{ width: 22, height: 22, borderRadius: 7, backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: 'var(--sl-t2)', flexShrink: 0 }}>
+                                  {(req.ride.driverName ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                                </div>
+                                <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>
+                                  Conducteur · <strong style={{ color: 'var(--sl-t2)' }}>{req.ride.driverName}</strong>
+                                </span>
+                                <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>·</span>
+                                <span style={{ fontSize: 11, color: req.ride.availableSeatsLeft > 0 ? 'var(--sl-green)' : '#ef4444', fontWeight: 600 }}>
+                                  {req.ride.availableSeatsLeft} place{req.ride.availableSeatsLeft !== 1 ? 's' : ''}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
                           {req.message && (
-                            <p style={{ fontSize: 11, color: 'var(--sl-t2)', marginTop: 8, marginBottom: 0, borderLeft: '2px solid var(--sl-border)', paddingLeft: 10 }}>
+                            <p style={{ fontSize: 11, color: 'var(--sl-t2)', margin: '0 0 10px', lineHeight: 1.5, borderLeft: '2px solid var(--sl-border)', paddingLeft: 10, fontStyle: 'italic' }}>
                               "{req.message}"
                             </p>
+                          )}
+
+                          {(req.status === 'pending' || req.status === 'accepted') && (
+                            <button
+                              onClick={() => handleCancelRequest(req.id, req.rideId)}
+                              style={{ width: '100%', padding: '8px 0', borderRadius: 10, fontSize: 12, fontWeight: 600, color: 'var(--sl-t3)', background: 'none', border: '1px solid var(--sl-border)', cursor: 'pointer', marginTop: 2 }}
+                            >
+                              Se désister
+                            </button>
                           )}
                         </div>
                       );
