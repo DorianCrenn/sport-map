@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
@@ -22,10 +22,12 @@ const PROFIL = {
   id: 'profil', label: 'Profil',
   icon: (a) => <svg width="22" height="22" viewBox="0 0 24 24" fill={a ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
 };
-export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV }) {
+export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV, overlayOpen = false }) {
   const { isAdmin, isClubAdmin } = useAuth();
   const canFab = isAdmin || isClubAdmin;
   const [fabOpen, setFabOpen] = useState(false);
+
+  useEffect(() => { if (overlayOpen) setFabOpen(false); }, [overlayOpen]);
 
   // Always 5 slots. Admin access is via Profil → "Tableau de bord"
   const tabs = canFab
