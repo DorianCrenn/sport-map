@@ -50,8 +50,9 @@ export function useRideNotifications() {
   useEffect(() => {
     if (!currentUser) { setNotifications([]); return; }
     fetchNotifications();
+    const key = Math.random().toString(36).slice(2, 7);
     const ch = supabase
-      .channel(`rn-${currentUser.id}`)
+      .channel(`rn-${currentUser.id}-${key}`)
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'ride_notifications',
         filter: `user_id=eq.${currentUser.id}`,
