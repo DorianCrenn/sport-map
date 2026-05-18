@@ -297,9 +297,16 @@ function AppInner() {
             {activeTab === 'admin' && isAdmin && <ErrorBoundary name="Admin"><AdminPage /></ErrorBoundary>}
           </motion.div>
         </AnimatePresence>
+
+        {/* MyRidesPage lives inside the content area so BottomNav stays visible */}
+        <AnimatePresence>
+          {showMyRides && (
+            <MyRidesPage key="my-rides" onBack={() => setShowMyRides(false)} />
+          )}
+        </AnimatePresence>
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} overlayOpen={showMyRides || showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements} />
 
       <AnimatePresence>
         {showAuth && (
@@ -350,12 +357,6 @@ function AppInner() {
             key="badge-modal"
             badges={newBadges}
             onDone={() => { markSeen(); setShowBadgeModal(false); }}
-          />
-        )}
-        {showMyRides && (
-          <MyRidesPage
-            key="my-rides"
-            onBack={() => setShowMyRides(false)}
           />
         )}
         {showAnnouncements && (
