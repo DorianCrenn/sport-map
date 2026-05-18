@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Z } from '../constants/zIndex.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EVENT_TYPES } from '../data/cities.js';
@@ -249,6 +249,84 @@ function CupTypePicker({ value, onChange }) {
   );
 }
 
+function AdversaireField({ value, onChange, sameSportClubs, myClubId, inputStyle }) {
+  const [focused, setFocused] = useState(false);
+  const [query, setQuery] = useState(value);
+  const wrapRef = useRef(null);
+
+  useEffect(() => { setQuery(value); }, [value]);
+
+  const filtered = sameSportClubs
+    .filter(c => String(c.id) !== String(myClubId))
+    .filter(c => !query || c.name.toLowerCase().includes(query.toLowerCase()))
+    .slice(0, 8);
+
+  function select(name) {
+    setQuery(name);
+    onChange(name);
+    setFocused(false);
+  }
+
+  useEffect(() => {
+    function onDown(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setFocused(false);
+    }
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative' }}>
+      <input
+        type="text"
+        value={query}
+        onChange={e => { setQuery(e.target.value); onChange(e.target.value); }}
+        onFocus={() => setFocused(true)}
+        placeholder="ex. FC Quimper, AS Morlaix…"
+        style={inputStyle}
+        autoComplete="off"
+      />
+      {focused && filtered.length > 0 && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
+          backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+          borderRadius: 12, marginTop: 4, overflow: 'hidden',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+        }}>
+          {filtered.map(c => (
+            <button
+              key={c.id}
+              type="button"
+              onMouseDown={e => { e.preventDefault(); select(c.name); }}
+              style={{
+                width: '100%', textAlign: 'left', padding: '10px 14px',
+                background: 'none', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 10,
+                borderBottom: '1px solid var(--sl-border)',
+                color: 'var(--sl-t1)',
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--sl-surface)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              {c.logo_url ? (
+                <img src={c.logo_url} alt="" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'contain', flexShrink: 0 }} />
+              ) : (
+                <div style={{ width: 22, height: 22, borderRadius: 4, backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)' }}>
+                  {c.name[0]}
+                </div>
+              )}
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{c.name}</div>
+                {c.city && <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{c.city}</div>}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ContextualTypeFields({ eventType, level, cupType, champLevels, onLevel, onCupType }) {
   return (
     <AnimatePresence mode="wait">
@@ -379,6 +457,12 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
         ? myClub.categories.flatMap(c => c.teams?.map(t => t.name) ?? [])
         : TEAM_PRESETS[myClub.sport] ?? [])
     : TEAM_PRESETS[form.sport] ?? [];
+
+  const sameSportClubs = useMemo(() => {
+    const sport = useSmartMode && myClub ? myClub.sport : form.sport;
+    return allClubs.filter(c => c.sport === sport);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useSmartMode, myClub?.sport, form.sport, allClubs.length]);
   const champLevels = CHAMPIONSHIP_LEVELS[form.sport] ?? CHAMPIONSHIP_LEVELS.default;
   const inputStyle = {
     width: '100%', boxSizing: 'border-box',
@@ -517,11 +601,13 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
                 </Field>
 
                 {/* Adversaire */}
-                <Field label="Adversaire" hint="Saisissez uniquement le nom de l'adversaire">
-                  <input
-                    type="text" value={form.adversaire} onChange={e => set('adversaire', e.target.value)}
-                    placeholder={`ex. FC Quimper, AS Morlaix…`}
-                    style={inputStyle}
+                <Field label="Adversaire" hint={sameSportClubs.length > 1 ? `${sameSportClubs.length - 1} clubs ${myClub?.sport ?? ''} dans la base` : 'Saisissez le nom de l\'adversaire'}>
+                  <AdversaireField
+                    value={form.adversaire}
+                    onChange={v => set('adversaire', v)}
+                    sameSportClubs={sameSportClubs}
+                    myClubId={myClub?.id}
+                    inputStyle={inputStyle}
                   />
                 </Field>
               </>

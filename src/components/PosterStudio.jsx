@@ -72,7 +72,7 @@ function ColorSwatch({ color, active, onClick }) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function PosterStudio({ event, onClose }) {
+export default function PosterStudio({ event, onClose, club }) {
   const { allSports } = useSports();
   const { currentUser } = useAuth();
   const hasPremium = currentUser?.role === 'admin' || currentUser?.role === 'superadmin' || currentUser?.role === 'club_admin' || currentUser?.isPremium;
@@ -85,23 +85,31 @@ export default function PosterStudio({ event, onClose }) {
 
   const sportColor = allSports[event?.sport]?.color ?? '#22D96A';
 
+  // ── Branding auto-fill from club context ──
+  const clubAccent = club?.theme?.primary ?? club?.theme?.accent ?? null;
+  const initialAccent = clubAccent ?? sportColor;
+  const initialHomeName = club ? (event?.homeOrAway === 'away' ? '' : club.name) : '';
+  const initialAwayName = club ? (event?.homeOrAway === 'away' ? club.name : '') : '';
+  const initialHomeLogo = club && event?.homeOrAway !== 'away' ? (club.logo_url ?? '') : '';
+  const initialAwayLogo = club && event?.homeOrAway === 'away' ? (club.logo_url ?? '') : '';
+
   // ── State ──
   const [format, setFormat] = useState('story');
   const [templateId, setTemplateId] = useState('simple');
   const [activeTab, setActiveTab] = useState('template');
 
   // Visual
-  const [accentColor, setAccentColor] = useState(sportColor);
+  const [accentColor, setAccentColor] = useState(initialAccent);
   const [bgSrc, setBgSrc] = useState('');
   const [bgUrl, setBgUrl] = useState('');
   const [bgErr, setBgErr] = useState(false);
   const [bgMode, setBgMode] = useState('color');
 
   // Teams
-  const [homeName, setHomeName] = useState('');
-  const [awayName, setAwayName] = useState('');
-  const [homeLogo, setHomeLogo] = useState('');
-  const [awayLogo, setAwayLogo] = useState('');
+  const [homeName, setHomeName] = useState(initialHomeName);
+  const [awayName, setAwayName] = useState(initialAwayName);
+  const [homeLogo, setHomeLogo] = useState(initialHomeLogo);
+  const [awayLogo, setAwayLogo] = useState(initialAwayLogo);
   const [championship, setChampionship] = useState(() => champLabel(event?.eventType, event?.level));
   const [tagline, setTagline] = useState('Venez nombreux !');
 

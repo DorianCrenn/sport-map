@@ -203,70 +203,59 @@
   - ✅ Auto-sélection équipe/niveau depuis le profil club_admin — première équipe auto-sélectionnée
   - ✅ Aide saisie lieu avancée — VenueAutocomplete (Photon/OSM) déjà implémenté
   - ✅ Logique domicile/extérieur automatique — champ homeOrAway avec club auto
-  - ⬜ Sélection rapide adversaire (recherche parmi clubs connus)
+  - ✅ Sélection rapide adversaire — `AdversaireField` avec dropdown de clubs du même sport
   - ✅ Saisie score rapide post-match — QuickScoreEdit déjà implémenté
   - ✅ Duplication événement — bouton ⎘ dans EventCard, modal pré-rempli date vide
 - **Note** : eventType (championship/cup/friendly) + teamName + category déjà implémentés ✅
 
 ---
 
-### BUG-003 🟠 `updateEvent` réassigne le `user_id` de l'event
+### BUG-003 ✅ `updateEvent` réassigne le `user_id` de l'event
 - **Catégorie** : Backend / Bug
 - **Complexité** : XS
-- **Problème** : Un admin qui modifie l'événement d'un autre utilisateur s'en approprie la propriété en DB.
-- **Solution** : Conserver le `user_id` original. Passer `prev.userId` plutôt que `currentUser?.id`.
+- **Solution appliquée** : `useLocalEvents.js` ligne 105 — `mapToDB({ ...prev, ...data }, prev?.userId)` conserve le userId original.
 
 ---
 
-### BUG-004 🟠 Channel Realtime avec nom aléatoire — fuites de connexions
+### BUG-004 ✅ Channel Realtime avec nom aléatoire — fuites de connexions
 - **Catégorie** : Performance / Supabase
 - **Complexité** : XS
-- **Problème** : `useLocalEvents.js` génère un nom random à chaque mount → double souscription.
-- **Solution** : Utiliser un nom fixe `'events-realtime'`.
+- **Solution appliquée** : `useLocalEvents.js` ligne 63 — `.channel('events-realtime')` nom fixe.
 
 ---
 
-### PERF-001 🟠 `currentUser` recréé à chaque render d'AuthProvider
+### PERF-001 ✅ `currentUser` recréé à chaque render d'AuthProvider
 - **Catégorie** : Performance / React
 - **Complexité** : XS
-- **Solution** :
-  ```js
-  const currentUser = useMemo(() => mapProfile(authUser, profile), [authUser, profile]);
-  ```
+- **Solution appliquée** : `AuthContext.jsx` ligne 295 — `useMemo(() => mapProfile(authUser, profile), [authUser, profile])`.
 
 ---
 
-### BUG-005 🟠 `bulkAddEvents` : import CSV séquentiel, bloquant
+### BUG-005 ✅ `bulkAddEvents` : import CSV séquentiel, bloquant
 - **Catégorie** : Performance / UX
 - **Complexité** : S
-- **Solution** : `supabase.from('events').insert([...eventsArray])` en batch unique.
+- **Solution appliquée** : `useLocalEvents.js` — `addEventsBatch` insère en batch unique via `supabase.from('events').insert(rows).select()`.
 
 ---
 
-### SEC-005 🟠 `attendees_select_public` — données personnelles exposées
+### SEC-005 ✅ `attendees_select_public` — données personnelles exposées
 - **Catégorie** : Sécurité / RGPD
 - **Complexité** : S
-- **Solution** : Changer la policy SELECT à `USING (user_id = auth.uid())`. Counts via view `event_attendee_counts`.
+- **Solution appliquée** : `sportlink_full_migration.sql` — policy `attendees_select_own` + view `event_attendee_counts` SECURITY DEFINER.
 
 ---
 
-### PERF-002 🟠 `event_attendee_counts` view sans SECURITY DEFINER
+### PERF-002 ✅ `event_attendee_counts` view sans SECURITY DEFINER
 - **Catégorie** : Supabase / Performance
 - **Complexité** : S
-- **Problème** : Counts toujours à 0 ou 1 pour les autres utilisateurs.
-- **Solution** :
-  ```sql
-  CREATE VIEW public.event_attendee_counts WITH (security_invoker = false)
-  AS SELECT event_id, COUNT(*)::int AS count FROM public.attendees GROUP BY event_id;
-  ```
+- **Solution appliquée** : `sportlink_full_migration.sql` — `CREATE VIEW event_attendee_counts WITH (security_invoker = false)` + `GRANT SELECT TO anon, authenticated`.
 
 ---
 
-### UX-001 🟠 Feedback visuel manquant sur actions utilisateur
+### UX-001 ✅ Feedback visuel manquant sur actions utilisateur
 - **Catégorie** : UX/UI
 - **Complexité** : M
-- **Problème** : J'y serai, favori, connexion — l'utilisateur ne sait pas si son action a fonctionné.
-- **Solution** : Système de toasts léger (context React, sans librairie).
+- **Solution appliquée** : Système de toasts React context (ToastContext) — connexion, favori, covoiturage, annonces, modifications événements.
 
 ---
 
@@ -286,7 +275,7 @@
   - ✅ Bloc sponsors avec logos + liens — `SponsorsBlock.jsx`
   - ✅ Bloc "Prochain match" automatique — `NextMatchBlock.jsx`
   - ✅ Lien public avec OpenGraph — dynamic `<title>` + `og:*` meta injection
-  - ⬜ Mode Simple (3 champs) vs Mode Avancé (blocs complets) — UX-004
+  - ✅ Mode Simple (sections en 1 clic) vs Mode Avancé (blocs complets) — UX-004
 
 ---
 
@@ -295,11 +284,11 @@
 - **Note** : PosterStudio de base existe ✅, 22 templates au total
 - **Sous-tâches** :
   - ✅ 5 nouveaux templates premium : Strike, Glass, Flag, Ink, Aurora
-  - ⬜ Export format Story Instagram (1080×1920) + Post carré (1080×1080)
-  - ⬜ Génération HD (canvas 2x)
-  - ⬜ Éditeur drag & drop textes/logos dans l'affiche
-  - ⬜ Resize/rotation des éléments texte
-  - ⬜ Branding club (couleurs + logo automatiques)
+  - ✅ Export format Story Instagram (1080×1920) + Post (1080×1350) — `pixelRatio: 3` sur base 360×640
+  - ✅ Génération HD — export `toBlob({ pixelRatio: 3 })` via html-to-image
+  - ✅ Éditeur drag & drop textes/logos dans l'affiche — `PosterEditor.jsx`
+  - ✅ Resize/rotation des éléments texte — `blockStyle(transforms, id)` avec translate/scale/rotate
+  - ✅ Branding club (couleurs + logo automatiques) — `PosterStudio` reçoit `club` prop, auto-fill `accentColor`/`homeLogo`/`homeName`
   - ⬜ Logo SportLink en filigrane discret
 
 ---
@@ -490,11 +479,10 @@
 
 ---
 
-### UX-004 🟢 Éditeur page club — mode Simple vs Avancé
+### UX-004 ✅ Éditeur page club — mode Simple vs Avancé
 - **Catégorie** : UX/UI / Produit
 - **Complexité** : L
-- **Problème** : Éditeur de blocs intimidant pour un président de club amateur.
-- **Solution** : Mode "Simple" (photo, description, prochains matchs) par défaut. Mode "Avancé" via toggle.
+- **Solution appliquée** : Toggle "Rapide / Avancé" dans la barre d'édition. Mode Rapide = `SimpleModeEditor` avec 6 sections en 1 clic. Mode Avancé = éditeur de blocs complet.
 
 ---
 
@@ -509,16 +497,16 @@ SPRINT 1 — Stabilisation (cette semaine)
 ├── BUG-001  Valider fix rôle admin (hard-refresh)          [XS] 🔄
 ├── BUG-002  Consolider SQL policies                        [M]  ⬜
 ├── MOBILE-001/002/003  Safe area + scroll + tap targets    [S]  ✅
-└── BUG-003  updateEvent conserve user_id original          [XS] ⬜
+└── BUG-003  updateEvent conserve user_id original          [XS] ✅
 
 SPRINT 2 — Clubs indispensables (semaines 1-2)
 ├── EPIC-P1-1  Création événement < 15s                     [L]  ⬜
-├── BUG-004  Channel Realtime nom fixe                      [XS] ⬜
-├── BUG-005  Import CSV batch                               [S]  ⬜
+├── BUG-004  Channel Realtime nom fixe                      [XS] ✅
+├── BUG-005  Import CSV batch                               [S]  ✅
 ├── BUG-006  Dark mode AdminPage                            [M]  ✅
-├── PERF-001 useMemo currentUser                            [XS] ⬜
-├── SEC-005  attendees_select restreint                     [XS] ⬜
-└── PERF-002 event_attendee_counts SECURITY DEFINER         [S]  ⬜
+├── PERF-001 useMemo currentUser                            [XS] ✅
+├── SEC-005  attendees_select restreint                     [XS] ✅
+└── PERF-002 event_attendee_counts SECURITY DEFINER         [S]  ✅
 
 SPRINT 3 — Engagement (semaines 3-4)
 ├── EPIC-P2-1  Partage social Instagram/WhatsApp/Facebook   [M]  ⬜
@@ -526,7 +514,7 @@ SPRINT 3 — Engagement (semaines 3-4)
 ├── PERF-003 React.memo EventCard                           [S]  ⬜
 ├── PERF-004 AttendeeCount update incrémental               [S]  ⬜
 ├── ARCH-002 ErrorBoundary autour des pages                 [XS] ⬜
-└── UX-001   Toasts/feedback actions                        [M]  ⬜
+└── UX-001   Toasts/feedback actions                        [M]  ✅
 
 SPRINT 4 — Mobile & Architecture (mois 2)
 ├── ARCH-001 Migration données statiques → Supabase seed   [L]  ✅
@@ -537,7 +525,7 @@ SPRINT 4 — Mobile & Architecture (mois 2)
 └── ARCH-003 PWA manifest + service worker                  [M]  ⬜
 
 SPRINT 5 — Premium & Distribution (mois 3)
-├── EPIC-P1-2  Pages clubs thèmes + sponsors               [L]  ⬜
+├── EPIC-P1-2  Pages clubs thèmes + sponsors               [L]  ✅
 ├── EPIC-P4-1  Branding premium couleurs club               [M]  ⬜
 ├── PROD-001 Notifications push matchs                      [XL] ⬜
 ├── PROD-002 Lien public club + OpenGraph                   [L]  ⬜
@@ -549,7 +537,7 @@ LONG TERME
 ├── PROD-004 Gamification badges/streaks                    [L]  ⬜
 ├── PERF-006 Table club_follows dédiée                      [M]  ⬜
 ├── ARCH-004 Offline handling + PWA cache                   [XL] ⬜
-└── UX-004   Éditeur club mode Simple/Avancé                [L]  ⬜
+└── UX-004   Éditeur club mode Simple/Avancé                [L]  ✅
 ```
 
 ---
