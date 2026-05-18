@@ -651,8 +651,6 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
     theme, setTheme,
   } = useClubPage(club);
 
-  const accentColor = theme.accent ?? sportData?.color ?? '#22C55E';
-
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
   const [showManagersPanel, setShowManagersPanel] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -736,6 +734,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
   const activeTeam = allTeams.find(t => t.id === activeTeamId) ?? null;
   const sportData = SPORTS[club.sport];
+  const accentColor = theme.accent ?? sportData?.color ?? '#22C55E';
 
   const posterEvent = useMemo(() => {
     const now = new Date();
