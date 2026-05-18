@@ -34,8 +34,9 @@ const FONT_OPTIONS = [
 ];
 
 const DEFAULT_TYPOGRAPHY = { titleFont: 'Oswald', bodyFont: 'Inter' };
+const DEFAULT_THEME = { primary: '#0F1E3A', accent: null };
 
-export { FONT_OPTIONS, DEFAULT_TYPOGRAPHY };
+export { FONT_OPTIONS, DEFAULT_TYPOGRAPHY, DEFAULT_THEME };
 
 function injectGoogleFont(fontKey) {
   const weights = FONT_OPTIONS.find(f => f.key === fontKey)?.weights ?? '400;600;700';
@@ -71,10 +72,11 @@ export function useClubAnalytics(clubId) {
 export function useClubPage(club) {
   const [blocks, setBlocks]           = useState(() => defaultBlocks(club));
   const [typography, setTypoState]    = useState(DEFAULT_TYPOGRAPHY);
+  const [theme, setThemeState]        = useState(DEFAULT_THEME);
   const [isEditing, setIsEditing]     = useState(false);
   const [loaded, setLoaded]           = useState(false);
 
-  const latestRef  = useRef({ blocks: defaultBlocks(club), typography: DEFAULT_TYPOGRAPHY });
+  const latestRef  = useRef({ blocks: defaultBlocks(club), typography: DEFAULT_TYPOGRAPHY, theme: DEFAULT_THEME });
   const saveTimer  = useRef(null);
   const clubIdStr  = String(club.id);
 
@@ -84,7 +86,7 @@ export function useClubPage(club) {
     let cancelled = false;
     supabase
       .from('club_pages')
-      .select('blocks, typography')
+      .select('blocks, typography, theme')
       .eq('club_id', clubIdStr)
       .maybeSingle()
       .then(({ data, error }) => {
@@ -112,9 +114,11 @@ export function useClubPage(club) {
             ? saved.map(bl => ({ rowId: genRowId(), span: 12, ...bl }))
             : defaultBlocks(club);
           const t = { ...DEFAULT_TYPOGRAPHY, ...(data.typography ?? {}) };
+          const th = { ...DEFAULT_THEME, ...(data.theme ?? {}) };
           setBlocks(b);
           setTypoState(t);
-          latestRef.current = { blocks: b, typography: t };
+          setThemeState(th);
+          latestRef.current = { blocks: b, typography: t, theme: th };
         } else {
           // No Supabase row yet — migrate localStorage data if any
           try {
@@ -147,7 +151,7 @@ export function useClubPage(club) {
       const { error } = await supabase
         .from('club_pages')
         .upsert(
-          { club_id: clubIdStr, blocks: b, typography: t, updated_at: new Date().toISOString() },
+          { club_id: clubIdStr, blocks: b, typography: t, theme: latestRef.current.theme, updated_at: new Date().toISOString() },
           { onConflict: 'club_id' }
         );
       if (error) {
@@ -172,10 +176,19 @@ export function useClubPage(club) {
     if (loaded) scheduleSave();
   }, [typography, loaded, scheduleSave]);
 
+  useEffect(() => {
+    latestRef.current.theme = theme;
+    if (loaded) scheduleSave();
+  }, [theme, loaded, scheduleSave]);
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   const setTypography = useCallback((patch) => {
     setTypoState(prev => ({ ...prev, ...patch }));
+  }, []);
+
+  const setTheme = useCallback((patch) => {
+    setThemeState(prev => ({ ...prev, ...patch }));
   }, []);
 
   const addBlock = (type, afterId = null) => {
@@ -246,5 +259,6 @@ export function useClubPage(club) {
     updateBlock, setBlockSpan, moveBlockInRow,
     deleteBlock, reorderRows, toggleBlock, resetPage,
     typography, setTypography,
+    theme, setTheme,
   };
 }

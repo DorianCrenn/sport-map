@@ -278,23 +278,23 @@
 
 ---
 
-### EPIC-P1-2 🟠 Pages clubs — mini sites officiels modernes
+### EPIC-P1-2 ✅ Pages clubs — mini sites officiels modernes
 - **Objectif** : Transformer chaque page club en vitrine professionnelle.
 - **Note** : Éditeur de blocs + drag & drop + typographie déjà implémentés ✅
-- **Reste à faire** :
-  - ⬜ Thèmes de couleurs par club (palette primaire/secondaire)
-  - ⬜ Bloc sponsors avec logos + liens
-  - ⬜ Mise en avant événements (bloc "Prochain match" en hero)
+- **Sous-tâches** :
+  - ✅ Thèmes de couleurs par club (palette primaire/secondaire) — `theme.primary` + `theme.accent` dans `club_pages`
+  - ✅ Bloc sponsors avec logos + liens — `SponsorsBlock.jsx`
+  - ✅ Bloc "Prochain match" automatique — `NextMatchBlock.jsx`
+  - ✅ Lien public avec OpenGraph — dynamic `<title>` + `og:*` meta injection
   - ⬜ Mode Simple (3 champs) vs Mode Avancé (blocs complets) — UX-004
-  - ⬜ Lien public `/club/:id` avec OpenGraph — PROD-002
 
 ---
 
-### EPIC-P1-3 🟠 Générateur d'affiches premium
+### EPIC-P1-3 ✅ Générateur d'affiches premium
 - **Objectif** : Énorme valeur perçue — les clubs partagent, SportLink devient visible.
-- **Note** : PosterStudio de base existe ✅
-- **Reste à faire** :
-  - ⬜ Templates premium variés (5+ designs)
+- **Note** : PosterStudio de base existe ✅, 22 templates au total
+- **Sous-tâches** :
+  - ✅ 5 nouveaux templates premium : Strike, Glass, Flag, Ink, Aurora
   - ⬜ Export format Story Instagram (1080×1920) + Post carré (1080×1080)
   - ⬜ Génération HD (canvas 2x)
   - ⬜ Éditeur drag & drop textes/logos dans l'affiche

@@ -14,6 +14,8 @@ import ImageBlock from './blocks/ImageBlock.jsx';
 import MatchesBlock from './blocks/MatchesBlock.jsx';
 import { AboutBlockEditor, AboutBlockView } from './blocks/AboutBlock.jsx';
 import { GalleryBlockEditor, GalleryBlockView } from './blocks/GalleryBlock.jsx';
+import { SponsorsBlockView, SponsorsBlockEditor } from './blocks/SponsorsBlock.jsx';
+import NextMatchBlock from './blocks/NextMatchBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 import ClubManagersPanel from './ClubManagersPanel.jsx';
 import ClubDashboard from './ClubDashboard.jsx';
@@ -31,6 +33,7 @@ const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
   'upcoming-events': 'Événements', training: 'Entraînements',
   image: 'Image', matches: 'Matchs', about: 'À propos', gallery: 'Galerie',
+  sponsors: 'Sponsors', 'next-match': 'Prochain match',
 };
 
 // ── Span helpers ──────────────────────────────────────────────────────────────
@@ -119,6 +122,11 @@ function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
         ? <GalleryBlockEditor block={block} onChange={data => onUpdate(data)} />
         : <GalleryBlockView   block={block} />
       )}
+      {block.type === 'sponsors'        && (isEditing
+        ? <SponsorsBlockEditor block={block} onChange={data => onUpdate(data)} />
+        : <SponsorsBlockView   block={block} />
+      )}
+      {block.type === 'next-match'      && <NextMatchBlock data={block.data} allEvents={allEvents} club={club} />}
     </>
   );
 }
@@ -640,7 +648,10 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
     updateBlock, setBlockSpan, moveBlockInRow,
     deleteBlock, reorderRows, toggleBlock,
     typography, setTypography,
+    theme, setTheme,
   } = useClubPage(club);
+
+  const accentColor = theme.accent ?? sportData?.color ?? '#22C55E';
 
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
   const [showManagersPanel, setShowManagersPanel] = useState(false);
@@ -686,6 +697,32 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [club.id]);
+
+  // OpenGraph / document title injection
+  useEffect(() => {
+    const prev = document.title;
+    document.title = `${club.name} | SportLink`;
+
+    function setMeta(prop, content, attr = 'property') {
+      let el = document.querySelector(`meta[${attr}="${prop}"]`);
+      if (!el) { el = document.createElement('meta'); el.setAttribute(attr, prop); el.setAttribute('data-sl-og', '1'); document.head.appendChild(el); }
+      el.setAttribute('content', content);
+    }
+
+    const url = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
+    const desc = club.description || `${club.name} — club de ${club.sport}${club.city ? ` à ${club.city}` : ''}`;
+    setMeta('og:title',       club.name);
+    setMeta('og:description', desc);
+    setMeta('og:url',         url);
+    setMeta('og:type',        'website');
+    if (club.logo_url) setMeta('og:image', club.logo_url);
+    setMeta('description',    desc, 'name');
+
+    return () => {
+      document.title = prev;
+      document.querySelectorAll('meta[data-sl-og]').forEach(el => el.remove());
+    };
+  }, [club.id, club.name, club.sport, club.city, club.description, club.logo_url]);
 
   const clubEventIds = useMemo(
     () => (allEvents ?? []).filter(e => String(e.clubId) === String(club.id)).map(e => e.id),
@@ -767,15 +804,15 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       style={{ backgroundColor: 'var(--sl-bg)' }}
     >
       {/* ── Header ── */}
-      <div className="flex-shrink-0 relative text-white" style={{ backgroundColor: '#0F1E3A' }}>
+      <div className="flex-shrink-0 relative text-white" style={{ backgroundColor: theme.primary }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: `linear-gradient(135deg, transparent 35%, ${sportData?.color ?? '#22C55E'}1A 100%)`,
+          background: `linear-gradient(135deg, transparent 35%, ${accentColor}1A 100%)`,
         }} />
         <div style={{
           position: 'absolute', top: '-40%', right: '-8%', width: 240, height: 240,
           borderRadius: '50%', pointerEvents: 'none',
-          background: `radial-gradient(circle, ${sportData?.color ?? '#22C55E'}28 0%, transparent 65%)`,
+          background: `radial-gradient(circle, ${accentColor}28 0%, transparent 65%)`,
         }} />
         <div className="flex items-center justify-between px-4 pt-4 pb-3">
           <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm transition-colors cursor-pointer">
@@ -852,9 +889,9 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
         <div className="px-4 pb-5 flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-base font-oswald flex-shrink-0"
-            style={{ backgroundColor: club.logo ? '#fff' : (sportData?.color ?? '#64748b'), boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)', padding: club.logo ? 4 : 0 }}>
+            style={{ backgroundColor: club.logo ? '#fff' : accentColor, boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)', padding: club.logo ? 4 : 0 }}>
             {club.logo
-              ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.style.backgroundColor = sportData?.color ?? '#64748b'; e.currentTarget.parentElement.textContent = club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3); }} />
+              ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.style.backgroundColor = accentColor; e.currentTarget.parentElement.textContent = club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3); }} />
               : club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
           </div>
           <div className="flex-1 min-w-0">
@@ -902,14 +939,14 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               onClick={() => isLoggedIn ? setShowFollowModal(true) : null}
               title={isFollowing ? 'Modifier le suivi' : 'Suivre ce club'}
               className="flex flex-col items-center gap-1 p-2 rounded-xl transition-colors cursor-pointer"
-              style={{ backgroundColor: isFollowing ? `${sportData?.color ?? '#22C55E'}25` : 'rgba(255,255,255,0.08)' }}
+              style={{ backgroundColor: isFollowing ? `${accentColor}25` : 'rgba(255,255,255,0.08)' }}
             >
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: isFollowing ? `${sportData?.color ?? '#22C55E'}30` : 'rgba(255,255,255,0.1)' }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill={isFollowing ? (sportData?.color ?? '#22C55E') : 'none'} stroke={isFollowing ? (sportData?.color ?? '#22C55E') : '#cbd5e1'} strokeWidth="2" strokeLinecap="round">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: isFollowing ? `${accentColor}30` : 'rgba(255,255,255,0.1)' }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill={isFollowing ? accentColor : 'none'} stroke={isFollowing ? accentColor : '#cbd5e1'} strokeWidth="2" strokeLinecap="round">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
               </div>
-              <span className="text-[9px] font-medium" style={{ color: isFollowing ? (sportData?.color ?? '#22C55E') : '#94a3b8' }}>
+              <span className="text-[9px] font-medium" style={{ color: isFollowing ? accentColor : '#94a3b8' }}>
                 {isFollowing ? 'Suivi' : 'Suivre'}
               </span>
             </button>
@@ -920,12 +957,12 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors cursor-pointer"
               title="Créer l'affiche du prochain match"
             >
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${sportData?.color ?? '#22C55E'}25` }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={sportData?.color ?? '#22C55E'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${accentColor}25` }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                 </svg>
               </div>
-              <span className="text-[9px] font-medium" style={{ color: sportData?.color ?? '#22C55E' }}>Affiche</span>
+              <span className="text-[9px] font-medium" style={{ color: accentColor }}>Affiche</span>
             </button>
 
             {/* ICS export */}
@@ -1010,6 +1047,45 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* ── Thème couleurs ── */}
+              <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 12, marginTop: 12 }}>
+                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Couleurs du club</div>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 5, cursor: 'pointer' }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)' }}>Couleur principale (header)</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input
+                        type="color"
+                        value={theme.primary}
+                        onChange={e => setTheme({ primary: e.target.value })}
+                        style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--sl-border-s)', cursor: 'pointer', padding: 2, backgroundColor: 'transparent' }}
+                      />
+                      <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--sl-t2)' }}>{theme.primary}</span>
+                    </div>
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 5, cursor: 'pointer' }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)' }}>Couleur d'accent (boutons)</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input
+                        type="color"
+                        value={theme.accent ?? (sportData?.color ?? '#22C55E')}
+                        onChange={e => setTheme({ accent: e.target.value })}
+                        style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--sl-border-s)', cursor: 'pointer', padding: 2, backgroundColor: 'transparent' }}
+                      />
+                      <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--sl-t2)' }}>{theme.accent ?? (sportData?.color ?? '#22C55E')}</span>
+                      {theme.accent && (
+                        <button
+                          onClick={() => setTheme({ accent: null })}
+                          style={{ fontSize: 10, color: 'var(--sl-t3)', padding: '2px 6px', borderRadius: 6, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', cursor: 'pointer' }}
+                        >
+                          Réinitialiser
+                        </button>
+                      )}
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
           </motion.div>

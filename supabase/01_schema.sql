@@ -133,8 +133,16 @@ CREATE TABLE IF NOT EXISTS public.club_pages (
   club_id    TEXT    NOT NULL UNIQUE,
   blocks     JSONB   NOT NULL DEFAULT '[]',
   typography JSONB   NOT NULL DEFAULT '{"titleFont":"Oswald","bodyFont":"Inter"}',
+  theme      JSONB   NOT NULL DEFAULT '{"primary":"#0F1E3A","accent":null}',
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Migration : ajouter la colonne theme si elle n'existe pas
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='club_pages' AND column_name='theme') THEN
+    ALTER TABLE public.club_pages ADD COLUMN theme JSONB NOT NULL DEFAULT '{"primary":"#0F1E3A","accent":null}';
+  END IF;
+END $$;
 
 ALTER TABLE public.club_pages ENABLE ROW LEVEL SECURITY;
 

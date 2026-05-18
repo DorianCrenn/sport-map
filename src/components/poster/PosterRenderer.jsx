@@ -15,6 +15,11 @@ import TplRetro from './templates/TplRetro.jsx';
 import TplVivid from './templates/TplVivid.jsx';
 import TplBento from './templates/TplBento.jsx';
 import TplPulse from './templates/TplPulse.jsx';
+import TplStrike from './templates/TplStrike.jsx';
+import TplGlass from './templates/TplGlass.jsx';
+import TplFlag from './templates/TplFlag.jsx';
+import TplInk from './templates/TplInk.jsx';
+import TplAurora from './templates/TplAurora.jsx';
 
 export const POSTER_TEMPLATES = [
   {
@@ -166,6 +171,51 @@ export const POSTER_TEMPLATES = [
     color: '#10B981',
     isPremium: true,
     Component: TplPulse,
+  },
+  {
+    id: 'strike',
+    label: 'Strike',
+    desc: 'Rayures · Athletic · Dynamique',
+    icon: '⚡',
+    color: '#22D96A',
+    isPremium: true,
+    Component: TplStrike,
+  },
+  {
+    id: 'glass',
+    label: 'Glass',
+    desc: 'Sombre · Glassmorphisme · Premium',
+    icon: '◻',
+    color: '#6366f1',
+    isPremium: true,
+    Component: TplGlass,
+  },
+  {
+    id: 'flag',
+    label: 'Flag',
+    desc: 'Split · Couleurs · Équipes',
+    icon: '⚑',
+    color: '#ef4444',
+    isPremium: true,
+    Component: TplFlag,
+  },
+  {
+    id: 'ink',
+    label: 'Ink',
+    desc: 'Crème · Tampon · Imprimé',
+    icon: '✒',
+    color: '#111111',
+    isPremium: true,
+    Component: TplInk,
+  },
+  {
+    id: 'aurora',
+    label: 'Aurora',
+    desc: 'Sombre · Lueurs · Futuriste',
+    icon: '✦',
+    color: '#10B981',
+    isPremium: true,
+    Component: TplAurora,
   },
 ];
 
