@@ -964,7 +964,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               <button
                 onClick={() => setShowDashboard(true)}
                 aria-label="Tableau de bord du club"
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
+                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="3" width="6" height="6" rx="1"/><rect x="16" y="3" width="6" height="6" rx="1"/>
@@ -973,20 +973,20 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                   <line x1="6" y1="11" x2="6" y2="13"/><line x1="18" y1="11" x2="18" y2="13"/>
                   <line x1="11" y1="12" x2="13" y2="12"/>
                 </svg>
-                Stats
+                <span className="hidden sm:inline">Stats</span>
               </button>
             )}
             {isOwner && (
               <button
                 onClick={() => setShowManagersPanel(true)}
                 aria-label="Gérer les gestionnaires du club"
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
+                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
                   <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
                 </svg>
-                Gestion
+                <span className="hidden sm:inline">Gestion</span>
                 {managers.length > 0 && (
                   <span className="text-[10px] font-bold px-1 py-0.5 rounded-full bg-blue-500 text-white leading-none">
                     {managers.length}
@@ -998,13 +998,13 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               <button
                 onClick={() => setShowEditInfo(true)}
                 aria-label="Modifier les informations du club"
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-600 text-slate-200 hover:bg-slate-500"
+                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-600 text-slate-200 hover:bg-slate-500"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
-                Équipes
+                <span className="hidden sm:inline">Équipes</span>
               </button>
             )}
           </div>

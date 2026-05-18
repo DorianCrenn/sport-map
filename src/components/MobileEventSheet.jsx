@@ -270,7 +270,7 @@ export default function MobileEventSheet({
       {/* Scrollable content */}
       <div style={{
         flex: 1, overflowY: snapPoint === 'full' ? 'auto' : 'hidden',
-        padding: '16px 16px 32px',
+        padding: '16px 16px calc(32px + env(safe-area-inset-bottom, 0px))',
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
       }}>

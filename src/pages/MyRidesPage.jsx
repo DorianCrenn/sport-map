@@ -104,7 +104,7 @@ export default function MyRidesPage({ onBack }) {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', stiffness: 340, damping: 36 }}
-      style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)' }}
+      style={{ position: 'absolute', inset: 0, zIndex: 600, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)' }}
     >
       {/* Header */}
       <div style={{ flexShrink: 0, backgroundColor: 'var(--sl-card)', borderBottom: '1px solid var(--sl-border)', padding: '14px 16px' }}>

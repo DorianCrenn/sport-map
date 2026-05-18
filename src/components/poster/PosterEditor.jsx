@@ -117,7 +117,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
         <button
           onClick={onClose}
           style={{
-            width: 34, height: 34, borderRadius: 10,
+            width: 44, height: 44, borderRadius: 12,
             backgroundColor: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'rgba(255,255,255,0.7)', fontSize: 18, lineHeight: 1,
@@ -254,7 +254,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
             </div>
 
             {/* Sliders */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0 16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '8px 16px' }}>
               {[
                 { label: 'Échelle', key: 'scale', min: 0.4, max: 2, step: 0.01, def: 1, fmt: v => `${Math.round(v * 100)}%` },
                 { label: 'Opacité', key: 'opacity', min: 0, max: 1, step: 0.01, def: 1, fmt: v => `${Math.round(v * 100)}%` },
@@ -280,12 +280,29 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '22px 20px', color: 'rgba(255,255,255,0.28)', textAlign: 'center' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M5 9l4-4 4 4"/><path d="M5 15l4 4 4-4"/>
-              <path d="M15 5l4 4-4 4"/><path d="M19 9H9"/>
-            </svg>
-            <span style={{ fontSize: 12, lineHeight: 1.5 }}>Sélectionnez un bloc sur l'affiche pour le modifier</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '16px 20px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,0.28)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M5 9l4-4 4 4"/><path d="M5 15l4 4 4-4"/>
+                <path d="M15 5l4 4-4 4"/><path d="M19 9H9"/>
+              </svg>
+              <span style={{ fontSize: 12, lineHeight: 1.5 }}>Sélectionnez un bloc sur l'affiche pour le modifier</span>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                padding: '11px 22px', borderRadius: 12,
+                backgroundColor: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.15)',
+                cursor: 'pointer', fontSize: 13, fontWeight: 700,
+                color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', gap: 8,
+                minHeight: 44,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Fermer l'éditeur
+            </button>
           </div>
         )}
       </div>
