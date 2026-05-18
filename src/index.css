@@ -293,6 +293,16 @@ a:focus:not(:focus-visible) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   SAFE AREA — iOS Dynamic Island / notch
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+}
+
+/* ═══════════════════════════════════════════════════════════
    BASE
    ═══════════════════════════════════════════════════════════ */
 body {
@@ -301,6 +311,9 @@ body {
   background-color: var(--sl-bg);
   color: var(--sl-t1);
   -webkit-font-smoothing: antialiased;
+  /* iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 
 button, [role="button"] {
@@ -312,6 +325,21 @@ button, [role="button"] {
   height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+/* Scrollable containers — prevent scroll chaining on iOS */
+.sl-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Minimum tap target 44px — apply to small icon-only buttons */
+.tap-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ═══════════════════════════════════════════════════════════

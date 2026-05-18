@@ -14,6 +14,13 @@ const PRESET_COLORS = [
   '#6366f1','#84cc16',
 ];
 
+const STAT_BG = {
+  blue:   { bg: 'rgba(59,130,246,0.12)',  color: '#3b82f6' },
+  amber:  { bg: 'rgba(245,158,11,0.12)',  color: '#f59e0b' },
+  green:  { bg: 'rgba(34,197,94,0.12)',   color: '#22c55e' },
+  red:    { bg: 'rgba(239,68,68,0.12)',   color: '#ef4444' },
+};
+
 function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
   const [form, setForm] = useState(initial ?? { label: '', color: '#16a34a', iconId: 'Football' });
   const [error, setError] = useState('');
@@ -31,36 +38,35 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl border border-green-100 p-3 shadow-sm"
+      style={{ borderRadius: 16, border: '1px solid var(--sl-border)', padding: 12, backgroundColor: 'var(--sl-card)' }}
     >
-      <h3 className="font-bold text-xs font-poppins mb-3" style={{ color: 'var(--sl-t1)' }}>
+      <h3 style={{ fontWeight: 700, fontSize: 12, marginBottom: 12, color: 'var(--sl-t1)', fontFamily: 'Inter, sans-serif' }}>
         {saveLabel === 'Ajouter' ? 'Nouveau sport' : 'Modifier le sport'}
       </h3>
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Nom */}
         <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Nom du sport *</label>
+          <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', marginBottom: 6, display: 'block' }}>Nom du sport *</label>
           <input
             value={form.label}
             onChange={e => { set('label')(e.target.value); setError(''); }}
             placeholder="Ex: Natation"
-            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif' }}
           />
-          {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+          {error && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{error}</p>}
         </div>
 
         {/* Couleur */}
         <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Couleur</label>
-          <div className="flex items-center gap-2 flex-wrap">
+          <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', marginBottom: 6, display: 'block' }}>Couleur</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             {PRESET_COLORS.map(c => (
               <button key={c} type="button" onClick={() => set('color')(c)}
-                className="w-7 h-7 rounded-lg transition-transform hover:scale-110 flex-shrink-0"
-                style={{ backgroundColor: c, outline: form.color === c ? `3px solid ${c}` : 'none', outlineOffset: '2px' }}
+                style={{ width: 28, height: 28, borderRadius: 8, border: 'none', cursor: 'pointer', flexShrink: 0, backgroundColor: c, outline: form.color === c ? `3px solid ${c}` : 'none', outlineOffset: 2 }}
               />
             ))}
             <input type="color" value={form.color} onChange={e => set('color')(e.target.value)}
-              className="w-7 h-7 rounded-lg cursor-pointer border-0 p-0"
+              style={{ width: 28, height: 28, borderRadius: 8, cursor: 'pointer', border: 'none', padding: 0 }}
               title="Couleur personnalisée"
             />
           </div>
@@ -68,9 +74,9 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
 
         {/* Icône */}
         <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Icône</label>
-          <div className="relative">
-            <div className="grid grid-cols-4 gap-1.5 max-h-52 overflow-y-auto pr-0.5 pb-1">
+          <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', marginBottom: 6, display: 'block' }}>Icône</label>
+          <div style={{ position: 'relative' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, maxHeight: 208, overflowY: 'auto', paddingBottom: 4, overscrollBehavior: 'contain' }}>
               {SPORT_ICON_OPTIONS.map(opt => {
                 const isSelected = form.iconId === opt.id;
                 return (
@@ -78,52 +84,49 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }) {
                     key={opt.id}
                     type="button"
                     onClick={() => set('iconId')(opt.id)}
-                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl transition-all"
                     style={{
-                      backgroundColor: isSelected ? `${form.color}18` : '#f1f5f9',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                      padding: '8px 4px', borderRadius: 12, cursor: 'pointer',
+                      backgroundColor: isSelected ? `${form.color}18` : 'var(--sl-surface)',
                       border: `2px solid ${isSelected ? form.color : 'transparent'}`,
+                      transition: 'all 0.12s',
                     }}
                     title={opt.label}
                   >
-                    <svg width="26" height="26" viewBox="0 0 24 24" style={{ color: isSelected ? form.color : '#64748b' }}>
+                    <svg width="26" height="26" viewBox="0 0 24 24" style={{ color: isSelected ? form.color : 'var(--sl-t3)' }}>
                       <g dangerouslySetInnerHTML={{ __html: SPORT_ICONS[opt.id] }} />
                     </svg>
-                    <span className="text-[10px] leading-tight text-center w-full px-0.5 line-clamp-2"
-                      style={{ color: isSelected ? form.color : '#64748b', fontWeight: isSelected ? 700 : 500 }}>
+                    <span style={{ fontSize: 10, textAlign: 'center', width: '100%', padding: '0 2px', color: isSelected ? form.color : 'var(--sl-t3)', fontWeight: isSelected ? 700 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {opt.label}
                     </span>
                   </button>
                 );
               })}
             </div>
-            {/* Scroll fade indicator */}
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 rounded-b-xl"
-              style={{ background: 'linear-gradient(to bottom, transparent, #f8fafc)' }} />
+            <div style={{ pointerEvents: 'none', position: 'absolute', bottom: 0, left: 0, right: 0, height: 32, borderRadius: '0 0 12px 12px', background: 'linear-gradient(to bottom, transparent, var(--sl-card))' }} />
           </div>
         </div>
 
         {/* Aperçu */}
         {form.label && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ backgroundColor: `${form.color}12` }}>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: `${form.color}25` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 12, backgroundColor: `${form.color}12` }}>
+            <div style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${form.color}25` }}>
               <svg width="20" height="20" viewBox="0 0 24 24" style={{ color: form.color }}>
                 <g dangerouslySetInnerHTML={{ __html: selectedIcon ?? SPORT_ICONS.Football }} />
               </svg>
             </div>
-            <span className="text-sm font-bold font-poppins" style={{ color: form.color }}>{form.label}</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full text-white ml-auto" style={{ backgroundColor: form.color }}>Aperçu</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: form.color, flex: 1 }}>{form.label}</span>
+            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, color: 'white', backgroundColor: form.color }}>Aperçu</span>
           </div>
         )}
 
-        <div className="flex gap-1.5 pt-0.5">
+        <div style={{ display: 'flex', gap: 6, paddingTop: 2 }}>
           <button type="button" onClick={onCancel}
-            className="flex-1 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-500">
+            style={{ flex: 1, padding: '8px 0', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer' }}>
             Annuler
           </button>
           <button type="submit"
-            className="flex-1 py-2 rounded-xl text-white text-xs font-bold"
-            style={{ backgroundColor: '#22C55E' }}>
+            style={{ flex: 1, padding: '8px 0', borderRadius: 12, border: 'none', fontSize: 12, fontWeight: 700, color: 'white', backgroundColor: '#22C55E', cursor: 'pointer' }}>
             {saveLabel}
           </button>
         </div>
@@ -149,7 +152,6 @@ export default function AdminPage() {
   const [reviewingId, setReviewingId] = useState(null);
   const [showSportForm, setShowSportForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-
   const [adminUsers, setAdminUsers] = useState([]);
 
   useEffect(() => {
@@ -166,20 +168,15 @@ export default function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="h-full flex items-center justify-center bg-[#F1F5F9]">
-        <p className="text-gray-400 text-sm">Accès non autorisé</p>
+      <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-bg)' }}>
+        <p style={{ color: 'var(--sl-t3)', fontSize: 13 }}>Accès non autorisé</p>
       </div>
     );
   }
 
   async function approveRequest(req) {
     try {
-      const club = await addClub({
-        name: req.clubName,
-        sport: req.sport,
-        city: req.city,
-        description: req.description,
-      });
+      const club = await addClub({ name: req.clubName, sport: req.sport, city: req.city, description: req.description });
       await updateUserRole(req.userId, { role: 'club_admin', club_id: club.id });
       reviewRequest(req.id, 'approved', reviewNote);
       setReviewingId(null);
@@ -211,27 +208,38 @@ export default function AdminPage() {
   const approved = requests.filter(r => r.status === 'approved').length;
   const rejected = requests.filter(r => r.status === 'rejected').length;
 
+  const STAT_CARDS = [
+    { label: 'Utilisateurs', value: adminUsers.length, ...STAT_BG.blue, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+    { label: 'En attente',    value: pendingRequests.length, ...STAT_BG.amber, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+    { label: 'Clubs approuvés', value: approved, ...STAT_BG.green, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> },
+    { label: 'Rejetés', value: rejected, ...STAT_BG.red, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> },
+  ];
+
   return (
-    <div className="h-full flex flex-col bg-[#F1F5F9]">
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)' }}>
       {/* Header */}
-      <div className="bg-white px-4 pt-5 pb-0 border-b border-gray-100 flex-shrink-0">
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#0F1E3A' }}>
+      <div style={{ flexShrink: 0, backgroundColor: 'var(--sl-card)', borderBottom: '1px solid var(--sl-border)', padding: '20px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: '#0F1E3A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <h1 className="text-xl font-bold font-poppins" style={{ color: 'var(--sl-t1)' }}>Administration</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>Administration</h1>
         </div>
-        <div className="flex overflow-x-auto">
+        <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none' }}>
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className="px-4 py-2.5 text-sm font-semibold font-poppins whitespace-nowrap border-b-2 transition-colors flex-shrink-0"
-              style={tab === t.id
-                ? { color: '#22C55E', borderColor: '#22C55E' }
-                : { color: '#94a3b8', borderColor: 'transparent' }}
+              style={{
+                padding: '10px 16px', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
+                borderBottom: `2px solid ${tab === t.id ? '#22C55E' : 'transparent'}`,
+                color: tab === t.id ? '#22C55E' : 'var(--sl-t3)',
+                backgroundColor: 'transparent', border: 'none',
+                borderBottom: `2px solid ${tab === t.id ? '#22C55E' : 'transparent'}`,
+                cursor: 'pointer', flexShrink: 0, transition: 'color 0.15s',
+              }}
             >
               {t.label}
             </button>
@@ -239,36 +247,19 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div style={{ flex: 1, overflowY: 'auto', padding: 16, overscrollBehavior: 'contain' }}>
 
         {/* ── OVERVIEW ── */}
         {tab === 'overview' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                {
-                  label: 'Utilisateurs', value: adminUsers.length, color: '#3b82f6', bg: '#eff6ff',
-                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-                },
-                {
-                  label: 'En attente', value: pendingRequests.length, color: '#f59e0b', bg: '#fffbeb',
-                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-                },
-                {
-                  label: 'Clubs approuvés', value: approved, color: '#22c55e', bg: '#f0fdf4',
-                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
-                },
-                {
-                  label: 'Rejetés', value: rejected, color: '#ef4444', bg: '#fef2f2',
-                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>,
-                },
-              ].map(({ label, value, color, bg, icon }) => (
-                <div key={label} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2.5" style={{ backgroundColor: bg, color }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {STAT_CARDS.map(({ label, value, color, bg, icon }) => (
+                <div key={label} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16, border: '1px solid var(--sl-border)' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10, backgroundColor: bg, color }}>
                     {icon}
                   </div>
-                  <div className="text-2xl font-bold font-poppins mb-0.5" style={{ color: 'var(--sl-t1)' }}>{value}</div>
-                  <div className="text-xs text-gray-400 font-medium leading-tight">{label}</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 2, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+                  <div style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 500 }}>{label}</div>
                 </div>
               ))}
             </div>
@@ -276,25 +267,24 @@ export default function AdminPage() {
             {pendingRequests.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl p-4 border"
-                style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}
+                style={{ borderRadius: 16, padding: 16, border: '1px solid rgba(245,158,11,0.35)', backgroundColor: 'rgba(245,158,11,0.08)' }}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round">
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                   </svg>
-                  <span className="text-sm font-bold font-poppins" style={{ color: '#92400e' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b' }}>
                     {pendingRequests.length} demande{pendingRequests.length > 1 ? 's' : ''} en attente
                   </span>
                 </div>
-                <p className="text-xs" style={{ color: '#b45309' }}>Des clubs attendent votre validation.</p>
+                <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>Des clubs attendent votre validation.</p>
               </motion.div>
             )}
 
             {requests.length === 0 && (
-              <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-gray-100">
-                <div className="text-3xl mb-3">📭</div>
-                <p className="text-sm font-medium text-gray-500">Aucune demande de club pour l'instant</p>
+              <div style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: '24px 16px', textAlign: 'center', border: '1px solid var(--sl-border)' }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
+                <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--sl-t3)', margin: 0 }}>Aucune demande de club pour l'instant</p>
               </div>
             )}
           </motion.div>
@@ -302,11 +292,11 @@ export default function AdminPage() {
 
         {/* ── REQUESTS ── */}
         {tab === 'requests' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {requests.length === 0 && (
-              <div className="text-center py-16">
-                <div className="text-4xl mb-3">📭</div>
-                <p className="text-sm text-gray-400">Aucune demande</p>
+              <div style={{ textAlign: 'center', paddingTop: 64 }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+                <p style={{ fontSize: 13, color: 'var(--sl-t3)' }}>Aucune demande</p>
               </div>
             )}
             {requests.map(req => {
@@ -316,42 +306,40 @@ export default function AdminPage() {
               const isReviewing = reviewingId === req.id;
 
               return (
-                <div key={req.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-gray-800 text-sm truncate">{req.clubName}</div>
-                        <div className="text-xs text-gray-400 mt-0.5">
-                          Par <span className="font-medium text-gray-500">{req.userName}</span> · {req.city}
+                <div key={req.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+                  <div style={{ padding: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, color: 'var(--sl-t1)', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.clubName}</div>
+                        <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>
+                          Par <span style={{ fontWeight: 500, color: 'var(--sl-t2)' }}>{req.userName}</span> · {req.city}
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0"
-                        style={isPending
-                          ? { backgroundColor: '#fffbeb', color: '#f59e0b' }
-                          : isApproved
-                            ? { backgroundColor: '#f0fdf4', color: '#16a34a' }
-                            : { backgroundColor: '#fef2f2', color: '#dc2626' }}>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, flexShrink: 0,
+                        backgroundColor: isPending ? 'rgba(245,158,11,0.12)' : isApproved ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                        color: isPending ? '#f59e0b' : isApproved ? '#16a34a' : '#dc2626',
+                      }}>
                         {isPending ? 'En attente' : isApproved ? 'Approuvé' : 'Rejeté'}
                       </span>
                     </div>
 
                     {sport && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full text-white"
-                        style={{ backgroundColor: sport.color }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, color: 'white', backgroundColor: sport.color }}>
                         <SportIcon sport={sport.id} size={11} color="white" /> {sport.label}
                       </span>
                     )}
 
                     {req.description && (
-                      <p className="text-xs text-gray-500 mt-2 leading-relaxed">{req.description}</p>
+                      <p style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 8, lineHeight: 1.6, margin: '8px 0 0' }}>{req.description}</p>
                     )}
 
-                    <div className="text-[10px] text-gray-300 mt-2.5">
+                    <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 10 }}>
                       {new Date(req.requestedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </div>
 
                     {req.reviewNote && (
-                      <div className="mt-2 text-xs text-gray-400 italic border-t border-gray-50 pt-2">
+                      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--sl-t3)', fontStyle: 'italic', borderTop: '1px solid var(--sl-border)', paddingTop: 8 }}>
                         Note : {req.reviewNote}
                       </div>
                     )}
@@ -359,40 +347,37 @@ export default function AdminPage() {
 
                   {isPending && (
                     isReviewing ? (
-                      <div className="border-t border-gray-100 p-3 space-y-2.5">
+                      <div style={{ borderTop: '1px solid var(--sl-border)', padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
                         <textarea
                           value={reviewNote}
                           onChange={e => setReviewNote(e.target.value)}
                           placeholder="Note optionnelle pour le demandeur…"
                           rows={2}
-                          className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-green-400 resize-none"
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', resize: 'none', fontFamily: 'Inter, sans-serif' }}
                         />
-                        <div className="flex gap-2">
+                        <div style={{ display: 'flex', gap: 8 }}>
                           <button
                             onClick={() => { setReviewingId(null); setReviewNote(''); }}
-                            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs text-gray-500 font-semibold">
+                            style={{ flex: 1, padding: '10px 0', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 11, color: 'var(--sl-t2)', fontWeight: 600, backgroundColor: 'var(--sl-surface)', cursor: 'pointer' }}>
                             Annuler
                           </button>
                           <button
                             onClick={() => rejectRequest(req.id)}
-                            className="flex-1 py-2.5 rounded-xl text-xs font-bold"
-                            style={{ backgroundColor: '#fef2f2', color: '#ef4444' }}>
+                            style={{ flex: 1, padding: '10px 0', borderRadius: 12, border: 'none', fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444', cursor: 'pointer' }}>
                             Rejeter
                           </button>
                           <button
                             onClick={() => approveRequest(req)}
-                            className="flex-1 py-2.5 rounded-xl text-white text-xs font-bold"
-                            style={{ backgroundColor: '#22C55E' }}>
+                            style={{ flex: 1, padding: '10px 0', borderRadius: 12, border: 'none', fontSize: 11, fontWeight: 700, color: 'white', backgroundColor: '#22C55E', cursor: 'pointer' }}>
                             Approuver
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <div className="border-t border-gray-100">
+                      <div style={{ borderTop: '1px solid var(--sl-border)' }}>
                         <button
                           onClick={() => setReviewingId(req.id)}
-                          className="w-full py-2.5 text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
-                          style={{ color: '#64748b' }}>
+                          style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: 'var(--sl-t2)', backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>
                           Examiner la demande
                         </button>
@@ -407,8 +392,8 @@ export default function AdminPage() {
 
         {/* ── USERS ── */}
         {tab === 'users' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-            <p className="text-xs text-gray-400 mb-3 font-medium">{adminUsers.length} utilisateur{adminUsers.length > 1 ? 's' : ''}</p>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 500, marginBottom: 4 }}>{adminUsers.length} utilisateur{adminUsers.length > 1 ? 's' : ''}</p>
             {adminUsers.map(user => {
               const color = roleColor(user.role);
               const label = roleLabel(user.role);
@@ -416,32 +401,27 @@ export default function AdminPage() {
               const canToggle = (user.role === 'user' || user.role === 'admin') && !isSelf;
 
               return (
-                <div key={user.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm text-white flex-shrink-0 font-oswald"
-                    style={{ backgroundColor: color }}>
+                <div key={user.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16, border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: 'white', flexShrink: 0, backgroundColor: color }}>
                     {user.name?.slice(0, 2).toUpperCase() ?? '??'}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-gray-800 text-sm truncate flex items-center gap-1.5">
-                      {user.name}
-                      {isSelf && <span className="text-[9px] text-gray-400 font-normal">(vous)</span>}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--sl-t1)', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user.name} {isSelf && <span style={{ fontSize: 9, color: 'var(--sl-t3)', fontWeight: 400 }}>(vous)</span>}
                     </div>
-                    <div className="text-xs text-gray-400 truncate">
+                    <div style={{ fontSize: 11, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR') : '—'}
                     </div>
                   </div>
                   {canToggle ? (
                     <button
                       onClick={() => toggleRole(user)}
-                      className="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 border transition-colors hover:opacity-80"
-                      style={{ backgroundColor: `${color}15`, color, borderColor: `${color}30` }}
+                      style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, flexShrink: 0, border: `1px solid ${color}40`, backgroundColor: `${color}15`, color, cursor: 'pointer' }}
                       title="Cliquer pour changer le rôle">
                       {label}
                     </button>
                   ) : (
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: `${color}15`, color }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, flexShrink: 0, backgroundColor: `${color}15`, color }}>
                       {label}
                     </span>
                   )}
@@ -453,19 +433,18 @@ export default function AdminPage() {
 
         {/* ── SPORTS ── */}
         {tab === 'sports' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-gray-400 font-medium">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 500, margin: 0 }}>
                 {Object.keys(allSports).length} sport{Object.keys(allSports).length > 1 ? 's' : ''}
-                {customSports.length > 0 && <span className="text-green-500 ml-1">· {customSports.length} personnalisé{customSports.length > 1 ? 's' : ''}</span>}
+                {customSports.length > 0 && <span style={{ color: '#22C55E', marginLeft: 4 }}>· {customSports.length} personnalisé{customSports.length > 1 ? 's' : ''}</span>}
               </p>
               {!showSportForm && !editingId && (
                 <button
                   onClick={() => setShowSportForm(true)}
-                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl text-white"
-                  style={{ backgroundColor: '#22C55E' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 12, color: 'white', backgroundColor: '#22C55E', border: 'none', cursor: 'pointer' }}
                 >
-                  <span className="text-sm leading-none">＋</span> Nouveau sport
+                  <span style={{ fontSize: 16, lineHeight: 1 }}>＋</span> Nouveau sport
                 </button>
               )}
             </div>
@@ -481,48 +460,39 @@ export default function AdminPage() {
             </AnimatePresence>
 
             {/* Liste des sports */}
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {Object.values(allSports).map(sport => {
                 const isEditing = editingId === sport.id;
                 const isArchived = !!sport.isArchived;
 
                 return (
-                  <div key={sport.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-opacity"
-                    style={{ opacity: isArchived ? 0.55 : 1 }}>
-                    <div className="p-3.5 flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: `${sport.color}18` }}
-                      >
+                  <div key={sport.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, border: '1px solid var(--sl-border)', overflow: 'hidden', opacity: isArchived ? 0.55 : 1, transition: 'opacity 0.2s' }}>
+                    <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${sport.color}18` }}>
                         <SportIcon sport={sport.id} size={22} color={sport.color} />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-gray-800 text-sm">{sport.label}</div>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: sport.color }} />
-                          <span className="text-[10px] text-gray-400">{sport.color}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, color: 'var(--sl-t1)', fontSize: 13 }}>{sport.label}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                          <div style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0, backgroundColor: sport.color }} />
+                          <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{sport.color}</span>
                           {sport.isCustom
-                            ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>Personnalisé</span>
+                            ? <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 20, backgroundColor: 'rgba(34,197,94,0.12)', color: '#16a34a' }}>Personnalisé</span>
                             : sport.isOverride
-                              ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#eff6ff', color: '#3b82f6' }}>Modifié</span>
-                              : <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#f8fafc', color: '#94a3b8' }}>Par défaut</span>
+                              ? <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 20, backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}>Modifié</span>
+                              : <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 20, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)' }}>Par défaut</span>
                           }
                           {isArchived && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#fff7ed', color: '#f97316' }}>Archivé</span>
+                            <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 20, backgroundColor: 'rgba(249,115,22,0.12)', color: '#f97316' }}>Archivé</span>
                           )}
                         </div>
                       </div>
 
                       {/* Action buttons */}
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        {/* Edit */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                         <button
                           onClick={() => setEditingId(isEditing ? null : sport.id)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
-                          style={{
-                            backgroundColor: isEditing ? '#eff6ff' : '#f8fafc',
-                            color: isEditing ? '#3b82f6' : '#64748b',
-                          }}
+                          style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', backgroundColor: isEditing ? 'rgba(59,130,246,0.12)' : 'var(--sl-surface)', color: isEditing ? '#3b82f6' : 'var(--sl-t3)' }}
                           title="Modifier"
                         >
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -531,14 +501,9 @@ export default function AdminPage() {
                           </svg>
                         </button>
 
-                        {/* Archive / Unarchive */}
                         <button
                           onClick={() => toggleArchive(sport.id)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
-                          style={{
-                            backgroundColor: isArchived ? '#fff7ed' : '#f8fafc',
-                            color: isArchived ? '#f97316' : '#64748b',
-                          }}
+                          style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', backgroundColor: isArchived ? 'rgba(249,115,22,0.12)' : 'var(--sl-surface)', color: isArchived ? '#f97316' : 'var(--sl-t3)' }}
                           title={isArchived ? 'Désarchiver' : 'Archiver'}
                         >
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -546,11 +511,9 @@ export default function AdminPage() {
                           </svg>
                         </button>
 
-                        {/* Delete */}
                         <button
                           onClick={() => deleteSport(sport.id)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:opacity-80"
-                          style={{ backgroundColor: '#fef2f2', color: '#ef4444' }}
+                          style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }}
                           title="Supprimer"
                         >
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -566,9 +529,9 @@ export default function AdminPage() {
                         <motion.div
                           initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
-                          className="border-t border-gray-100 overflow-hidden"
+                          style={{ borderTop: '1px solid var(--sl-border)', overflow: 'hidden' }}
                         >
-                          <div className="p-3">
+                          <div style={{ padding: 12 }}>
                             <SportForm
                               initial={{ label: sport.label, color: sport.color, iconId: sport.iconId ?? sport.id }}
                               saveLabel="Enregistrer"
@@ -584,22 +547,20 @@ export default function AdminPage() {
               })}
             </div>
 
-            {/* Sports supprimés — section restauration */}
+            {/* Sports supprimés */}
             {deletedDefaults.length > 0 && (
-              <div className="mt-2">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Sports supprimés</p>
-                <div className="space-y-2">
+              <div style={{ marginTop: 8 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Sports supprimés</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {deletedDefaults.map(sport => (
-                    <div key={sport.id} className="bg-white rounded-2xl p-3 shadow-sm border border-dashed border-gray-200 flex items-center gap-3 opacity-50">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: `${sport.color}18` }}>
+                    <div key={sport.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 12, border: '1px dashed var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, opacity: 0.5 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${sport.color}18` }}>
                         <SportIcon sport={sport.id} size={20} color={sport.color} />
                       </div>
-                      <div className="flex-1 min-w-0 text-sm text-gray-400">{sport.label}</div>
+                      <div style={{ flex: 1, fontSize: 13, color: 'var(--sl-t3)' }}>{sport.label}</div>
                       <button
                         onClick={() => restoreSport(sport.id)}
-                        className="text-[10px] font-bold px-2.5 py-1.5 rounded-xl"
-                        style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}
+                        style={{ fontSize: 10, fontWeight: 700, padding: '6px 10px', borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(34,197,94,0.12)', color: '#16a34a' }}
                       >
                         Restaurer
                       </button>

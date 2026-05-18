@@ -138,7 +138,7 @@ export default function EventSidebar({
       </div>
 
       {/* Event list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px', overscrollBehavior: 'contain' }}>
         {loading ? (
           <>{[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}</>
         ) : events.length === 0 ? (

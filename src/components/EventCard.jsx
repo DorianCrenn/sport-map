@@ -108,7 +108,7 @@ function ShareBtn({ event }) {
   return (
     <button onClick={handleShare} title={copied ? 'Copié !' : 'Partager'} style={{
       display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
-      padding: '5px 9px', borderRadius: 9, cursor: 'pointer',
+      padding: '9px 10px', borderRadius: 9, cursor: 'pointer', minHeight: 36,
       color: copied ? 'var(--sl-green)' : 'var(--sl-t2)',
       border: `1px solid ${copied ? 'var(--sl-green)' : 'var(--sl-border-s)'}`,
       backgroundColor: copied ? 'var(--sl-green-dim)' : 'transparent',
@@ -136,7 +136,7 @@ function AttendBtn({ event, isAttending, onToggle }) {
       onClick={handleClick}
       style={{
         display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
-        padding: '5px 9px', borderRadius: 9, cursor: 'pointer',
+        padding: '9px 10px', borderRadius: 9, cursor: 'pointer', minHeight: 36,
         color: attending ? 'var(--sl-green)' : 'var(--sl-t2)',
         border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`,
         backgroundColor: attending ? 'var(--sl-green-dim)' : 'transparent',
@@ -162,7 +162,7 @@ function NavBtn({ event }) {
   return (
     <button onClick={handleNav} title="M'y rendre" style={{
       display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
-      padding: '5px 9px', borderRadius: 9, cursor: 'pointer',
+      padding: '9px 10px', borderRadius: 9, cursor: 'pointer', minHeight: 36,
       color: 'var(--sl-t2)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent',
     }}>
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

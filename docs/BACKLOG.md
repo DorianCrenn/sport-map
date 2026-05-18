@@ -143,7 +143,7 @@
   - ⬜ Vérifier sauvegarde événements (cohérence `user_id`, `club_id`)
   - ⬜ Vérifier sauvegarde favoris (localStorage vs Supabase `follows`)
   - ⬜ Vérifier sauvegarde pages clubs (`club_pages` JSONB)
-  - ⬜ ARCH-001 — Migration données statiques `events.js`/`clubs.js` → seed SQL
+  - ✅ ARCH-001 — Migration données statiques `events.js`/`clubs.js` → seed SQL
   - ⬜ PERF-006 — Table `club_follows` dédiée (remplacer `profiles.followed_clubs`)
   - ⬜ Cohérence relations SQL + intégrité référentielle
 
@@ -160,9 +160,9 @@
 ### EPIC-P0-3 🔴 Audit Mobile / Responsive
 - **Objectif** : Application utilisable à une main, fluide, moderne.
 - **Sous-tâches** :
-  - ⬜ MOBILE-001 — Safe-area insets systématiques (Dynamic Island iOS)
-  - ⬜ MOBILE-002 — Scroll imbriqués iOS Safari (`overscroll-behavior: contain`)
-  - ⬜ MOBILE-003 — Tap targets minimum 44px sur tous les boutons
+  - ✅ MOBILE-001 — Safe-area insets systématiques (Dynamic Island iOS)
+  - ✅ MOBILE-002 — Scroll imbriqués iOS Safari (`overscroll-behavior: contain`)
+  - ✅ MOBILE-003 — Tap targets minimum 44px sur tous les boutons
   - ⬜ Débordements textes dans EventCard et MobileEventSheet
   - ⬜ Bottom sheet snap points progressifs (UX-002)
   - ⬜ Boutons inaccessibles / trop petits sur Android/iOS
@@ -270,10 +270,11 @@
 
 ---
 
-### BUG-006 🟠 Dark mode incomplet — AdminPage hardcodée
+### BUG-006 ✅ Dark mode incomplet — AdminPage hardcodée
 - **Catégorie** : Frontend / UX
 - **Complexité** : M
 - **Solution** : Remplacer `bg-white`, `text-gray-800` par `var(--sl-card)`, `var(--sl-t1)`.
+- **Résolu** : Réécriture complète de `AdminPage.jsx` avec CSS vars `var(--sl-*)` partout.
 
 ---
 
@@ -507,14 +508,14 @@ SPRINT 1 — Stabilisation (cette semaine)
 ├── SEC-004  Retirer role/clubId de updateProfile           [XS] ⬜
 ├── BUG-001  Valider fix rôle admin (hard-refresh)          [XS] 🔄
 ├── BUG-002  Consolider SQL policies                        [M]  ⬜
-├── MOBILE-001/002/003  Safe area + scroll + tap targets    [S]  ⬜
+├── MOBILE-001/002/003  Safe area + scroll + tap targets    [S]  ✅
 └── BUG-003  updateEvent conserve user_id original          [XS] ⬜
 
 SPRINT 2 — Clubs indispensables (semaines 1-2)
 ├── EPIC-P1-1  Création événement < 15s                     [L]  ⬜
 ├── BUG-004  Channel Realtime nom fixe                      [XS] ⬜
 ├── BUG-005  Import CSV batch                               [S]  ⬜
-├── BUG-006  Dark mode AdminPage                            [M]  ⬜
+├── BUG-006  Dark mode AdminPage                            [M]  ✅
 ├── PERF-001 useMemo currentUser                            [XS] ⬜
 ├── SEC-005  attendees_select restreint                     [XS] ⬜
 └── PERF-002 event_attendee_counts SECURITY DEFINER         [S]  ⬜
@@ -528,7 +529,7 @@ SPRINT 3 — Engagement (semaines 3-4)
 └── UX-001   Toasts/feedback actions                        [M]  ⬜
 
 SPRINT 4 — Mobile & Architecture (mois 2)
-├── ARCH-001 Migration données statiques → Supabase seed   [L]  ⬜
+├── ARCH-001 Migration données statiques → Supabase seed   [L]  ✅
 ├── UX-002   Bottom sheet snap points                       [L]  ⬜
 ├── PERF-005 BottomNav 5 onglets                            [M]  ⬜
 ├── UX-003   Onboarding avec aha moment                     [M]  ⬜

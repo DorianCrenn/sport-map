@@ -116,7 +116,7 @@ export default function CreateRideModal({ event, onSave, onClose }) {
           </div>
           <button
             onClick={onClose}
-            style={{ width: 36, height: 36, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ width: 44, height: 44, borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -125,7 +125,7 @@ export default function CreateRideModal({ event, onSave, onClose }) {
         </div>
 
         {/* Form */}
-        <form id="create-ride-form" onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 8px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <form id="create-ride-form" onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 8px', display: 'flex', flexDirection: 'column', gap: 16, overscrollBehavior: 'contain' }}>
 
           {/* Destination auto (event) */}
           <div style={{ borderRadius: 12, padding: '10px 12px', backgroundColor: 'rgba(34,217,106,0.06)', border: '1px solid rgba(34,217,106,0.2)' }}>

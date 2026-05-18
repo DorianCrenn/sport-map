@@ -1229,7 +1229,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           onClick={() => setShowAnnouncement(true)}
           aria-label="Envoyer une annonce aux abonnés"
           style={{
-            position: 'absolute', bottom: 78, right: 16, zIndex: 30,
+            position: 'absolute', bottom: 'calc(78px + env(safe-area-inset-bottom, 0px))', right: 16, zIndex: 30,
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '10px 16px', borderRadius: 18, border: 'none', cursor: 'pointer',
             fontSize: 12, fontWeight: 700,
@@ -1257,7 +1257,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
           aria-label={isEditing ? 'Terminer la modification' : 'Modifier la page du club'}
           style={{
-            position: 'absolute', bottom: 20, right: 16, zIndex: 30,
+            position: 'absolute', bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))', right: 16, zIndex: 30,
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '12px 20px', borderRadius: 18, border: 'none', cursor: 'pointer',
             fontSize: 13, fontWeight: 700,

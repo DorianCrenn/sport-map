@@ -76,7 +76,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
             onClick={onClose}
             aria-label="Fermer"
             style={{
-              width: 32, height: 32, borderRadius: '50%', border: 'none', cursor: 'pointer',
+              width: 44, height: 44, borderRadius: '50%', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)',
             }}
@@ -119,7 +119,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
               onClick={() => onRemove(m.email)}
               aria-label={`Retirer ${m.name}`}
               style={{
-                width: 28, height: 28, borderRadius: '50%', border: 'none', cursor: 'pointer',
+                width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', flexShrink: 0,
               }}

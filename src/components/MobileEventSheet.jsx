@@ -272,6 +272,7 @@ export default function MobileEventSheet({
         flex: 1, overflowY: snapPoint === 'full' ? 'auto' : 'hidden',
         padding: '16px 16px 32px',
         WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
       }}>
         {/* Top row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
