@@ -9,6 +9,7 @@ import SportLinkLogo from './SportLinkLogo.jsx';
 export default function Header({
   cities = [], clubs = [], allEvents = [], cityFilter, onCityFilter, onSelectClub, onSelectEvent, onClearCity,
   onTabChange, onShowAuth, onMyRides, rideNotifCount = 0,
+  onShowAnnouncements, announcementsUnreadCount = 0,
 }) {
   const { allSports } = useSports();
   const { currentUser, isAdmin, isClubAdmin, logout } = useAuth();
@@ -350,6 +351,39 @@ export default function Header({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Bell / announcements */}
+      {onShowAnnouncements && (
+        <motion.button
+          whileTap={{ scale: 0.92 }}
+          onClick={onShowAnnouncements}
+          aria-label="Annonces clubs"
+          style={{
+            flexShrink: 0, position: 'relative',
+            width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
+            backgroundColor: announcementsUnreadCount > 0 ? 'rgba(34,217,106,0.15)' : 'rgba(255,255,255,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: announcementsUnreadCount > 0 ? '#22d96a' : 'rgba(222,238,255,0.55)',
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          {announcementsUnreadCount > 0 && (
+            <span style={{
+              position: 'absolute', top: -2, right: -2,
+              minWidth: 15, height: 15, borderRadius: 8, padding: '0 3px',
+              backgroundColor: '#22d96a', color: '#0a1628',
+              fontSize: 8, fontWeight: 800, lineHeight: '15px', textAlign: 'center',
+              border: '1.5px solid var(--sl-bg)',
+              pointerEvents: 'none',
+            }}>
+              {announcementsUnreadCount > 9 ? '9+' : announcementsUnreadCount}
+            </span>
+          )}
+        </motion.button>
+      )}
 
       {/* Profile button */}
       <div ref={profileRef} style={{ position: 'relative', flexShrink: 0 }}>

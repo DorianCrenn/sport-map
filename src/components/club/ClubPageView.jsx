@@ -17,6 +17,8 @@ import { GalleryBlockEditor, GalleryBlockView } from './blocks/GalleryBlock.jsx'
 import AddBlockMenu from './AddBlockMenu.jsx';
 import ClubManagersPanel from './ClubManagersPanel.jsx';
 import ClubDashboard from './ClubDashboard.jsx';
+import SendAnnouncementModal from './SendAnnouncementModal.jsx';
+import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import ClubFormModal from './ClubFormModal.jsx';
 import EventFormModal from '../EventFormModal.jsx';
 import PosterStudio from '../PosterStudio.jsx';
@@ -643,7 +645,10 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
   const [showManagersPanel, setShowManagersPanel] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [activeTeamId, setActiveTeamId] = useState(null);
+
+  const { sendAnnouncement } = useClubAnnouncements(canEdit ? club.id : null);
   const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
   const [showPoster, setShowPoster] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -1189,6 +1194,18 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         />
       )}
 
+      {/* Announcement modal */}
+      <AnimatePresence>
+        {showAnnouncement && (
+          <SendAnnouncementModal
+            key="send-announcement"
+            club={club}
+            onSend={sendAnnouncement}
+            onClose={() => setShowAnnouncement(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Club dashboard slide-in */}
       <AnimatePresence>
         {showDashboard && (
@@ -1201,6 +1218,33 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           />
         )}
       </AnimatePresence>
+
+      {/* Floating announcement FAB */}
+      {canEdit && !isEditing && (
+        <motion.button
+          initial={{ scale: 0.8, opacity: 0, y: 8 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          whileTap={{ scale: 0.93 }}
+          onClick={() => setShowAnnouncement(true)}
+          aria-label="Envoyer une annonce aux abonnés"
+          style={{
+            position: 'absolute', bottom: 78, right: 16, zIndex: 30,
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '10px 16px', borderRadius: 18, border: 'none', cursor: 'pointer',
+            fontSize: 12, fontWeight: 700,
+            backgroundColor: 'rgba(59,130,246,0.9)',
+            color: '#fff',
+            boxShadow: '0 4px 20px rgba(59,130,246,0.4)',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 11l19-9-9 19-2-8-8-2z"/>
+          </svg>
+          📢 Annonce
+        </motion.button>
+      )}
 
       {/* Floating edit FAB */}
       {canEdit && (

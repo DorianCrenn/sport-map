@@ -33,7 +33,9 @@ import CSVImportModal from './components/CSVImportModal.jsx';
 import BadgeUnlockModal from './components/BadgeUnlockModal.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import MyRidesPage from './pages/MyRidesPage.jsx';
+import AnnouncementsCenter from './components/AnnouncementsCenter.jsx';
 import { useRideNotifications } from './hooks/useRideNotifications.js';
+import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading } = useAuth();
@@ -49,7 +51,9 @@ function AppInner() {
   const { toast } = useToast();
   const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent } = useLocalEvents();
   const { unreadCount: rideNotifCount } = useRideNotifications();
+  const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
   const [showMyRides, setShowMyRides] = useState(false);
+  const [showAnnouncements, setShowAnnouncements] = useState(false);
 
   const addEventWithToast = useCallback(async (data) => {
     const result = await addEvent(data);
@@ -216,6 +220,8 @@ function AppInner() {
           onShowAuth={() => setShowAuth(true)}
           onMyRides={() => setShowMyRides(true)}
           rideNotifCount={rideNotifCount}
+          onShowAnnouncements={() => setShowAnnouncements(true)}
+          announcementsUnreadCount={announcementsUnreadCount}
         />
       )}
 
@@ -350,6 +356,12 @@ function AppInner() {
           <MyRidesPage
             key="my-rides"
             onBack={() => setShowMyRides(false)}
+          />
+        )}
+        {showAnnouncements && (
+          <AnnouncementsCenter
+            key="announcements"
+            onClose={() => setShowAnnouncements(false)}
           />
         )}
       </AnimatePresence>
