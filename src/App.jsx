@@ -34,6 +34,7 @@ import BadgeUnlockModal from './components/BadgeUnlockModal.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import MyRidesPage from './pages/MyRidesPage.jsx';
 import AnnouncementsCenter from './components/AnnouncementsCenter.jsx';
+import OfflineBanner from './components/OfflineBanner.jsx';
 import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
 
@@ -206,6 +207,7 @@ function AppInner() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
+      <OfflineBanner />
       {activeTab !== 'home' && (
         <Header
           cities={communes}

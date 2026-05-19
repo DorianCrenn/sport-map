@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, memo } from 'react';
 import { motion } from 'framer-motion';
 
 const PREDEFINED = [
@@ -11,7 +11,7 @@ function formatDate(iso) {
   return new Date(iso + 'T00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
-export default function DateFilterBar({ active, onChange, upcomingOnly = true, onUpcomingOnlyChange }) {
+const DateFilterBar = memo(function DateFilterBar({ active, onChange, upcomingOnly = true, onUpcomingOnlyChange }) {
   const dateInputRef = useRef(null);
   const isSpecific = active && !PREDEFINED.find((o) => o.key === active);
 
@@ -118,4 +118,6 @@ export default function DateFilterBar({ active, onChange, upcomingOnly = true, o
       </motion.button>
     </div>
   );
-}
+});
+
+export default DateFilterBar;

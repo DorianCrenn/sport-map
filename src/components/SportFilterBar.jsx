@@ -1,9 +1,10 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import SportIcon from './SportIcon.jsx';
 
-export default function SportFilterBar({ active, onChange, nearbyActive, onNearbyToggle, geoLoading, showAllSports, onShowAllSports, onHideSomeSports }) {
+const SportFilterBar = memo(function SportFilterBar({ active, onChange, nearbyActive, onNearbyToggle, geoLoading, showAllSports, onShowAllSports, onHideSomeSports }) {
   const { allSports } = useSports();
   const { currentUser } = useAuth();
 
@@ -135,4 +136,6 @@ export default function SportFilterBar({ active, onChange, nearbyActive, onNearb
       </div>
     </div>
   );
-}
+});
+
+export default SportFilterBar;

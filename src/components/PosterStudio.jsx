@@ -2,7 +2,6 @@ import { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 import { useSports } from '../hooks/useSports.js';
-import { champLabel } from './poster/posterUtils.js';
 import { Z } from '../constants/zIndex.js';
 import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS } from './poster/PosterRenderer.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
@@ -13,6 +12,7 @@ import {
   useFavoriteTemplates,
   useDefaultTemplate,
 } from '../hooks/usePosterDraft.js';
+import { deriveInitialFields } from '../lib/posterVariables.js';
 
 // ── Sidebar tabs ───────────────────────────────────────────────────────────────
 
@@ -95,13 +95,10 @@ export default function PosterStudio({ event, onClose, club }) {
 
   const sportColor = allSports[event?.sport]?.color ?? '#22D96A';
 
-  // ── Branding auto-fill from club context ──
+  // ── Branding auto-fill via variable engine ──
   const clubAccent = club?.theme?.primary ?? club?.theme?.accent ?? null;
   const initialAccent = clubAccent ?? sportColor;
-  const initialHomeName = club ? (event?.homeOrAway === 'away' ? '' : club.name) : '';
-  const initialAwayName = club ? (event?.homeOrAway === 'away' ? club.name : '') : '';
-  const initialHomeLogo = club && event?.homeOrAway !== 'away' ? (club.logo_url ?? '') : '';
-  const initialAwayLogo = club && event?.homeOrAway === 'away' ? (club.logo_url ?? '') : '';
+  const initialFields = deriveInitialFields(event, club);
 
   // ── Persistence hooks ──
   const draftHook = usePosterDraft(event?.id);
@@ -121,13 +118,13 @@ export default function PosterStudio({ event, onClose, club }) {
   const [bgErr, setBgErr] = useState(false);
   const [bgMode, setBgMode] = useState('color');
 
-  // Teams
-  const [homeName, setHomeName] = useState(initialHomeName);
-  const [awayName, setAwayName] = useState(initialAwayName);
-  const [homeLogo, setHomeLogo] = useState(initialHomeLogo);
-  const [awayLogo, setAwayLogo] = useState(initialAwayLogo);
-  const [championship, setChampionship] = useState(() => champLabel(event?.eventType, event?.level));
-  const [tagline, setTagline] = useState('Venez nombreux !');
+  // Teams — seeded from variable engine
+  const [homeName, setHomeName] = useState(initialFields.homeName);
+  const [awayName, setAwayName] = useState(initialFields.awayName);
+  const [homeLogo, setHomeLogo] = useState(initialFields.homeLogo);
+  const [awayLogo, setAwayLogo] = useState(initialFields.awayLogo);
+  const [championship, setChampionship] = useState(initialFields.championship);
+  const [tagline, setTagline] = useState(initialFields.tagline);
 
   // Pro
   const [sponsorSrc, setSponsorSrc] = useState('');
@@ -149,7 +146,6 @@ export default function PosterStudio({ event, onClose, club }) {
 
   // Library UI
   const [libName, setLibName] = useState('');
-  const [libVersion, setLibVersion] = useState(0);
 
   // Template favorites UI
   const [libFilter, setLibFilter] = useState('all');
@@ -198,24 +194,14 @@ export default function PosterStudio({ event, onClose, club }) {
     return () => clearTimeout(t);
   }, [draftState]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Library helpers ──
-  const libEntries = useMemo(() => libHook.getAll(), [libVersion]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  // ── Library helpers ── (libHook.entries is reactive — no version counter needed)
   function saveToLib() {
     libHook.save(draftState, libName.trim() || undefined);
     setLibName('');
-    setLibVersion(v => v + 1);
   }
 
-  function removeFromLib(id) {
-    libHook.remove(id);
-    setLibVersion(v => v + 1);
-  }
-
-  function duplicateInLib(id) {
-    libHook.duplicate(id);
-    setLibVersion(v => v + 1);
-  }
+  function removeFromLib(id) { libHook.remove(id); }
+  function duplicateInLib(id) { libHook.duplicate(id); }
 
   function loadFromLibrary(entry) {
     const s = entry.state;
@@ -935,15 +921,15 @@ export default function PosterStudio({ event, onClose, club }) {
                       </div>
 
                       {/* Saved posters list */}
-                      {libEntries.length === 0 ? (
+                      {libHook.entries.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--sl-t3)', fontSize: 12, lineHeight: 1.6 }}>
                           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ marginBottom: 8, opacity: 0.4 }}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                           <br />Aucune affiche sauvegardée
                         </div>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          <SLabel>Mes affiches ({libEntries.length}/20)</SLabel>
-                          {libEntries.map(entry => (
+                          <SLabel>Mes affiches ({libHook.entries.length}/20)</SLabel>
+                          {libHook.entries.map(entry => (
                             <div key={entry.id} style={{
                               padding: '10px 12px', borderRadius: 12,
                               backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
