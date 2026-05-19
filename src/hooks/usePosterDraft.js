@@ -102,9 +102,12 @@ export function usePosterLibrary() {
       savedAt: new Date().toISOString(),
       state,
     };
-    const next = [entry, ...entries].slice(0, 20);
-    setEntries(next);
-    ls_set(LIBRARY_KEY, next);
+    // Functional update avoids stale closure when called multiple times rapidly
+    setEntries(prev => {
+      const next = [entry, ...prev].slice(0, 20);
+      ls_set(LIBRARY_KEY, next);
+      return next;
+    });
     // Background Supabase insert
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
@@ -128,9 +131,11 @@ export function usePosterLibrary() {
   }
 
   function remove(id) {
-    const next = entries.filter(e => e.id !== id);
-    setEntries(next);
-    ls_set(LIBRARY_KEY, next);
+    setEntries(prev => {
+      const next = prev.filter(e => e.id !== id);
+      ls_set(LIBRARY_KEY, next);
+      return next;
+    });
     supabase.from('posters').delete().eq('id', id).then(() => {}).catch(() => {});
   }
 
