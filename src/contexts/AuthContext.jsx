@@ -85,12 +85,18 @@ export function AuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // TOKEN_REFRESHED only rotates the JWT — profile hasn't changed and must NOT
+        // increment fetchSeq or it would invalidate an in-flight INITIAL_SESSION fetch.
+        if (event === 'TOKEN_REFRESHED') {
+          if (session?.user) setAuthUser(session.user);
+          done();
+          return;
+        }
+
         const seq = ++fetchSeq;
 
         if (session?.user) {
           setAuthUser(session.user);
-          // TOKEN_REFRESHED only rotates the JWT — the profile data hasn't changed
-          if (event === 'TOKEN_REFRESHED') { done(); return; }
 
           const prof = await Promise.race([
             fetchProfile(session.user),

@@ -4,6 +4,8 @@ import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useAttendeeCount } from '../contexts/AttendeeCountContext.jsx';
+import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
+import { useAttendanceContext } from '../contexts/AttendanceContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import FollowModal from '../components/FollowModal.jsx';
 import SportIcon from '../components/SportIcon.jsx';
@@ -686,8 +688,10 @@ const TABS = [
 ];
 
 // ── Main page ─────────────────────────────────────────────────────────────────
-export default function FavorisPage({ allEvents, favorites, onToggleFavorite, allClubs = [], isAttending, onToggleAttend }) {
+export default function FavorisPage({ allEvents, allClubs = [] }) {
   const { follows, followedClubs, unfollowClub, updateFollow, isLoggedIn } = useAuth();
+  const { favorites, toggleFavorite: onToggleFavorite } = useFavoritesContext();
+  const { isAttending, toggle: onToggleAttend } = useAttendanceContext();
   const [activeTab, setActiveTab] = useState('matchs');
 
   const favoriteEvents = useMemo(

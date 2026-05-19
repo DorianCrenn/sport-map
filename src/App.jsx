@@ -8,8 +8,8 @@ import { EVENTS } from './data/events.js';
 import { STATIC_CLUBS } from './data/clubs.js';
 import { useLocalEvents } from './hooks/useLocalEvents.js';
 import { useBadges } from './hooks/useBadges.js';
-import { useFavorites } from './hooks/useFavorites.js';
-import { useAttendees } from './hooks/useAttendees.js';
+import { FavoritesProvider, useFavoritesContext } from './contexts/FavoritesContext.jsx';
+import { AttendanceProvider, useAttendanceContext } from './contexts/AttendanceContext.jsx';
 import { useClubMatches } from './hooks/useClubMatches.js';
 import { useClubs } from './hooks/useClubs.js';
 import { useSports } from './hooks/useSports.js';
@@ -66,8 +66,8 @@ function AppInner() {
     toast({ message: `${saved.length} événement${saved.length > 1 ? 's' : ''} importé${saved.length > 1 ? 's' : ''} !` });
     return saved;
   }, [addEventsBatch, toast]);
-  const { favorites, toggleFavorite, isFavorite } = useFavorites();
-  const { attending, toggle: toggleAttend, isAttending } = useAttendees();
+  const { favorites } = useFavoritesContext();
+  const { attending } = useAttendanceContext();
   const [showNewEventForm, setShowNewEventForm] = useState(false);
   const [showCSVImport, setShowCSVImport] = useState(false);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
@@ -257,11 +257,6 @@ function AppInner() {
                   onAddEvent={addEventWithToast}
                   onUpdateEvent={updateEvent}
                   onDeleteEvent={deleteEvent}
-                  isFavorite={isFavorite}
-                  onToggleFavorite={toggleFavorite}
-                  isAttending={isAttending}
-                  onToggleAttend={toggleAttend}
-                  favoritesCount={favorites.size}
                   onGoToFavoris={() => setActiveTab('favoris')}
                   cityFilter={cityFilter}
                   focusEventId={focusEventId}
@@ -272,7 +267,7 @@ function AppInner() {
             )}
             {activeTab === 'favoris' && (
               <ErrorBoundary name="Favoris">
-                <FavorisPage allEvents={allEvents} favorites={favorites} onToggleFavorite={toggleFavorite} allClubs={allClubs} isAttending={isAttending} onToggleAttend={toggleAttend} />
+                <FavorisPage allEvents={allEvents} allClubs={allClubs} />
               </ErrorBoundary>
             )}
             {activeTab === 'news' && <ErrorBoundary name="Actualités"><NewsPage /></ErrorBoundary>}
@@ -395,7 +390,11 @@ export default function App() {
   return (
     <AuthProvider>
       <SportsProvider>
-        <AppInner />
+        <FavoritesProvider>
+          <AttendanceProvider>
+            <AppInner />
+          </AttendanceProvider>
+        </FavoritesProvider>
       </SportsProvider>
     </AuthProvider>
   );

@@ -5,6 +5,8 @@ import { useShare } from '../hooks/useShare.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useAttendeeCount } from '../contexts/AttendeeCountContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
+import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
+import { useAttendanceContext } from '../contexts/AttendanceContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import SportIcon from './SportIcon.jsx';
 import PosterStudio from './PosterStudio.jsx';
@@ -122,12 +124,13 @@ function ShareBtn({ event }) {
   );
 }
 
-function AttendBtn({ event, isAttending, onToggle }) {
-  const attending = isAttending?.(event.id) ?? false;
+function AttendBtn({ event }) {
+  const { isAttending, toggle } = useAttendanceContext();
+  const attending = isAttending(event.id);
   const { toast } = useToast();
   function handleClick(e) {
     e.stopPropagation();
-    onToggle?.(event.id);
+    toggle(event.id);
     toast({ message: attending ? 'Inscription retirée' : "Tu y seras !" });
   }
   return (
@@ -278,10 +281,11 @@ function FollowClubPill({ event }) {
   );
 }
 
-const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, onDuplicate, onUpdateEvent, isFavorite, onToggleFavorite, isAttending, onToggleAttend }, ref) {
+const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, onDuplicate, onUpdateEvent }, ref) {
   const { allSports: SPORTS } = useSports();
   const { currentUser, isAdmin } = useAuth();
   const { toast } = useToast();
+  const { isFavorite, toggleFavorite } = useFavoritesContext();
   const attendeeCount = useAttendeeCount(event.id);
   const [showPoster, setShowPoster] = useState(false);
   const group = SPORTS[event.sport];
@@ -290,12 +294,11 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const isUserEvent = event.source === 'user';
-  // Edit/delete only for the creator or an admin; fallback allows pre-creatorId events to remain editable
   const canEditThis = isUserEvent && (!event.creatorId || event.creatorId === currentUser?.id || isAdmin);
   const isPast = dateObj < new Date();
   const hasStandings = !!event.standings;
   const showPoints = event.standings?.home?.points !== null && event.standings?.home?.points !== undefined;
-  const fav = isFavorite?.(event.id) ?? false;
+  const fav = isFavorite(event.id);
   const status = getEffectiveStatus(event);
 
   return (
@@ -420,7 +423,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
 
               {/* Action buttons */}
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <AttendBtn event={event} isAttending={isAttending} onToggle={onToggleAttend} />
+                <AttendBtn event={event} />
                 <NavBtn event={event} />
                 <ShareBtn event={event} />
                 <ICSBtn event={event} />
@@ -460,23 +463,21 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
       </div>
 
       {/* Favorite button — min 44px tap target */}
-      {onToggleFavorite && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            const adding = !fav;
-            onToggleFavorite(event.id);
-            toast({ message: adding ? 'Ajouté aux favoris' : 'Retiré des favoris' });
-          }}
-          aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-          aria-pressed={fav}
-          style={{ minWidth: 44, minHeight: 44, padding: '0 10px 0 4px', border: 'none', cursor: 'pointer', backgroundColor: 'transparent', flexShrink: 0, alignSelf: 'flex-start', color: fav ? '#ef4444' : 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-        </button>
-      )}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          const adding = !fav;
+          toggleFavorite(event.id);
+          toast({ message: adding ? 'Ajouté aux favoris' : 'Retiré des favoris' });
+        }}
+        aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+        aria-pressed={fav}
+        style={{ minWidth: 44, minHeight: 44, padding: '0 10px 0 4px', border: 'none', cursor: 'pointer', backgroundColor: 'transparent', flexShrink: 0, alignSelf: 'flex-start', color: fav ? '#ef4444' : 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </button>
     </motion.div>
 
     {showPoster && <PosterStudio event={event} onClose={() => setShowPoster(false)} />}

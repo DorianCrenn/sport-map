@@ -7,6 +7,7 @@ import 'react-leaflet-cluster/dist/assets/MarkerCluster.Default.css';
 import L from 'leaflet';
 import { DEPARTMENTS } from '../data/events.js';
 import { useSports } from '../hooks/useSports.js';
+import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
 import { createSportMarker, createClusterMarker } from './SportMarker.js';
 import { SPORT_ICONS } from './sportIcons.js';
 
@@ -78,9 +79,10 @@ function MapController({ activeDepartment, flyTarget, onBoundsChange, selectedEv
 
 export default function MapView({
   events, selectedEventId, onMarkerClick, activeDepartment,
-  userCoords, flyTarget, onBoundsChange, selectedEvent, onMapClick, isFavorite,
+  userCoords, flyTarget, onBoundsChange, selectedEvent, onMapClick,
 }) {
   const { allSports } = useSports();
+  const { isFavorite } = useFavoritesContext();
   const dept = DEPARTMENTS[activeDepartment] ?? DEPARTMENTS.finistere;
   const userMarkerIcon = makeUserMarker();
 

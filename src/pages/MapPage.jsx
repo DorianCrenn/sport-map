@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
 import { useFilteredEvents } from '../hooks/useFilteredEvents.js';
 import { useGeolocation } from '../hooks/useGeolocation.js';
 import SportFilterBar from '../components/SportFilterBar.jsx';
@@ -13,13 +14,13 @@ import MobileEventSheet from '../components/MobileEventSheet.jsx';
 export default function MapPage({
   allEvents, activeDepartment, canAddEvent,
   onAddEvent, onUpdateEvent, onDeleteEvent,
-  isFavorite, onToggleFavorite,
-  isAttending, onToggleAttend,
-  favoritesCount, onGoToFavoris, cityFilter,
+  onGoToFavoris, cityFilter,
   focusEventId, onFocusDone,
   eventsLoading,
 }) {
   const { currentUser } = useAuth();
+  const { favorites } = useFavoritesContext();
+  const favoritesCount = favorites.size;
   const [sportFilter, setSportFilter] = useState(null);
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
   const [nearbyFilter, setNearbyFilter] = useState(false);
@@ -203,7 +204,6 @@ export default function MapPage({
           flyTarget={flyTarget}
           onBoundsChange={handleBoundsChange}
           selectedEvent={selectedEvent}
-          isFavorite={isFavorite}
         />
 
         {/* Desktop sidebar */}
@@ -222,10 +222,6 @@ export default function MapPage({
             onDeleteEvent={handleDeleteEvent}
             onDuplicateEvent={(event) => setModalEvent({ ...event, _isNew: true, _isDuplicate: true, id: undefined, date: '', score: null })}
             onUpdateEvent={onUpdateEvent}
-            isFavorite={isFavorite}
-            onToggleFavorite={onToggleFavorite}
-            isAttending={isAttending}
-            onToggleAttend={onToggleAttend}
           />
         </div>
 
@@ -295,10 +291,6 @@ export default function MapPage({
               onEdit={(event) => setModalEvent(event)}
               onDelete={handleDeleteEvent}
               onUpdateEvent={onUpdateEvent}
-              isFavorite={isFavorite}
-              onToggleFavorite={onToggleFavorite}
-              isAttending={isAttending}
-              onToggleAttend={onToggleAttend}
             />
           )}
         </AnimatePresence>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 import { useSports } from '../hooks/useSports.js';
@@ -7,6 +7,12 @@ import { Z } from '../constants/zIndex.js';
 import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS } from './poster/PosterRenderer.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import {
+  usePosterDraft,
+  usePosterLibrary,
+  useFavoriteTemplates,
+  useDefaultTemplate,
+} from '../hooks/usePosterDraft.js';
 
 // ── Sidebar tabs ───────────────────────────────────────────────────────────────
 
@@ -26,6 +32,10 @@ const SIDEBAR_TABS = [
   {
     id: 'pro', label: 'Pro',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>,
+  },
+  {
+    id: 'library', label: 'Biblio',
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
   },
 ];
 
@@ -93,6 +103,12 @@ export default function PosterStudio({ event, onClose, club }) {
   const initialHomeLogo = club && event?.homeOrAway !== 'away' ? (club.logo_url ?? '') : '';
   const initialAwayLogo = club && event?.homeOrAway === 'away' ? (club.logo_url ?? '') : '';
 
+  // ── Persistence hooks ──
+  const draftHook = usePosterDraft(event?.id);
+  const libHook = usePosterLibrary();
+  const favTplHook = useFavoriteTemplates();
+  const defTplHook = useDefaultTemplate(club?.id);
+
   // ── State ──
   const [format, setFormat] = useState('story');
   const [templateId, setTemplateId] = useState('simple');
@@ -124,6 +140,115 @@ export default function PosterStudio({ event, onClose, club }) {
   // Export
   const [downloading, setDownloading] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [sharingIG, setSharingIG] = useState(false);
+
+  // Persistence UI
+  const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [restoredDraft, setRestoredDraft] = useState(false);
+  const skipAutoSave = useRef(true);
+
+  // Library UI
+  const [libName, setLibName] = useState('');
+  const [libVersion, setLibVersion] = useState(0);
+
+  // Template favorites UI
+  const [libFilter, setLibFilter] = useState('all');
+  const [favVersion, setFavVersion] = useState(0);
+
+  // ── On mount: restore draft or apply default template ──
+  useEffect(() => {
+    const draft = draftHook.loadDraft();
+    if (draft?.state) {
+      const s = draft.state;
+      if (s.format) setFormat(s.format);
+      if (s.templateId) setTemplateId(s.templateId);
+      if (s.accentColor) setAccentColor(s.accentColor);
+      if (s.bgSrc !== undefined) setBgSrc(s.bgSrc);
+      if (s.bgMode) setBgMode(s.bgMode);
+      if (s.homeName !== undefined) setHomeName(s.homeName);
+      if (s.awayName !== undefined) setAwayName(s.awayName);
+      if (s.homeLogo !== undefined) setHomeLogo(s.homeLogo);
+      if (s.awayLogo !== undefined) setAwayLogo(s.awayLogo);
+      if (s.championship !== undefined) setChampionship(s.championship);
+      if (s.tagline !== undefined) setTagline(s.tagline);
+      if (s.sponsorSrc !== undefined) setSponsorSrc(s.sponsorSrc);
+      if (s.transforms) setTransforms(s.transforms);
+      setRestoredDraft(true);
+      setTimeout(() => setRestoredDraft(false), 3000);
+    } else {
+      const defaultTpl = defTplHook.get();
+      if (defaultTpl) setTemplateId(defaultTpl);
+    }
+    setTimeout(() => { skipAutoSave.current = false; }, 150);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-save: 2s debounce on any state change ──
+  const draftState = useMemo(() => ({
+    format, templateId, accentColor, bgSrc, bgMode,
+    homeName, awayName, homeLogo, awayLogo,
+    championship, tagline, sponsorSrc, transforms,
+  }), [format, templateId, accentColor, bgSrc, bgMode, homeName, awayName, homeLogo, awayLogo, championship, tagline, sponsorSrc, transforms]);
+
+  useEffect(() => {
+    if (skipAutoSave.current) return;
+    const t = setTimeout(() => {
+      draftHook.saveDraft(draftState);
+      setLastSavedAt(new Date().toISOString());
+    }, 2000);
+    return () => clearTimeout(t);
+  }, [draftState]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Library helpers ──
+  const libEntries = useMemo(() => libHook.getAll(), [libVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function saveToLib() {
+    libHook.save(draftState, libName.trim() || undefined);
+    setLibName('');
+    setLibVersion(v => v + 1);
+  }
+
+  function removeFromLib(id) {
+    libHook.remove(id);
+    setLibVersion(v => v + 1);
+  }
+
+  function duplicateInLib(id) {
+    libHook.duplicate(id);
+    setLibVersion(v => v + 1);
+  }
+
+  function loadFromLibrary(entry) {
+    const s = entry.state;
+    if (s.format) setFormat(s.format);
+    if (s.templateId) setTemplateId(s.templateId);
+    if (s.accentColor) setAccentColor(s.accentColor);
+    if (s.bgSrc !== undefined) setBgSrc(s.bgSrc);
+    if (s.bgMode) setBgMode(s.bgMode);
+    if (s.homeName !== undefined) setHomeName(s.homeName);
+    if (s.awayName !== undefined) setAwayName(s.awayName);
+    if (s.homeLogo !== undefined) setHomeLogo(s.homeLogo);
+    if (s.awayLogo !== undefined) setAwayLogo(s.awayLogo);
+    if (s.championship !== undefined) setChampionship(s.championship);
+    if (s.tagline !== undefined) setTagline(s.tagline);
+    if (s.sponsorSrc !== undefined) setSponsorSrc(s.sponsorSrc);
+    if (s.transforms) setTransforms(s.transforms);
+    setActiveTab('template');
+  }
+
+  // ── Template favorites ──
+  const displayTemplates = useMemo(() => {
+    if (libFilter === 'all') return POSTER_TEMPLATES;
+    return POSTER_TEMPLATES.filter(t => favTplHook.isFav(t.id));
+  }, [libFilter, favVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function toggleFavTpl(id) {
+    favTplHook.toggle(id);
+    setFavVersion(v => v + 1);
+  }
+
+  function isFavTpl(id) {
+    return favTplHook.isFav(id);
+  }
 
   // ── Poster data object ──
   const posterData = {
@@ -144,7 +269,6 @@ export default function PosterStudio({ event, onClose, club }) {
 
   // ── Export helpers ──
   async function getBlob() {
-    // Use the hidden full-size renderer (no CSS transform) for correct HD output
     const node = exportRef.current;
     if (!node) return null;
     return toBlob(node, { pixelRatio: 3, cacheBust: true });
@@ -182,6 +306,27 @@ export default function PosterStudio({ event, onClose, club }) {
       }
     } catch {}
     finally { setSharing(false); }
+  }
+
+  async function handleShareIG() {
+    setSharingIG(true);
+    try {
+      const blob = await getBlob();
+      if (!blob) return;
+      const file = new File([blob], 'affiche-sportlink.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: event?.title ?? 'SportLink' });
+      } else {
+        // Fallback: download so user can share manually
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `affiche-sportlink-${format}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch {}
+    finally { setSharingIG(false); }
   }
 
   // ── File helpers ──
@@ -299,9 +444,31 @@ export default function PosterStudio({ event, onClose, club }) {
               <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event?.title}</div>
             </div>
           </div>
-          <button onClick={onClose} style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Auto-save indicator */}
+            <AnimatePresence>
+              {restoredDraft && (
+                <motion.span
+                  initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                  style={{ fontSize: 9.5, color: 'var(--sl-blue)', fontWeight: 700 }}
+                >
+                  Brouillon restauré
+                </motion.span>
+              )}
+              {!restoredDraft && lastSavedAt && (
+                <motion.span
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  style={{ fontSize: 9.5, color: 'var(--sl-green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}
+                >
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Sauvegardé
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <button onClick={onClose} style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
         </div>
 
         {/* ── Body ── */}
@@ -448,7 +615,7 @@ export default function PosterStudio({ event, onClose, club }) {
                   backgroundColor: sharing ? 'rgba(37,211,102,0.06)' : 'rgba(37,211,102,0.14)',
                   border: '1.5px solid rgba(37,211,102,0.38)',
                   color: '#25D366',
-                  transition: 'all 0.15s', marginBottom: 4,
+                  transition: 'all 0.15s', marginBottom: 6,
                 }}
               >
                 {sharing
@@ -456,6 +623,29 @@ export default function PosterStudio({ event, onClose, club }) {
                   : <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.122 1.528 5.855L.057 23.882l6.233-1.635A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894c-1.897 0-3.66-.51-5.182-1.398l-.371-.22-3.851 1.01 1.029-3.763-.242-.387A9.855 9.855 0 012.106 12c0-5.457 4.437-9.894 9.894-9.894 5.457 0 9.894 4.437 9.894 9.894 0 5.457-4.437 9.894-9.894 9.894z"/></svg>
                 }
                 <span style={{ fontSize: 8, fontWeight: 700 }}>{sharing ? '…' : 'WA'}</span>
+              </motion.button>
+
+              {/* Instagram / System Share */}
+              <motion.button
+                whileTap={{ scale: 0.88 }}
+                onClick={handleShareIG}
+                disabled={sharingIG}
+                title="Partager (Instagram, etc.)"
+                style={{
+                  width: 42, height: 42, borderRadius: 12,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  gap: 2, cursor: sharingIG ? 'wait' : 'pointer',
+                  backgroundColor: sharingIG ? 'rgba(225,48,108,0.06)' : 'rgba(225,48,108,0.13)',
+                  border: '1.5px solid rgba(225,48,108,0.38)',
+                  color: '#E1306C',
+                  transition: 'all 0.15s', marginBottom: 4,
+                }}
+              >
+                {sharingIG
+                  ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/></svg>
+                  : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                }
+                <span style={{ fontSize: 8, fontWeight: 700 }}>{sharingIG ? '…' : 'IG'}</span>
               </motion.button>
             </div>
           </div>
@@ -476,11 +666,34 @@ export default function PosterStudio({ event, onClose, club }) {
                   {/* ── TEMPLATE PANEL ── */}
                   {activeTab === 'template' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      <SLabel>Choisir un style</SLabel>
+                      {/* Filter pills */}
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {[['all', 'Tous'], ['favs', '❤️ Favoris']].map(([id, label]) => (
+                          <button key={id} onClick={() => setLibFilter(id)}
+                            style={{
+                              padding: '5px 12px', borderRadius: 9, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                              border: `1.5px solid ${libFilter === id ? accentColor : 'var(--sl-border-s)'}`,
+                              backgroundColor: libFilter === id ? `${accentColor}16` : 'var(--sl-surface)',
+                              color: libFilter === id ? accentColor : 'var(--sl-t2)',
+                              transition: 'all 0.13s',
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {displayTemplates.length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--sl-t3)', fontSize: 12 }}>
+                          Aucun template favori — cliquez sur ❤️ pour en ajouter.
+                        </div>
+                      )}
+
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                        {POSTER_TEMPLATES.map(t => {
+                        {displayTemplates.map(t => {
                           const active = templateId === t.id;
                           const locked = t.isPremium && !hasPremium;
+                          const fav = isFavTpl(t.id);
                           return (
                             <button key={t.id}
                               onClick={() => {
@@ -506,6 +719,22 @@ export default function PosterStudio({ event, onClose, club }) {
                                   <span style={{ fontSize: 9, fontWeight: 800, color: '#D4AF37', letterSpacing: '0.06em' }}>PREMIUM</span>
                                 </div>
                               )}
+                              {/* Heart favorite button */}
+                              <button
+                                onClick={e => { e.stopPropagation(); toggleFavTpl(t.id); }}
+                                title={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                                style={{
+                                  position: 'absolute', top: 7, left: 7,
+                                  width: 22, height: 22, borderRadius: 6, border: 'none', cursor: 'pointer',
+                                  backgroundColor: fav ? 'rgba(239,68,68,0.15)' : 'rgba(0,0,0,0.2)',
+                                  color: fav ? '#ef4444' : 'rgba(255,255,255,0.6)',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  fontSize: 11, lineHeight: 1, padding: 0,
+                                  transition: 'all 0.15s',
+                                }}
+                              >
+                                {fav ? '❤' : '♡'}
+                              </button>
                               {t.isPremium && !locked && (
                                 <div style={{
                                   position: 'absolute', top: 7, right: 7,
@@ -520,6 +749,22 @@ export default function PosterStudio({ event, onClose, club }) {
                           );
                         })}
                       </div>
+
+                      {/* Set as default for club */}
+                      {club && (
+                        <button
+                          onClick={() => defTplHook.set(templateId)}
+                          style={{
+                            width: '100%', padding: '10px', borderRadius: 11, fontSize: 12, fontWeight: 700,
+                            cursor: 'pointer', border: `1.5px solid ${accentColor}40`,
+                            backgroundColor: `${accentColor}0D`, color: accentColor,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                          Définir comme template par défaut du club
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -655,6 +900,87 @@ export default function PosterStudio({ event, onClose, club }) {
                           {downloading ? 'Téléchargement…' : 'Télécharger PNG HD'}
                         </motion.button>
                       </div>
+                    </div>
+                  )}
+
+                  {/* ── LIBRARY PANEL ── */}
+                  {activeTab === 'library' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      {/* Save current poster */}
+                      <div>
+                        <SLabel>Sauvegarder cette affiche</SLabel>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <input
+                            value={libName}
+                            onChange={e => setLibName(e.target.value)}
+                            placeholder={`Affiche ${new Date().toLocaleDateString('fr-FR')}`}
+                            onKeyDown={e => e.key === 'Enter' && saveToLib()}
+                            style={{
+                              flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 12, fontWeight: 500,
+                              border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)',
+                              color: 'var(--sl-t1)', outline: 'none',
+                            }}
+                          />
+                          <button
+                            onClick={saveToLib}
+                            style={{
+                              padding: '9px 16px', borderRadius: 10, fontSize: 12, fontWeight: 800,
+                              backgroundColor: accentColor, color: '#fff', border: 'none', cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            Sauver
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Saved posters list */}
+                      {libEntries.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--sl-t3)', fontSize: 12, lineHeight: 1.6 }}>
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ marginBottom: 8, opacity: 0.4 }}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                          <br />Aucune affiche sauvegardée
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <SLabel>Mes affiches ({libEntries.length}/20)</SLabel>
+                          {libEntries.map(entry => (
+                            <div key={entry.id} style={{
+                              padding: '10px 12px', borderRadius: 12,
+                              backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
+                              display: 'flex', alignItems: 'center', gap: 8,
+                            }}>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.name}</div>
+                                <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>
+                                  {new Date(entry.savedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                <button
+                                  onClick={() => loadFromLibrary(entry)}
+                                  style={{ padding: '5px 10px', borderRadius: 8, fontSize: 10, fontWeight: 700, backgroundColor: `${accentColor}16`, color: accentColor, border: `1px solid ${accentColor}40`, cursor: 'pointer' }}
+                                >
+                                  Charger
+                                </button>
+                                <button
+                                  onClick={() => duplicateInLib(entry.id)}
+                                  title="Dupliquer"
+                                  style={{ padding: '5px 8px', borderRadius: 8, fontSize: 11, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border)', cursor: 'pointer' }}
+                                >
+                                  ⧉
+                                </button>
+                                <button
+                                  onClick={() => removeFromLib(entry.id)}
+                                  title="Supprimer"
+                                  style={{ padding: '5px 8px', borderRadius: 8, fontSize: 11, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 

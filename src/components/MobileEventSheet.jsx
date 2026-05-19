@@ -4,6 +4,8 @@ import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useAttendeeCount } from '../contexts/AttendeeCountContext.jsx';
+import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
+import { useAttendanceContext } from '../contexts/AttendanceContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import SportIcon from './SportIcon.jsx';
@@ -120,12 +122,12 @@ function FollowClubButton({ event }) {
 
 export default function MobileEventSheet({
   event, onClose, onEdit, onDelete, onUpdateEvent,
-  isFavorite, onToggleFavorite,
-  isAttending, onToggleAttend,
 }) {
   const { allSports: SPORTS } = useSports();
   const { share } = useShare();
   const { currentUser, isAdmin } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavoritesContext();
+  const { isAttending, toggle: toggleAttend } = useAttendanceContext();
   const attendeeCount = useAttendeeCount(event.id);
   const [copied, setCopied] = useState(false);
   const [snapPoint, setSnapPoint] = useState('detail');
@@ -137,8 +139,8 @@ export default function MobileEventSheet({
 
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
-  const fav = isFavorite?.(event.id) ?? false;
-  const attending = isAttending?.(event.id) ?? false;
+  const fav = isFavorite(event.id);
+  const attending = isAttending(event.id);
   const isPast = new Date(event.date) < new Date();
   const canEditThis = event.source === 'user' && (!event.creatorId || event.creatorId === currentUser?.id || isAdmin);
   const dateObj = new Date(event.date);
@@ -297,11 +299,9 @@ export default function MobileEventSheet({
               </span>
             )}
           </div>
-          {onToggleFavorite && (
-            <button onClick={() => onToggleFavorite(event.id)} style={{ padding: 8, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: fav ? 'rgba(239,68,68,0.12)' : 'transparent', color: fav ? '#ef4444' : 'var(--sl-t3)' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            </button>
-          )}
+          <button onClick={() => toggleFavorite(event.id)} style={{ padding: 8, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: fav ? 'rgba(239,68,68,0.12)' : 'transparent', color: fav ? '#ef4444' : 'var(--sl-t3)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
         </div>
 
         {/* Title */}
@@ -348,7 +348,7 @@ export default function MobileEventSheet({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => onToggleAttend?.(event.id)}
+            onClick={() => toggleAttend(event.id)}
             style={{
               padding: '12px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
               fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,

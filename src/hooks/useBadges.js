@@ -55,7 +55,7 @@ export const BADGE_ORDER = ['first_step', 'explorer', 'loyal_fan', 'veteran', 'c
 
 // ── Badge computation ──────────────────────────────────────────────────────────
 
-function computeEarned(attending, allEvents) {
+export function computeEarned(attending, allEvents) {
   if (!attending || attending.size === 0) return [];
 
   const attendedIds = [...attending].map(String);
