@@ -47,6 +47,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
       position: 'relative', flexShrink: 0,
       paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       background: 'var(--sl-bg)',
+      display: overlayOpen ? 'none' : undefined,
     }}>
       {/* FAB quick-action popover — hidden entirely when any full-screen overlay is active */}
       <AnimatePresence>

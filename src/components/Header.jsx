@@ -128,7 +128,7 @@ export default function Header({
       </div>
 
       {/* Search */}
-      <div style={{ flex: 1, minWidth: 0, position: 'relative' }} ref={searchRef}>
+      <div style={{ flex: 1, minWidth: 0 }} ref={searchRef}>
         {cityFilter ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{
@@ -213,9 +213,8 @@ export default function Header({
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
               transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
               style={{
-                position: 'absolute', top: 'calc(100% + 8px)',
-                left: 0, right: -110,
-                minWidth: 240,
+                position: 'absolute', top: 'calc(100% + 6px)',
+                left: 12, right: 12,
                 borderRadius: 18,
                 backgroundColor: 'var(--sl-card)',
                 boxShadow: 'var(--sl-shadow-xl)',
