@@ -118,9 +118,16 @@ export default function MapPage({
   );
 
   const visibleEvents = useMemo(() => {
-    if (!mapBounds) return displayEvents;
-    return displayEvents.filter((e) => mapBounds.contains([e.lat, e.lng]));
-  }, [displayEvents, mapBounds]);
+    const inBounds = mapBounds
+      ? displayEvents.filter((e) => mapBounds.contains([e.lat, e.lng]))
+      : displayEvents;
+    // Always include the selected event even if the map hasn't finished flying yet
+    if (selectedEventId && !inBounds.some(e => e.id === selectedEventId)) {
+      const sel = allEvents.find(e => e.id === selectedEventId);
+      if (sel) return [sel, ...inBounds];
+    }
+    return inBounds;
+  }, [displayEvents, mapBounds, selectedEventId, allEvents]);
 
   const pendingScores = useMemo(() => {
     if (!canAddEvent) return 0;

@@ -57,9 +57,14 @@ function AppInner() {
   const [showAnnouncements, setShowAnnouncements] = useState(false);
 
   const addEventWithToast = useCallback(async (data) => {
-    const result = await addEvent(data);
-    toast({ message: 'Événement créé !' });
-    return result;
+    try {
+      const result = await addEvent(data);
+      toast({ message: 'Événement créé !' });
+      return result;
+    } catch (err) {
+      toast({ message: err.message || 'Erreur lors de la création', type: 'error' });
+      throw err;
+    }
   }, [addEvent, toast]);
 
   const bulkAddEvents = useCallback(async (events) => {
