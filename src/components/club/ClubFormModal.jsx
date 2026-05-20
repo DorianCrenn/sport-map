@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import SportIcon from '../SportIcon.jsx';
 import CityAutocomplete from '../CityAutocomplete.jsx';
+import { clubSchema, validate } from '../../lib/schemas.js';
 
 const AGE_CATEGORIES = [
   'U7', 'U7F', 'U9', 'U9F', 'U11', 'U11F', 'U13', 'U13F',
@@ -215,19 +216,21 @@ export default function ClubFormModal({ club, onSave, onClose }) {
   }
 
   // ── Validation ──────────────────────────────────────────────────────────────
-  function validate() {
-    const e = {};
-    if (!form.name.trim())  e.name  = 'Nom requis';
-    if (!form.city.trim())  e.city  = 'Ville requise';
-    else if (!cityValid)    e.city  = 'Sélectionnez une commune valide dans la liste';
-    if (!form.email.trim()) e.email = 'Email requis';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email invalide';
-    setErrors(e);
-    return Object.keys(e).length === 0;
+  function runValidation() {
+    const { ok, errors: zodErrors } = validate(clubSchema, form);
+    const extra = {};
+    if (!ok) setErrors({ ...zodErrors, ...extra });
+    if (ok && !cityValid) {
+      setErrors({ city: 'Sélectionnez une commune valide dans la liste' });
+      return false;
+    }
+    if (!ok) return false;
+    setErrors({});
+    return true;
   }
 
   async function handleSubmit() {
-    if (!validate() || submitting) return;
+    if (!runValidation() || submitting) return;
     setSubmitting(true);
     try {
       await onSave({ ...form });

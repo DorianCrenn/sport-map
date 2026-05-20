@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
+import { announcementSchema, validate } from '../../lib/schemas.js';
 
 const TYPE_OPTIONS = [
   { key: 'urgent', label: 'Urgent',     icon: '🚨', color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
@@ -61,7 +62,11 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
   }
 
   async function handleSend() {
-    if (!message.trim()) { setError('Le message est requis.'); return; }
+    const { ok, errors } = validate(announcementSchema, { type, message });
+    if (!ok) {
+      setError(errors.message ?? errors.type ?? 'Formulaire invalide');
+      return;
+    }
     setSaving(true);
     setError('');
     try {

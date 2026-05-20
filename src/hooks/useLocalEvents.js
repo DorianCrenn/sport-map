@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { sanitizeText } from '../lib/sanitize.js';
 
 // ── DB ↔ App mapping ──────────────────────────────────────────────────────────
 
@@ -33,21 +34,21 @@ function mapFromDB(row) {
 
 function mapToDB(data, userId) {
   return {
-    title:        data.title,
+    title:        sanitizeText(data.title),
     sport:        data.sport,
     date:         data.date,
     lat:          data.lat,
     lng:          data.lng,
-    city:         data.city         ?? '',
-    venue:        data.venue        ?? '',
-    description:  data.description  ?? '',
+    city:         sanitizeText(data.city         ?? ''),
+    venue:        sanitizeText(data.venue        ?? ''),
+    description:  sanitizeText(data.description  ?? ''),
     event_type:   data.eventType    ?? 'friendly',
-    team_name:    data.teamName     ?? '',
+    team_name:    sanitizeText(data.teamName     ?? ''),
     category:     data.category     ?? '',
     level:        data.level        ?? '',
     cup_type:     data.cupType      ?? '',
     home_or_away: data.homeOrAway   ?? 'home',
-    adversaire:   data.adversaire   ?? '',
+    adversaire:   sanitizeText(data.adversaire   ?? ''),
     standings:    data.standings    ?? null,
     score:        data.score        ?? null,
     club_id:      data.clubId       ?? null,

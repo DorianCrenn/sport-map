@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Z } from '../constants/zIndex.js';
+import { eventFormSchema, validate } from '../lib/schemas.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EVENT_TYPES } from '../data/cities.js';
 import { STATIC_CLUBS } from '../data/clubs.js';
@@ -451,10 +452,13 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (submitting) return;
-    if (!form.date) {
-      setSubmitError('La date est obligatoire');
+
+    const { ok, errors } = validate(eventFormSchema, form);
+    if (!ok) {
+      setSubmitError(errors.date ?? errors.sport ?? Object.values(errors)[0] ?? 'Formulaire invalide');
       return;
     }
+
     setSubmitError(null);
     setSubmitting(true);
     try {

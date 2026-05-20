@@ -13,6 +13,7 @@ import {
   useDefaultTemplate,
 } from '../hooks/usePosterDraft.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
+import { sanitizeFilename } from '../lib/sanitize.js';
 
 // ── Sidebar tabs ───────────────────────────────────────────────────────────────
 
@@ -269,7 +270,7 @@ export default function PosterStudio({ event, onClose, club }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `affiche-${(event?.title || 'match').replace(/\s+/g, '-').toLowerCase()}-${format}.png`;
+      a.download = `affiche-${sanitizeFilename(event?.title ?? 'match')}-${format}.png`;
       a.click();
       URL.revokeObjectURL(url);
     } finally {

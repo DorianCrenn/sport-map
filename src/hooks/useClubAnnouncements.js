@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { sanitizeText } from '../lib/sanitize.js';
 
 function mapAnn(row) {
   return {
@@ -52,12 +53,12 @@ export function useClubAnnouncements(clubId) {
       .from('club_announcements')
       .insert({
         club_id:      String(clubId),
-        club_name:    clubName ?? '',
+        club_name:    sanitizeText(clubName ?? ''),
         author_id:    currentUser.id,
-        author_name:  currentUser.name ?? '',
+        author_name:  sanitizeText(currentUser.name ?? ''),
         type,
-        title:        title || null,
-        message,
+        title:        title ? sanitizeText(title) : null,
+        message:      sanitizeText(message),
         target_teams: targetTeams ?? [],
       })
       .select()
