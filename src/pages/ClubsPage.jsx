@@ -16,10 +16,10 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
   const { userClubs, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
   const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub } = useAuth();
-  const { leaderboard } = useClubLeaderboard({ limit: 5, sportFilter });
 
   const [search, setSearch]               = useState('');
   const [sportFilter, setSportFilter]     = useState(null);
+  const { leaderboard } = useClubLeaderboard({ limit: 5, sportFilter });
   const [showAllSports, setShowAllSports]       = useState(false);
   const [selectedClub, setSelectedClub]         = useState(null);
   const [leaderboardOpen, setLeaderboardOpen]   = useState(false);
