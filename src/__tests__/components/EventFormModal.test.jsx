@@ -1,0 +1,281 @@
+/**
+ * Tests for EventFormModal — validation, submit, modes, recurrence, keyboard
+ */
+import React from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+// ── Mocks ─────────────────────────────────────────────────────────────────────
+
+vi.mock('framer-motion', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    AnimatePresence: ({ children }) => <>{children}</>,
+    motion: {
+      ...actual.motion,
+      div: React.forwardRef(({ children, style, className, onClick, role, 'aria-modal': ariaModal, 'aria-labelledby': ariaLabelledBy }, ref) =>
+        <div ref={ref} style={style} className={className} onClick={onClick} role={role} aria-modal={ariaModal} aria-labelledby={ariaLabelledBy}>{children}</div>
+      ),
+    },
+  };
+});
+
+vi.mock('../../constants/zIndex.js', () => ({ Z: { formModal: 100 } }));
+
+vi.mock('../../data/cities.js', () => ({
+  EVENT_TYPES: [
+    { value: 'championship', label: 'Championnat', icon: '🏆', color: '#3b82f6' },
+    { value: 'cup',          label: 'Coupe',        icon: '🥈', color: '#f97316' },
+    { value: 'friendly',     label: 'Amical',        icon: '⚽', color: '#22C55E' },
+  ],
+}));
+
+vi.mock('../../data/clubs.js', () => ({ STATIC_CLUBS: [] }));
+
+vi.mock('../../contexts/AuthContext.jsx', () => ({
+  useAuth: vi.fn(() => ({ currentUser: { id: 'u1', name: 'Test' }, isClubAdmin: false })),
+}));
+
+vi.mock('../../hooks/useSports.js', () => ({
+  useSports: vi.fn(() => ({
+    allSports: {
+      Football:   { label: 'Football',   isArchived: false },
+      Handball:   { label: 'Handball',   isArchived: false },
+      Basketball: { label: 'Basketball', isArchived: false },
+    },
+  })),
+}));
+
+vi.mock('../../hooks/useClubs.js', () => ({
+  useClubs: vi.fn(() => ({ userClubs: [] })),
+}));
+
+vi.mock('../../hooks/useFocusTrap.js', () => ({
+  useFocusTrap: vi.fn(),
+}));
+
+vi.mock('../../components/CityAutocomplete.jsx', () => ({
+  default: ({ value, onChange, onSelect, placeholder, inputStyle }) => (
+    <input
+      data-testid="city-autocomplete"
+      placeholder={placeholder}
+      value={value}
+      onChange={e => { onChange(e.target.value); onSelect({ nom: e.target.value, lat: 48.39, lng: -4.48 }); }}
+      style={inputStyle}
+    />
+  ),
+}));
+
+vi.mock('../../components/VenueAutocomplete.jsx', () => ({
+  default: ({ value, onChange, placeholder, style }) => (
+    <input
+      data-testid="venue-autocomplete"
+      placeholder={placeholder}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      style={style}
+    />
+  ),
+}));
+
+vi.mock('../../components/SportIcon.jsx', () => ({
+  default: () => null,
+}));
+
+import EventFormModal from '../../components/EventFormModal.jsx';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const defaultProps = {
+  event:       { _isNew: true },
+  onSave:      vi.fn(),
+  onClose:     vi.fn(),
+  onBulkSave:  vi.fn(),
+};
+
+function renderModal(props = {}) {
+  return render(<EventFormModal {...defaultProps} {...props} />);
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+// ── Heading variants ──────────────────────────────────────────────────────────
+
+describe('EventFormModal — heading selon le mode', () => {
+  it('affiche "Nouvel événement" pour un nouvel événement', () => {
+    renderModal({ event: { _isNew: true } });
+    expect(screen.getByText('Nouvel événement')).toBeInTheDocument();
+  });
+
+  it('affiche "Dupliquer l\'événement" en mode duplication', () => {
+    renderModal({ event: { _isNew: true, _isDuplicate: true, title: 'Match', sport: 'Football' } });
+    expect(screen.getByText("Dupliquer l'événement")).toBeInTheDocument();
+  });
+
+  it('affiche "Modifier l\'événement" en mode édition', () => {
+    renderModal({ event: {
+      id: 'evt-1', title: 'Match', sport: 'Football',
+      date: '2026-06-01T15:00:00', city: 'Brest', lat: 48.39, lng: -4.48,
+    }});
+    expect(screen.getByText("Modifier l'événement")).toBeInTheDocument();
+  });
+});
+
+// ── Fermeture ──────────────────────────────────────────────────────────────────
+
+describe('EventFormModal — fermeture', () => {
+  it('appelle onClose quand on appuie sur Escape', () => {
+    renderModal();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('appelle onClose quand on clique sur le bouton Fermer', async () => {
+    renderModal();
+    const closeBtn = screen.getByRole('button', { name: /fermer/i });
+    await userEvent.click(closeBtn);
+    expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('appelle onClose quand on clique sur "Annuler"', async () => {
+    renderModal();
+    const cancelBtn = screen.getByRole('button', { name: /annuler/i });
+    await userEvent.click(cancelBtn);
+    expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── Validation ─────────────────────────────────────────────────────────────────
+
+describe('EventFormModal — validation Zod', () => {
+  it('affiche une erreur et ne soumet pas si la date est vide', async () => {
+    const onSave = vi.fn();
+    renderModal({ onSave });
+
+    // Submit without filling date
+    const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/date/i)).toBeInTheDocument();
+    });
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('appelle onSave avec les données correctes pour un formulaire valide', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    renderModal({ onSave });
+
+    const dateInputEl = document.querySelector('input[type="date"]');
+    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+
+    const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+
+    const arg = onSave.mock.calls[0][0];
+    expect(arg).toMatchObject({
+      sport: 'Football',
+      date: '2026-06-15T15:00:00',
+    });
+  });
+
+  it('n\'appelle pas onSave deux fois si le formulaire est soumis deux fois rapidement', async () => {
+    const onSave = vi.fn(() => new Promise(r => setTimeout(r, 500)));
+    renderModal({ onSave });
+
+    const dateInputEl = document.querySelector('input[type="date"]');
+    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+
+    const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
+
+    // Click twice quickly
+    await userEvent.click(submitBtn);
+    await userEvent.click(submitBtn);
+
+    // Should only call once despite two clicks
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── Récurrence ─────────────────────────────────────────────────────────────────
+
+describe('EventFormModal — récurrence', () => {
+  it('appelle onBulkSave avec plusieurs occurrences quand récurrence activée', async () => {
+    const onBulkSave = vi.fn().mockResolvedValue(undefined);
+    renderModal({ onBulkSave });
+
+    // Fill date
+    const dateInputEl = document.querySelector('input[type="date"]');
+    fireEvent.change(dateInputEl, { target: { value: '2026-09-01' } });
+
+    // Enable recurrence
+    const recurrenceBtn = screen.getByRole('button', { name: /récurrence/i });
+    await userEvent.click(recurrenceBtn);
+
+    // Set end date (4 weeks later)
+    const allDateInputs = document.querySelectorAll('input[type="date"]');
+    const untilInput = allDateInputs[allDateInputs.length - 1];
+    fireEvent.change(untilInput, { target: { value: '2026-09-22' } });
+
+    // Submit
+    const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(onBulkSave).toHaveBeenCalledTimes(1);
+    });
+
+    const events = onBulkSave.mock.calls[0][0];
+    expect(Array.isArray(events)).toBe(true);
+    expect(events.length).toBeGreaterThanOrEqual(4);
+    // All events should share the same seriesId
+    const seriesIds = new Set(events.map(e => e.seriesId));
+    expect(seriesIds.size).toBe(1);
+  });
+
+  it('compte le bon nombre d\'occurrences dans l\'aperçu', async () => {
+    renderModal();
+
+    const dateInputEl = document.querySelector('input[type="date"]');
+    fireEvent.change(dateInputEl, { target: { value: '2026-09-01' } });
+
+    const recurrenceBtn = screen.getByRole('button', { name: /récurrence/i });
+    await userEvent.click(recurrenceBtn);
+
+    const allDateInputs = document.querySelectorAll('input[type="date"]');
+    const untilInput = allDateInputs[allDateInputs.length - 1];
+    fireEvent.change(untilInput, { target: { value: '2026-09-22' } });
+
+    // Should show "4 occurrences seront créées"
+    await waitFor(() => {
+      expect(screen.getByText(/4 occurrence/i)).toBeInTheDocument();
+    });
+  });
+});
+
+// ── Erreur réseau ──────────────────────────────────────────────────────────────
+
+describe('EventFormModal — erreur lors de la sauvegarde', () => {
+  it('affiche le message d\'erreur si onSave lance une exception', async () => {
+    const onSave = vi.fn().mockRejectedValue(new Error('Connexion refusée'));
+    renderModal({ onSave });
+
+    const dateInputEl = document.querySelector('input[type="date"]');
+    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+
+    const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/connexion refusée/i)).toBeInTheDocument();
+    });
+  });
+});
