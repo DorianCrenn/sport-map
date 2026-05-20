@@ -148,7 +148,7 @@ export default function MapPage({
       setSportFilter(null);
       setDateRangeFilter(null);
       setNearbyFilter(false);
-      setUpcomingOnly(true);
+      setUpcomingOnly(false);
       setShowAllSports(true);
       if (evt?.lat && evt?.lng) {
         setFlyTarget({ coords: { lat: evt.lat, lng: evt.lng }, zoom: 14 });
@@ -161,11 +161,11 @@ export default function MapPage({
   const handleSave = useCallback(async (formData) => {
     if (modalEvent?._isNew) {
       const created = await onAddEvent(formData);
-      // Clear filters that could hide the newly created event
+      // Clear all filters so the just-created event is always visible
       setSportFilter(null);
       setDateRangeFilter(null);
       setNearbyFilter(false);
-      setUpcomingOnly(true);
+      setUpcomingOnly(false); // don't filter by date — event may be today at a past time
       setShowAllSports(true);
       // Fly to the event location then select it
       if (created.lat && created.lng) {
