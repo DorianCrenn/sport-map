@@ -133,6 +133,8 @@ export default function MapPage({
   }, [allEvents, canAddEvent]);
 
   const handleBoundsChange = useCallback((bounds) => setMapBounds(bounds), []);
+  const handleMarkerClick  = useCallback((id) => setSelectedEventId(prev => prev === id ? null : id), []);
+  const handleMapClick     = useCallback(() => setSelectedEventId(null), []);
 
   useEffect(() => {
     if (selectedEventId !== null && !filteredEvents.find((e) => e.id === selectedEventId)) {
@@ -249,8 +251,8 @@ export default function MapPage({
         <MapView
           events={displayEvents}
           selectedEventId={selectedEventId}
-          onMarkerClick={(id) => setSelectedEventId((prev) => (prev === id ? null : id))}
-          onMapClick={() => setSelectedEventId(null)}
+          onMarkerClick={handleMarkerClick}
+          onMapClick={handleMapClick}
           activeDepartment={activeDepartment}
           userCoords={userCoords}
           flyTarget={flyTarget}
@@ -263,7 +265,7 @@ export default function MapPage({
           <EventSidebar
             events={visibleEvents}
             selectedEventId={selectedEventId}
-            onEventSelect={(id) => setSelectedEventId((prev) => (prev === id ? null : id))}
+            onEventSelect={handleMarkerClick}
             loading={eventsLoading}
             onGeolocate={handleRecentrer}
             geoLoading={geoLoading}
