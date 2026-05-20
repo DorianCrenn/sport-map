@@ -21,6 +21,8 @@ function mapProfile(authUser, dbProfile) {
     digestOptIn:    dbProfile?.digest_opt_in ?? false,
     authProvider:   dbProfile?.auth_provider ?? meta.authProvider ?? null,
     badges:         dbProfile?.badges ?? [],
+    plan:           dbProfile?.plan ?? 'free',
+    xp:             dbProfile?.xp ?? 0,
     createdAt:      authUser.created_at,
   };
 }
@@ -222,7 +224,8 @@ export function AuthProvider({ children }) {
       onboardingDone: 'onboarding_done',
       digestOptIn:    'digest_opt_in',
       badges:         'badges',
-      // role et clubId intentionnellement absents — modifiables uniquement via AdminPage
+      xp:             'xp',
+      // role, plan et clubId intentionnellement absents — modifiables uniquement côté serveur
     };
     const dbPatch = {};
     for (const [key, col] of Object.entries(map)) {

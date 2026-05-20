@@ -9,9 +9,11 @@ import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import { STATIC_CLUBS } from '../data/clubs.js';
-import { BADGE_DEFS, BADGE_ORDER } from '../hooks/useBadges.js';
+import { BADGE_DEFS, BADGE_ORDER, LEVELS, getLevel } from '../hooks/useBadges.js';
+import { usePlan } from '../hooks/usePlan.js';
 import BadgeUnlockModal from '../components/BadgeUnlockModal.jsx';
 import ClubLeaderboard from '../components/ClubLeaderboard.jsx';
+import UserLeaderboard from '../components/UserLeaderboard.jsx';
 
 // ── Theme toggle switch ────────────────────────────────────────────────────────
 function ThemeToggle() {
@@ -96,6 +98,7 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
   const { favorites } = useFavoritesContext();
   const { allSports } = useSports();
   const { userClubs } = useClubs();
+  const { planId, plan: planInfo, isUpgradeable: canUpgrade } = usePlan();
   const allClubs = [...userClubs, ...STATIC_CLUBS];
   const followedClubIds = followedClubs;
   const [editingSports, setEditingSports] = useState(false);
@@ -104,6 +107,9 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
   const favCount = favorites?.size ?? 0;
   const eventCount = userEvents?.length ?? 0;
   const favSports = currentUser?.favoriteSports ?? [];
+
+  const xpTotal = (currentUser?.xp ?? 0);
+  const levelInfo = getLevel(xpTotal);
 
   if (!currentUser) {
     return (
@@ -219,6 +225,24 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
                 {roleBadge.label}
               </span>
 
+              {/* Plan badge */}
+              {planId !== 'free' ? (
+                <span style={{
+                  fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                  backgroundColor: `${planInfo.color}20`, color: planInfo.color, flexShrink: 0,
+                }}>
+                  {planInfo.badge} {planInfo.name}
+                </span>
+              ) : canUpgrade && (
+                <span style={{
+                  fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 999,
+                  border: '1px dashed rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.35)', flexShrink: 0,
+                  cursor: 'pointer',
+                }}>
+                  Passer Pro
+                </span>
+              )}
+
               {/* Compact badge strip */}
               <button
                 onClick={() => setPreviewBadges(BADGE_ORDER)}
@@ -280,8 +304,39 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
           ))}
         </div>
 
+        {/* XP / Level card */}
+        <div style={{ borderRadius: 16, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(139,92,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>⚡</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Niveau {levelInfo.level} — {levelInfo.name}</div>
+                <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{xpTotal} XP{levelInfo.nextLevel ? ` · ${levelInfo.nextLevel.minXp - xpTotal} XP jusqu'au niv. ${levelInfo.level + 1}` : ' · Niveau max !'}</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#8b5cf6', fontVariantNumeric: 'tabular-nums' }}>{xpTotal}</div>
+          </div>
+          <div style={{ height: 6, borderRadius: 3, backgroundColor: 'var(--sl-border)', overflow: 'hidden' }}>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${levelInfo.progress * 100}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              style={{ height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, #8b5cf6, #a78bfa)' }}
+            />
+          </div>
+          {levelInfo.nextLevel && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+              <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>{levelInfo.minXp} XP</span>
+              <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>{levelInfo.nextLevel.minXp} XP</span>
+            </div>
+          )}
+        </div>
+
         {/* Theme toggle */}
         <ThemeToggle />
+
+        {/* Classement XP utilisateurs */}
+        <UserLeaderboard />
 
         {/* Classement clubs actifs */}
         <ClubLeaderboard />

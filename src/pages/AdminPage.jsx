@@ -234,10 +234,10 @@ export default function AdminPage() {
               onClick={() => setTab(t.id)}
               style={{
                 padding: '10px 16px', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
-                borderBottom: `2px solid ${tab === t.id ? '#22C55E' : 'transparent'}`,
-                color: tab === t.id ? '#22C55E' : 'var(--sl-t3)',
+                borderBottom: `2px solid ${tab === t.id ? 'var(--sl-green)' : 'transparent'}`,
+                color: tab === t.id ? 'var(--sl-green)' : 'var(--sl-t3)',
                 backgroundColor: 'transparent', border: 'none',
-                borderBottom: `2px solid ${tab === t.id ? '#22C55E' : 'transparent'}`,
+                borderBottom: `2px solid ${tab === t.id ? 'var(--sl-green)' : 'transparent'}`,
                 cursor: 'pointer', flexShrink: 0, transition: 'color 0.15s',
               }}
             >

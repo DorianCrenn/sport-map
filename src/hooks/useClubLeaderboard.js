@@ -46,12 +46,14 @@ export function useClubLeaderboard({ limit = 10, sportFilter = null } = {}) {
         if (cancelled) return;
         if (sorted.length === 0) { setLeaderboard([]); return; }
 
-        // 2. Récupérer les détails des clubs
+        // 2. Récupérer les détails des clubs (UUID uniquement — les IDs statiques comme "usc-29" ne sont pas en base)
+        const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         const topIds = sorted.map(([id]) => id);
-        const { data: clubs, error: clErr } = await supabase
-          .from('clubs')
-          .select('id, name, sport, city, logo_url')
-          .in('id', topIds);
+        const uuidIds = topIds.filter(id => UUID_RE.test(id));
+
+        const { data: clubs, error: clErr } = uuidIds.length > 0
+          ? await supabase.from('clubs').select('id, name, sport, city, logo_url').in('id', uuidIds)
+          : { data: [], error: null };
 
         if (clErr) throw new Error(clErr.message);
         if (cancelled) return;

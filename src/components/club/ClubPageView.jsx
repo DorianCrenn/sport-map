@@ -1467,7 +1467,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       </AnimatePresence>
 
       {/* Floating announcement FAB */}
-      {canEdit && !isEditing && (
+      {canEdit && !isEditing && !showEditInfo && !showAnnouncement && !showBrandKit && !showDashboard && (
         <motion.button
           initial={{ scale: 0.8, opacity: 0, y: 8 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -1494,7 +1494,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       )}
 
       {/* Floating edit FAB */}
-      {canEdit && (
+      {canEdit && !showEditInfo && !showAnnouncement && !showBrandKit && !showDashboard && (
         <motion.button
           key={isEditing ? 'done' : 'edit'}
           initial={{ scale: 0.8, opacity: 0, y: 8 }}

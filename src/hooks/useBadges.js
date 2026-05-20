@@ -12,6 +12,7 @@ export const BADGE_DEFS = {
     color: '#3b82f6',
     glow: 'rgba(59,130,246,0.45)',
     threshold: '1 participation',
+    xp: 50,
   },
   explorer: {
     id: 'explorer',
@@ -21,6 +22,7 @@ export const BADGE_DEFS = {
     color: '#10b981',
     glow: 'rgba(16,185,129,0.45)',
     threshold: '3 sports',
+    xp: 100,
   },
   loyal_fan: {
     id: 'loyal_fan',
@@ -30,6 +32,7 @@ export const BADGE_DEFS = {
     color: '#ef4444',
     glow: 'rgba(239,68,68,0.45)',
     threshold: '5 fois dans un club',
+    xp: 150,
   },
   streak_3: {
     id: 'streak_3',
@@ -39,6 +42,7 @@ export const BADGE_DEFS = {
     color: '#f97316',
     glow: 'rgba(249,115,22,0.45)',
     threshold: '3 matchs de suite',
+    xp: 200,
   },
   streak_5: {
     id: 'streak_5',
@@ -48,6 +52,7 @@ export const BADGE_DEFS = {
     color: '#eab308',
     glow: 'rgba(234,179,8,0.45)',
     threshold: '5 matchs de suite',
+    xp: 350,
   },
   veteran: {
     id: 'veteran',
@@ -57,6 +62,7 @@ export const BADGE_DEFS = {
     color: '#f59e0b',
     glow: 'rgba(245,158,11,0.45)',
     threshold: '10 participations',
+    xp: 500,
   },
   champion: {
     id: 'champion',
@@ -66,8 +72,41 @@ export const BADGE_DEFS = {
     color: '#8b5cf6',
     glow: 'rgba(139,92,246,0.45)',
     threshold: '25 participations',
+    xp: 1000,
   },
 };
+
+// ── XP / Levels ────────────────────────────────────────────────────────────────
+
+export const LEVELS = [
+  { level: 1, name: 'Rookie',     minXp: 0    },
+  { level: 2, name: 'Amateur',    minXp: 100  },
+  { level: 3, name: 'Confirmé',   minXp: 300  },
+  { level: 4, name: 'Expérimenté',minXp: 600  },
+  { level: 5, name: 'Expert',     minXp: 1000 },
+  { level: 6, name: 'Élite',      minXp: 1500 },
+  { level: 7, name: 'Légende',    minXp: 2500 },
+];
+
+export function computeXP(earned, attendingSize = 0) {
+  const badgeXP = earned.reduce((sum, id) => sum + (BADGE_DEFS[id]?.xp ?? 0), 0);
+  const participationXP = Math.min(attendingSize * 10, 500);
+  return badgeXP + participationXP;
+}
+
+export function getLevel(xp) {
+  let current = LEVELS[0];
+  for (const tier of LEVELS) {
+    if (xp >= tier.minXp) current = tier;
+    else break;
+  }
+  const nextIdx = LEVELS.indexOf(current) + 1;
+  const next = LEVELS[nextIdx] ?? null;
+  const progress = next
+    ? Math.min(1, (xp - current.minXp) / (next.minXp - current.minXp))
+    : 1;
+  return { ...current, xp, nextLevel: next, progress };
+}
 
 export const BADGE_ORDER = ['first_step', 'explorer', 'loyal_fan', 'streak_3', 'streak_5', 'veteran', 'champion'];
 
@@ -149,6 +188,11 @@ export function useBadges({ attending, allEvents }) {
     [attending, allEvents]
   );
 
+  const levelInfo = useMemo(
+    () => getLevel(computeXP(earned, attending?.size ?? 0)),
+    [earned, attending]
+  );
+
   // Stable string for deps comparison (avoids array reference churn)
   const storedKey = (currentUser?.badges ?? []).join(',');
 
@@ -162,8 +206,8 @@ export function useBadges({ attending, allEvents }) {
   async function markSeen() {
     if (!currentUser) return;
     // Persist all earned badges to Supabase — cross-device consistent
-    await updateProfile({ badges: earned });
+    await updateProfile({ badges: earned, xp: levelInfo.xp });
   }
 
-  return { earned, newBadges, markSeen };
+  return { earned, newBadges, markSeen, ...levelInfo };
 }
