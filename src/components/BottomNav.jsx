@@ -66,8 +66,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
               style={{
                 position: 'fixed',
                 bottom: 'calc(env(safe-area-inset-bottom, 0px) + 82px)',
-                left: '50%',
-                transform: 'translateX(-50%)',
+                left: 'calc(50% - 124px)',
                 width: 248, zIndex: 1002,
                 backgroundColor: 'var(--sl-card)', borderRadius: 20,
                 border: '1px solid var(--sl-border-s)',
