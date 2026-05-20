@@ -889,12 +889,12 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   }
 
   function handleTeamEventSave(formData) {
-    if (onAddEvent) onAddEvent(formData);
+    if (onAddEvent) onAddEvent({ ...formData, clubId: club.id });
     setTeamEventModal(undefined);
   }
 
   async function handleBulkTeamEventSave(events) {
-    if (onAddEvent) for (const ev of events) await onAddEvent(ev);
+    if (onAddEvent) for (const ev of events) await onAddEvent({ ...ev, clubId: club.id });
     setTeamEventModal(undefined);
   }
 
