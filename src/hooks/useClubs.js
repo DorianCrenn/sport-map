@@ -55,10 +55,11 @@ export function useClubs() {
     return () => { cancelled = true; };
   }, []);
 
-  // ── Realtime (fixed channel name — no Math.random leak) ──────────────────
+  // ── Realtime ──────────────────────────────────────────────────────────────
   useEffect(() => {
+    const key = Math.random().toString(36).slice(2, 8);
     const channel = supabase
-      .channel('clubs-realtime')
+      .channel(`clubs-realtime-${key}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clubs' }, ({ new: row }) => {
         setUserClubs(prev => prev.some(c => c.id === row.id) ? prev : [mapFromDB(row), ...prev]);
       })

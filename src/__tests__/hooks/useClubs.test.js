@@ -201,17 +201,23 @@ describe('deleteClub — rollback si erreur', () => {
   });
 });
 
-// ── Realtime — canal fixe ─────────────────────────────────────────────────────
+// ── Realtime — canal unique par instance ──────────────────────────────────────
 
-describe('Realtime — canal fixe', () => {
-  it('utilise le canal fixe clubs-realtime (pas Math.random)', async () => {
+describe('Realtime — canal unique par instance', () => {
+  it('utilise un canal clubs-realtime-{key} unique à chaque montage', async () => {
     mockFrom.mockReturnValue(q({ data: [], error: null }));
     renderHook(() => useClubs());
     await waitFor(() => expect(mockChannel).toHaveBeenCalled());
-    expect(mockChannel).toHaveBeenCalledWith('clubs-realtime');
-    // Verifier qu il n y a pas de suffixe aleatoire
     const calledWith = mockChannel.mock.calls[0][0];
-    expect(calledWith).toBe('clubs-realtime');
-    expect(calledWith).not.toMatch(/clubs-realtime-.+/);
+    expect(calledWith).toMatch(/^clubs-realtime-[a-z0-9]{6}$/);
+  });
+
+  it('deux instances utilisent des canaux différents', async () => {
+    mockFrom.mockReturnValue(q({ data: [], error: null }));
+    renderHook(() => useClubs());
+    renderHook(() => useClubs());
+    await waitFor(() => expect(mockChannel).toHaveBeenCalledTimes(2));
+    const [first, second] = mockChannel.mock.calls.map(c => c[0]);
+    expect(first).not.toBe(second);
   });
 });

@@ -213,7 +213,9 @@ export default function Header({
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
               transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
               style={{
-                position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0,
+                position: 'absolute', top: 'calc(100% + 8px)',
+                left: '50%', transform: 'translateX(-50%)',
+                width: '100%', minWidth: 300,
                 borderRadius: 18,
                 backgroundColor: 'var(--sl-card)',
                 boxShadow: 'var(--sl-shadow-xl)',
