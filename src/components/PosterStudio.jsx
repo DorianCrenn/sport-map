@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo, useReducer } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 import { useSports } from '../hooks/useSports.js';
@@ -39,6 +39,13 @@ const SIDEBAR_TABS = [
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
   },
 ];
+
+// ── Poster state reducer (batches draft restore + library load into 1 render) ──
+
+function posterReducer(state, action) {
+  if (action.type === 'PATCH') return { ...state, ...action.payload };
+  return { ...state, [action.type]: action.value };
+}
 
 // ── Reusable UI helpers ────────────────────────────────────────────────────────
 
@@ -107,31 +114,23 @@ export default function PosterStudio({ event, onClose, club }) {
   const favTplHook = useFavoriteTemplates();
   const defTplHook = useDefaultTemplate(club?.id);
 
-  // ── State ──
-  const [format, setFormat] = useState('story');
-  const [templateId, setTemplateId] = useState('simple');
+  // ── Poster design state — useReducer so draft restore + library load = 1 re-render ──
+  const [poster, dispatch] = useReducer(posterReducer, {
+    format: 'story', templateId: 'simple',
+    accentColor: initialAccent,
+    bgSrc: '', bgUrl: '', bgErr: false, bgMode: 'color',
+    homeName: initialFields.homeName, awayName: initialFields.awayName,
+    homeLogo: initialFields.homeLogo, awayLogo: initialFields.awayLogo,
+    championship: initialFields.championship, tagline: initialFields.tagline,
+    sponsorSrc: '', transforms: {},
+  });
+  const { format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode,
+          homeName, awayName, homeLogo, awayLogo, championship, tagline,
+          sponsorSrc, transforms } = poster;
+  const set = (key, value) => dispatch({ type: key, value });
+
+  // ── UI state (ephemeral, stays as individual useState) ──
   const [activeTab, setActiveTab] = useState('template');
-
-  // Visual
-  const [accentColor, setAccentColor] = useState(initialAccent);
-  const [bgSrc, setBgSrc] = useState('');
-  const [bgUrl, setBgUrl] = useState('');
-  const [bgErr, setBgErr] = useState(false);
-  const [bgMode, setBgMode] = useState('color');
-
-  // Teams — seeded from variable engine
-  const [homeName, setHomeName] = useState(initialFields.homeName);
-  const [awayName, setAwayName] = useState(initialFields.awayName);
-  const [homeLogo, setHomeLogo] = useState(initialFields.homeLogo);
-  const [awayLogo, setAwayLogo] = useState(initialFields.awayLogo);
-  const [championship, setChampionship] = useState(initialFields.championship);
-  const [tagline, setTagline] = useState(initialFields.tagline);
-
-  // Pro
-  const [sponsorSrc, setSponsorSrc] = useState('');
-
-  // Visual editor
-  const [transforms, setTransforms] = useState({});
   const [editorOpen, setEditorOpen] = useState(false);
   const [previewFull, setPreviewFull] = useState(false);
 
@@ -157,35 +156,21 @@ export default function PosterStudio({ event, onClose, club }) {
     favTplHook.loadFromDB();
     const draft = draftHook.loadDraft();
     if (draft?.state) {
-      const s = draft.state;
-      if (s.format) setFormat(s.format);
-      if (s.templateId) setTemplateId(s.templateId);
-      if (s.accentColor) setAccentColor(s.accentColor);
-      if (s.bgSrc !== undefined) setBgSrc(s.bgSrc);
-      if (s.bgMode) setBgMode(s.bgMode);
-      if (s.homeName !== undefined) setHomeName(s.homeName);
-      if (s.awayName !== undefined) setAwayName(s.awayName);
-      if (s.homeLogo !== undefined) setHomeLogo(s.homeLogo);
-      if (s.awayLogo !== undefined) setAwayLogo(s.awayLogo);
-      if (s.championship !== undefined) setChampionship(s.championship);
-      if (s.tagline !== undefined) setTagline(s.tagline);
-      if (s.sponsorSrc !== undefined) setSponsorSrc(s.sponsorSrc);
-      if (s.transforms) setTransforms(s.transforms);
+      dispatch({ type: 'PATCH', payload: draft.state });
       setRestoredDraft(true);
       setTimeout(() => setRestoredDraft(false), 3000);
     } else {
       const defaultTpl = defTplHook.get();
-      if (defaultTpl) setTemplateId(defaultTpl);
+      if (defaultTpl) set('templateId', defaultTpl);
     }
     setTimeout(() => { skipAutoSave.current = false; }, 150);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auto-save: 2s debounce on any state change ──
-  const draftState = useMemo(() => ({
-    format, templateId, accentColor, bgSrc, bgMode,
-    homeName, awayName, homeLogo, awayLogo,
-    championship, tagline, sponsorSrc, transforms,
-  }), [format, templateId, accentColor, bgSrc, bgMode, homeName, awayName, homeLogo, awayLogo, championship, tagline, sponsorSrc, transforms]);
+  const draftState = useMemo(() => {
+    const { bgUrl: _, bgErr: __, ...rest } = poster;
+    return rest;
+  }, [poster]);
 
   useEffect(() => {
     if (skipAutoSave.current) return;
@@ -206,20 +191,7 @@ export default function PosterStudio({ event, onClose, club }) {
   function duplicateInLib(id) { libHook.duplicate(id); }
 
   function loadFromLibrary(entry) {
-    const s = entry.state;
-    if (s.format) setFormat(s.format);
-    if (s.templateId) setTemplateId(s.templateId);
-    if (s.accentColor) setAccentColor(s.accentColor);
-    if (s.bgSrc !== undefined) setBgSrc(s.bgSrc);
-    if (s.bgMode) setBgMode(s.bgMode);
-    if (s.homeName !== undefined) setHomeName(s.homeName);
-    if (s.awayName !== undefined) setAwayName(s.awayName);
-    if (s.homeLogo !== undefined) setHomeLogo(s.homeLogo);
-    if (s.awayLogo !== undefined) setAwayLogo(s.awayLogo);
-    if (s.championship !== undefined) setChampionship(s.championship);
-    if (s.tagline !== undefined) setTagline(s.tagline);
-    if (s.sponsorSrc !== undefined) setSponsorSrc(s.sponsorSrc);
-    if (s.transforms) setTransforms(s.transforms);
+    dispatch({ type: 'PATCH', payload: entry.state });
     setActiveTab('template');
   }
 
@@ -339,9 +311,7 @@ export default function PosterStudio({ event, onClose, club }) {
   }
 
   function applyBgUrl() {
-    const u = bgUrl.trim();
-    setBgSrc(u);
-    setBgErr(false);
+    dispatch({ type: 'PATCH', payload: { bgSrc: bgUrl.trim(), bgErr: false } });
   }
 
   const ACCENT_PALETTE = [
@@ -424,7 +394,7 @@ export default function PosterStudio({ event, onClose, club }) {
                 data={posterData}
                 format={format}
                 transforms={transforms}
-                onChange={(blockId, patch) => setTransforms(prev => ({ ...prev, [blockId]: patch }))}
+                onChange={(blockId, patch) => dispatch({ type: 'transforms', value: { ...transforms, [blockId]: patch } })}
                 onClose={() => setEditorOpen(false)}
               />
             </motion.div>
@@ -483,7 +453,7 @@ export default function PosterStudio({ event, onClose, club }) {
               {/* Format + active template row */}
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 {(['story', 'post']).map(f => (
-                  <button key={f} onClick={() => setFormat(f)}
+                  <button key={f} onClick={() => set('format', f)}
                     style={{ padding: '5px 11px', borderRadius: 9, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: `1.5px solid ${f === format ? accentColor : 'var(--sl-border-s)'}`, backgroundColor: f === format ? `${accentColor}16` : 'var(--sl-surface)', color: f === format ? accentColor : 'var(--sl-t2)', transition: 'all 0.14s' }}>
                     {f === 'story' ? 'Story 9:16' : 'Post 4:5'}
                   </button>
@@ -719,7 +689,7 @@ export default function PosterStudio({ event, onClose, club }) {
                             <button key={t.id}
                               onClick={() => {
                                 if (locked) return;
-                                setTemplateId(t.id);
+                                set('templateId', t.id);
                               }}
                               style={{
                                 padding: '14px 12px', borderRadius: 14, cursor: locked ? 'default' : 'pointer', textAlign: 'left',
@@ -792,7 +762,7 @@ export default function PosterStudio({ event, onClose, club }) {
                   {/* ── TEAMS PANEL ── */}
                   {activeTab === 'teams' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <TextInput label="Équipe domicile" value={homeName} onChange={setHomeName} placeholder={`Extrait du titre automatiquement`} />
+                      <TextInput label="Équipe domicile" value={homeName} onChange={v => set('homeName', v)} placeholder={`Extrait du titre automatiquement`} />
                       <div style={{ marginBottom: 10 }}>
                         <SLabel>Logo domicile</SLabel>
                         <div style={{ display: 'flex', gap: 8 }}>
@@ -800,14 +770,14 @@ export default function PosterStudio({ event, onClose, club }) {
                             style={{ flex: 1, padding: '9px 12px', borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: 'pointer', backgroundColor: homeLogo ? `${accentColor}14` : 'var(--sl-surface)', border: homeLogo ? `1.5px solid ${accentColor}` : '1.5px dashed var(--sl-border-s)', color: homeLogo ? accentColor : 'var(--sl-t2)' }}>
                             {homeLogo ? '✓ Logo chargé' : '+ Uploader le logo'}
                           </button>
-                          {homeLogo && <button onClick={() => setHomeLogo('')} style={{ padding: '9px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
-                          <input ref={homeLogoRef} type="file" accept="image/*" onChange={e => readFile(e, setHomeLogo)} style={{ display: 'none' }} />
+                          {homeLogo && <button onClick={() => set('homeLogo', '')} style={{ padding: '9px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
+                          <input ref={homeLogoRef} type="file" accept="image/*" onChange={e => readFile(e, v => set('homeLogo', v))} style={{ display: 'none' }} />
                         </div>
                       </div>
 
                       <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0 10px' }} />
 
-                      <TextInput label="Équipe extérieure" value={awayName} onChange={setAwayName} placeholder="Extrait du titre automatiquement" />
+                      <TextInput label="Équipe extérieure" value={awayName} onChange={v => set('awayName', v)} placeholder="Extrait du titre automatiquement" />
                       <div style={{ marginBottom: 10 }}>
                         <SLabel>Logo extérieur</SLabel>
                         <div style={{ display: 'flex', gap: 8 }}>
@@ -815,15 +785,15 @@ export default function PosterStudio({ event, onClose, club }) {
                             style={{ flex: 1, padding: '9px 12px', borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: 'pointer', backgroundColor: awayLogo ? `${accentColor}14` : 'var(--sl-surface)', border: awayLogo ? `1.5px solid ${accentColor}` : '1.5px dashed var(--sl-border-s)', color: awayLogo ? accentColor : 'var(--sl-t2)' }}>
                             {awayLogo ? '✓ Logo chargé' : '+ Uploader le logo'}
                           </button>
-                          {awayLogo && <button onClick={() => setAwayLogo('')} style={{ padding: '9px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
-                          <input ref={awayLogoRef} type="file" accept="image/*" onChange={e => readFile(e, setAwayLogo)} style={{ display: 'none' }} />
+                          {awayLogo && <button onClick={() => set('awayLogo', '')} style={{ padding: '9px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
+                          <input ref={awayLogoRef} type="file" accept="image/*" onChange={e => readFile(e, v => set('awayLogo', v))} style={{ display: 'none' }} />
                         </div>
                       </div>
 
                       <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0 10px' }} />
 
-                      <TextInput label="Badge compétition" value={championship} onChange={setChampionship} placeholder="Championnat D1, Coupe…" />
-                      <TextInput label="Accroche" value={tagline} onChange={setTagline} placeholder="Venez nombreux !" />
+                      <TextInput label="Badge compétition" value={championship} onChange={v => set('championship', v)} placeholder="Championnat D1, Coupe…" />
+                      <TextInput label="Accroche" value={tagline} onChange={v => set('tagline', v)} placeholder="Venez nombreux !" />
                     </div>
                   )}
 
@@ -834,11 +804,11 @@ export default function PosterStudio({ event, onClose, club }) {
                         <SLabel>Couleur d'accent</SLabel>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                           {ACCENT_PALETTE.map(c => (
-                            <ColorSwatch key={c} color={c} active={accentColor === c} onClick={() => setAccentColor(c)} />
+                            <ColorSwatch key={c} color={c} active={accentColor === c} onClick={() => set('accentColor', c)} />
                           ))}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
                             <label style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 600 }}>Autre :</label>
-                            <input type="color" value={accentColor} onChange={e => setAccentColor(e.target.value)}
+                            <input type="color" value={accentColor} onChange={e => set('accentColor', e.target.value)}
                               style={{ width: 28, height: 28, borderRadius: 8, border: 'none', cursor: 'pointer', padding: 2, backgroundColor: 'transparent' }} />
                           </div>
                         </div>
@@ -849,7 +819,7 @@ export default function PosterStudio({ event, onClose, club }) {
                         <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
                           {[['color', 'Couleur'], ['url', 'URL'], ['upload', 'Fichier']].map(([id, label]) => (
                             <button key={id}
-                              onClick={() => { setBgMode(id); if (id === 'color') { setBgSrc(''); setBgErr(false); } }}
+                              onClick={() => dispatch({ type: 'PATCH', payload: id === 'color' ? { bgMode: id, bgSrc: '', bgErr: false } : { bgMode: id } })}
                               style={{ padding: '6px 12px', borderRadius: 9, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: `1.5px solid ${bgMode === id ? accentColor : 'var(--sl-border-s)'}`, backgroundColor: bgMode === id ? `${accentColor}16` : 'var(--sl-surface)', color: bgMode === id ? accentColor : 'var(--sl-t2)', transition: 'all 0.13s' }}>
                               {label}
                             </button>
@@ -859,11 +829,11 @@ export default function PosterStudio({ event, onClose, club }) {
                         <AnimatePresence mode="wait">
                           {bgMode === 'url' && (
                             <motion.div key="url" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                              <input type="text" value={bgUrl} onChange={e => setBgUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && applyBgUrl()}
+                              <input type="text" value={bgUrl} onChange={e => set('bgUrl', e.target.value)} onKeyDown={e => e.key === 'Enter' && applyBgUrl()}
                                 placeholder="https://…"
                                 style={{ flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 12, border: `1px solid ${bgErr ? '#ef4444' : 'var(--sl-border-s)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }} />
                               <button onClick={applyBgUrl} style={{ padding: '9px 14px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: accentColor, color: '#fff', border: 'none', cursor: 'pointer' }}>OK</button>
-                              {bgSrc && <button onClick={() => { setBgSrc(''); setBgErr(false); }} style={{ padding: '9px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
+                              {bgSrc && <button onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: '', bgErr: false } })} style={{ padding: '9px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
                             </motion.div>
                           )}
                           {bgMode === 'upload' && (
@@ -872,8 +842,8 @@ export default function PosterStudio({ event, onClose, club }) {
                                 style={{ flex: 1, padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', backgroundColor: bgSrc ? `${accentColor}14` : 'var(--sl-surface)', border: bgSrc ? `1.5px solid ${accentColor}` : '1.5px dashed var(--sl-border-s)', color: bgSrc ? accentColor : 'var(--sl-t2)' }}>
                                 {bgSrc ? '✓ Image chargée' : '+ Choisir une image'}
                               </button>
-                              {bgSrc && <button onClick={() => setBgSrc('')} style={{ padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
-                              <input ref={bgFileRef} type="file" accept="image/*" onChange={e => readFile(e, setBgSrc)} style={{ display: 'none' }} />
+                              {bgSrc && <button onClick={() => set('bgSrc', '')} style={{ padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
+                              <input ref={bgFileRef} type="file" accept="image/*" onChange={e => readFile(e, v => set('bgSrc', v))} style={{ display: 'none' }} />
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -896,8 +866,8 @@ export default function PosterStudio({ event, onClose, club }) {
                               style={{ flex: 1, padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', backgroundColor: sponsorSrc ? `${accentColor}14` : 'var(--sl-card)', border: sponsorSrc ? `1.5px solid ${accentColor}` : '1.5px dashed var(--sl-border-s)', color: sponsorSrc ? accentColor : 'var(--sl-t2)' }}>
                               {sponsorSrc ? '✓ Logo chargé' : '+ Uploader le logo sponsor'}
                             </button>
-                            {sponsorSrc && <button onClick={() => setSponsorSrc('')} style={{ padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-card)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
-                            <input ref={sponsorRef} type="file" accept="image/*" onChange={e => readFile(e, setSponsorSrc)} style={{ display: 'none' }} />
+                            {sponsorSrc && <button onClick={() => set('sponsorSrc', '')} style={{ padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-card)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
+                            <input ref={sponsorRef} type="file" accept="image/*" onChange={e => readFile(e, v => set('sponsorSrc', v))} style={{ display: 'none' }} />
                           </div>
                         </div>
                         {sponsorSrc && (

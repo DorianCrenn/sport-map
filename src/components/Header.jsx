@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -18,6 +18,7 @@ export default function Header({
   const totalBadge = pendingCount + rideNotifCount;
   const { theme, toggleTheme } = useTheme();
   const [query, setQuery] = useState('');
+  const [debouncedQ, setDebouncedQ] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
@@ -35,7 +36,13 @@ export default function Header({
     return () => document.removeEventListener('mousedown', onDown);
   }, []);
 
-  const q = query.trim().toLowerCase();
+  // Debounce the filter query by 150ms — input display stays instant
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(query.trim().toLowerCase()), 150);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const q = debouncedQ;
   const matchedCities = q.length >= 1
     ? (() => {
         const s = cities.filter(c => c.toLowerCase().startsWith(q));

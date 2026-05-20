@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { supabase } from './lib/supabase.js';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
@@ -25,15 +25,15 @@ import FavorisPage from './pages/FavorisPage.jsx';
 import NewsPage from './pages/NewsPage.jsx';
 import ClubsPage from './pages/ClubsPage.jsx';
 import ProfilPage from './pages/ProfilPage.jsx';
-import AdminPage from './pages/AdminPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
-import OnboardingPage from './pages/OnboardingPage.jsx';
-import EventFormModal from './components/EventFormModal.jsx';
-import CSVImportModal from './components/CSVImportModal.jsx';
-import BadgeUnlockModal from './components/BadgeUnlockModal.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
-import MyRidesPage from './pages/MyRidesPage.jsx';
-import AnnouncementsCenter from './components/AnnouncementsCenter.jsx';
+const AdminPage          = lazy(() => import('./pages/AdminPage.jsx'));
+const OnboardingPage     = lazy(() => import('./pages/OnboardingPage.jsx'));
+const EventFormModal     = lazy(() => import('./components/EventFormModal.jsx'));
+const CSVImportModal     = lazy(() => import('./components/CSVImportModal.jsx'));
+const BadgeUnlockModal   = lazy(() => import('./components/BadgeUnlockModal.jsx'));
+const MyRidesPage        = lazy(() => import('./pages/MyRidesPage.jsx'));
+const AnnouncementsCenter = lazy(() => import('./components/AnnouncementsCenter.jsx'));
 import OfflineBanner from './components/OfflineBanner.jsx';
 import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
@@ -297,76 +297,78 @@ function AppInner() {
                 />
               </ErrorBoundary>
             )}
-            {activeTab === 'admin' && isAdmin && <ErrorBoundary name="Admin"><AdminPage /></ErrorBoundary>}
+            {activeTab === 'admin' && isAdmin && <ErrorBoundary name="Admin"><Suspense fallback={null}><AdminPage /></Suspense></ErrorBoundary>}
           </motion.div>
         </AnimatePresence>
 
         {/* MyRidesPage lives inside the content area so BottomNav stays visible */}
         {showMyRides && (
-          <MyRidesPage onBack={() => setShowMyRides(false)} />
+          <Suspense fallback={null}><MyRidesPage onBack={() => setShowMyRides(false)} /></Suspense>
         )}
       </div>
 
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements} />
 
-      <AnimatePresence>
-        {showAuth && (
-          <AuthPage
-            key="auth"
-            onClose={handleAuthClose}
-            onNeedOnboarding={handleNeedOnboarding}
-          />
-        )}
-        {shouldShowOnboarding && (
-          <OnboardingPage
-            key="onboarding"
-            onDone={handleOnboardingDone}
-          />
-        )}
-        {showNewEventForm && (
-          <EventFormModal
-            key="fab-event-form"
-            event={{ _isNew: true }}
-            onSave={(data) => { addEventWithToast(data); setShowNewEventForm(false); setActiveTab('map'); }}
-            onBulkSave={async (events) => { await bulkAddEvents(events); setShowNewEventForm(false); setActiveTab('map'); }}
-            onClose={() => setShowNewEventForm(false)}
-          />
-        )}
-        {showCSVImport && (
-          <CSVImportModal
-            key="csv-import"
-            onBulkSave={bulkAddEvents}
-            onClose={() => setShowCSVImport(false)}
-          />
-        )}
-        {selectedSearchClub && (
-          <ClubPageView
-            key={selectedSearchClub.id}
-            club={selectedSearchClub}
-            allEvents={allEvents}
-            onBack={() => setSelectedSearchClub(null)}
-            onAddEvent={addEvent}
-            canAddEvent={isAdmin || isClubAdmin}
-            onUpdateClub={async (data) => {
-              await updateClub(selectedSearchClub.id, data);
-              setSelectedSearchClub(prev => ({ ...prev, ...data }));
-            }}
-          />
-        )}
-        {showBadgeModal && newBadges.length > 0 && (
-          <BadgeUnlockModal
-            key="badge-modal"
-            badges={newBadges}
-            onDone={() => { markSeen(); setShowBadgeModal(false); }}
-          />
-        )}
-        {showAnnouncements && (
-          <AnnouncementsCenter
-            key="announcements"
-            onClose={() => setShowAnnouncements(false)}
-          />
-        )}
-      </AnimatePresence>
+      <Suspense fallback={null}>
+        <AnimatePresence>
+          {showAuth && (
+            <AuthPage
+              key="auth"
+              onClose={handleAuthClose}
+              onNeedOnboarding={handleNeedOnboarding}
+            />
+          )}
+          {shouldShowOnboarding && (
+            <OnboardingPage
+              key="onboarding"
+              onDone={handleOnboardingDone}
+            />
+          )}
+          {showNewEventForm && (
+            <EventFormModal
+              key="fab-event-form"
+              event={{ _isNew: true }}
+              onSave={(data) => { addEventWithToast(data); setShowNewEventForm(false); setActiveTab('map'); }}
+              onBulkSave={async (events) => { await bulkAddEvents(events); setShowNewEventForm(false); setActiveTab('map'); }}
+              onClose={() => setShowNewEventForm(false)}
+            />
+          )}
+          {showCSVImport && (
+            <CSVImportModal
+              key="csv-import"
+              onBulkSave={bulkAddEvents}
+              onClose={() => setShowCSVImport(false)}
+            />
+          )}
+          {selectedSearchClub && (
+            <ClubPageView
+              key={selectedSearchClub.id}
+              club={selectedSearchClub}
+              allEvents={allEvents}
+              onBack={() => setSelectedSearchClub(null)}
+              onAddEvent={addEvent}
+              canAddEvent={isAdmin || isClubAdmin}
+              onUpdateClub={async (data) => {
+                await updateClub(selectedSearchClub.id, data);
+                setSelectedSearchClub(prev => ({ ...prev, ...data }));
+              }}
+            />
+          )}
+          {showBadgeModal && newBadges.length > 0 && (
+            <BadgeUnlockModal
+              key="badge-modal"
+              badges={newBadges}
+              onDone={() => { markSeen(); setShowBadgeModal(false); }}
+            />
+          )}
+          {showAnnouncements && (
+            <AnnouncementsCenter
+              key="announcements"
+              onClose={() => setShowAnnouncements(false)}
+            />
+          )}
+        </AnimatePresence>
+      </Suspense>
     </div>
   );
 }

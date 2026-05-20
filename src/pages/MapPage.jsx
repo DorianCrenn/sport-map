@@ -148,7 +148,7 @@ export default function MapPage({
     }
   }, [focusEventId]);
 
-  async function handleSave(formData) {
+  const handleSave = useCallback(async (formData) => {
     if (modalEvent?._isNew) {
       const created = await onAddEvent(formData);
       setSelectedEventId(created.id);
@@ -156,17 +156,17 @@ export default function MapPage({
       await onUpdateEvent(modalEvent.id, formData);
     }
     setModalEvent(undefined);
-  }
+  }, [modalEvent, onAddEvent, onUpdateEvent]);
 
-  async function handleBulkSave(events) {
+  const handleBulkSave = useCallback(async (events) => {
     for (const ev of events) await onAddEvent(ev);
     setModalEvent(undefined);
-  }
+  }, [onAddEvent]);
 
-  function handleDeleteEvent(id) {
+  const handleDeleteEvent = useCallback((id) => {
     onDeleteEvent(id);
     if (selectedEventId === id) setSelectedEventId(null);
-  }
+  }, [onDeleteEvent, selectedEventId]);
 
   return (
     <div className="flex flex-col h-full relative">

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import TplSimple from './templates/TplSimple.jsx';
 import TplLight from './templates/TplLight.jsx';
 import TplColor from './templates/TplColor.jsx';
@@ -224,7 +225,7 @@ export const BASE_DIMS = {
   post:  { w: 360, h: 450 },
 };
 
-export default function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {} }) {
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {} }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
@@ -260,4 +261,6 @@ export default function PosterRenderer({ templateId, data, format = 'story', pre
       </div>
     </div>
   );
-}
+});
+
+export default PosterRenderer;
