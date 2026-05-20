@@ -12,6 +12,7 @@ create table if not exists push_subscriptions (
 alter table push_subscriptions enable row level security;
 
 -- L'utilisateur ne peut gérer que ses propres souscriptions
+drop policy if exists "push_subscriptions_self" on push_subscriptions;
 create policy "push_subscriptions_self"
   on push_subscriptions
   for all
