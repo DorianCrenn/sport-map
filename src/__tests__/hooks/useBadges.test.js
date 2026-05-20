@@ -7,6 +7,13 @@ function makeEvent(id, sport = 'Football', clubId = 'club-1') {
   return { id: String(id), sport, clubId };
 }
 
+/** Build an event with a date offset in days from a base date. */
+function makeEventDated(id, daysOffset, clubId = 'club-1', sport = 'Football') {
+  const base = new Date('2024-01-01');
+  base.setDate(base.getDate() + daysOffset);
+  return { id: String(id), sport, clubId, date: base.toISOString() };
+}
+
 // ── Tests — computeEarned ─────────────────────────────────────────────────────
 
 describe('computeEarned — aucune participation', () => {
@@ -122,10 +129,74 @@ describe('computeEarned — badge "champion" (25 participations)', () => {
   });
 });
 
-describe('computeEarned — cumul de badges', () => {
-  it('débloque tous les badges avec 25 participations dans 3 sports et 5× le même club', () => {
+describe('computeEarned — streaks', () => {
+  it('débloque streak_3 avec 3 événements consécutifs ≤45 jours dans le même club', () => {
     const events = [
-      ...Array.from({ length: 5 }, (_, i) => makeEvent(String(i), 'Football', 'club-1')),
+      makeEventDated('1', 0),
+      makeEventDated('2', 30),
+      makeEventDated('3', 60),
+    ];
+    const earned = computeEarned(new Set(['1', '2', '3']), events);
+    expect(earned).toContain('streak_3');
+  });
+
+  it("n'octroie pas streak_3 si un écart dépasse 45 jours", () => {
+    const events = [
+      makeEventDated('1', 0),
+      makeEventDated('2', 46),
+      makeEventDated('3', 92),
+    ];
+    const earned = computeEarned(new Set(['1', '2', '3']), events);
+    expect(earned).not.toContain('streak_3');
+  });
+
+  it('débloque streak_5 avec 5 événements consécutifs ≤45 jours dans le même club', () => {
+    const events = Array.from({ length: 5 }, (_, i) => makeEventDated(String(i), i * 30));
+    const ids = new Set(events.map(e => e.id));
+    const earned = computeEarned(ids, events);
+    expect(earned).toContain('streak_3');
+    expect(earned).toContain('streak_5');
+  });
+
+  it("n'octroie pas streak_5 avec seulement 4 événements consécutifs", () => {
+    const events = Array.from({ length: 4 }, (_, i) => makeEventDated(String(i), i * 30));
+    const ids = new Set(events.map(e => e.id));
+    const earned = computeEarned(ids, events);
+    expect(earned).toContain('streak_3');
+    expect(earned).not.toContain('streak_5');
+  });
+
+  it('calcule le streak par club indépendamment', () => {
+    // club-1 : 2 events (no streak_3), club-2 : 3 events consécutifs (streak_3)
+    const events = [
+      makeEventDated('1', 0, 'club-1'),
+      makeEventDated('2', 30, 'club-1'),
+      makeEventDated('3', 0, 'club-2'),
+      makeEventDated('4', 30, 'club-2'),
+      makeEventDated('5', 60, 'club-2'),
+    ];
+    const ids = new Set(events.map(e => e.id));
+    const earned = computeEarned(ids, events);
+    expect(earned).toContain('streak_3');
+  });
+
+  it("les événements sans clubId ne comptent pas dans le streak", () => {
+    const events = [
+      { id: '1', sport: 'Football', clubId: null, date: '2024-01-01T00:00:00Z' },
+      { id: '2', sport: 'Football', clubId: null, date: '2024-02-01T00:00:00Z' },
+      { id: '3', sport: 'Football', clubId: null, date: '2024-03-01T00:00:00Z' },
+    ];
+    const earned = computeEarned(new Set(['1', '2', '3']), events);
+    expect(earned).not.toContain('streak_3');
+  });
+});
+
+describe('computeEarned — cumul de badges', () => {
+  it('débloque tous les badges avec 25 participations dans 3 sports, 5× même club, 3 consécutifs', () => {
+    const streakEvents = Array.from({ length: 3 }, (_, i) => makeEventDated(String(i), i * 30, 'club-1', 'Football'));
+    const events = [
+      ...streakEvents,
+      ...Array.from({ length: 2 }, (_, i) => makeEvent(String(i + 3), 'Football', 'club-1')),
       ...Array.from({ length: 5 }, (_, i) => makeEvent(String(i + 5), 'Rugby', 'club-2')),
       ...Array.from({ length: 15 }, (_, i) => makeEvent(String(i + 10), 'Basket', 'club-3')),
     ];
@@ -134,6 +205,7 @@ describe('computeEarned — cumul de badges', () => {
     expect(earned).toContain('first_step');
     expect(earned).toContain('explorer');
     expect(earned).toContain('loyal_fan');
+    expect(earned).toContain('streak_3');
     expect(earned).toContain('veteran');
     expect(earned).toContain('champion');
   });
@@ -167,8 +239,8 @@ describe('BADGE_DEFS — structure', () => {
     }
   });
 
-  it('BADGE_ORDER contient exactement 5 badges', () => {
-    expect(BADGE_ORDER).toHaveLength(5);
+  it('BADGE_ORDER contient exactement 7 badges', () => {
+    expect(BADGE_ORDER).toHaveLength(7);
   });
 
   it('BADGE_ORDER correspond aux clés de BADGE_DEFS', () => {

@@ -39,7 +39,7 @@ import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
 
 function AppInner() {
-  const { currentUser, isAdmin, isClubAdmin, loading } = useAuth();
+  const { currentUser, isAdmin, isClubAdmin, loading, followedClubs } = useAuth();
   const [activeTab, _setActiveTab] = useState(() => sessionStorage.getItem('sl-tab') || 'home');
   const setActiveTab = useCallback((tab) => {
     sessionStorage.setItem('sl-tab', tab);
@@ -200,9 +200,14 @@ function AppInner() {
     setPendingOnboarding(true);
   }
 
+  const [onboardingSport, setOnboardingSport] = useState(null);
+
   function handleOnboardingDone(selectedSports) {
     setPendingOnboarding(false);
-    if (selectedSports?.length > 0) setActiveTab('map');
+    if (selectedSports?.length > 0) {
+      setOnboardingSport(selectedSports[0]);
+      setActiveTab('map');
+    }
   }
 
   return (
@@ -264,6 +269,8 @@ function AppInner() {
                   focusEventId={focusEventId}
                   onFocusDone={() => setFocusEventId(null)}
                   eventsLoading={eventsLoading}
+                  initialSportFilter={onboardingSport}
+                  onInitialFilterApplied={() => setOnboardingSport(null)}
                 />
               </ErrorBoundary>
             )}
@@ -272,7 +279,7 @@ function AppInner() {
                 <FavorisPage allEvents={allEvents} allClubs={allClubs} />
               </ErrorBoundary>
             )}
-            {activeTab === 'news' && <ErrorBoundary name="Actualités"><NewsPage /></ErrorBoundary>}
+            {activeTab === 'news' && <ErrorBoundary name="Actualités"><NewsPage followedClubIds={followedClubs} /></ErrorBoundary>}
             {activeTab === 'clubs' && (
               <ErrorBoundary name="Clubs">
                 <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} />
@@ -281,7 +288,6 @@ function AppInner() {
             {activeTab === 'profil' && (
               <ErrorBoundary name="Profil">
                 <ProfilPage
-                  favorites={favorites}
                   userEvents={userEvents}
                   earnedBadges={earnedBadges}
                   onNavigate={handleTabChange}

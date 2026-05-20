@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import SportIcon from '../SportIcon.jsx';
@@ -150,14 +150,14 @@ export default function ClubFormModal({ club, onSave, onClose }) {
     name:       club?.name       ?? '',
     sport:      club?.sport      ?? Object.keys(SPORTS)[0],
     city:       club?.city       ?? '',
-    members:    club?.members    ?? 50,
-    contact:    club?.contact    ?? '',
+    email:      club?.email      ?? '',
+    logoUrl:    club?.logoUrl    ?? null,
     categories: club?.categories ?? [],
-    logo:       club?.logo       ?? null,
   });
-  const [errors, setErrors]             = useState({});
-  const [cityValid, setCityValid]       = useState(!!club?.city);
+  const [errors, setErrors]               = useState({});
+  const [cityValid, setCityValid]         = useState(!!club?.city);
   const [showCatPicker, setShowCatPicker] = useState(false);
+  const [submitting, setSubmitting]       = useState(false);
 
   function set(key, val) {
     setForm(f => ({ ...f, [key]: val }));
@@ -217,21 +217,23 @@ export default function ClubFormModal({ club, onSave, onClose }) {
   // ── Validation ──────────────────────────────────────────────────────────────
   function validate() {
     const e = {};
-    if (!form.name.trim())    e.name    = 'Nom requis';
-    if (!form.city.trim())    e.city    = 'Ville requise';
-    else if (!cityValid)      e.city    = 'Sélectionnez une commune valide dans la liste';
-    if (!form.contact.trim()) e.contact = 'Email requis';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact)) e.contact = 'Email invalide';
+    if (!form.name.trim())  e.name  = 'Nom requis';
+    if (!form.city.trim())  e.city  = 'Ville requise';
+    else if (!cityValid)    e.city  = 'Sélectionnez une commune valide dans la liste';
+    if (!form.email.trim()) e.email = 'Email requis';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email invalide';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
-  function handleSubmit() {
-    if (!validate()) return;
-    // Derive main level from first team of first category (or fallback)
-    const firstTeam = form.categories[0]?.teams[0];
-    const level = firstTeam?.level ?? 'Loisir';
-    onSave({ ...form, members: Number(form.members), level });
+  async function handleSubmit() {
+    if (!validate() || submitting) return;
+    setSubmitting(true);
+    try {
+      await onSave({ ...form });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -270,10 +272,10 @@ export default function ClubFormModal({ club, onSave, onClose }) {
 
           {/* Logo */}
           <LogoUpload
-            logo={form.logo}
+            logo={form.logoUrl}
             name={form.name}
             sport={form.sport}
-            onChange={val => set('logo', val)}
+            onChange={val => set('logoUrl', val)}
           />
 
           {/* Sport */}
@@ -300,29 +302,24 @@ export default function ClubFormModal({ club, onSave, onClose }) {
             {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
           </Field>
 
-          {/* Ville + Membres */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Ville *">
-              <CityAutocomplete
-                value={form.city}
-                onChange={val => { set('city', val); setCityValid(false); }}
-                onSelect={() => setCityValid(true)}
-                onValidChange={setCityValid}
-                inputClassName={inputCls}
-                error={errors.city}
-              />
-            </Field>
-            <Field label="Membres">
-              <input type="number" value={form.members} onChange={e => set('members', e.target.value)}
-                min={1} className={inputCls} />
-            </Field>
-          </div>
+          {/* Ville */}
+          <Field label="Ville *">
+            <CityAutocomplete
+              value={form.city}
+              onChange={val => { set('city', val); setCityValid(false); }}
+              onSelect={() => setCityValid(true)}
+              onValidChange={setCityValid}
+              inputClassName={inputCls}
+              error={errors.city}
+            />
+            {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
+          </Field>
 
           {/* Email */}
           <Field label="Email de contact *">
-            <input type="email" value={form.contact} onChange={e => set('contact', e.target.value)}
+            <input type="email" value={form.email} onChange={e => set('email', e.target.value)}
               placeholder="contact@monclub.fr" className={inputCls} />
-            {errors.contact && <p className="text-xs text-red-500 mt-1">{errors.contact}</p>}
+            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
           </Field>
 
           {/* ── Catégories & équipes ── */}
@@ -397,10 +394,10 @@ export default function ClubFormModal({ club, onSave, onClose }) {
             className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
             Annuler
           </button>
-          <button onClick={handleSubmit}
-            className="flex-1 py-3 rounded-2xl text-sm font-bold font-poppins text-white transition-colors"
-            style={{ backgroundColor: '#22C55E' }}>
-            {isEdit ? 'Enregistrer' : 'Créer le club'}
+          <button onClick={handleSubmit} disabled={submitting}
+            className="flex-1 py-3 rounded-2xl text-sm font-bold font-poppins text-white transition-colors disabled:opacity-60"
+            style={{ backgroundColor: '#22C55E', cursor: submitting ? 'not-allowed' : 'pointer' }}>
+            {submitting ? 'Enregistrement…' : isEdit ? 'Enregistrer' : 'Créer le club'}
           </button>
         </div>
       </motion.div>

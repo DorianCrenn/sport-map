@@ -10,6 +10,8 @@ import MapView from '../components/MapView.jsx';
 import EventSidebar from '../components/EventSidebar.jsx';
 import EventFormModal from '../components/EventFormModal.jsx';
 import MobileEventSheet from '../components/MobileEventSheet.jsx';
+import SportIcon from '../components/SportIcon.jsx';
+import { useSports } from '../hooks/useSports.js';
 
 export default function MapPage({
   allEvents, activeDepartment, canAddEvent,
@@ -17,11 +19,22 @@ export default function MapPage({
   onGoToFavoris, cityFilter,
   focusEventId, onFocusDone,
   eventsLoading,
+  initialSportFilter, onInitialFilterApplied,
 }) {
   const { currentUser } = useAuth();
+  const { allSports: SPORTS } = useSports();
   const { favorites } = useFavoritesContext();
   const favoritesCount = favorites.size;
   const [sportFilter, setSportFilter] = useState(null);
+  const [ahaSport, setAhaSport] = useState(null);
+
+  // Applique le filtre sport venant de l'onboarding + déclenche la carte aha moment
+  useEffect(() => {
+    if (!initialSportFilter) return;
+    setSportFilter(initialSportFilter);
+    setAhaSport(initialSportFilter);
+    onInitialFilterApplied?.();
+  }, [initialSportFilter]); // eslint-disable-line react-hooks/exhaustive-deps
   const [dateRangeFilter, setDateRangeFilter] = useState(null);
   const [nearbyFilter, setNearbyFilter] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null);
@@ -168,6 +181,45 @@ export default function MapPage({
         onHideSomeSports={() => { setShowAllSports(false); setSportFilter(null); }}
       />
       <DateFilterBar active={dateRangeFilter} onChange={setDateRangeFilter} upcomingOnly={upcomingOnly} onUpcomingOnlyChange={setUpcomingOnly} />
+
+      {/* Aha moment banner — post-onboarding */}
+      <AnimatePresence>
+        {ahaSport && (() => {
+          const sport = SPORTS[ahaSport];
+          const weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate() + 7);
+          const count = allEvents.filter(e => e.sport === ahaSport && new Date(e.date) >= new Date() && new Date(e.date) <= weekEnd).length;
+          return (
+            <motion.div
+              key="aha-card"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              style={{ overflow: 'hidden', flexShrink: 0, backgroundColor: sport ? `${sport.color}15` : 'rgba(34,217,106,0.1)', borderBottom: `1px solid ${sport ? `${sport.color}30` : 'rgba(34,217,106,0.25)'}` }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+                {sport && <SportIcon sport={ahaSport} size={16} color={sport.color} />}
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: sport?.color ?? 'var(--sl-green)' }}>
+                    {count > 0
+                      ? `${count} événement${count > 1 ? 's' : ''} ${ahaSport} cette semaine !`
+                      : `Aucun événement ${ahaSport} cette semaine — revenez bientôt.`}
+                  </span>
+                  {count > 0 && (
+                    <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Les événements sont filtrés pour vous</div>
+                  )}
+                </div>
+                <button
+                  onClick={() => setAhaSport(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t3)', padding: 4, flexShrink: 0 }}
+                  aria-label="Fermer"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
 
       {/* Geo error banner */}
       <AnimatePresence>

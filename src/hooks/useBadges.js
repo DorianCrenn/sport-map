@@ -31,6 +31,24 @@ export const BADGE_DEFS = {
     glow: 'rgba(239,68,68,0.45)',
     threshold: '5 fois dans un club',
   },
+  streak_3: {
+    id: 'streak_3',
+    name: 'Sur la lancée',
+    description: '3 événements consécutifs dans le même club (dans les 60 jours)',
+    icon: '🔥',
+    color: '#f97316',
+    glow: 'rgba(249,115,22,0.45)',
+    threshold: '3 matchs de suite',
+  },
+  streak_5: {
+    id: 'streak_5',
+    name: 'Indéfectible',
+    description: '5 événements consécutifs dans le même club (dans les 90 jours)',
+    icon: '⚡',
+    color: '#eab308',
+    glow: 'rgba(234,179,8,0.45)',
+    threshold: '5 matchs de suite',
+  },
   veteran: {
     id: 'veteran',
     name: 'Vétéran',
@@ -51,7 +69,7 @@ export const BADGE_DEFS = {
   },
 };
 
-export const BADGE_ORDER = ['first_step', 'explorer', 'loyal_fan', 'veteran', 'champion'];
+export const BADGE_ORDER = ['first_step', 'explorer', 'loyal_fan', 'streak_3', 'streak_5', 'veteran', 'champion'];
 
 // ── Badge computation ──────────────────────────────────────────────────────────
 
@@ -59,24 +77,66 @@ export function computeEarned(attending, allEvents) {
   if (!attending || attending.size === 0) return [];
 
   const attendedIds = [...attending].map(String);
-  const attendedEvents = allEvents.filter(e => attendedIds.includes(String(e.id)));
-  const total = attending.size;
+  const attendedEvents = allEvents
+    .filter(e => attendedIds.includes(String(e.id)))
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
+  const total = attending.size;
   const sports = new Set(attendedEvents.map(e => e.sport).filter(Boolean));
 
+  // Comptes par club
   const clubCounts = {};
   attendedEvents.forEach(e => {
     const cid = e.clubId ?? e.club_id ?? null;
     if (cid) clubCounts[String(cid)] = (clubCounts[String(cid)] || 0) + 1;
   });
 
+  // Calcul de streak par club : séquences d'événements consécutifs dans les N jours
+  const maxStreak = computeMaxStreak(attendedEvents);
+
   const earned = [];
   if (total >= 1)  earned.push('first_step');
   if (sports.size >= 3) earned.push('explorer');
   if (Object.values(clubCounts).some(c => c >= 5)) earned.push('loyal_fan');
+  if (maxStreak >= 3) earned.push('streak_3');
+  if (maxStreak >= 5) earned.push('streak_5');
   if (total >= 10) earned.push('veteran');
   if (total >= 25) earned.push('champion');
   return earned;
+}
+
+/**
+ * Calcul du streak maximal : nombre maximal d'événements consécutifs dans
+ * le même club espacés de moins de 45 jours chacun.
+ */
+function computeMaxStreak(sortedEvents) {
+  // Grouper par club
+  const byClub = {};
+  sortedEvents.forEach(e => {
+    const cid = String(e.clubId ?? e.club_id ?? '');
+    if (!cid) return;
+    if (!byClub[cid]) byClub[cid] = [];
+    byClub[cid].push(new Date(e.date));
+  });
+
+  let maxStreak = 0;
+  const MAX_GAP_MS = 45 * 24 * 3600 * 1000; // 45 jours
+
+  Object.values(byClub).forEach(dates => {
+    dates.sort((a, b) => a - b);
+    let streak = 1;
+    for (let i = 1; i < dates.length; i++) {
+      if (dates[i] - dates[i - 1] <= MAX_GAP_MS) {
+        streak++;
+      } else {
+        streak = 1;
+      }
+      if (streak > maxStreak) maxStreak = streak;
+    }
+    if (dates.length > 0 && 1 > maxStreak) maxStreak = 1;
+  });
+
+  return maxStreak;
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────

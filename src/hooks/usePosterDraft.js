@@ -1,9 +1,9 @@
 // PosterStudio persistence — localStorage (immediate) + Supabase (background sync)
 //
-// usePosterDraft   — auto-save draft per event
-// usePosterLibrary — named poster library (reactive, synced to Supabase when logged in)
-// useFavoriteTemplates — heart-toggled template IDs
-// useDefaultTemplate   — default template per club
+// usePosterDraft        — auto-save draft per event (1 draft/event/user via partial unique index)
+// usePosterLibrary      — named poster library (reactive, synced to Supabase when logged in)
+// useFavoriteTemplates  — heart-toggled template IDs (localStorage + profiles.poster_fav_templates)
+// useDefaultTemplate    — default template per club (localStorage + club_brand_kits.default_template_id)
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase.js';
@@ -22,6 +22,8 @@ function ls_set(key, val) {
 }
 
 // ── Brouillon auto-sauvegardé ─────────────────────────────────────────────────
+// Un seul brouillon par (event_id, user_id) grâce à l'index partiel unique
+// posters_draft_event_user dans la migration SQL.
 
 export function usePosterDraft(eventId) {
   const eventKey = String(eventId ?? '__no_event__');
@@ -36,26 +38,37 @@ export function usePosterDraft(eventId) {
   function saveDraft(state) {
     ls_set(DRAFT_KEY, { eventKey, savedAt: new Date().toISOString(), state });
     if (!isRealEvent) return;
-    // Background Supabase upsert (fire and forget)
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
+      // Upsert via la contrainte partielle unique (event_id, user_id) WHERE status='draft'
       supabase.from('posters').upsert(
         {
           event_id:    eventId,
           user_id:     user.id,
+          name:        'Brouillon',
           status:      'draft',
           format:      state.format ?? 'story',
           template_id: state.templateId ?? 'simple',
           layers:      state,
           updated_at:  new Date().toISOString(),
         },
-        { onConflict: 'event_id,user_id' }
+        { onConflict: 'event_id,user_id', ignoreDuplicates: false }
       ).then(() => {}).catch(() => {});
     });
   }
 
   function clearDraft() {
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    if (!isRealEvent) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from('posters')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .eq('status', 'draft')
+        .then(() => {}).catch(() => {});
+    });
   }
 
   function hasDraft() {
@@ -71,7 +84,6 @@ export function usePosterDraft(eventId) {
 export function usePosterLibrary() {
   const [entries, setEntries] = useState(() => ls_get(LIBRARY_KEY, []));
 
-  // On mount: fetch from Supabase if authenticated, merge with localStorage
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
@@ -102,13 +114,11 @@ export function usePosterLibrary() {
       savedAt: new Date().toISOString(),
       state,
     };
-    // Functional update avoids stale closure when called multiple times rapidly
     setEntries(prev => {
       const next = [entry, ...prev].slice(0, 20);
       ls_set(LIBRARY_KEY, next);
       return next;
     });
-    // Background Supabase insert
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       supabase.from('posters').insert({
@@ -136,13 +146,20 @@ export function usePosterLibrary() {
       ls_set(LIBRARY_KEY, next);
       return next;
     });
-    supabase.from('posters').delete().eq('id', id).then(() => {}).catch(() => {});
+    // user_id filter redondant avec RLS mais plus sûr
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from('posters').delete().eq('id', id).eq('user_id', user.id)
+        .then(() => {}).catch(() => {});
+    });
   }
 
   return { entries, save, duplicate, remove };
 }
 
-// ── Templates favoris ─────────────────────────────────────────────────────────
+// ── Templates favoris — localStorage + sync profiles ─────────────────────────
+// Stocké dans localStorage immédiatement.
+// Synchro BDD via profiles.poster_fav_templates (jsonb) quand connecté.
 
 export function useFavoriteTemplates() {
   function getAll() {
@@ -153,6 +170,14 @@ export function useFavoriteTemplates() {
     const favs = getAll();
     const next = favs.includes(id) ? favs.filter(x => x !== id) : [...favs, id];
     ls_set(FAV_TPL_KEY, next);
+    // Background sync to profiles
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from('profiles')
+        .update({ poster_fav_templates: next })
+        .eq('id', user.id)
+        .then(() => {}).catch(() => {});
+    });
     return next;
   }
 
@@ -160,13 +185,31 @@ export function useFavoriteTemplates() {
     return getAll().includes(id);
   }
 
-  return { getAll, toggle, isFav };
+  // Charge depuis profiles au montage si connecté
+  function loadFromDB() {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from('profiles')
+        .select('poster_fav_templates')
+        .eq('id', user.id)
+        .single()
+        .then(({ data, error }) => {
+          if (error || !data?.poster_fav_templates) return;
+          ls_set(FAV_TPL_KEY, data.poster_fav_templates);
+        });
+    });
+  }
+
+  return { getAll, toggle, isFav, loadFromDB };
 }
 
-// ── Template par défaut par club ──────────────────────────────────────────────
+// ── Template par défaut par club — localStorage + club_brand_kits ─────────────
+// Stocké dans localStorage immédiatement.
+// Synchro BDD via club_brand_kits.default_template_id quand connecté et club réel.
 
 export function useDefaultTemplate(clubId) {
   const ctxKey = String(clubId ?? '__global__');
+  const isRealClub = clubId && typeof clubId === 'string' && clubId.includes('-');
 
   function get() {
     return ls_get(DEF_TPL_KEY, {})[ctxKey] ?? null;
@@ -176,12 +219,27 @@ export function useDefaultTemplate(clubId) {
     const data = ls_get(DEF_TPL_KEY, {});
     data[ctxKey] = templateId;
     ls_set(DEF_TPL_KEY, data);
+    if (!isRealClub) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from('club_brand_kits')
+        .upsert({ club_id: clubId, default_template_id: templateId }, { onConflict: 'club_id' })
+        .then(() => {}).catch(() => {});
+    });
   }
 
   function clear() {
     const data = ls_get(DEF_TPL_KEY, {});
     delete data[ctxKey];
     ls_set(DEF_TPL_KEY, data);
+    if (!isRealClub) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from('club_brand_kits')
+        .update({ default_template_id: null })
+        .eq('club_id', clubId)
+        .then(() => {}).catch(() => {});
+    });
   }
 
   return { get, set, clear };

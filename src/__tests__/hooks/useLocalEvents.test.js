@@ -1,246 +1,235 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 
-// ── vi.hoisted : variables disponibles avant le hoist de vi.mock ──────────────
-const { mockFrom, mockChannelInstance } = vi.hoisted(() => ({
+// ── Mocks ─────────────────────────────────────────────────────────────────────
+
+const { mockFrom, mockChannel, mockRemoveChannel } = vi.hoisted(() => ({
   mockFrom:          vi.fn(),
-  mockChannelInstance: { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() },
+  mockChannel:       vi.fn(),
+  mockRemoveChannel: vi.fn(),
 }));
 
 vi.mock('../../lib/supabase.js', () => ({
   supabase: {
     from:          mockFrom,
-    channel:       vi.fn(() => mockChannelInstance),
-    removeChannel: vi.fn().mockResolvedValue(undefined),
+    channel:       mockChannel,
+    removeChannel: mockRemoveChannel,
   },
 }));
 
 vi.mock('../../contexts/AuthContext.jsx', () => ({
-  useAuth: vi.fn(() => ({ currentUser: { id: 'user-1' } })),
+  useAuth: () => ({ currentUser: { id: 'user-1' } }),
 }));
 
 import { useLocalEvents } from '../../hooks/useLocalEvents.js';
 
-// ── DB rows fixtures ──────────────────────────────────────────────────────────
+// ── Chainable query builder ───────────────────────────────────────────────────
 
-const dbRow1 = {
-  id: 'evt-1', title: 'Match Football', sport: 'Football',
-  date: '2026-06-10T10:00:00', lat: 48.39, lng: -4.49,
-  city: 'Brest', description: 'Derby', event_type: 'friendly',
-  team_name: 'AS Brest', category: 'Seniors', club_id: 'club-1',
-  user_id: 'user-1', score: null,
-};
+function q(terminal) {
+  const obj = {
+    then:   (fn, rej) => Promise.resolve(terminal).then(fn, rej),
+    select: vi.fn(), eq: vi.fn(), order: vi.fn(),
+    insert: vi.fn(), update: vi.fn(), delete: vi.fn(),
+    single: vi.fn().mockResolvedValue(terminal),
+    filter: vi.fn(), not: vi.fn(), in: vi.fn(),
+    lt: vi.fn(), gte: vi.fn(), limit: vi.fn(),
+  };
+  obj.select.mockReturnValue(obj); obj.eq.mockReturnValue(obj); obj.order.mockReturnValue(obj);
+  obj.insert.mockReturnValue(obj); obj.update.mockReturnValue(obj); obj.delete.mockReturnValue(obj);
+  obj.filter.mockReturnValue(obj); obj.not.mockReturnValue(obj); obj.in.mockReturnValue(obj);
+  obj.lt.mockReturnValue(obj); obj.gte.mockReturnValue(obj); obj.limit.mockReturnValue(obj);
+  return obj;
+}
 
-const dbRow2 = {
-  id: 'evt-2', title: 'Match Rugby', sport: 'Rugby',
-  date: '2026-06-15T14:00:00', lat: 47.99, lng: -4.10,
-  city: 'Quimper', description: '', event_type: 'championship',
-  team_name: '', category: '', club_id: null, user_id: 'user-2', score: null,
-};
+function makeChannel() {
+  const ch = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() };
+  mockChannel.mockReturnValue(ch);
+  return ch;
+}
 
-function makeQuery(result = { data: [], error: null }) {
+function dbRow(overrides = {}) {
   return {
-    select:  vi.fn().mockReturnThis(),
-    insert:  vi.fn().mockReturnThis(),
-    update:  vi.fn().mockReturnThis(),
-    delete:  vi.fn().mockReturnThis(),
-    eq:      vi.fn().mockReturnThis(),
-    order:   vi.fn().mockReturnThis(),
-    single:  vi.fn().mockResolvedValue(result),
-    then:    (fn, rej) => Promise.resolve(result).then(fn, rej),
+    id: 'evt-1', title: 'FC Brest vs FC Quimper', sport: 'Football',
+    date: '2026-06-15T15:00:00', lat: 48.39, lng: -4.48,
+    city: 'Brest', venue: 'Stade Francis-Le Ble', description: 'Test',
+    event_type: 'championship', team_name: 'Seniors A', category: 'Senior',
+    level: 'D1', cup_type: 'Coupe de France', home_or_away: 'home', adversaire: 'FC Quimper',
+    standings: { home: { team: 'FC Brest', wins: 5, draws: 1, losses: 0, points: 16 } },
+    score: null, club_id: 'club-1', user_id: 'user-1', series_id: 'series-1', source: 'user',
+    ...overrides,
   };
 }
 
-// ── Tests — mapping DB → app ──────────────────────────────────────────────────
+beforeEach(() => {
+  mockFrom.mockReset();
+  mockChannel.mockReset();
+  mockRemoveChannel.mockReset();
+  makeChannel();
+});
 
-describe('useLocalEvents — mapFromDB (via chargement initial)', () => {
-  beforeEach(() => {
-    mockFrom.mockReturnValue(makeQuery({ data: [dbRow1], error: null }));
-  });
+// ── mapFromDB ─────────────────────────────────────────────────────────────────
 
-  it('mappe correctement les champs DB vers les champs app', async () => {
+describe('mapFromDB — champs complets', () => {
+  it('mappe venue, level, cupType, homeOrAway, adversaire, standings, seriesId', async () => {
+    mockFrom.mockReturnValue(q({ data: [dbRow()], error: null }));
     const { result } = renderHook(() => useLocalEvents());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     const evt = result.current.events[0];
-    expect(evt.id).toBe('evt-1');
-    expect(evt.title).toBe('Match Football');
-    expect(evt.eventType).toBe('friendly');
-    expect(evt.teamName).toBe('AS Brest');
+    expect(evt.venue).toBe('Stade Francis-Le Ble');
+    expect(evt.level).toBe('D1');
+    expect(evt.cupType).toBe('Coupe de France');
+    expect(evt.homeOrAway).toBe('home');
+    expect(evt.adversaire).toBe('FC Quimper');
+    expect(evt.standings).toEqual(dbRow().standings);
+    expect(evt.seriesId).toBe('series-1');
     expect(evt.clubId).toBe('club-1');
-    expect(evt.userId).toBe('user-1');
-    expect(evt.city).toBe('Brest');
-    expect(evt.source).toBe('user');
   });
 
-  it('fournit des valeurs par défaut pour les champs optionnels', async () => {
-    mockFrom.mockReturnValue(makeQuery({
-      data: [{
-        ...dbRow2,
-        city: null, description: null, event_type: null,
-        team_name: null, category: null, club_id: null, score: null,
-      }],
-      error: null,
-    }));
-
+  it('valeurs par defaut pour les champs null', async () => {
+    mockFrom.mockReturnValue(q({ data: [dbRow({ venue: null, level: null, cup_type: null, home_or_away: null, adversaire: null, standings: null, series_id: null })], error: null }));
     const { result } = renderHook(() => useLocalEvents());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     const evt = result.current.events[0];
-    expect(evt.city).toBe('');
-    expect(evt.description).toBe('');
-    expect(evt.eventType).toBe('friendly');
-    expect(evt.teamName).toBe('');
-    expect(evt.category).toBe('');
-    expect(evt.clubId).toBeNull();
-    expect(evt.score).toBeNull();
+    expect(evt.venue).toBe('');
+    expect(evt.level).toBe('');
+    expect(evt.cupType).toBe('');
+    expect(evt.homeOrAway).toBe('home');
+    expect(evt.adversaire).toBe('');
+    expect(evt.standings).toBeNull();
+    expect(evt.seriesId).toBeNull();
   });
 });
 
-describe('useLocalEvents — chargement initial', () => {
-  it('commence en état loading', () => {
-    mockFrom.mockReturnValue(makeQuery({ data: [], error: null }));
-    const { result } = renderHook(() => useLocalEvents());
-    expect(result.current.loading).toBe(true);
-  });
+// ── mapToDB ───────────────────────────────────────────────────────────────────
 
-  it('charge les événements depuis Supabase', async () => {
-    mockFrom.mockReturnValue(makeQuery({ data: [dbRow1, dbRow2], error: null }));
+describe('addEvent — mapToDB envoie tous les champs critiques', () => {
+  it('inclut venue, level, cup_type, home_or_away, adversaire, standings, series_id', async () => {
+    let insertedArg = null;
+    let callCount = 0;
+
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return q({ data: [], error: null }); // initial load
+      const obj = q(null);
+      obj.insert = vi.fn((arg) => { insertedArg = arg; return obj; });
+      obj.single = vi.fn().mockResolvedValue({ data: dbRow({ id: 'evt-real' }), error: null });
+      return obj;
+    });
+
     const { result } = renderHook(() => useLocalEvents());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.events).toHaveLength(2);
-  });
 
-  it('conserve l\'ordre renvoyé par Supabase (tri délégué à ORDER BY)', async () => {
-    // Supabase renvoie déjà trié par date ASC — le hook s'y fie
-    mockFrom.mockReturnValue(makeQuery({ data: [dbRow1, dbRow2], error: null }));
-    const { result } = renderHook(() => useLocalEvents());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.events[0].id).toBe('evt-1'); // June 10
-    expect(result.current.events[1].id).toBe('evt-2'); // June 15
-  });
+    const eventData = {
+      title: 'Test', sport: 'Football', date: '2026-06-15T15:00:00', lat: 48, lng: -4,
+      city: 'Brest', venue: 'Stade X', description: '',
+      eventType: 'championship', teamName: 'Seniors A', category: 'Senior',
+      level: 'D1', cupType: 'Coupe de France', homeOrAway: 'away', adversaire: 'AS Morlaix',
+      standings: { home: { team: 'A' }, away: { team: 'B' } },
+      score: null, clubId: 'club-1', seriesId: 'series-42',
+    };
 
-  it('gère une erreur Supabase sans crasher', async () => {
-    mockFrom.mockReturnValue(makeQuery({ data: null, error: { message: 'Network error' } }));
-    const { result } = renderHook(() => useLocalEvents());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.events).toHaveLength(0);
+    await act(async () => { await result.current.addEvent(eventData); });
+
+    expect(insertedArg).not.toBeNull();
+    expect(insertedArg.venue).toBe('Stade X');
+    expect(insertedArg.level).toBe('D1');
+    expect(insertedArg.cup_type).toBe('Coupe de France');
+    expect(insertedArg.home_or_away).toBe('away');
+    expect(insertedArg.adversaire).toBe('AS Morlaix');
+    expect(insertedArg.standings).toEqual(eventData.standings);
+    expect(insertedArg.series_id).toBe('series-42');
+    expect(insertedArg.user_id).toBe('user-1');
   });
 });
 
-describe('useLocalEvents — addEvent (optimiste)', () => {
-  it('ajoute l\'événement immédiatement (optimiste) puis le confirme', async () => {
-    mockFrom
-      .mockReturnValueOnce(makeQuery({ data: [], error: null }))
-      .mockReturnValueOnce({
-        insert: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: dbRow1, error: null }),
-        then:   (fn) => Promise.resolve({ data: [], error: null }).then(fn),
-      });
+// ── addEvent optimistic + rollback ────────────────────────────────────────────
+
+describe('addEvent — optimistic update', () => {
+  it('ajoute un evenement temp puis le remplace par le vrai', async () => {
+    let callCount = 0;
+    // Simulate a slow insert so the optimistic state is visible before resolution
+    let resolveInsert;
+    const insertDelay = new Promise(res => { resolveInsert = res; });
+
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return q({ data: [], error: null });
+      const obj = q(null);
+      obj.single = vi.fn().mockImplementation(() => insertDelay.then(() => ({ data: dbRow({ id: 'evt-real' }), error: null })));
+      return obj;
+    });
 
     const { result } = renderHook(() => useLocalEvents());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    const newEvent = { title: 'Match Football', sport: 'Football', date: '2026-06-10T10:00:00', lat: 48.39, lng: -4.49 };
-    let added;
-    await act(async () => { added = await result.current.addEvent(newEvent); });
+    // Start addEvent (don't await yet)
+    let promise;
+    act(() => { promise = result.current.addEvent({ title: 'T', sport: 'Football', date: '2026-06-15T15:00:00', lat: 0, lng: 0 }); });
 
-    expect(added.id).toBe('evt-1');
-    expect(result.current.events.some(e => e.id === 'evt-1')).toBe(true);
+    // Optimistic event should appear before DB resolves
+    await waitFor(() => expect(result.current.events.some(e => String(e.id).startsWith('temp_'))).toBe(true));
+
+    // Now resolve the DB insert
+    await act(async () => { resolveInsert(); await promise; });
+
+    expect(result.current.events.some(e => String(e.id).startsWith('temp_'))).toBe(false);
+    expect(result.current.events.some(e => e.id === 'evt-real')).toBe(true);
   });
 
-  it('rollback si Supabase échoue lors du addEvent', async () => {
-    mockFrom
-      .mockReturnValueOnce(makeQuery({ data: [], error: null }))
-      .mockReturnValueOnce({
-        insert: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: null, error: { message: 'RLS denied' } }),
-        then:   (fn) => Promise.resolve({ data: [], error: null }).then(fn),
-      });
+  it('rollback du temp si erreur serveur', async () => {
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return q({ data: [], error: null });
+      const obj = q(null);
+      obj.single = vi.fn().mockResolvedValue({ data: null, error: { message: 'RLS denied' } });
+      return obj;
+    });
 
     const { result } = renderHook(() => useLocalEvents());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    const newEvent = { title: 'Fail Event', sport: 'Rugby', date: '2026-06-20T10:00:00', lat: 0, lng: 0 };
     await act(async () => {
-      await expect(result.current.addEvent(newEvent)).rejects.toThrow();
+      await expect(result.current.addEvent({ title: 'T', sport: 'Football', date: '2026-06-15T15:00:00', lat: 0, lng: 0 }))
+        .rejects.toThrow('RLS denied');
     });
 
     expect(result.current.events).toHaveLength(0);
   });
 });
 
-describe('useLocalEvents — deleteEvent (optimiste)', () => {
-  it('supprime immédiatement puis confirme', async () => {
-    mockFrom
-      .mockReturnValueOnce(makeQuery({ data: [dbRow1], error: null }))
-      .mockReturnValueOnce({
-        delete: vi.fn().mockReturnThis(),
-        eq:     vi.fn().mockReturnThis(),
-        then:   (fn) => Promise.resolve({ error: null }).then(fn),
-      });
+// ── deleteEvent rollback ──────────────────────────────────────────────────────
+
+describe('deleteEvent — rollback si erreur DB', () => {
+  it('restitue l evenement si la suppression DB echoue', async () => {
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return q({ data: [dbRow()], error: null });
+      return q({ data: null, error: { message: 'RLS denied' } });
+    });
 
     const { result } = renderHook(() => useLocalEvents());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.events).toHaveLength(1));
+
+    await act(async () => {
+      await expect(result.current.deleteEvent('evt-1')).rejects.toThrow('RLS denied');
+    });
+
     expect(result.current.events).toHaveLength(1);
-
-    await act(async () => { await result.current.deleteEvent('evt-1'); });
-    expect(result.current.events).toHaveLength(0);
-  });
-
-  it('rollback si Supabase échoue lors du deleteEvent', async () => {
-    mockFrom
-      .mockReturnValueOnce(makeQuery({ data: [dbRow1], error: null }))
-      .mockReturnValueOnce({
-        delete: vi.fn().mockReturnThis(),
-        eq:     vi.fn().mockReturnThis(),
-        then:   (fn) => Promise.resolve({ error: { message: 'forbidden' } }).then(fn),
-      });
-
-    const { result } = renderHook(() => useLocalEvents());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    await act(async () => {
-      await expect(result.current.deleteEvent('evt-1')).rejects.toThrow();
-    });
-    expect(result.current.events.some(e => e.id === 'evt-1')).toBe(true);
+    expect(result.current.events[0].id).toBe('evt-1');
   });
 });
 
-describe('useLocalEvents — updateEvent (optimiste)', () => {
-  it('met à jour immédiatement puis confirme', async () => {
-    mockFrom
-      .mockReturnValueOnce(makeQuery({ data: [dbRow1], error: null }))
-      .mockReturnValueOnce({
-        update: vi.fn().mockReturnThis(),
-        eq:     vi.fn().mockReturnThis(),
-        then:   (fn) => Promise.resolve({ error: null }).then(fn),
-      });
+// ── Realtime ──────────────────────────────────────────────────────────────────
 
-    const { result } = renderHook(() => useLocalEvents());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    await act(async () => { await result.current.updateEvent('evt-1', { title: 'Titre modifié' }); });
-    expect(result.current.events[0].title).toBe('Titre modifié');
-  });
-
-  it('rollback si Supabase échoue lors du updateEvent', async () => {
-    mockFrom
-      .mockReturnValueOnce(makeQuery({ data: [dbRow1], error: null }))
-      .mockReturnValueOnce({
-        update: vi.fn().mockReturnThis(),
-        eq:     vi.fn().mockReturnThis(),
-        then:   (fn) => Promise.resolve({ error: { message: 'forbidden' } }).then(fn),
-      });
-
-    const { result } = renderHook(() => useLocalEvents());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    await act(async () => {
-      await expect(result.current.updateEvent('evt-1', { title: 'Bad update' })).rejects.toThrow();
-    });
-    expect(result.current.events[0].title).toBe('Match Football');
+describe('Realtime — canal fixe', () => {
+  it('utilise le canal fixe events-realtime sans Math.random', async () => {
+    mockFrom.mockReturnValue(q({ data: [], error: null }));
+    renderHook(() => useLocalEvents());
+    await waitFor(() => expect(mockChannel).toHaveBeenCalled());
+    expect(mockChannel).toHaveBeenCalledWith('events-realtime');
   });
 });

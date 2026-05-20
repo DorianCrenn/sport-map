@@ -129,9 +129,12 @@ export function AuthProvider({ children }) {
     return () => { cancelled = true; clearTimeout(timer); };
   }, [authUser?.id, profile]);
 
-  // Load follows from localStorage on user change (migrates legacy sl-clubs-* format)
+  // Load follows : localStorage cache → club_follows table → empty
   useEffect(() => {
     if (!authUser?.id) { setFollows([]); return; }
+    let cancelled = false;
+
+    // 1. Try localStorage cache first (instant)
     try {
       const raw = localStorage.getItem(`sl-follows-${authUser.id}`);
       if (raw) { setFollows(JSON.parse(raw)); return; }
@@ -146,7 +149,24 @@ export function AuthProvider({ children }) {
         return;
       }
     } catch { /* ignore */ }
-    setFollows([]);
+
+    // 2. Fallback : load from club_follows table (PERF-006)
+    supabase
+      .from('club_follows')
+      .select('club_id, teams, notif')
+      .eq('user_id', authUser.id)
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const loaded = data.map(row => ({
+          clubId: String(row.club_id),
+          teams:  row.teams ?? 'all',
+          notif:  row.notif ?? { match: true, news: true },
+        }));
+        setFollows(loaded);
+        localStorage.setItem(`sl-follows-${authUser.id}`, JSON.stringify(loaded));
+      });
+
+    return () => { cancelled = true; };
   }, [authUser?.id]);
 
   // ── Auth actions ─────────────────────────────────────────────────────────
@@ -267,6 +287,20 @@ export function AuthProvider({ children }) {
 
   function _saveFollows(userId, next) {
     localStorage.setItem(`sl-follows-${userId}`, JSON.stringify(next));
+    // Write to dedicated club_follows table (PERF-006)
+    supabase.from('club_follows').delete().eq('user_id', userId).then(() => {
+      if (next.length > 0) {
+        supabase.from('club_follows').insert(
+          next.map(f => ({
+            user_id: userId,
+            club_id: f.clubId,
+            teams: f.teams ?? 'all',
+            notif:  f.notif  ?? { match: true, news: true },
+          }))
+        ).then(() => {});
+      }
+    });
+    // Keep profiles.followed_clubs in sync for backward compat
     supabase.from('profiles').update({ followed_clubs: next.map(f => f.clubId) }).eq('id', userId).then(() => {});
   }
 

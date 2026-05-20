@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useDynamicMeta } from '../../hooks/useDynamicMeta.js';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
@@ -19,6 +20,7 @@ import NextMatchBlock from './blocks/NextMatchBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 import ClubManagersPanel from './ClubManagersPanel.jsx';
 import ClubDashboard from './ClubDashboard.jsx';
+import ClubBrandKitEditor from './ClubBrandKitEditor.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import ClubFormModal from './ClubFormModal.jsx';
@@ -785,7 +787,8 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
   const [showPoster, setShowPoster] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [showEditInfo, setShowEditInfo] = useState(false);
+  const [showEditInfo, setShowEditInfo]     = useState(false);
+  const [showBrandKit, setShowBrandKit]     = useState(false);
 
   async function handleShareClub() {
     const url = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
@@ -820,31 +823,15 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [club.id]);
 
-  // OpenGraph / document title injection
-  useEffect(() => {
-    const prev = document.title;
-    document.title = `${club.name} | SportLink`;
-
-    function setMeta(prop, content, attr = 'property') {
-      let el = document.querySelector(`meta[${attr}="${prop}"]`);
-      if (!el) { el = document.createElement('meta'); el.setAttribute(attr, prop); el.setAttribute('data-sl-og', '1'); document.head.appendChild(el); }
-      el.setAttribute('content', content);
-    }
-
-    const url = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
-    const desc = club.description || `${club.name} — club de ${club.sport}${club.city ? ` à ${club.city}` : ''}`;
-    setMeta('og:title',       club.name);
-    setMeta('og:description', desc);
-    setMeta('og:url',         url);
-    setMeta('og:type',        'website');
-    if (club.logo_url) setMeta('og:image', club.logo_url);
-    setMeta('description',    desc, 'name');
-
-    return () => {
-      document.title = prev;
-      document.querySelectorAll('meta[data-sl-og]').forEach(el => el.remove());
-    };
-  }, [club.id, club.name, club.sport, club.city, club.description, club.logo_url]);
+  // OpenGraph / document title via hook centralisé
+  const clubUrl = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
+  const clubDesc = club.description || `${club.name} — club de ${club.sport}${club.city ? ` à ${club.city}` : ''}`;
+  useDynamicMeta({
+    title:       club.name,
+    description: clubDesc,
+    image:       club.logo_url || undefined,
+    url:         clubUrl,
+  });
 
   const clubEventIds = useMemo(
     () => (allEvents ?? []).filter(e => String(e.clubId) === String(club.id)).map(e => e.id),
@@ -992,6 +979,20 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                     {managers.length}
                   </span>
                 )}
+              </button>
+            )}
+            {isOwner && (
+              <button
+                onClick={() => setShowBrandKit(true)}
+                aria-label="Identité visuelle du club"
+                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/>
+                  <circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/>
+                  <path d="M12 20s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10z"/>
+                </svg>
+                <span className="hidden sm:inline">Brand</span>
               </button>
             )}
             {canEdit && onUpdateClub && (
@@ -1449,6 +1450,17 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             clubEventIds={clubEventIds}
             allEvents={allEvents}
             onClose={() => setShowDashboard(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Brand kit editor slide-in */}
+      <AnimatePresence>
+        {showBrandKit && (
+          <ClubBrandKitEditor
+            key="club-brand-kit"
+            club={club}
+            onClose={() => setShowBrandKit(false)}
           />
         )}
       </AnimatePresence>

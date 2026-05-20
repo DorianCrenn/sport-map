@@ -1,141 +1,250 @@
 import { motion } from 'framer-motion';
+import { useNewsFeed } from '../hooks/useNewsFeed.js';
 import SportIcon from '../components/SportIcon.jsx';
 
-const NEWS = [
-  {
-    id: 1,
-    category: 'Football',
-    categoryColor: '#16a34a',
-    title: 'Division Honneur : l\'US Brest en route vers le titre',
-    summary: 'Avec 54 points après 28 journées, les Brestois semblent bien partis pour décrocher le titre de champion de Division Honneur Bretagne cette saison.',
-    time: 'Il y a 2h',
-    readTime: '2 min',
-  },
-  {
-    id: 2,
-    category: 'Running',
-    categoryColor: '#2563eb',
-    title: 'Semi-marathon de Quimper : plus de 1 500 dossards déjà vendus',
-    summary: 'L\'édition 2026 du semi-marathon de Quimper s\'annonce record. Le départ est prévu le 17 mai depuis la Place de la Résistance.',
-    time: 'Il y a 5h',
-    readTime: '3 min',
-  },
-  {
-    id: 3,
-    category: 'Basketball',
-    categoryColor: '#eab308',
-    title: 'Landerneau Bretagne BB : les playoffs démarrent fort',
-    summary: 'Victoire 78-65 en match aller des playoffs Pro B. Le club finistérien confirme son statut de favori pour la montée.',
-    time: 'Hier',
-    readTime: '2 min',
-  },
-  {
-    id: 4,
-    category: 'Trail',
-    categoryColor: '#06b6d4',
-    title: 'Trail des Abers : les inscriptions ferment vendredi',
-    summary: 'Il reste quelques places disponibles pour le Trail des Abers du 9 mai. Les deux parcours (10 km et 22 km) longent les estuaires des Abers Wrac\'h et Benoît.',
-    time: 'Hier',
-    readTime: '2 min',
-  },
-  {
-    id: 5,
-    category: 'Rugby',
-    categoryColor: '#dc2626',
-    title: 'Fédérale 3 : RC Brest qualifié pour la finale',
-    summary: 'Le Rugby Club Brestois a validé son ticket pour la finale départementale après sa victoire en demi-finale. Rendez-vous le 31 mai au Stade du Bouguen.',
-    time: 'Il y a 2 jours',
-    readTime: '3 min',
-  },
-  {
-    id: 6,
-    category: 'Cyclisme',
-    categoryColor: '#7c3aed',
-    title: 'Cyclosportive du Pays de Brest : un parcours renouvelé',
-    summary: 'Pour sa 12e édition, la Cyclosportive du Pays de Brest propose un nouveau tracé pour le 150 km incluant la traversée de la presqu\'île de Crozon.',
-    time: 'Il y a 3 jours',
-    readTime: '4 min',
-  },
-];
+const TYPE_META = {
+  urgent: { color: '#ef4444', label: 'Urgent' },
+  result: { color: '#22d96a', label: 'Résultat' },
+  event:  { color: '#3b82f6', label: 'Événement' },
+  info:   { color: '#64748b', label: 'Info' },
+};
 
-export default function NewsPage() {
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = (now - d) / 1000;
+  if (diff < 3600) return `Il y a ${Math.round(diff / 60)} min`;
+  if (diff < 86400) return `Il y a ${Math.round(diff / 3600)}h`;
+  if (diff < 172800) return 'Hier';
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
+function fmtDateFuture(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
+    + ' · ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function AnnouncementCard({ ann, index }) {
+  const meta = TYPE_META[ann.type] ?? TYPE_META.info;
   return (
-    <div className="h-full flex flex-col bg-[#F1F5F9]">
+    <motion.article
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.2 }}
+      style={{
+        background: 'var(--sl-card)', borderRadius: 16,
+        border: '1px solid var(--sl-border-s)', overflow: 'hidden',
+      }}
+    >
+      <div style={{ height: 3, backgroundColor: meta.color }} />
+      <div style={{ padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+            color: '#fff', backgroundColor: meta.color,
+          }}>{meta.label}</span>
+          <span style={{ fontSize: 11, color: 'var(--sl-t3)', marginLeft: 'auto' }}>
+            {ann.club_name}
+          </span>
+          <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{fmtDate(ann.created_at)}</span>
+        </div>
+        {ann.title && (
+          <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--sl-t1)', marginBottom: 4, lineHeight: 1.3 }}>
+            {ann.title}
+          </div>
+        )}
+        <p style={{ fontSize: 13, color: 'var(--sl-t2)', lineHeight: 1.5, margin: 0 }}>
+          {ann.message}
+        </p>
+      </div>
+    </motion.article>
+  );
+}
+
+function ResultCard({ event, index }) {
+  const sc = event.score;
+  const scoreStr = sc && typeof sc === 'object' && 'home' in sc
+    ? `${sc.home} — ${sc.away}`
+    : (typeof sc === 'string' ? sc : '?');
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.2 }}
+      style={{
+        background: 'var(--sl-card)', borderRadius: 16,
+        border: '1px solid var(--sl-border-s)', padding: '14px 16px',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}
+    >
+      <div style={{
+        width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+        backgroundColor: 'rgba(34,217,106,0.1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <SportIcon sport={event.sport} size={22} color="var(--sl-green)" />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12, color: 'var(--sl-t3)', marginBottom: 2 }}>
+          {fmtDate(event.date)} · {event.sport}
+        </div>
+        <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--sl-t1)', marginBottom: 2,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {event.title}
+        </div>
+        {event.venue || event.city
+          ? <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>📍 {event.venue || event.city}</div>
+          : null}
+      </div>
+      <div style={{
+        flexShrink: 0, padding: '6px 12px', borderRadius: 10,
+        background: 'rgba(34,217,106,0.12)', border: '1px solid rgba(34,217,106,0.25)',
+        fontWeight: 800, fontSize: 15, color: 'var(--sl-green)',
+      }}>
+        {scoreStr}
+      </div>
+    </motion.article>
+  );
+}
+
+function UpcomingCard({ event, index }) {
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.2 }}
+      style={{
+        background: 'var(--sl-card)', borderRadius: 16,
+        border: '1px solid var(--sl-border-s)', padding: '14px 16px',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}
+    >
+      <div style={{
+        width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+        backgroundColor: 'rgba(59,130,246,0.1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <SportIcon sport={event.sport} size={22} color="#3b82f6" />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 11, color: '#3b82f6', fontWeight: 700, marginBottom: 2 }}>
+          {fmtDateFuture(event.date)}
+        </div>
+        <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--sl-t1)', marginBottom: 2,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {event.title}
+        </div>
+        {event.venue || event.city
+          ? <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>📍 {event.venue || event.city}</div>
+          : null}
+      </div>
+      <div style={{
+        flexShrink: 0, fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8,
+        background: 'rgba(59,130,246,0.12)', color: '#3b82f6',
+      }}>
+        {event.home_or_away === 'away' ? 'Ext.' : 'Dom.'}
+      </div>
+    </motion.article>
+  );
+}
+
+function EmptyFeed() {
+  return (
+    <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--sl-t3)' }}>
+      <div style={{ fontSize: 36, marginBottom: 12 }}>🏟️</div>
+      <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--sl-t1)', marginBottom: 6 }}>
+        Aucune actualité pour l'instant
+      </div>
+      <p style={{ fontSize: 13, lineHeight: 1.5, maxWidth: 260, margin: '0 auto' }}>
+        Suivez des clubs depuis la section Clubs pour voir leurs annonces et résultats ici.
+      </p>
+    </div>
+  );
+}
+
+function Section({ title, children }) {
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <div style={{
+        fontSize: 11, fontWeight: 800, textTransform: 'uppercase',
+        letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 10,
+      }}>
+        {title}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+export default function NewsPage({ followedClubIds = [] }) {
+  const { announcements, results, upcoming, loading, hasClubs } = useNewsFeed({ followedClubIds });
+
+  const isEmpty = !loading && announcements.length === 0 && results.length === 0 && upcoming.length === 0;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--sl-bg)' }}>
       {/* Header */}
-      <div className="flex-shrink-0 bg-white px-4 pt-5 pb-4 border-b border-gray-100">
-        <h1 className="text-xl font-bold font-poppins" style={{ color: '#0F1E3A' }}>Actualités</h1>
-        <p className="text-xs text-gray-400 mt-0.5">Sport en Finistère · Mis à jour aujourd'hui</p>
+      <div style={{
+        flexShrink: 0, background: 'var(--sl-card)',
+        padding: '16px 16px 12px', borderBottom: '1px solid var(--sl-border-s)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h1 style={{ fontWeight: 800, fontSize: 20, color: 'var(--sl-t1)', margin: 0, fontFamily: 'Poppins, sans-serif' }}>
+            Actualités
+          </h1>
+          {!loading && hasClubs && (
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--sl-green)',
+              boxShadow: '0 0 6px var(--sl-green)',
+            }} title="Realtime actif" />
+          )}
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: '2px 0 0' }}>
+          {hasClubs ? 'Clubs que vous suivez · Realtime' : 'Suivez des clubs pour voir leurs actus'}
+        </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {/* Featured article */}
-        <motion.article
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-          className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer active:scale-[0.99] transition-transform"
-        >
-          {/* Color band */}
-          <div className="h-1.5 w-full" style={{ backgroundColor: NEWS[0].categoryColor }} />
-          <div className="p-4">
-            <div className="flex items-center gap-2 mb-2.5">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${NEWS[0].categoryColor}15` }}>
-                <SportIcon sport={NEWS[0].category} size={18} color={NEWS[0].categoryColor} />
-              </div>
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white"
-                style={{ backgroundColor: NEWS[0].categoryColor }}>
-                {NEWS[0].category}
-              </span>
-              <span className="text-[10px] text-gray-400 ml-auto">{NEWS[0].time}</span>
-            </div>
-            <h2 className="font-bold text-base leading-snug mb-1.5 font-poppins" style={{ color: '#0F1E3A' }}>
-              {NEWS[0].title}
-            </h2>
-            <p className="text-xs text-gray-500 leading-relaxed">{NEWS[0].summary}</p>
-            <div className="flex items-center gap-1 mt-3">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-              </svg>
-              <span className="text-[10px] text-gray-400">{NEWS[0].readTime} de lecture</span>
-            </div>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 80px' }}>
+        {loading && (
+          <div style={{ textAlign: 'center', padding: 40, color: 'var(--sl-t3)', fontSize: 13 }}>
+            Chargement…
           </div>
-        </motion.article>
+        )}
 
-        {/* Other articles */}
-        {NEWS.slice(1).map((article, i) => (
-          <motion.article
-            key={article.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: (i + 1) * 0.06, duration: 0.2 }}
-            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 cursor-pointer active:scale-[0.99] transition-transform"
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${article.categoryColor}12` }}>
-                <SportIcon sport={article.category} size={22} color={article.categoryColor} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
-                    style={{ backgroundColor: article.categoryColor }}>
-                    {article.category}
-                  </span>
-                  <span className="text-[10px] text-gray-400">{article.time}</span>
-                </div>
-                <h3 className="font-semibold text-sm leading-snug mb-1 font-poppins" style={{ color: '#0F1E3A' }}>
-                  {article.title}
-                </h3>
-                <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{article.summary}</p>
-              </div>
-            </div>
-          </motion.article>
-        ))}
+        {!loading && isEmpty && <EmptyFeed />}
 
-        <div className="text-center py-4">
-          <p className="text-xs text-gray-400">Les actualités sont mises à jour régulièrement</p>
-        </div>
+        {!loading && announcements.length > 0 && (
+          <Section title="Annonces">
+            {announcements.map((ann, i) => (
+              <AnnouncementCard key={ann.id} ann={ann} index={i} />
+            ))}
+          </Section>
+        )}
+
+        {!loading && upcoming.length > 0 && (
+          <Section title="Prochains matchs">
+            {upcoming.map((ev, i) => (
+              <UpcomingCard key={ev.id} event={ev} index={i} />
+            ))}
+          </Section>
+        )}
+
+        {!loading && results.length > 0 && (
+          <Section title="Résultats récents">
+            {results.map((ev, i) => (
+              <ResultCard key={ev.id} event={ev} index={i} />
+            ))}
+          </Section>
+        )}
       </div>
     </div>
   );

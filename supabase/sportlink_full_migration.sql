@@ -240,6 +240,26 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- Templates favoris affiche dans profiles (sync PosterStudio)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name='profiles' AND column_name='poster_fav_templates'
+  ) THEN
+    ALTER TABLE public.profiles ADD COLUMN poster_fav_templates JSONB DEFAULT '[]';
+  END IF;
+END $$;
+
+-- Template par défaut dans club_brand_kits (sync PosterStudio)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name='club_brand_kits' AND column_name='default_template_id'
+  ) THEN
+    ALTER TABLE public.club_brand_kits ADD COLUMN default_template_id TEXT;
+  END IF;
+END $$;
+
 
 -- ════════════════════════════════════════════════════════════
 -- 4. INDEX
@@ -680,13 +700,49 @@ CREATE VIEW public.event_attendee_counts
 
 GRANT SELECT ON public.event_attendee_counts TO anon, authenticated;
 
--- Counts followers par club
+-- ── PERF-006 : table dédiée club_follows ─────────────────────────────────────
+-- club_id is TEXT (like club_pages, club_managers, etc.) for compatibility with
+-- profiles.followed_clubs TEXT[] which may contain non-UUID legacy values.
+CREATE TABLE IF NOT EXISTS public.club_follows (
+  user_id    uuid REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  club_id    TEXT        NOT NULL,
+  teams      jsonb        DEFAULT '"all"'::jsonb,
+  notif      jsonb        DEFAULT '{"match":true,"news":true}'::jsonb,
+  created_at timestamptz  DEFAULT now(),
+  PRIMARY KEY (user_id, club_id)
+);
+
+CREATE INDEX IF NOT EXISTS club_follows_club_id_idx ON public.club_follows(club_id);
+
+ALTER TABLE public.club_follows ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "follows_select_public" ON public.club_follows;
+DROP POLICY IF EXISTS "follows_insert_own"    ON public.club_follows;
+DROP POLICY IF EXISTS "follows_update_own"    ON public.club_follows;
+DROP POLICY IF EXISTS "follows_delete_own"    ON public.club_follows;
+
+CREATE POLICY "follows_select_public" ON public.club_follows FOR SELECT USING (true);
+CREATE POLICY "follows_insert_own"    ON public.club_follows FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "follows_update_own"    ON public.club_follows FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "follows_delete_own"    ON public.club_follows FOR DELETE USING (auth.uid() = user_id);
+
+-- Migration one-shot : copie profiles.followed_clubs → club_follows
+-- Only migrate entries whose value matches an existing clubs.id (cast to text for comparison).
+INSERT INTO public.club_follows (user_id, club_id)
+SELECT p.id, cid
+FROM public.profiles p
+CROSS JOIN LATERAL UNNEST(p.followed_clubs) AS cid
+WHERE p.followed_clubs IS NOT NULL
+  AND cardinality(p.followed_clubs) > 0
+  AND cid IN (SELECT id::text FROM public.clubs)
+ON CONFLICT (user_id, club_id) DO NOTHING;
+
+-- Counts followers par club — maintenant via table dédiée (index sur club_id = O(log n))
 DROP VIEW IF EXISTS public.club_follower_counts;
 CREATE VIEW public.club_follower_counts AS
-  SELECT t.club_id, COUNT(*)::int AS follower_count
-  FROM public.profiles
-  CROSS JOIN LATERAL UNNEST(followed_clubs) AS t(club_id)
-  GROUP BY t.club_id;
+  SELECT club_id, COUNT(*)::int AS follower_count
+  FROM public.club_follows
+  GROUP BY club_id;
 
 GRANT SELECT ON public.club_follower_counts TO anon, authenticated;
 
@@ -696,7 +752,250 @@ GRANT INSERT, SELECT ON public.club_page_views TO anon, authenticated;
 
 
 -- ════════════════════════════════════════════════════════════
--- 9. ADMIN SETUP (idempotent — ne touche pas aux autres users)
+-- 9. POSTER STUDIO — Tables
+-- ════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS public.poster_folders (
+  id         uuid    DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id    uuid    REFERENCES auth.users(id)   ON DELETE CASCADE NOT NULL,
+  club_id    uuid    REFERENCES public.clubs(id)  ON DELETE CASCADE,
+  name       text    NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.posters (
+  id            uuid    DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id       uuid    REFERENCES auth.users(id)              ON DELETE CASCADE NOT NULL,
+  club_id       uuid    REFERENCES public.clubs(id)             ON DELETE SET NULL,
+  event_id      uuid    REFERENCES public.events(id)            ON DELETE SET NULL,
+  folder_id     uuid    REFERENCES public.poster_folders(id)    ON DELETE SET NULL,
+  name          text    NOT NULL DEFAULT 'Affiche',
+  status        text    NOT NULL DEFAULT 'draft'
+                CHECK (status IN ('draft','saved','published','archived')),
+  format        text    NOT NULL DEFAULT 'story'
+                CHECK (format IN ('story','post','banner')),
+  template_id   text    NOT NULL DEFAULT 'simple',
+  layers        jsonb   NOT NULL DEFAULT '{}',
+  thumbnail_url text,
+  created_at    timestamptz DEFAULT now(),
+  updated_at    timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.poster_versions (
+  id             uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  poster_id      uuid REFERENCES public.posters(id) ON DELETE CASCADE NOT NULL,
+  version_number int  NOT NULL DEFAULT 1,
+  layers         jsonb NOT NULL DEFAULT '{}',
+  created_at     timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.poster_templates (
+  id            text PRIMARY KEY,
+  user_id       uuid REFERENCES auth.users(id)  ON DELETE SET NULL,
+  club_id       uuid REFERENCES public.clubs(id) ON DELETE CASCADE,
+  name          text NOT NULL,
+  description   text DEFAULT '',
+  is_system     boolean DEFAULT false,
+  is_premium    boolean DEFAULT false,
+  category      text DEFAULT 'match'
+                CHECK (category IN ('match','result','event','tournament','training','recruitment')),
+  sport         text,
+  thumbnail_url text,
+  layers        jsonb NOT NULL DEFAULT '{}',
+  created_at    timestamptz DEFAULT now(),
+  updated_at    timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.club_brand_kits (
+  id              uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  club_id         uuid REFERENCES public.clubs(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  kit_name        text DEFAULT 'Identité visuelle',
+  primary_color   text DEFAULT '#22D96A',
+  secondary_color text DEFAULT '#0D1117',
+  accent_color    text DEFAULT '#ffffff',
+  text_color      text DEFAULT '#ffffff',
+  bg_color        text DEFAULT '#0D1117',
+  primary_font    text DEFAULT 'Inter',
+  logo_urls       jsonb DEFAULT '{}',
+  created_at      timestamptz DEFAULT now(),
+  updated_at      timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_jobs (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id     uuid REFERENCES auth.users(id)  ON DELETE CASCADE NOT NULL,
+  club_id     uuid REFERENCES public.clubs(id) ON DELETE SET NULL,
+  type        text NOT NULL
+              CHECK (type IN ('import','generate','dna','thumbnail')),
+  status      text NOT NULL DEFAULT 'pending'
+              CHECK (status IN ('pending','processing','done','failed')),
+  priority    int  NOT NULL DEFAULT 5,
+  input_url   text,
+  input_data  jsonb DEFAULT '{}',
+  output_data jsonb DEFAULT '{}',
+  error_msg   text,
+  created_at  timestamptz DEFAULT now(),
+  updated_at  timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.club_ai_usage (
+  id             uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  club_id        uuid REFERENCES public.clubs(id) ON DELETE CASCADE NOT NULL,
+  month          date NOT NULL,
+  import_count   int  DEFAULT 0,
+  generate_count int  DEFAULT 0,
+  monthly_limit  int  DEFAULT 5,
+  UNIQUE(club_id, month)
+);
+
+
+-- ════════════════════════════════════════════════════════════
+-- 10. POSTER STUDIO — Index
+-- ════════════════════════════════════════════════════════════
+
+CREATE INDEX IF NOT EXISTS posters_user_status    ON public.posters(user_id, status);
+CREATE INDEX IF NOT EXISTS posters_club_status    ON public.posters(club_id, status);
+CREATE INDEX IF NOT EXISTS posters_event          ON public.posters(event_id) WHERE event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS posters_updated        ON public.posters(updated_at DESC);
+CREATE INDEX IF NOT EXISTS poster_versions_poster ON public.poster_versions(poster_id, version_number DESC);
+CREATE INDEX IF NOT EXISTS ai_jobs_status_prio    ON public.ai_jobs(status, priority DESC)
+  WHERE status IN ('pending','processing');
+
+-- Contrainte unique pour le upsert draft : un seul brouillon par event+user
+CREATE UNIQUE INDEX IF NOT EXISTS posters_draft_event_user
+  ON public.posters(event_id, user_id)
+  WHERE event_id IS NOT NULL AND status = 'draft';
+
+
+-- ════════════════════════════════════════════════════════════
+-- 11. POSTER STUDIO — RLS enable
+-- ════════════════════════════════════════════════════════════
+
+ALTER TABLE public.poster_folders    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.posters           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.poster_versions   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.poster_templates  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.club_brand_kits   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ai_jobs           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.club_ai_usage     ENABLE ROW LEVEL SECURITY;
+
+
+-- ════════════════════════════════════════════════════════════
+-- 12. POSTER STUDIO — updated_at function + triggers
+-- ════════════════════════════════════════════════════════════
+
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN NEW.updated_at = now(); RETURN NEW; END;
+$$;
+
+DO $$ BEGIN
+  CREATE TRIGGER posters_updated_at
+    BEFORE UPDATE ON public.posters
+    FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER club_brand_kits_updated_at
+    BEFORE UPDATE ON public.club_brand_kits
+    FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER ai_jobs_updated_at
+    BEFORE UPDATE ON public.ai_jobs
+    FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER poster_templates_updated_at
+    BEFORE UPDATE ON public.poster_templates
+    FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+
+-- ════════════════════════════════════════════════════════════
+-- 13. POSTER STUDIO — Policies RLS
+-- ════════════════════════════════════════════════════════════
+
+-- poster_folders
+DROP POLICY IF EXISTS "folders_owner" ON public.poster_folders;
+CREATE POLICY "folders_owner" ON public.poster_folders
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+-- posters
+DROP POLICY IF EXISTS "posters_owner"      ON public.posters;
+DROP POLICY IF EXISTS "posters_club_admin" ON public.posters;
+CREATE POLICY "posters_owner" ON public.posters
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+CREATE POLICY "posters_club_admin" ON public.posters FOR SELECT
+  USING (
+    club_id IS NOT NULL AND
+    club_id IN (SELECT id FROM public.clubs WHERE user_id = auth.uid())
+  );
+
+-- poster_versions
+DROP POLICY IF EXISTS "versions_owner" ON public.poster_versions;
+CREATE POLICY "versions_owner" ON public.poster_versions
+  USING (
+    poster_id IN (SELECT id FROM public.posters WHERE user_id = auth.uid())
+  )
+  WITH CHECK (
+    poster_id IN (SELECT id FROM public.posters WHERE user_id = auth.uid())
+  );
+
+-- poster_templates
+DROP POLICY IF EXISTS "templates_public_select" ON public.poster_templates;
+DROP POLICY IF EXISTS "templates_owner_write"   ON public.poster_templates;
+CREATE POLICY "templates_public_select" ON public.poster_templates FOR SELECT
+  USING (
+    is_system = true
+    OR user_id = auth.uid()
+    OR club_id IN (SELECT id FROM public.clubs WHERE user_id = auth.uid())
+  );
+CREATE POLICY "templates_owner_write" ON public.poster_templates FOR ALL
+  USING (
+    user_id = auth.uid()
+    OR (SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin','superadmin')
+  )
+  WITH CHECK (
+    user_id = auth.uid()
+    OR (SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin','superadmin')
+  );
+
+-- club_brand_kits
+DROP POLICY IF EXISTS "brand_kits_select"      ON public.club_brand_kits;
+DROP POLICY IF EXISTS "brand_kits_owner_write" ON public.club_brand_kits;
+CREATE POLICY "brand_kits_select" ON public.club_brand_kits FOR SELECT USING (true);
+CREATE POLICY "brand_kits_owner_write" ON public.club_brand_kits FOR ALL
+  USING (
+    club_id IN (SELECT id FROM public.clubs WHERE user_id = auth.uid())
+    OR (SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin','superadmin')
+  )
+  WITH CHECK (
+    club_id IN (SELECT id FROM public.clubs WHERE user_id = auth.uid())
+    OR (SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin','superadmin')
+  );
+
+-- ai_jobs
+DROP POLICY IF EXISTS "ai_jobs_owner" ON public.ai_jobs;
+CREATE POLICY "ai_jobs_owner" ON public.ai_jobs
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+-- club_ai_usage
+DROP POLICY IF EXISTS "ai_usage_club_admin" ON public.club_ai_usage;
+CREATE POLICY "ai_usage_club_admin" ON public.club_ai_usage FOR SELECT
+  USING (
+    club_id IN (SELECT id FROM public.clubs WHERE user_id = auth.uid())
+    OR (SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin','superadmin')
+  );
+
+
+-- ════════════════════════════════════════════════════════════
+-- 14. ADMIN SETUP (idempotent — ne touche pas aux autres users)
 -- ════════════════════════════════════════════════════════════
 
 INSERT INTO public.profiles (id, name, role, onboarding_done)
@@ -705,6 +1004,72 @@ FROM auth.users
 WHERE email = 'admin@sportlink.fr'
 ON CONFLICT (id) DO UPDATE
   SET role = 'superadmin', onboarding_done = true, name = 'Super Admin';
+
+-- ════════════════════════════════════════════════════════════
+-- 15. RÉACTIONS SUR ÉVÉNEMENTS (EPIC-P5-1)
+-- ════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS public.event_reactions (
+  id         uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
+  event_id   uuid        REFERENCES public.events(id) ON DELETE CASCADE NOT NULL,
+  user_id    uuid        REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  emoji      text        NOT NULL CHECK (emoji IN ('👏', '🔥', '💪')),
+  created_at timestamptz DEFAULT now(),
+  UNIQUE (event_id, user_id, emoji)
+);
+
+ALTER TABLE public.event_reactions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "reactions_select_public" ON public.event_reactions;
+DROP POLICY IF EXISTS "reactions_insert_own"    ON public.event_reactions;
+DROP POLICY IF EXISTS "reactions_delete_own"    ON public.event_reactions;
+
+CREATE POLICY "reactions_select_public" ON public.event_reactions
+  FOR SELECT USING (true);
+
+CREATE POLICY "reactions_insert_own" ON public.event_reactions
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "reactions_delete_own" ON public.event_reactions
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Vue agrégée des comptes par emoji
+CREATE OR REPLACE VIEW public.event_reaction_counts AS
+  SELECT event_id, emoji, COUNT(*)::int AS count
+  FROM public.event_reactions
+  GROUP BY event_id, emoji;
+
+GRANT SELECT ON public.event_reaction_counts TO anon, authenticated;
+
+-- ════════════════════════════════════════════════════════════
+-- 16. COMMENTAIRES POST-MATCH (EPIC-P5-1)
+-- ════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS public.event_comments (
+  id         uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
+  event_id   uuid        REFERENCES public.events(id)   ON DELETE CASCADE NOT NULL,
+  user_id    uuid        REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  content    text        NOT NULL
+                         CHECK (length(trim(content)) >= 1 AND length(content) <= 500),
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS event_comments_event_id_idx ON public.event_comments(event_id);
+
+ALTER TABLE public.event_comments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "comments_select_public" ON public.event_comments;
+DROP POLICY IF EXISTS "comments_insert_own"    ON public.event_comments;
+DROP POLICY IF EXISTS "comments_delete_own"    ON public.event_comments;
+
+CREATE POLICY "comments_select_public" ON public.event_comments
+  FOR SELECT USING (true);
+
+CREATE POLICY "comments_insert_own" ON public.event_comments
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "comments_delete_own" ON public.event_comments
+  FOR DELETE USING (auth.uid() = user_id);
 
 -- ============================================================
 -- FIN — Tout est idempotent, safe to re-run.

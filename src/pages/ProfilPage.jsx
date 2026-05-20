@@ -5,11 +5,13 @@ import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
+import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import { STATIC_CLUBS } from '../data/clubs.js';
 import { BADGE_DEFS, BADGE_ORDER } from '../hooks/useBadges.js';
 import BadgeUnlockModal from '../components/BadgeUnlockModal.jsx';
+import ClubLeaderboard from '../components/ClubLeaderboard.jsx';
 
 // ── Theme toggle switch ────────────────────────────────────────────────────────
 function ThemeToggle() {
@@ -88,9 +90,10 @@ function ThemeToggle() {
   );
 }
 
-export default function ProfilPage({ favorites, userEvents, earnedBadges = [], onNavigate, onShowAuth, onMyRides, rideNotifCount = 0 }) {
+export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, onShowAuth, onMyRides, rideNotifCount = 0 }) {
   const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs } = useAuth();
   const { toast } = useToast();
+  const { favorites } = useFavoritesContext();
   const { allSports } = useSports();
   const { userClubs } = useClubs();
   const allClubs = [...userClubs, ...STATIC_CLUBS];
@@ -279,6 +282,9 @@ export default function ProfilPage({ favorites, userEvents, earnedBadges = [], o
 
         {/* Theme toggle */}
         <ThemeToggle />
+
+        {/* Classement clubs actifs */}
+        <ClubLeaderboard />
 
         {/* Admin shortcut */}
         {isAdmin && (

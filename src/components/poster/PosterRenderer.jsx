@@ -244,6 +244,19 @@ export default function PosterRenderer({ templateId, data, format = 'story', pre
         }}
       >
         <Component {...data} format={format} transforms={transforms} />
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute', bottom: 10, right: 12,
+            fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
+            textTransform: 'uppercase', fontFamily: 'Inter, sans-serif',
+            color: 'rgba(255,255,255,0.30)',
+            pointerEvents: 'none', userSelect: 'none',
+            mixBlendMode: 'screen',
+          }}
+        >
+          SportLink
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 # SportLink — Backlog Technique & Produit
 > Document vivant — mis à jour au fil des sprints  
-> Dernière mise à jour : 2026-05-18
+> Dernière mise à jour : 2026-05-20
 
 ---
 
@@ -47,6 +47,11 @@
 | Éditeur événement : types + équipes | 2026-05 | eventType radio, teamName, category |
 | Autocomplete lieu (Photon/OSM) | 2026-05 | VenueAutocomplete, sans clé API |
 | Partage deeplinks club/événement | 2026-05 | #club/:id, #event/:id, Web Share API |
+| Réactions sur événements | 2026-05 | EventReactions.jsx + useEventReactions hook |
+| Commentaires sur événements | 2026-05 | EventComments.jsx + useEventComments hook, 10 tests |
+| UX-003 Onboarding aha moment | 2026-05 | Bannière sport contextuelle post-onboarding sur MapPage |
+| PROD-003 Score live + fil actualité | 2026-05 | NewsPage Realtime, score updates, feed clubs suivis |
+| QA Audit hooks critiques | 2026-05 | useLocalEvents + useClubs réécrits, 14 tests, 10 bugs corrigés |
 
 ---
 
@@ -59,7 +64,7 @@
   - ✅ SEC-002 — RLS `club_managers` (fuite emails)
   - ✅ SEC-003 — `events_insert` restreint aux admins/club_admins
   - ✅ SEC-004 — Retirer `role`/`clubId` de `updateProfile` + trigger BEFORE UPDATE SECURITY DEFINER
-  - 🔄 BUG-001 — Rôle admin cassé sur cold start (fix poussé, validation en attente)
+  - ✅ BUG-001 — Rôle admin cassé sur cold start (retry 5×500ms + failsafe 8s dans AuthContext.jsx)
   - ✅ BUG-002 — Policies SQL en conflit (`schema.sql` vs `rls_policies.sql`)
   - ✅ — Vérifier RLS sur toutes les tables (rides, announcements, club_pages, club_trainings)
   - ✅ — Vérifier permissions upload/storage Supabase (aucun bucket utilisé — images via URL externe)
@@ -111,12 +116,11 @@
 
 ---
 
-### BUG-001 🔴 Rôle admin cassé après connexion sur Supabase cold start
+### BUG-001 ✅ Rôle admin cassé après connexion sur Supabase cold start
 - **Catégorie** : Auth / Bug
-- **Complexité** : S (fix poussé commit `7b03efc`, validation en attente)
+- **Complexité** : S
 - **Problème** : Timeout 5s expirait sur cold start → `setProfile(null)` → rôle = 'user'.
-- **Solution appliquée** : Timeout 12s, update fonctionnel, retry si profile null après 4s.
-- **Action restante** : Hard-refresh + reconnexion pour valider le fix.
+- **Solution appliquée** : Retry 5×500ms + failsafe 8s dans `AuthContext.jsx`, upsert si trigger échoue.
 
 ---
 
@@ -144,7 +148,7 @@
   - ✅ Vérifier sauvegarde favoris (Supabase source of truth + localStorage fallback)
   - ✅ Vérifier sauvegarde pages clubs (`club_pages` JSONB — RLS en place)
   - ✅ ARCH-001 — Migration données statiques `events.js`/`clubs.js` → seed SQL
-  - ⬜ PERF-006 — Table `club_follows` dédiée (remplacer `profiles.followed_clubs`) → P5
+  - ✅ PERF-006 — Table `club_follows` dédiée (créée dans `sportlink_full_migration.sql`)
   - ✅ Cohérence relations SQL + intégrité référentielle (seed.sql + `ON CONFLICT (static_id) DO NOTHING`)
 
 ---
@@ -289,7 +293,7 @@
   - ✅ Éditeur drag & drop textes/logos dans l'affiche — `PosterEditor.jsx`
   - ✅ Resize/rotation des éléments texte — `blockStyle(transforms, id)` avec translate/scale/rotate
   - ✅ Branding club (couleurs + logo automatiques) — `PosterStudio` reçoit `club` prop, auto-fill `accentColor`/`homeLogo`/`homeName`
-  - ⬜ Logo SportLink en filigrane discret
+  - ✅ Logo SportLink en filigrane discret — `PosterRenderer.jsx` watermark `rgba(255,255,255,0.30)` bas-droite
 
 ---
 
@@ -299,40 +303,32 @@
 - **Objectif** : Viralité organique. Chaque partage = acquisition potentielle.
 - **Complexité** : M
 - **À faire** :
-  - ⬜ Partage direct vers Instagram Stories (URL scheme)
-  - ⬜ Partage Facebook (Open Graph + share dialog)
-  - ⬜ Partage WhatsApp / Messenger (URL scheme avec texte auto)
-  - ⬜ Génération description automatique depuis l'événement
-  - ⬜ Bouton "Partager l'affiche" génère affiche + ouvre native share sheet
-- **Exemple description auto** :
-  ```
-  🏆 Championnat D1
-  ⚽ FC SportLink vs Racing Club
-  📅 Samedi 18h00
-  📍 Stade Municipal
-  Créé avec SportLink
-  ```
+  - ✅ Partage direct vers Instagram — `openInstagramShare()` dans `eventShare.js`, bouton dans `ShareBtn`
+  - ✅ Partage Facebook (Open Graph + share dialog) — `eventShare.js` `openFacebookShare()`
+  - ✅ Partage WhatsApp / Messenger (URL scheme avec texte auto) — `eventShare.js` `openWhatsAppShare()`
+  - ✅ Génération description automatique depuis l'événement — `generateEventDescription()` dans `eventShare.js`
+  - ✅ Bouton "Partager l'affiche" génère affiche + ouvre native share sheet — `PosterShareBtn.jsx`
 
 ---
 
-### PERF-003 🟡 `React.memo` manquant sur EventCard
+### PERF-003 ✅ `React.memo` manquant sur EventCard
 - **Catégorie** : Performance / React
 - **Complexité** : S
-- **Solution** : `export default React.memo(EventCard)` + `useCallback` sur les handlers dans les parents.
+- **Solution appliquée** : `EventCard.jsx` — `export default memo(EventCard)` (ligne 524).
 
 ---
 
-### PERF-004 🟡 `AttendeeCountContext` : reload global sur chaque event Realtime
+### PERF-004 ✅ `AttendeeCountContext` : reload global sur chaque event Realtime
 - **Catégorie** : Performance / Supabase
 - **Complexité** : S
-- **Solution** : Mettre à jour uniquement le count de l'`event_id` concerné dans le handler Realtime.
+- **Solution appliquée** : `AttendeeCountContext.jsx` — handler Realtime met à jour uniquement `counts[event_id]` en incrémental (INSERT/DELETE individuel, pas de rechargement global).
 
 ---
 
-### ARCH-002 🟡 Pas d'ErrorBoundary autour des pages critiques
+### ARCH-002 ✅ Pas d'ErrorBoundary autour des pages critiques
 - **Catégorie** : Architecture / Frontend
 - **Complexité** : XS
-- **Solution** : Wrapper chaque page dans `<ErrorBoundary fallback={<PageErrorState />}>`.
+- **Solution appliquée** : `ErrorBoundary.jsx` existe. `App.jsx` wrappe toutes les pages (home, map, favoris, news, clubs, profil, admin).
 
 ---
 
@@ -343,32 +339,31 @@
 
 ---
 
-### UX-003 🟡 Onboarding sans "aha moment"
+### UX-003 ✅ Onboarding sans "aha moment"
 - **Catégorie** : UX/UI / Produit
 - **Complexité** : M
-- **Problème** : L'utilisateur arrive sur une carte vide après l'onboarding.
-- **Solution** : Card contextuelle post-onboarding avec les événements du sport choisi cette semaine.
+- **Solution appliquée** : Bannière AnimatePresence dans `MapPage.jsx` — compte les événements du sport choisi dans les 7 prochains jours, affiche sport icon + compteur, dismissible.
 
 ---
 
-### SEC-006 🟡 `club_trainings` et `club_pages` sans RLS confirmée
+### SEC-006 ✅ `club_trainings` et `club_pages` sans RLS confirmée
 - **Catégorie** : Sécurité / Supabase
 - **Complexité** : S
-- **Solution** : Vérifier dans le dashboard Supabase. Ajouter policies SELECT public, INSERT/UPDATE/DELETE owner.
+- **Solution appliquée** : `sportlink_full_migration.sql` contient policies complètes : `trainings_select_public`, `trainings_insert_owner`, `trainings_update_owner`, `trainings_delete_owner`, et idem pour `club_pages`.
 
 ---
 
-### PERF-005 🟡 Navigation 7 onglets — trop pour mobile
+### PERF-005 ✅ Navigation 7 onglets — trop pour mobile
 - **Catégorie** : UX/UI / Mobile
 - **Complexité** : M
-- **Solution** : Réduire à 5 onglets (home, map, favoris, clubs, profil). Admin → menu profil. News → home.
+- **Solution appliquée** : `BottomNav.jsx` — 5 slots fixes : HOME, MAP, FAB central, CLUBS, PROFIL. News intégré dans Home.
 
 ---
 
-### ARCH-003 🟡 Pas de PWA — app non installable
+### ARCH-003 ✅ PWA — service worker
 - **Catégorie** : Mobile / Architecture
 - **Complexité** : M
-- **Solution** : `vite-plugin-pwa`. Manifest, cache strategy, offline fallback.
+- **Solution appliquée** : `vite-plugin-pwa` installé et configuré dans `vite.config.js`. Cache strategy NetworkFirst pour Supabase, CacheFirst pour Google Fonts. SW généré à chaque build. `manifest.json` déjà en place.
 
 ---
 
@@ -385,36 +380,64 @@
 
 ---
 
-### PROD-001 🟢 Notifications push — matchs et rappels
+### PROD-001 ✅ Notifications push — matchs et rappels
 - **Catégorie** : Produit / Mobile
 - **Complexité** : XL
-- **Dépendance** : ARCH-003 (PWA) obligatoire avant
-- **Solution** : PWA Web Push API + Supabase Edge Functions.
+- **Solution appliquée** : Web Push API + VAPID + Supabase. `pushNotifications.js` gère subscribe/unsubscribe, `usePushNotifications` hook React, `PushNotificationToggle` composant UI. SW `public/sw.js` gère l'event `push`. Table `push_subscriptions` avec RLS. Edge Function `send-push` (Deno + web-push).
+
+#### ⬜ DÉPLOIEMENT EN PROD — 3 étapes manuelles requises
+
+1. **Générer les clés VAPID** (une seule fois) :
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+   - Coller la **clé publique** dans `.env` → `VITE_VAPID_PUBLIC_KEY=...`
+   - Coller la **clé privée** dans Supabase Dashboard → Edge Functions → Secrets → `VAPID_PRIVATE_KEY`
+   - Ajouter aussi `VAPID_SUBJECT=mailto:ton@email.com` dans les secrets
+
+2. **Appliquer la migration SQL** :
+   ```bash
+   supabase db push
+   # ou coller le contenu de supabase/migrations/20260520_push_subscriptions.sql
+   # dans Supabase Dashboard → SQL Editor
+   ```
+
+3. **Déployer la Edge Function** :
+   ```bash
+   supabase functions deploy send-push
+   ```
+
+**Pour déclencher un push depuis l'app** (ex: rappel J-1) :
+```js
+fetch('/functions/v1/send-push', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${anonKey}` },
+  body: JSON.stringify({ user_id, title: '📅 Rappel match', body: 'Dans 1h !', url: '/#events' }),
+});
+```
 
 ---
 
-### PROD-002 🟢 Lien public par club avec OpenGraph
+### PROD-002 ✅ Lien public par club avec OpenGraph
 - **Catégorie** : Produit / Marketing
 - **Complexité** : L
-- **Problème** : Pas de lien partageable sur Facebook/WhatsApp. Viralité bloquée.
-- **Solution** : Route publique `/club/:id` avec meta OG. Landing simple, sans auth requise.
+- **Solution appliquée** : Page standalone `club-page.html` + `src/club-page.jsx` + `ClubPublicPage.jsx`. URL `/club-page.html?id=CLUB_ID`. OG tags injectés dynamiquement (og:title, og:description, og:image, og:url). Fonctionne pour WhatsApp/Twitter. Vite multi-entry build configuré.
 
 ---
 
-### PROD-003 🟢 Score live + fil d'actualité
+### PROD-003 ✅ Score live + fil d'actualité
 - **Catégorie** : Produit / Engagement
 - **Complexité** : L
-- **Problème** : Colonne `score` en DB mais pas d'interface de saisie rapide. Onglet News vide.
-- **Solution** : Interface saisie score pour club_admins. Feed Realtime sur la page d'accueil.
+- **Solution appliquée** : `useNewsFeed.js` — Realtime sur `events` INSERT (nouveaux événements futurs) et UPDATE (score mis à jour). `NewsPage.jsx` affiche `ResultCard` avec score home/away. `App.jsx` transmet `followedClubs`.
 
 ---
 
 ### PROD-004 🟢 Gamification — badges et streaks
 - **Note** : Système de badges "J'y étais" existe déjà partiellement ✅
 - **Reste à faire** :
-  - ⬜ Badge "Fan fidèle" (5 J'y serai dans un club)
-  - ⬜ Classement clubs les plus actifs du mois
-  - ⬜ Streaks de présence
+  - ✅ Badge "Fan fidèle" (5 J'y serai dans un club) — `useBadges.js` badge `loyal_fan`
+  - ✅ Classement clubs les plus actifs du mois — `useClubLeaderboard.js` + section collapsible dans `ClubsPage`
+  - ✅ Streaks de présence — `computeMaxStreak()` dans `useBadges.js`, badges `streak_3` et `streak_5`
 
 ---
 
@@ -423,10 +446,10 @@
 ### EPIC-P4-1 🟡 Branding premium
 - **Note** : Typographie par club déjà implémentée ✅
 - **Reste à faire** :
-  - ⬜ Thèmes de couleurs club (palette primaire/secondaire personnalisée)
+  - ✅ Thèmes de couleurs club (palette primaire/secondaire personnalisée) — `ClubBrandKitEditor.jsx` avec color picker + presets
   - ⬜ Typographies supplémentaires
-  - ⬜ Bloc sponsors avec logos + liens
-  - ⬜ Pages avancées (sections custom, hero image)
+  - ✅ Bloc sponsors avec logos + liens — `SponsorsBlock.jsx` dans éditeur de pages
+  - ⬜ Pages avancées (hero image, sections custom)
 
 ---
 
@@ -444,11 +467,11 @@
 
 ### EPIC-P5-1 🟢 Réseau social sportif léger
 - **Complexité** : XL
-- **À faire plus tard** :
-  - ⬜ Réactions sur événements (👏 🔥 💪)
-  - ⬜ Commentaires post-match
+- **État** :
+  - ✅ Réactions sur événements (👏 🔥 💪) — `EventReactions.jsx` + `useEventReactions.js`
+  - ✅ Commentaires post-match — `EventComments.jsx` + `useEventComments.js`, intégré dans `EventCard`
   - ⬜ Photos d'événements (upload + galerie)
-  - ⬜ Fil communauté (feed des clubs suivis)
+  - ✅ Fil communauté (feed des clubs suivis) — `NewsPage.jsx` + `useNewsFeed.js` Realtime
 
 ---
 
@@ -463,11 +486,11 @@
 
 ---
 
-### PERF-006 🟢 `club_follower_counts` — query non scalable
+### PERF-006 ✅ `club_follower_counts` — query non scalable
 - **Catégorie** : Performance / Supabase
 - **Complexité** : M
 - **Problème** : Full table scan sur `profiles` à 10 000 utilisateurs.
-- **Solution** : Table `club_follows(user_id, club_id, created_at)` dédiée avec index sur `club_id`.
+- **Solution appliquée** : Table `club_follows(user_id, club_id, teams, notif, created_at)` créée dans `sportlink_full_migration.sql` avec index sur `club_id`.
 
 ---
 
@@ -489,18 +512,18 @@
 ## ROADMAP — Ordre recommandé
 
 ```
-SPRINT 1 — Stabilisation (cette semaine)
-├── SEC-001  Clé API en .env.local                          [XS] ⬜
-├── SEC-002  RLS club_managers                              [XS] ⬜
-├── SEC-003  events_insert restreint admins/clubs           [XS] ⬜
-├── SEC-004  Retirer role/clubId de updateProfile           [XS] ⬜
-├── BUG-001  Valider fix rôle admin (hard-refresh)          [XS] 🔄
-├── BUG-002  Consolider SQL policies                        [M]  ⬜
+SPRINT 1 — Stabilisation
+├── SEC-001  Clé API en .env.local                          [XS] ✅
+├── SEC-002  RLS club_managers                              [XS] ✅
+├── SEC-003  events_insert restreint admins/clubs           [XS] ✅
+├── SEC-004  Retirer role/clubId de updateProfile           [XS] ✅
+├── BUG-001  Rôle admin cold start                          [S]  ✅
+├── BUG-002  Consolider SQL policies                        [M]  ✅
 ├── MOBILE-001/002/003  Safe area + scroll + tap targets    [S]  ✅
 └── BUG-003  updateEvent conserve user_id original          [XS] ✅
 
-SPRINT 2 — Clubs indispensables (semaines 1-2)
-├── EPIC-P1-1  Création événement < 15s                     [L]  ⬜
+SPRINT 2 — Clubs indispensables
+├── EPIC-P1-1  Création événement < 15s                     [L]  ✅
 ├── BUG-004  Channel Realtime nom fixe                      [XS] ✅
 ├── BUG-005  Import CSV batch                               [S]  ✅
 ├── BUG-006  Dark mode AdminPage                            [M]  ✅
@@ -508,34 +531,38 @@ SPRINT 2 — Clubs indispensables (semaines 1-2)
 ├── SEC-005  attendees_select restreint                     [XS] ✅
 └── PERF-002 event_attendee_counts SECURITY DEFINER         [S]  ✅
 
-SPRINT 3 — Engagement (semaines 3-4)
-├── EPIC-P2-1  Partage social Instagram/WhatsApp/Facebook   [M]  ⬜
-├── EPIC-P1-3  Affiches premium + export Story/Post         [L]  ⬜
-├── PERF-003 React.memo EventCard                           [S]  ⬜
-├── PERF-004 AttendeeCount update incrémental               [S]  ⬜
-├── ARCH-002 ErrorBoundary autour des pages                 [XS] ⬜
+SPRINT 3 — Engagement
+├── EPIC-P2-1  WhatsApp + Facebook + Instagram + description [M]  ✅
+├── EPIC-P2-1  Bouton "Partager l'affiche" (PosterShareBtn) [S]  ✅
+├── EPIC-P1-3  Affiches premium + export Story/Post         [L]  ✅
+├── EPIC-P1-3  Logo filigrane SportLink                     [XS] ✅
+├── PERF-003 React.memo EventCard                           [S]  ✅
+├── PERF-004 AttendeeCount update incrémental               [S]  ✅
+├── ARCH-002 ErrorBoundary autour des pages                 [XS] ✅
 └── UX-001   Toasts/feedback actions                        [M]  ✅
 
-SPRINT 4 — Mobile & Architecture (mois 2)
-├── ARCH-001 Migration données statiques → Supabase seed   [L]  ✅
-├── UX-002   Bottom sheet snap points                       [L]  ⬜
-├── PERF-005 BottomNav 5 onglets                            [M]  ⬜
-├── UX-003   Onboarding avec aha moment                     [M]  ⬜
-├── SEC-006  RLS club_trainings + club_pages                [S]  ⬜
-└── ARCH-003 PWA manifest + service worker                  [M]  ⬜
+SPRINT 4 — Mobile & Architecture
+├── ARCH-001 Migration données statiques → Supabase seed    [L]  ✅
+├── UX-002   Bottom sheet snap points                       [L]  ✅
+├── PERF-005 BottomNav 5 onglets                            [M]  ✅
+├── UX-003   Onboarding avec aha moment                     [M]  ✅
+├── SEC-006  RLS club_trainings + club_pages                [S]  ✅
+└── ARCH-003 PWA service worker (vite-plugin-pwa)           [M]  ✅
 
-SPRINT 5 — Premium & Distribution (mois 3)
-├── EPIC-P1-2  Pages clubs thèmes + sponsors               [L]  ✅
-├── EPIC-P4-1  Branding premium couleurs club               [M]  ⬜
-├── PROD-001 Notifications push matchs                      [XL] ⬜
-├── PROD-002 Lien public club + OpenGraph                   [L]  ⬜
-└── PROD-003 Score live + fil actualité                     [L]  ⬜
+SPRINT 5 — Premium & Distribution
+├── EPIC-P1-2  Pages clubs thèmes + sponsors                [L]  ✅
+├── EPIC-P4-1  Branding couleurs ✅, typos sup + hero image [M]  ⬜
+├── PROD-001 Notifications push matchs (dépend ARCH-003)    [XL] ✅ (déploiement prod ⬜)
+├── PROD-002 Lien public club-page.html?id= + OG            [L]  ✅
+├── PROD-003 Score live + fil actualité                      [L]  ✅
+└── PROD-004 Badges ✅ + Classement ✅ + Streaks ✅          [M]  ✅
 
 LONG TERME
-├── EPIC-P5-1  Réseau social léger (réactions, commentaires)[XL] ⬜
+├── EPIC-P5-1  Réactions ✅, Commentaires ✅, Fil ✅        [XL] ✅ (partiel)
+├── EPIC-P5-1  Photos d'événements (upload + galerie)       [L]  ⬜
+├── EPIC-P4-2  Auto post-match, rappels J-1, digests email  [XL] ⬜
 ├── EPIC-P5-2  IA & automatisation                          [XL] ⬜
-├── PROD-004 Gamification badges/streaks                    [L]  ⬜
-├── PERF-006 Table club_follows dédiée                      [M]  ⬜
+├── PERF-006 Table club_follows dédiée                      [M]  ✅
 ├── ARCH-004 Offline handling + PWA cache                   [XL] ⬜
 └── UX-004   Éditeur club mode Simple/Avancé                [L]  ✅
 ```

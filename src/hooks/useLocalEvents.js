@@ -1,67 +1,95 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
+// ── DB ↔ App mapping ──────────────────────────────────────────────────────────
+
 function mapFromDB(row) {
   return {
-    id: row.id,
-    title: row.title,
-    sport: row.sport,
-    date: row.date,
-    lat: row.lat,
-    lng: row.lng,
-    city: row.city ?? '',
+    id:          row.id,
+    title:       row.title,
+    sport:       row.sport,
+    date:        row.date,
+    lat:         row.lat,
+    lng:         row.lng,
+    city:        row.city        ?? '',
+    venue:       row.venue       ?? '',
     description: row.description ?? '',
-    eventType: row.event_type ?? 'friendly',
-    teamName: row.team_name ?? '',
-    category: row.category ?? '',
-    clubId: row.club_id ?? null,
-    userId: row.user_id,
-    score: row.score ?? null,
-    source: 'user',
+    eventType:   row.event_type  ?? 'friendly',
+    teamName:    row.team_name   ?? '',
+    category:    row.category    ?? '',
+    level:       row.level       ?? '',
+    cupType:     row.cup_type    ?? '',
+    homeOrAway:  row.home_or_away ?? 'home',
+    adversaire:  row.adversaire  ?? '',
+    standings:   row.standings   ?? null,
+    score:       row.score       ?? null,
+    clubId:      row.club_id     ?? null,
+    userId:      row.user_id,
+    seriesId:    row.series_id   ?? null,
+    source:      row.source      ?? 'user',
   };
 }
 
 function mapToDB(data, userId) {
   return {
-    title: data.title,
-    sport: data.sport,
-    date: data.date,
-    lat: data.lat,
-    lng: data.lng,
-    city: data.city ?? '',
-    description: data.description ?? '',
-    event_type: data.eventType ?? 'friendly',
-    team_name: data.teamName ?? '',
-    category: data.category ?? '',
-    club_id: data.clubId ?? null,
-    score: data.score ?? null,
-    user_id: userId,
-    source: 'user',
+    title:        data.title,
+    sport:        data.sport,
+    date:         data.date,
+    lat:          data.lat,
+    lng:          data.lng,
+    city:         data.city         ?? '',
+    venue:        data.venue        ?? '',
+    description:  data.description  ?? '',
+    event_type:   data.eventType    ?? 'friendly',
+    team_name:    data.teamName     ?? '',
+    category:     data.category     ?? '',
+    level:        data.level        ?? '',
+    cup_type:     data.cupType      ?? '',
+    home_or_away: data.homeOrAway   ?? 'home',
+    adversaire:   data.adversaire   ?? '',
+    standings:    data.standings    ?? null,
+    score:        data.score        ?? null,
+    club_id:      data.clubId       ?? null,
+    series_id:    data.seriesId     ?? null,
+    user_id:      userId,
+    source:       'user',
   };
 }
 
+// ── Hook ──────────────────────────────────────────────────────────────────────
+
 export function useLocalEvents() {
   const { currentUser } = useAuth();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents]   = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Track temp IDs being inserted so Realtime INSERT doesn't double-add them
+  const pendingInserts = useRef(new Set());
+
+  // ── Initial fetch ─────────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
-    supabase.from('events').select('*').order('date', { ascending: true })
+    supabase
+      .from('events')
+      .select('*')
+      .order('date', { ascending: true })
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error) { console.error('[Events] fetch failed:', error.message); }
+        if (error) console.error('[Events] fetch failed:', error.message);
         if (data) setEvents(data.map(mapFromDB));
         setLoading(false);
       });
     return () => { cancelled = true; };
   }, []);
 
+  // ── Realtime ─────────────────────────────────────────────────────────────
   useEffect(() => {
     const channel = supabase
       .channel('events-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, ({ new: row }) => {
+        // Suppress realtime echo for events we are in the middle of inserting optimistically
+        if (pendingInserts.current.has(row.id)) return;
         setEvents(prev => {
           if (prev.some(e => e.id === row.id)) return prev;
           return [...prev, mapFromDB(row)].sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -77,18 +105,30 @@ export function useLocalEvents() {
     return () => supabase.removeChannel(channel);
   }, []);
 
+  // ── Mutations ─────────────────────────────────────────────────────────────
+
   const addEvent = useCallback(async (data) => {
     const userId = currentUser?.id;
-    const tempId = `temp_${Date.now()}`;
-    const tempEvent = { ...mapFromDB({ ...mapToDB(data, userId), id: tempId }), id: tempId };
-    setEvents(prev => [...prev, tempEvent]);
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const tempEvent = { ...mapFromDB({ ...mapToDB(data, userId), id: tempId }), id: tempId, _temp: true };
+
+    setEvents(prev => [...prev, tempEvent].sort((a, b) => new Date(a.date) - new Date(b.date)));
 
     try {
       const { data: saved, error } = await supabase
-        .from('events').insert(mapToDB(data, userId)).select().single();
+        .from('events')
+        .insert(mapToDB(data, userId))
+        .select()
+        .single();
+
       if (error) throw error;
+
       const real = mapFromDB(saved);
+      // Mark real ID so Realtime INSERT handler skips it
+      pendingInserts.current.add(real.id);
       setEvents(prev => prev.map(e => e.id === tempId ? real : e));
+      // Give Realtime a short window then clear the guard
+      setTimeout(() => pendingInserts.current.delete(real.id), 3000);
       return real;
     } catch (err) {
       console.error('[Events] addEvent failed, rolling back:', err.message);
@@ -98,28 +138,40 @@ export function useLocalEvents() {
   }, [currentUser?.id]);
 
   const updateEvent = useCallback(async (id, data) => {
-    const prev = events.find(e => e.id === id);
-    setEvents(evs => evs.map(e => e.id === id ? { ...e, ...data } : e));
+    setEvents(evs => {
+      const prev = evs.find(e => e.id === id);
+      return evs.map(e => e.id === id ? { ...e, ...data } : e);
+    });
+
+    // Capture prev for rollback inside the functional updater's closure is not possible,
+    // so we use a separate read here (snapshot before setState completes is fine for rollback).
+    const snapshot = events.find(e => e.id === id);
+
     try {
+      const merged = snapshot ? { ...snapshot, ...data } : data;
       const { error } = await supabase
-        .from('events').update(mapToDB({ ...prev, ...data }, prev?.userId)).eq('id', id);
+        .from('events')
+        .update(mapToDB(merged, snapshot?.userId ?? currentUser?.id))
+        .eq('id', id);
       if (error) throw error;
     } catch (err) {
       console.error('[Events] updateEvent failed, rolling back:', err.message);
-      if (prev) setEvents(evs => evs.map(e => e.id === id ? prev : e));
+      if (snapshot) setEvents(evs => evs.map(e => e.id === id ? snapshot : e));
       throw err;
     }
   }, [currentUser?.id, events]);
 
   const deleteEvent = useCallback(async (id) => {
-    const prev = events.find(e => e.id === id);
+    const snapshot = events.find(e => e.id === id);
     setEvents(evs => evs.filter(e => e.id !== id));
     try {
       const { error } = await supabase.from('events').delete().eq('id', id);
       if (error) throw error;
     } catch (err) {
       console.error('[Events] deleteEvent failed, rolling back:', err.message);
-      if (prev) setEvents(evs => [...evs, prev].sort((a, b) => new Date(a.date) - new Date(b.date)));
+      if (snapshot) {
+        setEvents(evs => [...evs, snapshot].sort((a, b) => new Date(a.date) - new Date(b.date)));
+      }
       throw err;
     }
   }, [events]);
@@ -130,6 +182,11 @@ export function useLocalEvents() {
     const { data: saved, error } = await supabase.from('events').insert(rows).select();
     if (error) throw error;
     const realEvents = (saved ?? []).map(mapFromDB);
+    // Guard all real IDs against Realtime echo
+    realEvents.forEach(e => {
+      pendingInserts.current.add(e.id);
+      setTimeout(() => pendingInserts.current.delete(e.id), 3000);
+    });
     setEvents(prev => {
       const ids = new Set(realEvents.map(e => e.id));
       return [...prev.filter(e => !ids.has(e.id)), ...realEvents]

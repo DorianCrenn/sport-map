@@ -4,6 +4,7 @@ import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useClubRequests } from '../hooks/useClubRequests.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useClubLeaderboard } from '../hooks/useClubLeaderboard.js';
 import SportIcon from '../components/SportIcon.jsx';
 import ClubPageView from '../components/club/ClubPageView.jsx';
 import ClubFormModal from '../components/club/ClubFormModal.jsx';
@@ -15,11 +16,13 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
   const { userClubs, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
   const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub } = useAuth();
+  const { leaderboard } = useClubLeaderboard({ limit: 5, sportFilter });
 
   const [search, setSearch]               = useState('');
   const [sportFilter, setSportFilter]     = useState(null);
-  const [showAllSports, setShowAllSports] = useState(false);
-  const [selectedClub, setSelectedClub]   = useState(null);
+  const [showAllSports, setShowAllSports]       = useState(false);
+  const [selectedClub, setSelectedClub]         = useState(null);
+  const [leaderboardOpen, setLeaderboardOpen]   = useState(false);
   const [formClub, setFormClub]           = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -49,11 +52,11 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
     ? requests.find(r => r.userId === currentUser.id)
     : null;
 
-  function handleSave(data) {
+  async function handleSave(data) {
     if (formClub && formClub !== true) {
-      updateClub(formClub.id, data);
+      await updateClub(formClub.id, data);
     } else {
-      const created = addClub(data);
+      const created = await addClub(data);
       setSelectedClub(created);
     }
     setFormClub(null);
@@ -310,6 +313,64 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
 
       {/* List */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px 24px' }}>
+
+        {/* Classement clubs actifs ce mois */}
+        {leaderboard.length > 0 && (
+          <div style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+            <button
+              onClick={() => setLeaderboardOpen(o => !o)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)' }}>
+                <span>🏆</span> Clubs actifs ce mois
+              </span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2.5" strokeLinecap="round"
+                style={{ transform: leaderboardOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <AnimatePresence>
+              {leaderboardOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  {leaderboard.map(({ rank, club: lClub, eventCount }) => (
+                    <div
+                      key={lClub.id}
+                      onClick={() => { const found = allClubs.find(c => String(c.id) === String(lClub.id)); if (found) setSelectedClub(found); }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '8px 14px', borderTop: '1px solid var(--sl-border)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <span style={{ width: 20, fontSize: 12, fontWeight: 800, color: rank <= 3 ? '#f59e0b' : 'var(--sl-t3)', textAlign: 'center', flexShrink: 0 }}>
+                        {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`}
+                      </span>
+                      {lClub.logo_url
+                        ? <img src={lClub.logo_url} alt={lClub.name} style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
+                        : <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: 'var(--sl-surface)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚽</div>
+                      }
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lClub.name}</div>
+                        <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{lClub.city}</div>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-green)', flexShrink: 0 }}>
+                        {eventCount} événement{eventCount > 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+
         <div style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           {filtered.length} club{filtered.length !== 1 ? 's' : ''}
         </div>

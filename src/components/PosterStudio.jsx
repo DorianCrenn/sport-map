@@ -151,8 +151,9 @@ export default function PosterStudio({ event, onClose, club }) {
   const [libFilter, setLibFilter] = useState('all');
   const [favVersion, setFavVersion] = useState(0);
 
-  // ── On mount: restore draft or apply default template ──
+  // ── On mount: sync fav templates from DB, restore draft or apply default template ──
   useEffect(() => {
+    favTplHook.loadFromDB();
     const draft = draftHook.loadDraft();
     if (draft?.state) {
       const s = draft.state;
@@ -313,6 +314,18 @@ export default function PosterStudio({ event, onClose, club }) {
       }
     } catch {}
     finally { setSharingIG(false); }
+  }
+
+  function handleShareFacebook() {
+    const eventUrl = event?.id
+      ? `${window.location.origin}${window.location.pathname}#event/${event.id}`
+      : window.location.origin;
+    const encoded = encodeURIComponent(eventUrl);
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encoded}`,
+      '_blank',
+      'noopener,noreferrer,width=600,height=400'
+    );
   }
 
   // ── File helpers ──
@@ -624,7 +637,7 @@ export default function PosterStudio({ event, onClose, club }) {
                   backgroundColor: sharingIG ? 'rgba(225,48,108,0.06)' : 'rgba(225,48,108,0.13)',
                   border: '1.5px solid rgba(225,48,108,0.38)',
                   color: '#E1306C',
-                  transition: 'all 0.15s', marginBottom: 4,
+                  transition: 'all 0.15s', marginBottom: 6,
                 }}
               >
                 {sharingIG
@@ -632,6 +645,27 @@ export default function PosterStudio({ event, onClose, club }) {
                   : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                 }
                 <span style={{ fontSize: 8, fontWeight: 700 }}>{sharingIG ? '…' : 'IG'}</span>
+              </motion.button>
+
+              {/* Facebook Share */}
+              <motion.button
+                whileTap={{ scale: 0.88 }}
+                onClick={handleShareFacebook}
+                title="Partager sur Facebook"
+                style={{
+                  width: 42, height: 42, borderRadius: 12,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  gap: 2, cursor: 'pointer',
+                  backgroundColor: 'rgba(24,119,242,0.13)',
+                  border: '1.5px solid rgba(24,119,242,0.38)',
+                  color: '#1877F2',
+                  transition: 'all 0.15s', marginBottom: 4,
+                }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <span style={{ fontSize: 8, fontWeight: 700 }}>FB</span>
               </motion.button>
             </div>
           </div>

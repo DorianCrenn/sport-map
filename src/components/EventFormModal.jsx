@@ -172,9 +172,14 @@ function buildEvent(form, currentUser, myClub, useSmartMode) {
 
   const sport = useSmartMode && myClub ? myClub.sport : form.sport;
 
+  // Build an ISO datetime that preserves local intent — NOT bare UTC.
+  // We take the local wall-clock string and let Supabase store it as-is (TIMESTAMPTZ).
+  // Displaying it back with toLocaleString will round-trip correctly.
+  const localDatetime = `${form.date}T${form.time}:00`;
+
   return {
     title, sport, sportGroup: sport,
-    date: `${form.date}T${form.time}:00`,
+    date: localDatetime,
     city: form.cityName, lat: form.cityLat, lng: form.cityLng,
     venue: form.venue, description: form.description,
     eventType: form.eventType,
@@ -420,7 +425,9 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
     return defaults;
   }, [useSmartMode, myClub]);
 
-  const [form, setForm] = useState(() => toFormValues(event, buildDefaults(event)));
+  const [form, setForm]         = useState(() => toFormValues(event, buildDefaults(event)));
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
     setForm(toFormValues(event, buildDefaults(event)));
@@ -443,13 +450,25 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.date) return;
-    const base = buildEvent(form, currentUser, myClub, useSmartMode);
-    if (!isEdit && form.recurrenceEnabled && form.recurrenceUntil && onBulkSave) {
-      const events = generateRecurring(base, form.recurrenceFreq, form.recurrenceUntil);
-      if (events.length > 0) { await onBulkSave(events); return; }
+    if (submitting) return;
+    if (!form.date) {
+      setSubmitError('La date est obligatoire');
+      return;
     }
-    onSave(base);
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const base = buildEvent(form, currentUser, myClub, useSmartMode);
+      if (!isEdit && form.recurrenceEnabled && form.recurrenceUntil && onBulkSave) {
+        const recurring = generateRecurring(base, form.recurrenceFreq, form.recurrenceUntil);
+        if (recurring.length > 0) { await onBulkSave(recurring); return; }
+      }
+      await onSave(base);
+    } catch (err) {
+      setSubmitError(err.message ?? 'Erreur lors de la création');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const teamPresets = useSmartMode && myClub
@@ -746,13 +765,20 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
           </form>
 
           {/* Footer */}
-          <div style={{ flexShrink: 0, padding: '14px 20px', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', display: 'flex', gap: 10 }}>
-            <button type="button" onClick={onClose} style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              Annuler
-            </button>
-            <button type="submit" form="event-form" style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(34,217,106,0.3)' }}>
-              {isEdit ? 'Enregistrer' : 'Créer l\'événement'}
-            </button>
+          <div style={{ flexShrink: 0, padding: '14px 20px', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+            {submitError && (
+              <div style={{ marginBottom: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', fontSize: 12, color: '#ef4444', fontWeight: 600 }}>
+                {submitError}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" onClick={onClose} disabled={submitting} style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1 }}>
+                Annuler
+              </button>
+              <button type="submit" form="event-form" disabled={submitting} style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, boxShadow: submitting ? 'none' : '0 4px 12px rgba(34,217,106,0.3)' }}>
+                {submitting ? 'Enregistrement…' : isEdit ? 'Enregistrer' : 'Créer l\'événement'}
+              </button>
+            </div>
           </div>
         </motion.div>
       </motion.div>
