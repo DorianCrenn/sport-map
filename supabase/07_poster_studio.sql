@@ -61,19 +61,24 @@ CREATE TABLE IF NOT EXISTS public.poster_templates (
 
 -- ── club_brand_kits ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.club_brand_kits (
-  id              uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  club_id         uuid REFERENCES public.clubs(id) ON DELETE CASCADE UNIQUE NOT NULL,
-  kit_name        text DEFAULT 'Identité visuelle',
-  primary_color   text DEFAULT '#22D96A',
-  secondary_color text DEFAULT '#0D1117',
-  accent_color    text DEFAULT '#ffffff',
-  text_color      text DEFAULT '#ffffff',
-  bg_color        text DEFAULT '#0D1117',
-  primary_font    text DEFAULT 'Inter',
-  logo_urls       jsonb DEFAULT '{}',   -- { main, white, dark }
-  created_at      timestamptz DEFAULT now(),
-  updated_at      timestamptz DEFAULT now()
+  id                  uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  club_id             uuid REFERENCES public.clubs(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  kit_name            text DEFAULT 'Identité visuelle',
+  primary_color       text DEFAULT '#22D96A',
+  secondary_color     text DEFAULT '#0D1117',
+  accent_color        text DEFAULT '#ffffff',
+  text_color          text DEFAULT '#ffffff',
+  bg_color            text DEFAULT '#0D1117',
+  primary_font        text DEFAULT 'Inter',
+  logo_urls           jsonb DEFAULT '{}',   -- { main, white, dark }
+  default_template_id text,                 -- template sélectionné par défaut pour ce club
+  created_at          timestamptz DEFAULT now(),
+  updated_at          timestamptz DEFAULT now()
 );
+
+-- Migration idempotente si la table existe déjà sans cette colonne
+ALTER TABLE public.club_brand_kits
+  ADD COLUMN IF NOT EXISTS default_template_id text;
 
 -- ── ai_jobs ────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.ai_jobs (
