@@ -144,15 +144,33 @@ export default function MapPage({
 
   useEffect(() => {
     if (focusEventId) {
+      const evt = allEvents.find(e => e.id === focusEventId);
+      setSportFilter(null);
+      setDateRangeFilter(null);
+      setNearbyFilter(false);
+      setUpcomingOnly(true);
+      setShowAllSports(true);
+      if (evt?.lat && evt?.lng) {
+        setFlyTarget({ coords: { lat: evt.lat, lng: evt.lng }, zoom: 14 });
+      }
       setSelectedEventId(focusEventId);
-      setUpcomingOnly(false);
       onFocusDone?.();
     }
-  }, [focusEventId]);
+  }, [focusEventId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = useCallback(async (formData) => {
     if (modalEvent?._isNew) {
       const created = await onAddEvent(formData);
+      // Clear filters that could hide the newly created event
+      setSportFilter(null);
+      setDateRangeFilter(null);
+      setNearbyFilter(false);
+      setUpcomingOnly(true);
+      setShowAllSports(true);
+      // Fly to the event location then select it
+      if (created.lat && created.lng) {
+        setFlyTarget({ coords: { lat: created.lat, lng: created.lng }, zoom: 14 });
+      }
       setSelectedEventId(created.id);
     } else {
       await onUpdateEvent(modalEvent.id, formData);

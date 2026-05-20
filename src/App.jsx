@@ -328,7 +328,12 @@ function AppInner() {
             <EventFormModal
               key="fab-event-form"
               event={{ _isNew: true }}
-              onSave={(data) => { addEventWithToast(data); setShowNewEventForm(false); setActiveTab('map'); }}
+              onSave={async (data) => {
+                const created = await addEventWithToast(data);
+                setShowNewEventForm(false);
+                setActiveTab('map');
+                if (created?.id) setFocusEventId(created.id);
+              }}
               onBulkSave={async (events) => { await bulkAddEvents(events); setShowNewEventForm(false); setActiveTab('map'); }}
               onClose={() => setShowNewEventForm(false)}
             />
