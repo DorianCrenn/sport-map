@@ -9,11 +9,13 @@ import SportIcon from '../components/SportIcon.jsx';
 import ClubPageView from '../components/club/ClubPageView.jsx';
 import ClubFormModal from '../components/club/ClubFormModal.jsx';
 import ClubRequestModal from '../components/club/ClubRequestModal.jsx';
+import ConfirmDialog from '../components/ConfirmDialog.jsx';
+import { SkeletonClubCard } from '../components/Skeleton.jsx';
 import { STATIC_CLUBS } from '../data/clubs.js';
 
 export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent }) {
   const { allSports: SPORTS } = useSports();
-  const { userClubs, addClub, updateClub, deleteClub } = useClubs();
+  const { userClubs, loading: clubsLoading, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
   const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub } = useAuth();
 
@@ -135,58 +137,14 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
         )}
       </AnimatePresence>
 
-      {/* Delete confirmation */}
-      <AnimatePresence>
-        {confirmDelete && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{
-              position: 'absolute', inset: 0, zIndex: 20, display: 'flex',
-              alignItems: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)',
-            }}
-            onClick={e => e.target === e.currentTarget && setConfirmDelete(null)}
-          >
-            <motion.div
-              initial={{ y: 60 }} animate={{ y: 0 }} exit={{ y: 60 }}
-              transition={{ type: 'spring', stiffness: 340, damping: 34 }}
-              style={{
-                borderRadius: '20px 20px 0 0', padding: 24, width: '100%',
-                backgroundColor: 'var(--sl-card)', borderTop: '1px solid var(--sl-border)',
-              }}
-            >
-              <h3 style={{ fontWeight: 700, fontSize: 16, color: 'var(--sl-t1)', marginBottom: 8, fontFamily: 'Inter, sans-serif' }}>
-                Supprimer le club ?
-              </h3>
-              <p style={{ fontSize: 14, color: 'var(--sl-t2)', marginBottom: 20 }}>
-                Cette action supprimera <strong style={{ color: 'var(--sl-t1)' }}>{confirmDelete.name}</strong> et sa page définitivement.
-              </p>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  onClick={() => setConfirmDelete(null)}
-                  style={{
-                    flex: 1, padding: '12px 0', borderRadius: 12, cursor: 'pointer',
-                    fontSize: 14, fontWeight: 600,
-                    border: '1px solid var(--sl-border-s)',
-                    color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)',
-                  }}
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={() => handleDelete(confirmDelete)}
-                  style={{
-                    flex: 1, padding: '12px 0', borderRadius: 12, cursor: 'pointer',
-                    fontSize: 14, fontWeight: 700,
-                    backgroundColor: '#ef4444', color: '#fff', border: 'none',
-                  }}
-                >
-                  Supprimer
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Supprimer le club ?"
+        message={confirmDelete ? `Cette action supprimera ${confirmDelete.name} et sa page définitivement.` : ''}
+        confirmLabel="Supprimer"
+        onConfirm={() => handleDelete(confirmDelete)}
+        onCancel={() => setConfirmDelete(null)}
+      />
 
       {/* Header */}
       <div style={{
@@ -506,6 +464,13 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
           </>
         )}
 
+        {/* Skeleton while clubs load from Supabase (only if list is empty) */}
+        {clubsLoading && filtered.length === 0 && (
+          <div aria-label="Chargement des clubs" aria-live="polite">
+            {[0, 1, 2, 3, 4].map(i => <SkeletonClubCard key={i} />)}
+          </div>
+        )}
+
         {/* Clubs list */}
         {filtered.map((club, i) => {
           const sport = SPORTS[club.sport];
@@ -628,6 +593,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                     <div style={{ width: 1, backgroundColor: 'var(--sl-border)' }} />
                     <button
                       onClick={() => setConfirmDelete(club)}
+                      aria-label={`Supprimer ${club.name}`}
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         padding: '9px 12px', color: '#ef4444',

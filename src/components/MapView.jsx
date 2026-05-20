@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { memo, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvent } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
@@ -77,7 +77,7 @@ function MapController({ activeDepartment, flyTarget, onBoundsChange, selectedEv
   return null;
 }
 
-export default function MapView({
+function MapView({
   events, selectedEventId, onMarkerClick, activeDepartment,
   userCoords, flyTarget, onBoundsChange, selectedEvent, onMapClick,
 }) {
@@ -151,3 +151,5 @@ export default function MapView({
     </div>
   );
 }
+
+export default memo(MapView);

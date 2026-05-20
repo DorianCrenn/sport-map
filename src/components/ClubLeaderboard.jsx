@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useActiveClubs } from '../hooks/useActiveClubs.js';
 import SportIcon from './SportIcon.jsx';
+import { SkeletonLeaderboardRow } from './Skeleton.jsx';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
 
@@ -115,8 +116,8 @@ function ClubLeaderboard() {
 
       <div style={{ padding: '4px 16px 8px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--sl-t3)', fontSize: 12 }}>
-            Chargement…
+          <div aria-label="Chargement du classement">
+            {[0, 1, 2, 3].map(i => <SkeletonLeaderboardRow key={i} />)}
           </div>
         ) : ranking.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--sl-t3)', fontSize: 12 }}>
