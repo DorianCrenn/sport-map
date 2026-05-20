@@ -214,8 +214,8 @@ export default function Header({
               transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 position: 'absolute', top: 'calc(100% + 8px)',
-                left: '50%', transform: 'translateX(-50%)',
-                width: '100%', minWidth: 300,
+                left: 0, right: -110,
+                minWidth: 240,
                 borderRadius: 18,
                 backgroundColor: 'var(--sl-card)',
                 boxShadow: 'var(--sl-shadow-xl)',
