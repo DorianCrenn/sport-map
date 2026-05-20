@@ -11,6 +11,13 @@ export function useClubTrainings(clubId) {
   // ── Load from Supabase ────────────────────────────────────────────────────
 
   useEffect(() => {
+    // STAB-002 : annuler tout save en attente avant le fetch du nouveau club
+    loaded.current = false;
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+
     let cancelled = false;
     supabase
       .from('club_trainings')
@@ -52,7 +59,13 @@ export function useClubTrainings(clubId) {
         }
         loaded.current = true;
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+      }
+    };
   }, [clubIdStr]);
 
   // ── Debounced save ────────────────────────────────────────────────────────

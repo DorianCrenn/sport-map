@@ -31,8 +31,18 @@ export function useAttendees() {
     supabase.from('attendees').select('event_id').eq('user_id', userId)
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error) { console.error('[Attendees] fetch failed:', error.message); return; }
-        if (data) setAttending(new Set(data.map(r => String(r.event_id))));
+        if (error) {
+          console.error('[Attendees] fetch failed, falling back to cache:', error.message);
+          try {
+            const cached = JSON.parse(localStorage.getItem(lsKey(userId)) ?? '[]');
+            setAttending(new Set(cached.map(String)));
+          } catch { setAttending(new Set()); }
+          return;
+        }
+        const serverSet = new Set(data.map(r => String(r.event_id)));
+        setAttending(serverSet);
+        // Mettre à jour le cache localStorage
+        try { localStorage.setItem(lsKey(userId), JSON.stringify([...serverSet])); } catch {}
       });
     return () => { cancelled = true; };
   }, [userId]);

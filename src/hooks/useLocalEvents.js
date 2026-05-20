@@ -125,6 +125,8 @@ export function useLocalEvents() {
       if (error) throw error;
 
       const real = mapFromDB(saved);
+      // STAB-005 : sécurité anti-fuite mémoire sur imports CSV massifs
+      if (pendingInserts.current.size > 500) pendingInserts.current.clear();
       // Mark real ID so Realtime INSERT handler skips it
       pendingInserts.current.add(real.id);
       setEvents(prev => prev.map(e => e.id === tempId ? real : e));

@@ -83,6 +83,13 @@ export function useClubPage(club) {
   // ── Load from Supabase ────────────────────────────────────────────────────
 
   useEffect(() => {
+    // STAB-001 : réinitialiser loaded + annuler tout save en attente avant le fetch
+    setLoaded(false);
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+
     let cancelled = false;
     supabase
       .from('club_pages')
@@ -138,7 +145,14 @@ export function useClubPage(club) {
         }
         setLoaded(true);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      // Annuler le save en attente si le club change ou si le composant se démonte
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+      }
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubIdStr]);
 

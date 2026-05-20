@@ -29,6 +29,32 @@ export function usePosterDraft(eventId) {
   const eventKey = String(eventId ?? '__no_event__');
   const isRealEvent = eventId && typeof eventId === 'string' && eventId.includes('-');
 
+  // STAB-004 : synchroniser depuis Supabase au montage pour garantir la fraîcheur multi-device
+  useEffect(() => {
+    if (!isRealEvent) return;
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user || cancelled) return;
+      supabase.from('posters')
+        .select('layers, updated_at')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .eq('status', 'draft')
+        .maybeSingle()
+        .then(({ data }) => {
+          if (cancelled || !data?.layers) return;
+          const lsData  = ls_get(DRAFT_KEY, null);
+          const lsTs    = lsData?.savedAt ? new Date(lsData.savedAt).getTime() : 0;
+          const dbTs    = new Date(data.updated_at).getTime();
+          // N'écraser le cache local que si Supabase est plus récent
+          if (dbTs > lsTs) {
+            ls_set(DRAFT_KEY, { eventKey, savedAt: data.updated_at, state: data.layers });
+          }
+        });
+    });
+    return () => { cancelled = true; };
+  }, [eventId, eventKey, isRealEvent]);
+
   function loadDraft() {
     const d = ls_get(DRAFT_KEY, null);
     if (!d || d.eventKey !== eventKey) return null;
