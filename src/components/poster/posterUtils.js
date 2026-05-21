@@ -16,9 +16,10 @@ export function fmtDate(dateStr) {
   };
 }
 
-export function champLabel(eventType, level = '') {
-  const t = { championship: 'CHAMPIONNAT', cup: 'COUPE', friendly: 'AMICAL' };
+export function champLabel(eventType, level = '', tournamentName = '') {
+  const t = { championship: 'CHAMPIONNAT', cup: 'COUPE', friendly: 'AMICAL', tournament: 'TOURNOI' };
   const base = t[eventType] || 'MATCH';
+  if (eventType === 'tournament' && tournamentName) return tournamentName.toUpperCase();
   return level ? `${base} ${level}` : base;
 }
 

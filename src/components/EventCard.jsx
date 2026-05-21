@@ -19,6 +19,7 @@ const EVENT_TYPE_META = {
   championship: { label: 'Championnat', color: '#3b82f6' },
   cup:          { label: 'Coupe',        color: '#f97316' },
   friendly:     { label: 'Amical',       color: '#22d96a' },
+  tournament:   { label: 'Tournoi',      color: '#8b5cf6' },
 };
 
 const STATUS_META = {

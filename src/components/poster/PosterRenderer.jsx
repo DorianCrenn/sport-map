@@ -21,6 +21,12 @@ import TplGlass from './templates/TplGlass.jsx';
 import TplFlag from './templates/TplFlag.jsx';
 import TplInk from './templates/TplInk.jsx';
 import TplAurora from './templates/TplAurora.jsx';
+import TplTournamentArena from './templates/TplTournamentArena.jsx';
+import TplTournamentBracket from './templates/TplTournamentBracket.jsx';
+import TplTournamentFlame from './templates/TplTournamentFlame.jsx';
+import TplTournamentCrown from './templates/TplTournamentCrown.jsx';
+import TplTournamentGrid from './templates/TplTournamentGrid.jsx';
+import TplTournamentStripes from './templates/TplTournamentStripes.jsx';
 
 export const POSTER_TEMPLATES = [
   {
@@ -217,6 +223,61 @@ export const POSTER_TEMPLATES = [
     color: '#10B981',
     isPremium: true,
     Component: TplAurora,
+  },
+  // ── Tournoi ──────────────────────────────────────────────────────────────────
+  {
+    id: 'tournament-arena',
+    label: 'Arène',
+    desc: 'Tournoi · Spotlight · Trophée',
+    icon: '🏆',
+    color: '#8b5cf6',
+    isTournament: true,
+    Component: TplTournamentArena,
+  },
+  {
+    id: 'tournament-bracket',
+    label: 'Bracket',
+    desc: 'Tournoi · Tableau · Compétition',
+    icon: '⚔',
+    color: '#6366f1',
+    isTournament: true,
+    Component: TplTournamentBracket,
+  },
+  {
+    id: 'tournament-flame',
+    label: 'Flamme',
+    desc: 'Tournoi · Feu · Énergie',
+    icon: '🔥',
+    color: '#f97316',
+    isTournament: true,
+    Component: TplTournamentFlame,
+  },
+  {
+    id: 'tournament-crown',
+    label: 'Couronne',
+    desc: 'Tournoi · Or · Prestige',
+    icon: '👑',
+    color: '#D4AF37',
+    isTournament: true,
+    Component: TplTournamentCrown,
+  },
+  {
+    id: 'tournament-grid',
+    label: 'Grille',
+    desc: 'Tournoi · Équipes · Clair',
+    icon: '⊞',
+    color: '#8b5cf6',
+    isTournament: true,
+    Component: TplTournamentGrid,
+  },
+  {
+    id: 'tournament-stripes',
+    label: 'Rayures',
+    desc: 'Tournoi · Athletic · Maillot',
+    icon: '⚡',
+    color: '#7c3aed',
+    isTournament: true,
+    Component: TplTournamentStripes,
   },
 ];
 

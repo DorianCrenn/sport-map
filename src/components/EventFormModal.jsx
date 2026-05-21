@@ -74,6 +74,26 @@ const CUP_TYPES = [
   { value: 'Tournoi amical',     label: 'Tournoi amical'     },
 ];
 
+const TOURNAMENT_TYPES = [
+  { value: 'Local',       label: 'Local'       },
+  { value: 'Régional',    label: 'Régional'    },
+  { value: 'National',    label: 'National'    },
+  { value: 'International', label: 'International' },
+  { value: 'Scolaire',    label: 'Scolaire'    },
+  { value: 'Entreprises', label: 'Entreprises' },
+  { value: 'Interne',     label: 'Interne'     },
+];
+
+const NUM_TEAMS_OPTIONS = ['4', '6', '8', '10', '12', '16', '24', '32'];
+
+const TOURNAMENT_FORMATS = [
+  { value: 'Poules + Élimination directe', label: 'Poules + Élim.' },
+  { value: 'Poules seules',                label: 'Poules' },
+  { value: 'Élimination directe',          label: 'Élim. directe' },
+  { value: 'Swiss',                        label: 'Swiss' },
+  { value: 'Round Robin',                  label: 'Round Robin' },
+];
+
 function inferCategory(teamName) {
   if (!teamName) return '';
   const t = teamName.toLowerCase();
@@ -98,6 +118,9 @@ const EMPTY_FORM = {
   level: '', cupType: '', homeOrAway: 'home', adversaire: '',
   homeTeam: '', awayTeam: '',
   recurrenceEnabled: false, recurrenceFreq: 'weekly', recurrenceUntil: '',
+  // Tournament-specific fields
+  tournamentName: '', tournamentType: '', numTeams: '',
+  tournamentFormat: '', tournamentCategories: '', prize: '', organizer: '',
 };
 
 function generateRecurring(base, freq, untilStr) {
@@ -140,6 +163,9 @@ function toFormValues(event, defaults = {}) {
       level: event.level ?? '', cupType: event.cupType ?? '',
       homeOrAway: event.homeOrAway ?? 'home', adversaire: event.adversaire ?? '',
       homeTeam: event.standings?.home?.team ?? '', awayTeam: event.standings?.away?.team ?? '',
+      tournamentName: event.tournamentName ?? '', tournamentType: event.tournamentType ?? '',
+      numTeams: event.numTeams ? String(event.numTeams) : '', tournamentFormat: event.tournamentFormat ?? '',
+      tournamentCategories: event.tournamentCategories ?? '', prize: event.prize ?? '', organizer: event.organizer ?? '',
     };
   }
   const d = new Date(event.date);
@@ -153,6 +179,9 @@ function toFormValues(event, defaults = {}) {
     level: event.level ?? '', cupType: event.cupType ?? '',
     homeOrAway: event.homeOrAway ?? 'home', adversaire: event.adversaire ?? '',
     homeTeam: event.standings?.home?.team ?? '', awayTeam: event.standings?.away?.team ?? '',
+    tournamentName: event.tournamentName ?? '', tournamentType: event.tournamentType ?? '',
+    numTeams: event.numTeams ? String(event.numTeams) : '', tournamentFormat: event.tournamentFormat ?? '',
+    tournamentCategories: event.tournamentCategories ?? '', prize: event.prize ?? '', organizer: event.organizer ?? '',
   };
 }
 
@@ -187,6 +216,15 @@ function buildEvent(form, currentUser, myClub, useSmartMode) {
     teamName: form.teamName, category: form.category,
     level: form.level, cupType: form.cupType,
     homeOrAway: form.homeOrAway, adversaire: form.adversaire,
+    ...(form.eventType === 'tournament' ? {
+      tournamentName: form.tournamentName || undefined,
+      tournamentType: form.tournamentType || undefined,
+      numTeams: form.numTeams ? Number(form.numTeams) : undefined,
+      tournamentFormat: form.tournamentFormat || undefined,
+      tournamentCategories: form.tournamentCategories || undefined,
+      prize: form.prize || undefined,
+      organizer: form.organizer || undefined,
+    } : {}),
     clubId: currentUser?.clubId ?? null,
     creatorId: currentUser?.id ?? null,
     departmentId: 'finistere', regionId: 'brittany',
@@ -333,7 +371,91 @@ function AdversaireField({ value, onChange, sameSportClubs, myClubId, inputStyle
   );
 }
 
-function ContextualTypeFields({ eventType, level, cupType, champLevels, onLevel, onCupType }) {
+function PillPicker({ options, value, onChange, color = '#8b5cf6' }) {
+  return (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {options.map(opt => {
+        const v = typeof opt === 'string' ? opt : opt.value;
+        const l = typeof opt === 'string' ? opt : (opt.label || opt.value);
+        const sel = value === v;
+        return (
+          <button key={v} type="button" onClick={() => onChange(sel ? '' : v)}
+            style={{
+              padding: '6px 12px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: sel ? 700 : 500,
+              border: `2px solid ${sel ? color : 'var(--sl-border)'}`,
+              backgroundColor: sel ? `${color}18` : 'var(--sl-surface)',
+              color: sel ? color : 'var(--sl-t2)', transition: 'all 0.12s',
+            }}>
+            {l}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function TournamentFields({ form, set, inputStyle, myClub }) {
+  return (
+    <motion.div key="tournament"
+      initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+        <Field label="Nom du tournoi">
+          <input
+            type="text" value={form.tournamentName}
+            onChange={e => set('tournamentName', e.target.value)}
+            placeholder="ex: Tournoi de la Saint-Michel"
+            style={inputStyle}
+          />
+        </Field>
+
+        <Field label="Type de tournoi">
+          <PillPicker options={TOURNAMENT_TYPES} value={form.tournamentType} onChange={v => set('tournamentType', v)} color="#8b5cf6" />
+        </Field>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <Field label="Nombre d'équipes">
+            <PillPicker options={NUM_TEAMS_OPTIONS} value={form.numTeams} onChange={v => set('numTeams', v)} color="#8b5cf6" />
+          </Field>
+          <Field label="Format">
+            <PillPicker options={TOURNAMENT_FORMATS} value={form.tournamentFormat} onChange={v => set('tournamentFormat', v)} color="#8b5cf6" />
+          </Field>
+        </div>
+
+        <Field label="Catégories participantes" hint="ex: U13, U15, Sénior">
+          <input
+            type="text" value={form.tournamentCategories}
+            onChange={e => set('tournamentCategories', e.target.value)}
+            placeholder="U13, U15, Senior…"
+            style={inputStyle}
+          />
+        </Field>
+
+        <Field label="Prix / récompenses" hint="Optionnel">
+          <input
+            type="text" value={form.prize}
+            onChange={e => set('prize', e.target.value)}
+            placeholder="ex: Trophée, médailles, bon cadeau…"
+            style={inputStyle}
+          />
+        </Field>
+
+        <Field label="Organisateur" hint="Optionnel — pré-rempli avec le nom du club">
+          <input
+            type="text" value={form.organizer || myClub?.name || ''}
+            onChange={e => set('organizer', e.target.value)}
+            placeholder={myClub?.name || 'Nom de l\'organisateur'}
+            style={inputStyle}
+          />
+        </Field>
+
+      </div>
+    </motion.div>
+  );
+}
+
+function ContextualTypeFields({ eventType, level, cupType, champLevels, onLevel, onCupType, form, set, inputStyle, myClub }) {
   return (
     <AnimatePresence mode="wait">
       {eventType === 'championship' ? (
@@ -352,6 +474,8 @@ function ContextualTypeFields({ eventType, level, cupType, champLevels, onLevel,
             <CupTypePicker value={cupType} onChange={onCupType} />
           </Field>
         </motion.div>
+      ) : eventType === 'tournament' ? (
+        <TournamentFields form={form} set={set} inputStyle={inputStyle} myClub={myClub} />
       ) : null}
     </AnimatePresence>
   );
@@ -359,7 +483,7 @@ function ContextualTypeFields({ eventType, level, cupType, champLevels, onLevel,
 
 function EventTypeRadio({ value, onChange }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
       {EVENT_TYPES.map((type) => {
         const selected = value === type.value;
         return (
@@ -601,6 +725,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
                   eventType={form.eventType} level={form.level} cupType={form.cupType}
                   champLevels={champLevels}
                   onLevel={v => set('level', v)} onCupType={v => set('cupType', v)}
+                  form={form} set={set} inputStyle={inputStyle} myClub={myClub}
                 />
 
                 {/* Domicile / Extérieur */}
@@ -682,6 +807,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
                   eventType={form.eventType} level={form.level} cupType={form.cupType}
                   champLevels={champLevels}
                   onLevel={v => set('level', v)} onCupType={v => set('cupType', v)}
+                  form={form} set={set} inputStyle={inputStyle} myClub={myClub}
                 />
               </>
             )}
