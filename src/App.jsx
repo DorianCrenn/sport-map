@@ -116,7 +116,7 @@ function AppInner() {
           setSelectedSearchClub({
             id: data.id, name: data.name, sport: data.sport,
             city: data.city ?? '', description: data.description ?? '',
-            logoUrl: data.logo_url ?? null, website: data.website ?? '',
+            logoUrl: data.logo_url ?? null, logo: data.logo_url ?? null, website: data.website ?? '',
             phone: data.phone ?? '', email: data.email ?? '',
             userId: data.user_id, isUserCreated: true,
           });

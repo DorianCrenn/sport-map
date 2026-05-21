@@ -10,6 +10,7 @@ function mapFromDB(row) {
     city:        row.city        ?? '',
     description: row.description ?? '',
     logoUrl:     row.logo_url    ?? null,
+    logo:        row.logo_url    ?? null,
     website:     row.website     ?? '',
     phone:       row.phone       ?? '',
     email:       row.email       ?? '',
