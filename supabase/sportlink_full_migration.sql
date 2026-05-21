@@ -229,6 +229,28 @@ CREATE TABLE IF NOT EXISTS public.ride_notifications (
 -- 3. MIGRATIONS (colonnes ajoutées après coup)
 -- ════════════════════════════════════════════════════════════
 
+-- ── events : colonnes ajoutées après la création initiale ──────────────────────
+-- CRITIQUE : CREATE TABLE IF NOT EXISTS ne rajoute pas les colonnes si la table
+-- existe déjà. Ces ALTER TABLE garantissent que toutes les colonnes sont présentes.
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS event_type   TEXT DEFAULT 'friendly';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS team_name    TEXT DEFAULT '';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS category     TEXT DEFAULT '';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS level        TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS cup_type     TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS home_or_away TEXT DEFAULT 'home';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS adversaire   TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS standings    JSONB;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS score        JSONB;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS club_id      TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS source       TEXT DEFAULT 'user';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS series_id    TEXT;
+
+-- ── profiles : plan Stripe-ready + XP gamification ────────────────────────────
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free'
+  CHECK (plan IN ('free', 'starter', 'pro', 'federation'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS xp INT NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS profiles_xp_idx ON public.profiles (xp DESC);
+
 -- Colonne theme sur club_pages (ajoutée en P1)
 DO $$ BEGIN
   IF NOT EXISTS (

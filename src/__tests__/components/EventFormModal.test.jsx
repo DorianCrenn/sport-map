@@ -173,6 +173,10 @@ describe('EventFormModal — validation Zod', () => {
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
 
+    // Football requires homeTeam + awayTeam to generate a title
+    fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: 'FC Brest' } });
+    fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: 'FC Quimper' } });
+
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
 
@@ -193,6 +197,10 @@ describe('EventFormModal — validation Zod', () => {
 
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+
+    // Fill team names to generate a valid title
+    fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: 'FC Brest' } });
+    fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: 'FC Quimper' } });
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
 
@@ -215,6 +223,10 @@ describe('EventFormModal — récurrence', () => {
     // Fill date
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-09-01' } });
+
+    // Fill team names (Football sport requires them to generate a title)
+    fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: 'FC Brest' } });
+    fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: 'FC Quimper' } });
 
     // Enable recurrence
     const recurrenceBtn = screen.getByRole('button', { name: /récurrence/i });
@@ -271,11 +283,72 @@ describe('EventFormModal — erreur lors de la sauvegarde', () => {
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
 
+    // Football requires team names to generate a title
+    fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: 'FC Brest' } });
+    fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: 'FC Quimper' } });
+
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
 
     await waitFor(() => {
       expect(screen.getByText(/connexion refusée/i)).toBeInTheDocument();
     });
+  });
+});
+
+// ── Protection titre vide ──────────────────────────────────────────────────────
+
+describe('EventFormModal — titre vide bloqué', () => {
+  it('bloque la soumission si aucune équipe n\'est renseignée pour un sport collectif', async () => {
+    const onSave = vi.fn();
+    renderModal({ onSave });
+
+    // Football is default — fill date but leave homeTeam/awayTeam AND title empty
+    const dateInputEl = document.querySelector('input[type="date"]');
+    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+
+    // Don't fill homeTeam/awayTeam → buildEvent returns title='' → blocked
+    const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/nom de l'événement est requis/i)).toBeInTheDocument();
+    });
+    expect(onSave).not.toHaveBeenCalled();
+  });
+});
+
+// ── Données envoyées à onSave ──────────────────────────────────────────────────
+
+describe('EventFormModal — structure des données envoyées', () => {
+  it('envoie tous les champs critiques : sport, date, city, lat, lng, eventType, homeOrAway', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    renderModal({ onSave });
+
+    const dateInputEl = document.querySelector('input[type="date"]');
+    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+
+    // Fill team names so title is auto-generated
+    const homeTeamInput = screen.getByPlaceholderText(/fc brest/i);
+    const awayTeamInput = screen.getByPlaceholderText(/fc quimper/i);
+    fireEvent.change(homeTeamInput, { target: { value: 'FC Brest' } });
+    fireEvent.change(awayTeamInput, { target: { value: 'FC Quimper' } });
+
+    const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+
+    const arg = onSave.mock.calls[0][0];
+    // All fields that mapToDB needs must be present in the buildEvent output
+    expect(arg).toMatchObject({
+      sport:      'Football',
+      date:       expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      eventType:  'championship',
+      homeOrAway: 'home',
+    });
+    expect(arg.lat).toBeDefined();
+    expect(arg.lng).toBeDefined();
+    expect(arg.title).toBeTruthy();
   });
 });

@@ -223,6 +223,55 @@ describe('deleteEvent — rollback si erreur DB', () => {
   });
 });
 
+// ── Schema DB complet ─────────────────────────────────────────────────────────
+// Vérifie que mapToDB envoie exactement les colonnes attendues par la table events.
+// Ce test est la "sentinelle" contre une régression du type PGRST204
+// (colonne inconnue / manquante dans le payload Supabase).
+
+describe('addEvent — colonnes DB complètes (sentinelle PGRST204)', () => {
+  it('inclut toutes les colonnes nécessaires à la table events', async () => {
+    let insertedArg = null;
+    let callCount = 0;
+
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return q({ data: [], error: null }); // initial load
+      const obj = q(null);
+      obj.insert = vi.fn((arg) => { insertedArg = arg; return obj; });
+      obj.single = vi.fn().mockResolvedValue({ data: dbRow({ id: 'real-id' }), error: null });
+      return obj;
+    });
+
+    const { result } = renderHook(() => useLocalEvents());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.addEvent({
+        title: 'Test', sport: 'Football', date: '2026-06-15T15:00:00',
+        lat: 48.39, lng: -4.48, city: 'Brest', venue: 'Stade X',
+        description: '', eventType: 'championship', teamName: 'Seniors A',
+        category: 'Senior', level: 'D1', cupType: 'Coupe de France',
+        homeOrAway: 'home', adversaire: 'AS Morlaix',
+        standings: null, score: null, clubId: 'club-1', seriesId: null,
+      });
+    });
+
+    // Colonnes obligatoires côté DB
+    const requiredCols = [
+      'title', 'sport', 'date', 'lat', 'lng',
+      'city', 'venue', 'description',
+      'event_type', 'team_name', 'category', 'level',
+      'cup_type', 'home_or_away', 'adversaire',
+      'standings', 'score', 'club_id', 'series_id',
+      'user_id', 'source',
+    ];
+
+    for (const col of requiredCols) {
+      expect(insertedArg, `colonne "${col}" absente du payload mapToDB`).toHaveProperty(col);
+    }
+  });
+});
+
 // ── Realtime ──────────────────────────────────────────────────────────────────
 
 describe('Realtime — canal fixe', () => {

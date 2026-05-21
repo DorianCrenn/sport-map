@@ -463,6 +463,10 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
     setSubmitting(true);
     try {
       const base = buildEvent(form, currentUser, myClub, useSmartMode);
+      if (!base.title?.trim()) {
+        setSubmitError('Le nom de l\'événement est requis');
+        return;
+      }
       if (!isEdit && form.recurrenceEnabled && form.recurrenceUntil && onBulkSave) {
         const recurring = generateRecurring(base, form.recurrenceFreq, form.recurrenceUntil);
         if (recurring.length > 0) { await onBulkSave(recurring); return; }
