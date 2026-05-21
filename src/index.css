@@ -163,6 +163,11 @@
   --sl-popup-border: #D4DDD6;
 }
 
+/* Prevent horizontal scroll caused by slide animations */
+html, body {
+  overflow-x: hidden;
+}
+
 /* ═══════════════════════════════════════════════════════════
    THEME TRANSITION — smooth switching
    ═══════════════════════════════════════════════════════════ */
