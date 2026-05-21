@@ -20,7 +20,6 @@ import NextMatchBlock from './blocks/NextMatchBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 import ClubManagersPanel from './ClubManagersPanel.jsx';
 import ClubDashboard from './ClubDashboard.jsx';
-import ClubBrandKitEditor from './ClubBrandKitEditor.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import ClubFormModal from './ClubFormModal.jsx';
@@ -833,7 +832,6 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [showPoster, setShowPoster] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [showEditInfo, setShowEditInfo]     = useState(false);
-  const [showBrandKit, setShowBrandKit]     = useState(false);
 
   async function handleShareClub() {
     const url = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
@@ -1024,20 +1022,6 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                     {managers.length}
                   </span>
                 )}
-              </button>
-            )}
-            {isOwner && (
-              <button
-                onClick={() => setShowBrandKit(true)}
-                aria-label="Identité visuelle du club"
-                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/>
-                  <circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/>
-                  <path d="M12 20s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10z"/>
-                </svg>
-                <span className="hidden sm:inline">Brand</span>
               </button>
             )}
             {canEdit && onUpdateClub && (
@@ -1547,19 +1531,8 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         )}
       </AnimatePresence>
 
-      {/* Brand kit editor slide-in */}
-      <AnimatePresence>
-        {showBrandKit && (
-          <ClubBrandKitEditor
-            key="club-brand-kit"
-            club={club}
-            onClose={() => setShowBrandKit(false)}
-          />
-        )}
-      </AnimatePresence>
-
       {/* Floating announcement FAB */}
-      {canEdit && !isEditing && !showEditInfo && !showAnnouncement && !showBrandKit && !showDashboard && (
+      {canEdit && !isEditing && !showEditInfo && !showAnnouncement && !showDashboard && (
         <motion.button
           initial={{ scale: 0.8, opacity: 0, y: 8 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -1586,7 +1559,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       )}
 
       {/* Floating edit FAB */}
-      {canEdit && !showEditInfo && !showAnnouncement && !showBrandKit && !showDashboard && (
+      {canEdit && !showEditInfo && !showAnnouncement && !showDashboard && (
         <motion.button
           key={isEditing ? 'done' : 'edit'}
           initial={{ scale: 0.8, opacity: 0, y: 8 }}
