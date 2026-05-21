@@ -1115,12 +1115,12 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors cursor-pointer"
             title="Créer l'affiche du prochain match"
           >
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${accentColor}25` }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
               </svg>
             </div>
-            <span className="text-[9px] font-medium" style={{ color: accentColor }}>Affiche</span>
+            <span className="text-[9px] font-medium text-slate-400">Affiche</span>
           </button>
 
           {/* ICS export */}

@@ -41,9 +41,42 @@ export const HERO_STYLE_OPTIONS = [
   { key: 'gradient', label: 'Dégradé' },
   { key: 'night',    label: 'Nuit' },
   { key: 'aurora',   label: 'Aurore' },
-  { key: 'stripes',  label: 'Rayures' },
-  { key: 'dots',     label: 'Points' },
+  { key: 'jersey',   label: 'Maillot' },
+  { key: 'stadium',  label: 'Stade' },
 ];
+
+function svgUrl(svg) {
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
+const PITCH_SVG = svgUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 130">` +
+  // pitch outline
+  `<rect x="10" y="10" width="180" height="110" rx="4" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" fill="rgba(255,255,255,0.03)"/>` +
+  // centre line
+  `<line x1="100" y1="10" x2="100" y2="120" stroke="rgba(255,255,255,0.18)" stroke-width="1.2"/>` +
+  // centre circle + spot
+  `<circle cx="100" cy="65" r="22" stroke="rgba(255,255,255,0.18)" stroke-width="1.2" fill="none"/>` +
+  `<circle cx="100" cy="65" r="2" fill="rgba(255,255,255,0.3)"/>` +
+  // penalty areas
+  `<rect x="50" y="10" width="100" height="32" stroke="rgba(255,255,255,0.14)" stroke-width="1" fill="none"/>` +
+  `<rect x="50" y="88" width="100" height="32" stroke="rgba(255,255,255,0.14)" stroke-width="1" fill="none"/>` +
+  // goal areas
+  `<rect x="72" y="10" width="56" height="13" stroke="rgba(255,255,255,0.10)" stroke-width="0.8" fill="none"/>` +
+  `<rect x="72" y="107" width="56" height="13" stroke="rgba(255,255,255,0.10)" stroke-width="0.8" fill="none"/>` +
+  // goals
+  `<rect x="85" y="4" width="30" height="8" rx="1" stroke="rgba(255,255,255,0.18)" stroke-width="0.8" fill="rgba(255,255,255,0.06)"/>` +
+  `<rect x="85" y="118" width="30" height="8" rx="1" stroke="rgba(255,255,255,0.18)" stroke-width="0.8" fill="rgba(255,255,255,0.06)"/>` +
+  // penalty spots
+  `<circle cx="100" cy="30" r="1.8" fill="rgba(255,255,255,0.25)"/>` +
+  `<circle cx="100" cy="100" r="1.8" fill="rgba(255,255,255,0.25)"/>` +
+  // corner arcs
+  `<path d="M10,15 A5,5 0 0,1 15,10" stroke="rgba(255,255,255,0.13)" stroke-width="0.8" fill="none"/>` +
+  `<path d="M185,10 A5,5 0 0,1 190,15" stroke="rgba(255,255,255,0.13)" stroke-width="0.8" fill="none"/>` +
+  `<path d="M10,115 A5,5 0 0,0 15,120" stroke="rgba(255,255,255,0.13)" stroke-width="0.8" fill="none"/>` +
+  `<path d="M185,120 A5,5 0 0,0 190,115" stroke="rgba(255,255,255,0.13)" stroke-width="0.8" fill="none"/>` +
+  `</svg>`
+);
 
 export function getHeroBackground(primary, accent, heroStyle) {
   const a = accent || '#22C55E';
@@ -54,16 +87,22 @@ export function getHeroBackground(primary, accent, heroStyle) {
       return { background: `linear-gradient(175deg, #060f1e 0%, #0d1b36 40%, ${primary} 100%)` };
     case 'aurora':
       return { background: `linear-gradient(135deg, ${primary} 0%, ${primary}cc 35%, ${a}77 70%, ${primary}99 100%)` };
-    case 'stripes':
+    case 'jersey':
       return {
         backgroundColor: primary,
-        backgroundImage: `repeating-linear-gradient(-45deg, transparent 0px, transparent 7px, rgba(255,255,255,0.07) 7px, rgba(255,255,255,0.07) 14px)`,
+        backgroundImage: [
+          `linear-gradient(160deg, ${primary} 0%, ${a}22 100%)`,
+          `repeating-linear-gradient(45deg,  transparent 0px, transparent 3px, rgba(255,255,255,0.07) 3px, rgba(255,255,255,0.07) 4px)`,
+          `repeating-linear-gradient(-45deg, transparent 0px, transparent 3px, rgba(255,255,255,0.07) 3px, rgba(255,255,255,0.07) 4px)`,
+        ].join(', '),
       };
-    case 'dots':
+    case 'stadium':
       return {
         backgroundColor: primary,
-        backgroundImage: `radial-gradient(rgba(255,255,255,0.18) 1.5px, transparent 1.5px)`,
-        backgroundSize: '16px 16px',
+        backgroundImage: `${PITCH_SVG}, linear-gradient(160deg, ${primary} 0%, ${a}33 100%)`,
+        backgroundSize: 'auto 92%, cover',
+        backgroundPosition: 'center center, center',
+        backgroundRepeat: 'no-repeat, no-repeat',
       };
     default: // solid
       return { backgroundColor: primary };
