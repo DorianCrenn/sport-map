@@ -28,7 +28,8 @@ export default function TitleBlock({ data, isEditing, onUpdate }) {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder="Titre de la section…"
-          className={`w-full bg-transparent border-b-2 outline-none font-oswald font-bold tracking-wide text-gray-900 py-1 transition-colors ${
+          style={{ fontFamily: data.font ? `"${data.font}", sans-serif` : 'var(--club-font-title)' }}
+          className={`w-full bg-transparent border-b-2 outline-none font-bold tracking-wide text-gray-900 py-1 transition-colors ${
             SIZE[level]
           } ${focused ? 'border-slate-800' : 'border-gray-200'}`}
         />
@@ -39,8 +40,11 @@ export default function TitleBlock({ data, isEditing, onUpdate }) {
   const Tag = level;
   return (
     <Tag
-      className={`font-oswald font-bold tracking-wide text-gray-900 ${SIZE[level]}`}
-      style={data.color ? { color: data.color } : undefined}
+      className={`font-bold tracking-wide text-gray-900 ${SIZE[level]}`}
+      style={{
+        fontFamily: data.font ? `"${data.font}", sans-serif` : 'var(--club-font-title)',
+        ...(data.color ? { color: data.color } : {}),
+      }}
     >
       {data.text || 'Titre'}
     </Tag>

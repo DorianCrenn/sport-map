@@ -25,6 +25,7 @@ export default function TextBlock({ data, isEditing, onUpdate }) {
         className={`w-full bg-transparent border rounded-xl p-3 text-sm text-gray-700 leading-relaxed resize-none outline-none transition-colors overflow-hidden ${
           focused ? 'border-slate-800 bg-gray-50' : 'border-gray-200'
         }`}
+        style={{ fontFamily: data.font ? `"${data.font}", sans-serif` : 'var(--club-font-body)' }}
       />
     );
   }
@@ -32,7 +33,10 @@ export default function TextBlock({ data, isEditing, onUpdate }) {
   return (
     <p
       className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap"
-      style={data.color ? { color: data.color } : undefined}
+      style={{
+        fontFamily: data.font ? `"${data.font}", sans-serif` : 'var(--club-font-body)',
+        ...(data.color ? { color: data.color } : {}),
+      }}
     >
       {data.content || <span className="text-gray-300 italic">Aucun contenu</span>}
     </p>
