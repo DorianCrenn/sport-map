@@ -50,10 +50,19 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;
 
 -- ── 3. CONTRAINTE UNIQUE club_follows — requis pour UPSERT ────────────────────
 -- La nouvelle logique _saveFollows utilise upsert({ onConflict: 'user_id,club_id' }).
--- Si la contrainte n'existe pas, upsert agit comme INSERT et crée des doublons.
+-- IF NOT EXISTS n'est pas supporté par ALTER TABLE ADD CONSTRAINT — on utilise un DO block.
 
-ALTER TABLE public.club_follows
-  ADD CONSTRAINT IF NOT EXISTS club_follows_user_club_unique UNIQUE (user_id, club_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'club_follows_user_club_unique'
+      AND conrelid = 'public.club_follows'::regclass
+  ) THEN
+    ALTER TABLE public.club_follows
+      ADD CONSTRAINT club_follows_user_club_unique UNIQUE (user_id, club_id);
+  END IF;
+END $$;
 
 -- ── 4. RELOAD SCHEMA ──────────────────────────────────────────────────────────
 
