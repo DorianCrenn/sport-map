@@ -646,7 +646,7 @@ function TeamTrainingSection({ sessions, isEditing, onChange }) {
 }
 
 // ── Team view ─────────────────────────────────────────────────────────────────
-function TeamView({ team, blocks, isEditing, updateBlock, addBlock, club, trainings, onUpdateTrainings, onAddEventForTeam, canAddEvent, onBulkAddTrainingEvents }) {
+function TeamView({ team, blocks, isEditing, updateBlock, addBlock, club, allEvents, trainings, onUpdateTrainings, onAddEventForTeam, canAddEvent, onBulkAddTrainingEvents }) {
   const matchesBlock = blocks.find(b => b.type === 'matches');
   const teamSessions = trainings[team.id] ?? [];
 
@@ -1282,6 +1282,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             updateBlock={updateBlock}
             addBlock={addBlock}
             club={club}
+            allEvents={allEvents ?? []}
             trainings={teamTrainings}
             onUpdateTrainings={setTeamTrainings}
             onAddEventForTeam={handleAddEventForTeam}
@@ -1356,6 +1357,19 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                 </button>
               </div>
             )}
+
+            {blocks.length === 0 && !isEditing && (() => {
+              const now = new Date();
+              const hasUpcoming = (allEvents ?? []).some(
+                e => String(e.clubId) === String(club.id) && new Date(e.date) >= now
+              );
+              if (!hasUpcoming) return null;
+              return (
+                <div style={{ padding: '0 0 16px' }}>
+                  <UpcomingEventsBlock data={{}} allEvents={allEvents ?? []} club={club} isEditing={false} onUpdate={() => {}} />
+                </div>
+              );
+            })()}
 
             {isEditing && blocks.length > 0 && openMenuAfter === null && (
               <button onClick={() => setOpenMenuAfter('__end__')}
