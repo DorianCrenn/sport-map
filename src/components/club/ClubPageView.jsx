@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useDynamicMeta } from '../../hooks/useDynamicMeta.js';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
@@ -817,6 +817,15 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [showDashboard, setShowDashboard] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [activeTeamId, setActiveTeamId] = useState(null);
+  const tabBarRef = useRef(null);
+
+  // Auto-scroll active tab into view when switching teams
+  useEffect(() => {
+    const container = tabBarRef.current;
+    if (!container) return;
+    const active = container.querySelector('[data-active="true"]');
+    active?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [activeTeamId]);
 
   const { sendAnnouncement } = useClubAnnouncements(canEdit ? club.id : null);
   const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
@@ -1209,9 +1218,9 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                   <span className="text-[10px] font-semibold" style={{ color: 'var(--sl-t3)' }}>{pageViews} vue{pageViews !== 1 ? 's' : ''}</span>
                 </div>
               </div>
-              <div className="flex gap-4 flex-wrap">
+              <div className="flex flex-col gap-3">
                 {['titleFont', 'bodyFont'].map(key => (
-                  <div key={key} className="flex-1 min-w-0">
+                  <div key={key}>
                     <div className="text-[10px] mb-1.5 font-medium" style={{ color: 'var(--sl-t3)' }}>
                       {key === 'titleFont' ? 'Titres' : 'Corps de texte'}
                     </div>
@@ -1281,28 +1290,49 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
       {/* ── Tab bar ── */}
       {allTeams.length > 0 && (
-        <div className="flex overflow-x-auto flex-shrink-0" style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', scrollbarWidth: 'none' }}>
-          <button
-            onClick={() => setActiveTeamId(null)}
-            className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer"
-            style={activeTeamId === null
-              ? { borderColor: '#1e293b', color: 'var(--sl-t1)' }
-              : { borderColor: 'transparent', color: 'var(--sl-t3)' }}
+        <div className="flex-shrink-0 relative" style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+          <div
+            ref={tabBarRef}
+            className="flex overflow-x-auto"
+            style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x', scrollBehavior: 'smooth' }}
           >
-            Général
-          </button>
-          {allTeams.map(team => (
             <button
-              key={team.id}
-              onClick={() => setActiveTeamId(team.id)}
+              data-active={activeTeamId === null}
+              onClick={() => setActiveTeamId(null)}
               className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer"
-              style={activeTeamId === team.id
+              style={activeTeamId === null
                 ? { borderColor: '#1e293b', color: 'var(--sl-t1)' }
                 : { borderColor: 'transparent', color: 'var(--sl-t3)' }}
             >
-              {team.name}
+              Général
             </button>
-          ))}
+            {allTeams.map(team => (
+              <button
+                key={team.id}
+                data-active={activeTeamId === team.id}
+                onClick={() => setActiveTeamId(team.id)}
+                className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer"
+                style={activeTeamId === team.id
+                  ? { borderColor: '#1e293b', color: 'var(--sl-t1)' }
+                  : { borderColor: 'transparent', color: 'var(--sl-t3)' }}
+              >
+                {team.name}
+              </button>
+            ))}
+            {/* Spacer so last tab doesn't sit at the very edge */}
+            <div className="flex-shrink-0 w-4" />
+          </div>
+          {/* Right-fade overflow hint — hidden via CSS when scrolled to end */}
+          {allTeams.length > 2 && (
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute', right: 0, top: 0, bottom: 1,
+                width: 32, pointerEvents: 'none',
+                background: 'linear-gradient(to right, transparent, var(--sl-card))',
+              }}
+            />
+          )}
         </div>
       )}
 
