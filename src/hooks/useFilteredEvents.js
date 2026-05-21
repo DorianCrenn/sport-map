@@ -48,7 +48,8 @@ export function useFilteredEvents(events, { sport, dateRange, departmentId, near
     let result = events;
 
     if (departmentId) {
-      result = result.filter(e => e.departmentId === departmentId);
+      // Events from DB have no departmentId — keep them; only exclude events explicitly from another department
+      result = result.filter(e => !e.departmentId || e.departmentId === departmentId);
     }
 
     if (cityFilter) {
