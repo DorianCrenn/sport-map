@@ -1183,9 +1183,9 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             key="options-drawer"
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden flex-shrink-0"
-            style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)' }}
+            style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', maxHeight: '52dvh' }}
           >
-            <div className="px-4 py-4" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div className="px-4 py-4" style={{ display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto', maxHeight: '52dvh' }}>
 
               {/* ── Mode d'édition ── */}
               <div>
