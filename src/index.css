@@ -164,7 +164,7 @@
 }
 
 /* Prevent horizontal scroll caused by slide animations */
-html, body {
+html, body, #root {
   overflow-x: hidden;
 }
 

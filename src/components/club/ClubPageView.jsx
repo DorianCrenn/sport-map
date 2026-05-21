@@ -715,7 +715,7 @@ function TeamView({ team, blocks, isEditing, updateBlock, addBlock, club, allEve
   }
 
   return (
-    <div className="px-4 py-5 space-y-6">
+    <div className="px-4 py-5 space-y-6 overflow-x-hidden">
       {/* Team event creation */}
       {canAddEvent && onAddEventForTeam && (
         <button
@@ -979,7 +979,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
-      className="absolute inset-0 flex flex-col z-20"
+      className="fixed inset-0 flex flex-col z-20"
       style={{ backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}
     >
       {/* ── Header ── */}
@@ -1428,7 +1428,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             accentColor={accentColor}
           />
         ) : (
-          <div className="px-4 py-5">
+          <div className="px-4 py-5 overflow-x-hidden">
             <Reorder.Group axis="y" values={rows} onReorder={reorderRows} as="div">
               {rows.map(row => (
                 <div key={row.rowId}>
