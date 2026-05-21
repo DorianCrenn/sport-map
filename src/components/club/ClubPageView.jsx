@@ -951,12 +951,12 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
   return (
     <motion.div
-      initial={{ x: '100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '100%' }}
-      transition={{ type: 'spring', stiffness: 340, damping: 36 }}
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
       className="absolute inset-0 flex flex-col z-20"
-      style={{ backgroundColor: 'var(--sl-bg)' }}
+      style={{ backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}
     >
       {/* ── Header ── */}
       <div className="flex-shrink-0 relative text-white" style={{ backgroundColor: theme.primary }}>
@@ -1350,7 +1350,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       )}
 
       {/* ── Content ── */}
-      <div className="flex-1 overflow-y-auto" style={{ overscrollBehavior: 'contain', '--club-font-title': `"${typography.titleFont}", sans-serif`, '--club-font-body': `"${typography.bodyFont}", sans-serif` }}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ overscrollBehavior: 'contain', '--club-font-title': `"${typography.titleFont}", sans-serif`, '--club-font-body': `"${typography.bodyFont}", sans-serif` }}>
         {activeTeam ? (
           <TeamView
             key={activeTeam.id}
