@@ -41,8 +41,13 @@ export function useClubAnnouncements(clubId) {
     const key = Math.random().toString(36).slice(2, 7);
     const ch = supabase
       .channel(`club-ann-${String(clubId)}-${key}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'club_announcements' }, fetch)
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'club_announcements' }, fetch)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'club_announcements' }, ({ new: row }) => {
+        if (String(row.club_id) !== String(clubId)) return;
+        setAnnouncements(prev => prev.some(a => a.id === row.id) ? prev : [mapAnn(row), ...prev]);
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'club_announcements' }, ({ old: row }) => {
+        setAnnouncements(prev => prev.filter(a => a.id !== row.id));
+      })
       .subscribe();
     return () => supabase.removeChannel(ch);
   }, [clubId, fetch]);

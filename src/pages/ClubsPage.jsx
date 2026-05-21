@@ -17,7 +17,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
   const { allSports: SPORTS } = useSports();
   const { userClubs, loading: clubsLoading, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
-  const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub } = useAuth();
+  const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub, refetchProfile } = useAuth();
 
   const [search, setSearch]               = useState('');
   const [sportFilter, setSportFilter]     = useState(null);
@@ -60,6 +60,8 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
     } else {
       const created = await addClub(data);
       setSelectedClub(created);
+      // Refresh profile so role=club_admin and clubId are up-to-date immediately
+      refetchProfile();
     }
     setFormClub(null);
   }
@@ -84,7 +86,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
 
   function isOwnClub(club) {
     if (isAdmin) return club.isUserCreated;
-    if (currentUser && club.ownerId) return club.ownerId === currentUser.id;
+    if (currentUser) return club.userId === currentUser.id || club.ownerId === currentUser.id;
     return false;
   }
 

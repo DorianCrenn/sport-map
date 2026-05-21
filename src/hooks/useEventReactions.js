@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 export const REACTION_EMOJIS = ['👏', '🔥', '💪'];
 
@@ -10,17 +11,11 @@ export const REACTION_EMOJIS = ['👏', '🔥', '💪'];
  * - toggle : ajoute ou retire la réaction de l'utilisateur
  */
 export function useEventReactions(eventId) {
+  const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? null;
   const [counts, setCounts]   = useState({ '👏': 0, '🔥': 0, '💪': 0 });
   const [mine, setMine]       = useState(new Set());
-  const [userId, setUserId]   = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Résoudre l'utilisateur courant une seule fois
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUserId(user?.id ?? null);
-    });
-  }, []);
 
   // Charger les counts + réactions perso
   useEffect(() => {

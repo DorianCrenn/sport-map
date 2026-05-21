@@ -1,15 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 export function useEventComments(eventId) {
+  const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? null;
   const [comments, setComments] = useState([]);
-  const [userId, setUserId]     = useState(null);
   const [loading, setLoading]   = useState(true);
   const [posting, setPosting]   = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUserId(user?.id ?? null));
-  }, []);
 
   useEffect(() => {
     if (!eventId) { setLoading(false); return; }
