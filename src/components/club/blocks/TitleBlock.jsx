@@ -38,7 +38,10 @@ export default function TitleBlock({ data, isEditing, onUpdate }) {
 
   const Tag = level;
   return (
-    <Tag className={`font-oswald font-bold tracking-wide text-gray-900 ${SIZE[level]}`}>
+    <Tag
+      className={`font-oswald font-bold tracking-wide text-gray-900 ${SIZE[level]}`}
+      style={data.color ? { color: data.color } : undefined}
+    >
       {data.text || 'Titre'}
     </Tag>
   );

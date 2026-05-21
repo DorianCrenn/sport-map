@@ -30,7 +30,10 @@ export default function TextBlock({ data, isEditing, onUpdate }) {
   }
 
   return (
-    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+    <p
+      className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap"
+      style={data.color ? { color: data.color } : undefined}
+    >
       {data.content || <span className="text-gray-300 italic">Aucun contenu</span>}
     </p>
   );

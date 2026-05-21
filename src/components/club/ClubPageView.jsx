@@ -203,6 +203,32 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
           </select>
         </div>
 
+        {/* Text color picker */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: 1 }}>
+          <label title="Couleur du texte" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}>
+            <div style={{
+              width: 13, height: 13, borderRadius: 3,
+              background: block.data?.color || 'var(--sl-t1)',
+              border: `1.5px solid ${block.data?.color ? 'var(--sl-green)' : 'var(--sl-border)'}`,
+              flexShrink: 0,
+            }} />
+            <input
+              type="color"
+              value={block.data?.color || '#deeeff'}
+              onChange={e => onUpdate({ color: e.target.value })}
+              style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+              tabIndex={-1}
+            />
+          </label>
+          {block.data?.color && (
+            <button
+              onClick={() => onUpdate({ color: null })}
+              title="Réinitialiser la couleur"
+              style={{ fontSize: 10, lineHeight: 1, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >×</button>
+          )}
+        </div>
+
         <div className="flex-1" />
 
         {/* Move within row */}
