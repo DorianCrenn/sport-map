@@ -36,7 +36,7 @@ const FONT_OPTIONS = [
 const DEFAULT_TYPOGRAPHY = { titleFont: 'Oswald', bodyFont: 'Inter' };
 const DEFAULT_THEME = { primary: '#0F1E3A', accent: null };
 
-export { FONT_OPTIONS, DEFAULT_TYPOGRAPHY, DEFAULT_THEME };
+export { FONT_OPTIONS, DEFAULT_TYPOGRAPHY, DEFAULT_THEME, injectGoogleFont };
 
 function injectGoogleFont(fontKey) {
   const weights = FONT_OPTIONS.find(f => f.key === fontKey)?.weights ?? '400;600;700';

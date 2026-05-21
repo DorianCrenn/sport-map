@@ -3,7 +3,7 @@ import { useDynamicMeta } from '../../hooks/useDynamicMeta.js';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
-import { useClubPage, useClubAnalytics, FONT_OPTIONS } from '../../hooks/useClubPage.js';
+import { useClubPage, useClubAnalytics, FONT_OPTIONS, injectGoogleFont } from '../../hooks/useClubPage.js';
 import { supabase } from '../../lib/supabase.js';
 import SportIcon from '../SportIcon.jsx';
 import FollowModal from '../FollowModal.jsx';
@@ -106,6 +106,12 @@ const DragDots = () => (
   </svg>
 );
 
+// ── Font injector — side-effect only, renders nothing ────────────────────────
+function FontInjector({ font }) {
+  useEffect(() => { if (font) injectGoogleFont(font); }, [font]);
+  return null;
+}
+
 // ── Block content renderer ────────────────────────────────────────────────────
 function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
   return (
@@ -171,6 +177,33 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
           })}
         </div>
 
+        {/* Font picker */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginLeft: 2 }}>
+          <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--sl-t3)', letterSpacing: '0.04em', userSelect: 'none' }}>Aa</span>
+          <select
+            value={block.data?.font ?? ''}
+            onChange={e => {
+              const font = e.target.value || null;
+              if (font) injectGoogleFont(font);
+              onUpdate({ font });
+            }}
+            title="Police du bloc"
+            style={{
+              fontSize: 10, fontWeight: 600,
+              fontFamily: block.data?.font ? `'${block.data.font}', sans-serif` : undefined,
+              backgroundColor: 'var(--sl-bg)',
+              color: block.data?.font ? 'var(--sl-t1)' : 'var(--sl-t3)',
+              border: `1px solid ${block.data?.font ? 'var(--sl-green)' : 'var(--sl-border)'}`,
+              borderRadius: 6, padding: '2px 4px', cursor: 'pointer', outline: 'none',
+            }}
+          >
+            <option value="">Auto</option>
+            {FONT_OPTIONS.map(f => (
+              <option key={f.key} value={f.key}>{f.label}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="flex-1" />
 
         {/* Move within row */}
@@ -198,7 +231,8 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
       </div>
 
       {/* Content */}
-      <div className="p-4 flex-1">
+      <div className="p-4 flex-1" style={{ fontFamily: block.data?.font ? `'${block.data.font}', sans-serif` : undefined }}>
+        <FontInjector font={block.data?.font} />
         <BlockContent block={block} isEditing={true} onUpdate={onUpdate} allEvents={allEvents} club={club} />
       </div>
     </div>
@@ -281,7 +315,8 @@ function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan,
               club={club}
             />
           ) : block.enabled ? (
-            <div key={block.id} style={{ flex: spanToFlex(block.span ?? 12), minWidth: 0, marginBottom: 0 }}>
+            <div key={block.id} style={{ flex: spanToFlex(block.span ?? 12), minWidth: 0, marginBottom: 0, fontFamily: block.data?.font ? `'${block.data.font}', sans-serif` : undefined }}>
+              <FontInjector font={block.data?.font} />
               <BlockContent block={block} isEditing={false} onUpdate={() => {}} allEvents={allEvents} club={club} />
             </div>
           ) : null
