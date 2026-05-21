@@ -812,7 +812,8 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   } = useClubPage(club);
 
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
-  const [simpleMode, setSimpleMode] = useState(() => blocks.length === 0);
+  const [simpleMode, setSimpleMode]   = useState(() => blocks.length === 0);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [showManagersPanel, setShowManagersPanel] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
@@ -1166,89 +1167,94 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         </div>
 
         {isEditing && (
-          <div className="px-4 py-2 flex items-center gap-2 flex-wrap" style={{ backgroundColor: '#d97706' }}>
-            {/* Mode toggle */}
-            <div className="flex rounded-lg overflow-hidden border border-amber-500 flex-shrink-0" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}>
-              <button
-                type="button"
-                onClick={() => setSimpleMode(true)}
-                className="px-3 py-1 text-xs font-bold transition-colors cursor-pointer"
-                style={{ backgroundColor: simpleMode ? 'rgba(255,255,255,0.25)' : 'transparent', color: '#fff' }}
-              >
-                Rapide
-              </button>
-              <button
-                type="button"
-                onClick={() => setSimpleMode(false)}
-                className="px-3 py-1 text-xs font-bold transition-colors cursor-pointer"
-                style={{ backgroundColor: !simpleMode ? 'rgba(255,255,255,0.25)' : 'transparent', color: '#fff' }}
-              >
-                Avancé
-              </button>
-            </div>
-            {!simpleMode && (
-              <span className="text-white text-xs font-medium opacity-90">
-                Glissez ⠿ pour réordonner · Réduisez un bloc pour le mettre côte-à-côte
-              </span>
-            )}
-            {simpleMode && (
-              <span className="text-white text-xs font-medium opacity-90">
-                Mode rapide — ajoutez les sections essentielles en un clic
-              </span>
-            )}
+          <div className="px-4 py-2 flex items-center justify-between" style={{ backgroundColor: '#d97706' }}>
+            <span className="text-white text-xs font-medium opacity-90 flex-1 min-w-0 mr-3 truncate">
+              {simpleMode ? 'Mode rapide' : 'Avancé — glissez ⠿ pour réordonner'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setOptionsOpen(o => !o)}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors"
+              style={{ backgroundColor: optionsOpen ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)', color: '#fff' }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+              </svg>
+              Options
+            </button>
           </div>
         )}
       </div>
 
       <PendingResultsBanner count={pendingCount} isEditing={isEditing} />
 
-      {/* ── Typography picker (edit mode) ── */}
+      {/* ── Options drawer (edit mode) ── */}
       <AnimatePresence>
-        {isEditing && (
+        {isEditing && optionsOpen && (
           <motion.div
+            key="options-drawer"
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden flex-shrink-0"
             style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)' }}
           >
-            <div className="px-4 py-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--sl-t3)' }}>Typographie</div>
-                <div className="flex items-center gap-1.5">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  <span className="text-[10px] font-semibold" style={{ color: 'var(--sl-t3)' }}>{pageViews} vue{pageViews !== 1 ? 's' : ''}</span>
+            <div className="px-4 py-4" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+              {/* ── Mode d'édition ── */}
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Mode d'édition</div>
+                <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid var(--sl-border)', width: 'fit-content' }}>
+                  <button type="button" onClick={() => setSimpleMode(true)}
+                    className="px-4 py-2 text-xs font-bold transition-colors cursor-pointer"
+                    style={{ backgroundColor: simpleMode ? 'var(--sl-t1)' : 'transparent', color: simpleMode ? 'var(--sl-bg)' : 'var(--sl-t2)' }}>
+                    Rapide
+                  </button>
+                  <button type="button" onClick={() => setSimpleMode(false)}
+                    className="px-4 py-2 text-xs font-bold transition-colors cursor-pointer"
+                    style={{ backgroundColor: !simpleMode ? 'var(--sl-t1)' : 'transparent', color: !simpleMode ? 'var(--sl-bg)' : 'var(--sl-t2)' }}>
+                    Avancé
+                  </button>
                 </div>
-              </div>
-              <div className="flex flex-col gap-3">
-                {['titleFont', 'bodyFont'].map(key => (
-                  <div key={key}>
-                    <div className="text-[10px] mb-1.5 font-medium" style={{ color: 'var(--sl-t3)' }}>
-                      {key === 'titleFont' ? 'Titres' : 'Corps de texte'}
-                    </div>
-                    <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-                      {FONT_OPTIONS.map(font => (
-                        <button
-                          key={font.key}
-                          onClick={() => setTypography({ [key]: font.key })}
-                          className="flex-shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                          style={{
-                            fontFamily: `"${font.key}", sans-serif`,
-                            backgroundColor: typography[key] === font.key ? '#0F1E3A' : 'var(--sl-card)',
-                            color: typography[key] === font.key ? 'white' : 'var(--sl-t2)',
-                            border: `1px solid ${typography[key] === font.key ? '#0F1E3A' : 'var(--sl-border)'}`,
-                          }}
-                        >
-                          {font.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                <p className="text-[10px] mt-1.5" style={{ color: 'var(--sl-t3)' }}>
+                  {simpleMode ? 'Ajoutez les sections essentielles en un clic' : 'Glissez ⠿ pour réordonner · Réduisez un bloc pour le mettre côte-à-côte'}
+                </p>
               </div>
 
-              {/* ── Thème couleurs ── */}
-              <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 12, marginTop: 12 }}>
+              {/* ── Typographie ── */}
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Typographie</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {['titleFont', 'bodyFont'].map(key => (
+                    <div key={key}>
+                      <div className="text-[10px] mb-1.5 font-medium" style={{ color: 'var(--sl-t3)' }}>
+                        {key === 'titleFont' ? 'Titres' : 'Corps de texte'}
+                      </div>
+                      <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                        {FONT_OPTIONS.map(font => (
+                          <button
+                            key={font.key}
+                            onClick={() => setTypography({ [key]: font.key })}
+                            className="flex-shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+                            style={{
+                              fontFamily: `"${font.key}", sans-serif`,
+                              backgroundColor: typography[key] === font.key ? '#0F1E3A' : 'var(--sl-card)',
+                              color: typography[key] === font.key ? 'white' : 'var(--sl-t2)',
+                              border: `1px solid ${typography[key] === font.key ? '#0F1E3A' : 'var(--sl-border)'}`,
+                            }}
+                          >
+                            {font.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Couleurs du club ── */}
+              <div>
                 <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Couleurs du club</div>
-                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 5, cursor: 'pointer' }}>
                     <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)' }}>Couleur principale (header)</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1283,6 +1289,13 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                   </label>
                 </div>
               </div>
+
+              {/* ── Vues ── */}
+              <div className="flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span className="text-[10px] font-semibold" style={{ color: 'var(--sl-t3)' }}>{pageViews} vue{pageViews !== 1 ? 's' : ''} sur cette page</span>
+              </div>
+
             </div>
           </motion.div>
         )}
