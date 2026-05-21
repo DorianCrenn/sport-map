@@ -3,7 +3,7 @@ import { useDynamicMeta } from '../../hooks/useDynamicMeta.js';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
-import { useClubPage, useClubAnalytics, FONT_OPTIONS, injectGoogleFont } from '../../hooks/useClubPage.js';
+import { useClubPage, useClubAnalytics, FONT_OPTIONS, injectGoogleFont, HERO_STYLE_OPTIONS, getHeroBackground } from '../../hooks/useClubPage.js';
 import { supabase } from '../../lib/supabase.js';
 import SportIcon from '../SportIcon.jsx';
 import FollowModal from '../FollowModal.jsx';
@@ -957,15 +957,18 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       style={{ backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}
     >
       {/* ── Header ── */}
-      <div className="flex-shrink-0 relative text-white" style={{ backgroundColor: theme.primary }}>
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: `linear-gradient(135deg, transparent 35%, ${accentColor}1A 100%)`,
-        }} />
+      <div className="flex-shrink-0 relative text-white" style={getHeroBackground(theme.primary, accentColor, theme.heroStyle ?? 'solid')}>
+        {/* accent glow overlay — toned down on gradient/aurora styles */}
+        {!['gradient', 'aurora'].includes(theme.heroStyle) && (
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: `linear-gradient(135deg, transparent 35%, ${accentColor}1A 100%)`,
+          }} />
+        )}
         <div style={{
           position: 'absolute', top: '-40%', right: '-8%', width: 240, height: 240,
           borderRadius: '50%', pointerEvents: 'none',
-          background: `radial-gradient(circle, ${accentColor}28 0%, transparent 65%)`,
+          background: `radial-gradient(circle, ${accentColor}22 0%, transparent 65%)`,
         }} />
         <div className="flex items-center justify-between px-4 pt-4 pb-3">
           <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm transition-colors cursor-pointer">
@@ -1202,6 +1205,45 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                 <p className="text-[10px] mt-1.5" style={{ color: 'var(--sl-t3)' }}>
                   {simpleMode ? 'Ajoutez les sections essentielles en un clic' : 'Glissez ⠿ pour réordonner · Réduisez un bloc pour le mettre côte-à-côte'}
                 </p>
+              </div>
+
+              {/* ── Style du bandeau hero ── */}
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Style du bandeau</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  {HERO_STYLE_OPTIONS.map(opt => {
+                    const bg = getHeroBackground(theme.primary, accentColor, opt.key);
+                    const isActive = (theme.heroStyle ?? 'solid') === opt.key;
+                    return (
+                      <button
+                        key={opt.key}
+                        onClick={() => setTheme({ heroStyle: opt.key })}
+                        style={{
+                          borderRadius: 10, overflow: 'hidden', cursor: 'pointer', height: 48,
+                          border: `2px solid ${isActive ? accentColor : 'var(--sl-border)'}`,
+                          padding: 0, position: 'relative', ...bg,
+                        }}
+                      >
+                        {/* mini radial glow preview */}
+                        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 80% 30%, ${accentColor}33 0%, transparent 60%)` }} />
+                        <span style={{
+                          position: 'relative', fontSize: 9, fontWeight: 700,
+                          color: 'rgba(255,255,255,0.9)', display: 'block', paddingLeft: 7, paddingTop: 6,
+                          textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                        }}>{opt.label}</span>
+                        {isActive && (
+                          <div style={{
+                            position: 'absolute', bottom: 5, right: 6,
+                            width: 12, height: 12, borderRadius: '50%',
+                            backgroundColor: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* ── Typographie ── */}

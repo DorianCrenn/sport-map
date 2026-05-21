@@ -34,7 +34,41 @@ const FONT_OPTIONS = [
 ];
 
 const DEFAULT_TYPOGRAPHY = { titleFont: 'Oswald', bodyFont: 'Inter' };
-const DEFAULT_THEME = { primary: '#0F1E3A', accent: null };
+const DEFAULT_THEME = { primary: '#0F1E3A', accent: null, heroStyle: 'solid' };
+
+export const HERO_STYLE_OPTIONS = [
+  { key: 'solid',    label: 'Uni' },
+  { key: 'gradient', label: 'Dégradé' },
+  { key: 'night',    label: 'Nuit' },
+  { key: 'aurora',   label: 'Aurore' },
+  { key: 'stripes',  label: 'Rayures' },
+  { key: 'dots',     label: 'Points' },
+];
+
+export function getHeroBackground(primary, accent, heroStyle) {
+  const a = accent || '#22C55E';
+  switch (heroStyle) {
+    case 'gradient':
+      return { background: `linear-gradient(135deg, ${primary} 0%, ${a} 100%)` };
+    case 'night':
+      return { background: `linear-gradient(175deg, #060f1e 0%, #0d1b36 40%, ${primary} 100%)` };
+    case 'aurora':
+      return { background: `linear-gradient(135deg, ${primary} 0%, ${primary}cc 35%, ${a}77 70%, ${primary}99 100%)` };
+    case 'stripes':
+      return {
+        backgroundColor: primary,
+        backgroundImage: `repeating-linear-gradient(-45deg, transparent 0px, transparent 7px, rgba(255,255,255,0.07) 7px, rgba(255,255,255,0.07) 14px)`,
+      };
+    case 'dots':
+      return {
+        backgroundColor: primary,
+        backgroundImage: `radial-gradient(rgba(255,255,255,0.18) 1.5px, transparent 1.5px)`,
+        backgroundSize: '16px 16px',
+      };
+    default: // solid
+      return { backgroundColor: primary };
+  }
+}
 
 export { FONT_OPTIONS, DEFAULT_TYPOGRAPHY, DEFAULT_THEME, injectGoogleFont };
 
