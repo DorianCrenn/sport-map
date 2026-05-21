@@ -159,7 +159,9 @@ export default function PosterStudio({ event, onClose, club }) {
   const [libName,       setLibName]       = useState('');
   const [libFilter,     setLibFilter]     = useState('all');
   const [favVersion,    setFavVersion]    = useState(0);
-  const skipAutoSave = useRef(true);
+  const [canvasH,       setCanvasH]       = useState(260);
+  const skipAutoSave  = useRef(true);
+  const canvasAreaRef = useRef(null);
 
   useEffect(() => {
     favTplHook.loadFromDB();
@@ -177,6 +179,15 @@ export default function PosterStudio({ event, onClose, club }) {
     }
     setTimeout(() => { skipAutoSave.current = false; }, 150);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Measure canvas area height to size the poster preview dynamically
+  useEffect(() => {
+    const el = canvasAreaRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setCanvasH(entry.contentRect.height));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const draftState = useMemo(() => {
     const { bgUrl: _, bgErr: __, ...rest } = poster;
@@ -214,8 +225,10 @@ export default function PosterStudio({ event, onClose, club }) {
   };
 
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
-  const PREVIEW_W = 175;
-  const previewH  = Math.round(h * (PREVIEW_W / w));
+  // Poster must fit in canvas: size by height (capped at 200px wide)
+  const maxPosterH = Math.max(canvasH - 20, 80);
+  const PREVIEW_W  = Math.min(Math.floor(maxPosterH * (w / h)), 200);
+  const previewH   = Math.round(h * (PREVIEW_W / w));
 
   // ── Export helpers ──
   async function getBlob() {
@@ -479,35 +492,27 @@ export default function PosterStudio({ event, onClose, club }) {
 
         {/* ── FORMAT SEGMENTED CONTROL ────────────────────────────────────────── */}
         <div style={{
-          flexShrink: 0, padding: '10px 16px',
+          flexShrink: 0, padding: '8px 14px',
           borderBottom: '1px solid var(--sl-border)',
-          display: 'flex', alignItems: 'center', gap: 10,
+          display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <div style={{
-            display: 'inline-flex', gap: 2,
+            display: 'inline-flex', gap: 2, flexShrink: 0,
             backgroundColor: 'var(--sl-surface)', borderRadius: 13,
             padding: 3, border: '1px solid var(--sl-border)',
           }}>
             {[
-              { id: 'post', label: 'Post (4:5)', icon: (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <rect x="4" y="2" width="16" height="20" rx="2"/>
-                </svg>
-              )},
-              { id: 'story', label: 'Story (9:16)', icon: (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <rect x="6" y="1" width="12" height="22" rx="2"/>
-                </svg>
-              )},
+              { id: 'post',  label: 'Post 4:5',  icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/></svg> },
+              { id: 'story', label: 'Story 9:16', icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="6" y="1" width="12" height="22" rx="2"/></svg> },
             ].map(f => {
               const active = f.id === format;
               return (
                 <button key={f.id} onClick={() => set('format', f.id)}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '7px 14px', borderRadius: 11,
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '6px 12px', borderRadius: 11,
                     fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                    border: 'none',
+                    border: 'none', whiteSpace: 'nowrap',
                     backgroundColor: active ? accentColor : 'transparent',
                     color: active ? '#fff' : 'var(--sl-t2)',
                     transition: 'all 0.16s',
@@ -521,19 +526,20 @@ export default function PosterStudio({ event, onClose, club }) {
 
           {/* Active template pill */}
           <div style={{
-            flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 6,
-            padding: '6px 10px', borderRadius: 10,
+            flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 5,
+            padding: '5px 9px', borderRadius: 10,
             backgroundColor: `${activeTpl.color}12`,
             border: `1px solid ${activeTpl.color}30`, overflow: 'hidden',
           }}>
-            <span style={{ fontSize: 13, flexShrink: 0 }}>{activeTpl.icon}</span>
+            <span style={{ fontSize: 13, flexShrink: 0, lineHeight: 1 }}>{activeTpl.icon}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: activeTpl.color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeTpl.label}</span>
           </div>
         </div>
 
         {/* ── CANVAS AREA ─────────────────────────────────────────────────────── */}
         <div
-          style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-bg)', position: 'relative' }}
+          ref={canvasAreaRef}
+          style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-bg)', position: 'relative', overflow: 'hidden' }}
           onClick={() => exportOpen && setExportOpen(false)}
         >
           <div style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 10 }}>
@@ -578,7 +584,7 @@ export default function PosterStudio({ event, onClose, club }) {
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.16 }}
               style={{
-                flexShrink: 0, overflowY: 'auto', maxHeight: '46dvh',
+                flexShrink: 0, overflowY: 'auto', maxHeight: '40dvh',
                 borderTop: '1px solid var(--sl-border)',
                 backgroundColor: 'var(--sl-card)',
               }}
