@@ -33,6 +33,7 @@ export default function EventSidebar({
   onDuplicateEvent,
   onUpdateEvent,
   loading,
+  clubs = [],
 }) {
   const cardRefs  = useRef({});
   const sentinelRef = useRef(null);
@@ -152,6 +153,7 @@ export default function EventSidebar({
                   key={event.id}
                   ref={(el) => { cardRefs.current[event.id] = el; }}
                   event={event}
+                  club={event.clubId ? clubs.find(c => c.id === event.clubId) ?? null : null}
                   isSelected={event.id === selectedEventId}
                   onSelect={() => onEventSelect(event.id)}
                   onEdit={onEditEvent}

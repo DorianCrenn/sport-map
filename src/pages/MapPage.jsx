@@ -20,6 +20,7 @@ export default function MapPage({
   focusEventId, onFocusDone,
   eventsLoading,
   initialSportFilter, onInitialFilterApplied,
+  allClubs = [],
 }) {
   const { currentUser } = useAuth();
   const { allSports: SPORTS } = useSports();
@@ -115,6 +116,11 @@ export default function MapPage({
   const selectedEvent = useMemo(
     () => allEvents.find((e) => e.id === selectedEventId) ?? null,
     [allEvents, selectedEventId]
+  );
+
+  const selectedClub = useMemo(
+    () => selectedEvent?.clubId ? allClubs.find(c => c.id === selectedEvent.clubId) ?? null : null,
+    [allClubs, selectedEvent]
   );
 
   const visibleEvents = useMemo(() => {
@@ -301,6 +307,7 @@ export default function MapPage({
             onDeleteEvent={handleDeleteEvent}
             onDuplicateEvent={(event) => setModalEvent({ ...event, _isNew: true, _isDuplicate: true, id: undefined, date: '', score: null })}
             onUpdateEvent={onUpdateEvent}
+            clubs={allClubs}
           />
         </div>
 
@@ -366,6 +373,7 @@ export default function MapPage({
             <MobileEventSheet
               key={selectedEvent.id}
               event={selectedEvent}
+              club={selectedClub}
               onClose={() => setSelectedEventId(null)}
               onEdit={(event) => setModalEvent(event)}
               onDelete={handleDeleteEvent}

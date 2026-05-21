@@ -121,7 +121,7 @@ function FollowClubButton({ event }) {
 }
 
 export default function MobileEventSheet({
-  event, onClose, onEdit, onDelete, onUpdateEvent,
+  event, club, onClose, onEdit, onDelete, onUpdateEvent,
 }) {
   const { allSports: SPORTS } = useSports();
   const { share } = useShare();
@@ -464,7 +464,7 @@ export default function MobileEventSheet({
       </div>
     </motion.div>
 
-    {showPoster && <PosterStudio event={event} onClose={() => setShowPoster(false)} />}
+    {showPoster && <PosterStudio event={event} club={club} onClose={() => setShowPoster(false)} />}
   </>
   );
 }

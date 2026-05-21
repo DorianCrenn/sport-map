@@ -264,6 +264,7 @@ function AppInner() {
               <ErrorBoundary name="Carte">
                 <MapPage
                   allEvents={allEvents}
+                  allClubs={allClubs}
                   activeDepartment={activeDepartment}
                   canAddEvent={isAdmin || isClubAdmin}
                   onAddEvent={addEventWithToast}

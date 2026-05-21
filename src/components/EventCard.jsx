@@ -324,7 +324,7 @@ function FollowClubPill({ event }) {
   );
 }
 
-const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, onEdit, onDelete, onDuplicate, onUpdateEvent }, ref) {
+const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSelect, onEdit, onDelete, onDuplicate, onUpdateEvent }, ref) {
   const { allSports: SPORTS } = useSports();
   const { currentUser, isAdmin } = useAuth();
   const { toast } = useToast();
@@ -530,7 +530,7 @@ const EventCard = forwardRef(function EventCard({ event, isSelected, onSelect, o
       </button>
     </motion.div>
 
-    {showPoster && <PosterStudio event={event} onClose={() => setShowPoster(false)} />}
+    {showPoster && <PosterStudio event={event} club={club} onClose={() => setShowPoster(false)} />}
   </>
   );
 });
