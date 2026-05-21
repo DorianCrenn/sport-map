@@ -156,7 +156,10 @@ export default function PosterStudio({ event, onClose, club }) {
     favTplHook.loadFromDB();
     const draft = draftHook.loadDraft();
     if (draft?.state) {
-      dispatch({ type: 'PATCH', payload: draft.state });
+      const merged = { ...draft.state };
+      if (!merged.homeLogo && initialFields.homeLogo) merged.homeLogo = initialFields.homeLogo;
+      if (!merged.awayLogo && initialFields.awayLogo) merged.awayLogo = initialFields.awayLogo;
+      dispatch({ type: 'PATCH', payload: merged });
       setRestoredDraft(true);
       setTimeout(() => setRestoredDraft(false), 3000);
     } else {
