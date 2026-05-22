@@ -325,6 +325,155 @@ function FollowClubPill({ event }) {
   );
 }
 
+// ── Tournament card content ────────────────────────────────────────────────────
+
+const TOURNAMENT_COLOR = '#8b5cf6';
+
+function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelete, onDuplicate, onUpdateEvent, setShowPoster, isPast, attendeeCount, status }) {
+  const cats = event.tournamentCategories
+    ? event.tournamentCategories.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
+  return (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      {/* Top row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6, flexWrap: 'wrap' }}>
+        {/* Sport pill */}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: '#fff', backgroundColor: TOURNAMENT_COLOR, flexShrink: 0 }}>
+          <SportIcon sport={event.sport} size={10} color="white" />
+          {event.sport}
+        </span>
+        {/* TOURNOI badge */}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 6, color: TOURNAMENT_COLOR, backgroundColor: `${TOURNAMENT_COLOR}18`, border: `1px solid ${TOURNAMENT_COLOR}30`, flexShrink: 0, letterSpacing: '0.04em' }}>
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+            <path d="M17 4V2H7v2H2v4c0 2.76 1.86 5.08 4.4 5.8L7 14h10l.6-0.2C20.14 13.08 22 10.76 22 8V4h-5zM4 8V6h3v3.8A4.01 4.01 0 0 1 4 8zm16 0a4.01 4.01 0 0 1-3 3.8V6h3v2z"/>
+            <path d="M12 15a3 3 0 0 0-3 3v1h6v-1a3 3 0 0 0-3-3zM7 20h10v2H7z"/>
+          </svg>
+          TOURNOI
+        </span>
+        {event.tournamentType && (
+          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5, color: `${TOURNAMENT_COLOR}CC`, backgroundColor: `${TOURNAMENT_COLOR}10`, flexShrink: 0 }}>
+            {event.tournamentType}
+          </span>
+        )}
+        <StatusBadge event={event} />
+        {event.source === 'user' && <span style={{ fontSize: 10, color: '#4da6ff', fontWeight: 600, flexShrink: 0 }}>✦ Club</span>}
+        {canEditThis && (
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, flexShrink: 0 }}>
+            {onDuplicate && (
+              <button onClick={(e) => { e.stopPropagation(); onDuplicate(event); }} title="Dupliquer" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#a78bfa', backgroundColor: 'transparent' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            )}
+            <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); onDelete(event.id); }} style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Tournament name */}
+      <div style={{ fontWeight: 800, fontSize: 15, lineHeight: 1.25, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 4, textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+        {event.tournamentName || event.title}
+      </div>
+
+      {/* Teams count + format */}
+      {(event.numTeams || event.tournamentFormat) && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
+          {event.numTeams && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: TOURNAMENT_COLOR, backgroundColor: `${TOURNAMENT_COLOR}12`, padding: '2px 8px', borderRadius: 20 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              {event.numTeams} équipes
+            </div>
+          )}
+          {event.tournamentFormat && (
+            <span style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 500 }}>{event.tournamentFormat}</span>
+          )}
+        </div>
+      )}
+
+      {/* Date + venue */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>{new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · {new Date(event.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.venue || event.city}</span>
+        </div>
+        {attendeeCount > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: TOURNAMENT_COLOR }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            {attendeeCount} participant{attendeeCount > 1 ? 's' : ''}
+          </div>
+        )}
+      </div>
+
+      {/* Expanded section */}
+      <AnimatePresence>
+        {isSelected && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ overflow: 'hidden' }}
+          >
+            {/* Description */}
+            {event.description && (
+              <p style={{ fontSize: 12, marginTop: 10, lineHeight: 1.6, borderTop: '1px solid var(--sl-border)', paddingTop: 10, color: 'var(--sl-t2)' }}>
+                {event.description}
+              </p>
+            )}
+
+            {/* Categories */}
+            {cats.length > 0 && (
+              <div style={{ marginTop: 8, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                {cats.map((c, i) => (
+                  <span key={i} style={{ fontSize: 10, fontWeight: 600, padding: '3px 9px', borderRadius: 20, color: TOURNAMENT_COLOR, backgroundColor: `${TOURNAMENT_COLOR}12`, border: `1px solid ${TOURNAMENT_COLOR}25` }}>{c}</span>
+                ))}
+              </div>
+            )}
+
+            {/* Prize */}
+            {event.prize && (
+              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, backgroundColor: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                <span style={{ fontSize: 13 }}>🏆</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#C9A84C' }}>{event.prize}</span>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <AttendBtn event={event} />
+              <NavBtn event={event} />
+              <ShareBtn event={event} />
+              <ICSBtn event={event} />
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowPoster(true); }}
+                title="Créer une affiche"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </button>
+              <PosterShareBtn event={event} />
+            </div>
+
+            <EventReactions eventId={String(event.id)} />
+            <EventComments eventId={String(event.id)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Main EventCard ─────────────────────────────────────────────────────────────
+
 const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSelect, onEdit, onDelete, onDuplicate, onUpdateEvent }, ref) {
   const { allSports: SPORTS } = useSports();
   const { currentUser, isAdmin } = useAuth();
@@ -344,6 +493,8 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
   const showPoints = event.standings?.home?.points !== null && event.standings?.home?.points !== undefined;
   const fav = isFavorite(event.id);
   const status = getEffectiveStatus(event);
+  const isTournament = event.eventType === 'tournament';
+  const accentColor = isTournament ? TOURNAMENT_COLOR : sportColor;
 
   return (
     <>
@@ -359,159 +510,171 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
       tabIndex={0}
       role="button"
       aria-pressed={isSelected}
-      aria-label={event.title}
+      aria-label={event.tournamentName || event.title}
       className="event-card-focusable"
       style={{
         backgroundColor: 'var(--sl-card)',
         borderRadius: 14, padding: '12px 12px 12px 0', marginBottom: 8,
         cursor: 'pointer',
-        border: `1.5px solid ${isSelected ? sportColor : 'var(--sl-border)'}`,
-        boxShadow: isSelected ? `0 0 0 1px ${sportColor}25, 0 4px 16px ${sportColor}15` : 'none',
+        border: `1.5px solid ${isSelected ? accentColor : isTournament ? `${TOURNAMENT_COLOR}30` : 'var(--sl-border)'}`,
+        boxShadow: isSelected ? `0 0 0 1px ${accentColor}25, 0 4px 16px ${accentColor}15` : 'none',
         display: 'flex', alignItems: 'stretch', gap: 0, overflow: 'hidden',
         outline: 'none',
       }}
     >
-      {/* Sport color accent bar */}
-      <div style={{ width: 3, minHeight: 40, flexShrink: 0, backgroundColor: sportColor, borderRadius: '0 3px 3px 0', marginRight: 10, alignSelf: 'stretch' }} />
+      {/* Accent bar — purple for tournaments */}
+      <div style={{ width: 3, minHeight: 40, flexShrink: 0, backgroundColor: accentColor, borderRadius: '0 3px 3px 0', marginRight: 10, alignSelf: 'stretch' }} />
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Top row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: '#fff', backgroundColor: sportColor, flexShrink: 0 }}>
-            <SportIcon sport={event.sport} size={10} color="white" />
-            {event.sport}
-          </span>
-          <EventTypeBadge event={event} />
-          <StatusBadge event={event} />
-          {isUserEvent && <span style={{ fontSize: 10, color: '#4da6ff', fontWeight: 600, flexShrink: 0 }}>✦ Club</span>}
-          {event.clubId && !isUserEvent && <FollowClubPill event={event} />}
-          {canEditThis && (
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, flexShrink: 0 }}>
-              {onDuplicate && (
-                <button onClick={(e) => { e.stopPropagation(); onDuplicate(event); }} aria-label="Dupliquer l'événement" title="Dupliquer" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#a78bfa', backgroundColor: 'transparent' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      {isTournament ? (
+        <TournamentCardContent
+          event={event}
+          isSelected={isSelected}
+          canEditThis={canEditThis}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onDuplicate={onDuplicate}
+          onUpdateEvent={onUpdateEvent}
+          setShowPoster={setShowPoster}
+          isPast={isPast}
+          attendeeCount={attendeeCount}
+          status={status}
+        />
+      ) : (
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Top row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: '#fff', backgroundColor: sportColor, flexShrink: 0 }}>
+              <SportIcon sport={event.sport} size={10} color="white" />
+              {event.sport}
+            </span>
+            <EventTypeBadge event={event} />
+            <StatusBadge event={event} />
+            {isUserEvent && <span style={{ fontSize: 10, color: '#4da6ff', fontWeight: 600, flexShrink: 0 }}>✦ Club</span>}
+            {event.clubId && !isUserEvent && <FollowClubPill event={event} />}
+            {canEditThis && (
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, flexShrink: 0 }}>
+                {onDuplicate && (
+                  <button onClick={(e) => { e.stopPropagation(); onDuplicate(event); }} aria-label="Dupliquer l'événement" title="Dupliquer" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#a78bfa', backgroundColor: 'transparent' }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </button>
+                )}
+                <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} aria-label="Modifier l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-              )}
-              <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} aria-label="Modifier l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); onDelete(event.id); }} aria-label="Supprimer l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Title */}
-        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 2, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-          {event.title}
-        </div>
-
-        {/* Championship / Cup subtitle */}
-        {event.eventType === 'championship' && (event.teamName || event.level) && (
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', opacity: 0.85, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {[event.teamName, event.level].filter(Boolean).join(' — ')}
-          </div>
-        )}
-        {event.eventType === 'cup' && event.cupType && (
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#f97316', opacity: 0.85, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {event.cupType}
-          </div>
-        )}
-
-        {/* Score display */}
-        {event.score != null && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
-            <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.home}</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t3)' }}>—</span>
-            <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.away}</span>
-          </div>
-        )}
-
-        {/* Meta */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>{dateStr} · {timeStr}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.venue || event.city}</span>
-          </div>
-          {attendeeCount > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: 'var(--sl-green)' }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-              {attendeeCount} J'y serai
-            </div>
-          )}
-        </div>
-
-        {/* Expanded content */}
-        <AnimatePresence>
-          {isSelected && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              style={{ overflow: 'hidden' }}
-            >
-              {event.description && (
-                <p style={{ fontSize: 12, marginTop: 10, lineHeight: 1.6, borderTop: '1px solid var(--sl-border)', paddingTop: 10, color: 'var(--sl-t2)' }}>
-                  {event.description}
-                </p>
-              )}
-
-              {/* Action buttons */}
-              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <AttendBtn event={event} />
-                <NavBtn event={event} />
-                <ShareBtn event={event} />
-                <ICSBtn event={event} />
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowPoster(true); }}
-                  aria-label="Créer une affiche"
-                  title="Créer une affiche"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <button onClick={(e) => { e.stopPropagation(); onDelete(event.id); }} aria-label="Supprimer l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                 </button>
-                <PosterShareBtn event={event} />
               </div>
+            )}
+          </div>
 
-              {canEditThis && isPast && onUpdateEvent && (
-                <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />
-              )}
+          {/* Title */}
+          <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 2, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {event.title}
+          </div>
 
-              {hasStandings && (
-                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)', overflowX: 'auto' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6, color: 'var(--sl-t3)' }}>Classement</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, marginBottom: 2, color: 'var(--sl-t3)' }}>
-                    <span style={{ width: 20, flexShrink: 0 }} />
-                    <span style={{ flex: 1 }}>Équipe</span>
-                    <span style={{ width: 20, textAlign: 'center' }}>J</span>
-                    <span style={{ width: 20, textAlign: 'center', color: '#22d96a' }}>V</span>
-                    <span style={{ width: 20, textAlign: 'center' }}>N</span>
-                    <span style={{ width: 20, textAlign: 'center', color: '#ef4444' }}>D</span>
-                    {showPoints && <span style={{ width: 24, textAlign: 'center', fontWeight: 700, color: 'var(--sl-t2)' }}>Pts</span>}
-                  </div>
-                  <StandingsRow {...event.standings.home} />
-                  <StandingsRow {...event.standings.away} />
-                </div>
-              )}
-
-              {/* Réactions */}
-              <EventReactions eventId={String(event.id)} />
-
-              {/* Commentaires */}
-              <EventComments eventId={String(event.id)} />
-            </motion.div>
+          {/* Championship / Cup subtitle */}
+          {event.eventType === 'championship' && (event.teamName || event.level) && (
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', opacity: 0.85, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {[event.teamName, event.level].filter(Boolean).join(' — ')}
+            </div>
           )}
-        </AnimatePresence>
-      </div>
+          {event.eventType === 'cup' && event.cupType && (
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#f97316', opacity: 0.85, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {event.cupType}
+            </div>
+          )}
+
+          {/* Score display */}
+          {event.score != null && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+              <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.home}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t3)' }}>—</span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{event.score.away}</span>
+            </div>
+          )}
+
+          {/* Meta */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>{dateStr} · {timeStr}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.venue || event.city}</span>
+            </div>
+            {attendeeCount > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: 'var(--sl-green)' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                {attendeeCount} J'y serai
+              </div>
+            )}
+          </div>
+
+          {/* Expanded content */}
+          <AnimatePresence>
+            {isSelected && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                style={{ overflow: 'hidden' }}
+              >
+                {event.description && (
+                  <p style={{ fontSize: 12, marginTop: 10, lineHeight: 1.6, borderTop: '1px solid var(--sl-border)', paddingTop: 10, color: 'var(--sl-t2)' }}>
+                    {event.description}
+                  </p>
+                )}
+
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <AttendBtn event={event} />
+                  <NavBtn event={event} />
+                  <ShareBtn event={event} />
+                  <ICSBtn event={event} />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowPoster(true); }}
+                    aria-label="Créer une affiche"
+                    title="Créer une affiche"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </button>
+                  <PosterShareBtn event={event} />
+                </div>
+
+                {canEditThis && isPast && onUpdateEvent && (
+                  <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />
+                )}
+
+                {hasStandings && (
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)', overflowX: 'auto' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6, color: 'var(--sl-t3)' }}>Classement</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, marginBottom: 2, color: 'var(--sl-t3)' }}>
+                      <span style={{ width: 20, flexShrink: 0 }} />
+                      <span style={{ flex: 1 }}>Équipe</span>
+                      <span style={{ width: 20, textAlign: 'center' }}>J</span>
+                      <span style={{ width: 20, textAlign: 'center', color: '#22d96a' }}>V</span>
+                      <span style={{ width: 20, textAlign: 'center' }}>N</span>
+                      <span style={{ width: 20, textAlign: 'center', color: '#ef4444' }}>D</span>
+                      {showPoints && <span style={{ width: 24, textAlign: 'center', fontWeight: 700, color: 'var(--sl-t2)' }}>Pts</span>}
+                    </div>
+                    <StandingsRow {...event.standings.home} />
+                    <StandingsRow {...event.standings.away} />
+                  </div>
+                )}
+
+                <EventReactions eventId={String(event.id)} />
+                <EventComments eventId={String(event.id)} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Favorite button — min 44px tap target */}
       <button

@@ -21,12 +21,16 @@ import TplGlass from './templates/TplGlass.jsx';
 import TplFlag from './templates/TplFlag.jsx';
 import TplInk from './templates/TplInk.jsx';
 import TplAurora from './templates/TplAurora.jsx';
-import TplTournamentArena from './templates/TplTournamentArena.jsx';
-import TplTournamentBracket from './templates/TplTournamentBracket.jsx';
-import TplTournamentFlame from './templates/TplTournamentFlame.jsx';
-import TplTournamentCrown from './templates/TplTournamentCrown.jsx';
-import TplTournamentGrid from './templates/TplTournamentGrid.jsx';
-import TplTournamentStripes from './templates/TplTournamentStripes.jsx';
+import TplTrPremium from './templates/TplTrPremium.jsx';
+import TplTrNeon from './templates/TplTrNeon.jsx';
+import TplTrMinimal from './templates/TplTrMinimal.jsx';
+import TplTrStreet from './templates/TplTrStreet.jsx';
+import TplTrEsport from './templates/TplTrEsport.jsx';
+import TplTrCinema from './templates/TplTrCinema.jsx';
+import TplTrCoupe from './templates/TplTrCoupe.jsx';
+import TplTrSummer from './templates/TplTrSummer.jsx';
+import TplTrGlass from './templates/TplTrGlass.jsx';
+import TplTrGradient from './templates/TplTrGradient.jsx';
 
 export const POSTER_TEMPLATES = [
   {
@@ -226,58 +230,94 @@ export const POSTER_TEMPLATES = [
   },
   // ── Tournoi ──────────────────────────────────────────────────────────────────
   {
-    id: 'tournament-arena',
-    label: 'Arène',
-    desc: 'Tournoi · Spotlight · Trophée',
+    id: 'tr-premium',
+    label: 'Premium',
+    desc: 'Noir · Or · Champions League',
     icon: '🏆',
-    color: '#8b5cf6',
+    color: '#C9A84C',
     isTournament: true,
-    Component: TplTournamentArena,
+    Component: TplTrPremium,
   },
   {
-    id: 'tournament-bracket',
-    label: 'Bracket',
-    desc: 'Tournoi · Tableau · Compétition',
-    icon: '⚔',
-    color: '#6366f1',
+    id: 'tr-neon',
+    label: 'Neon',
+    desc: 'Futuriste · Glow · Esport',
+    icon: '◉',
+    color: '#00E5FF',
     isTournament: true,
-    Component: TplTournamentBracket,
+    Component: TplTrNeon,
   },
   {
-    id: 'tournament-flame',
-    label: 'Flamme',
-    desc: 'Tournoi · Feu · Énergie',
-    icon: '🔥',
-    color: '#f97316',
+    id: 'tr-minimal',
+    label: 'Minimal',
+    desc: 'Blanc · Swiss · Épuré',
+    icon: '○',
+    color: '#111111',
     isTournament: true,
-    Component: TplTournamentFlame,
+    Component: TplTrMinimal,
   },
   {
-    id: 'tournament-crown',
-    label: 'Couronne',
-    desc: 'Tournoi · Or · Prestige',
-    icon: '👑',
-    color: '#D4AF37',
-    isTournament: true,
-    Component: TplTournamentCrown,
-  },
-  {
-    id: 'tournament-grid',
-    label: 'Grille',
-    desc: 'Tournoi · Équipes · Clair',
-    icon: '⊞',
-    color: '#8b5cf6',
-    isTournament: true,
-    Component: TplTournamentGrid,
-  },
-  {
-    id: 'tournament-stripes',
-    label: 'Rayures',
-    desc: 'Tournoi · Athletic · Maillot',
+    id: 'tr-street',
+    label: 'Street',
+    desc: 'Urban · Bold · Dynamique',
     icon: '⚡',
-    color: '#7c3aed',
+    color: '#FF6B00',
     isTournament: true,
-    Component: TplTournamentStripes,
+    Component: TplTrStreet,
+  },
+  {
+    id: 'tr-esport',
+    label: 'Esport',
+    desc: 'Gaming · HUD · Tech',
+    icon: '◈',
+    color: '#7C3AED',
+    isTournament: true,
+    Component: TplTrEsport,
+  },
+  {
+    id: 'tr-cinema',
+    label: 'Cinéma',
+    desc: 'Letterbox · Epic · Cinématique',
+    icon: '▬',
+    color: '#F5E6C8',
+    isTournament: true,
+    Component: TplTrCinema,
+  },
+  {
+    id: 'tr-coupe',
+    label: 'Coupe',
+    desc: 'Officiel · Navy · Prestige',
+    icon: '✦',
+    color: '#C0A060',
+    isTournament: true,
+    Component: TplTrCoupe,
+  },
+  {
+    id: 'tr-summer',
+    label: 'Summer',
+    desc: 'Chaud · Festival · Vibrant',
+    icon: '☀',
+    color: '#FF8C42',
+    isTournament: true,
+    Component: TplTrSummer,
+  },
+  {
+    id: 'tr-glass',
+    label: 'Glass',
+    desc: 'Glassmorphisme · Sombre · Premium',
+    icon: '◻',
+    color: '#6366F1',
+    isTournament: true,
+    Component: TplTrGlass,
+  },
+  {
+    id: 'tr-gradient',
+    label: 'Gradient',
+    desc: 'Dégradé · Social · Moderne',
+    icon: '◆',
+    color: '#6D28D9',
+    isTournament: true,
+    Component: TplTrGradient,
   },
 ];
 

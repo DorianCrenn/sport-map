@@ -187,15 +187,20 @@ function toFormValues(event, defaults = {}) {
 
 function buildEvent(form, currentUser, myClub, useSmartMode) {
   let title = form.title;
-  let homeTeam = form.homeTeam;
-  let awayTeam = form.awayTeam;
+  let homeTeam = null;
+  let awayTeam = null;
 
-  if (useSmartMode && myClub) {
+  if (form.eventType === 'tournament') {
+    // Tournaments: title = tournament name, no home/away teams
+    title = form.tournamentName || form.title || 'Tournoi';
+  } else if (useSmartMode && myClub) {
     const myName = myClub.name;
     homeTeam = form.homeOrAway === 'home' ? myName : (form.adversaire || 'Adversaire');
     awayTeam = form.homeOrAway === 'home' ? (form.adversaire || 'Adversaire') : myName;
     title = `${homeTeam} vs ${awayTeam}`;
   } else {
+    homeTeam = form.homeTeam;
+    awayTeam = form.awayTeam;
     const isTeamSport = ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport);
     if (isTeamSport && form.homeTeam && form.awayTeam) title = `${form.homeTeam} vs ${form.awayTeam}`;
   }
@@ -228,7 +233,7 @@ function buildEvent(form, currentUser, myClub, useSmartMode) {
     clubId: currentUser?.clubId ?? null,
     creatorId: currentUser?.id ?? null,
     departmentId: 'finistere', regionId: 'brittany',
-    standings: (homeTeam && awayTeam) ? {
+    standings: (form.eventType !== 'tournament' && homeTeam && awayTeam) ? {
       home: { team: homeTeam, rank: '-', points: null, wins: 0, draws: 0, losses: 0 },
       away: { team: awayTeam, rank: '-', points: null, wins: 0, draws: 0, losses: 0 },
     } : undefined,
@@ -694,30 +699,34 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
                   </div>
                 </Field>
 
-                {/* Mon équipe */}
-                <Field label="Mon équipe">
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      type="text"
-                      list="team-presets-list"
-                      value={form.teamName}
-                      onChange={e => set('teamName', e.target.value)}
-                      placeholder={teamPresets.length > 0 ? 'Choisir ou saisir une équipe…' : 'Seniors A, U13 B…'}
-                      style={inputStyle}
-                      autoComplete="off"
-                    />
-                    <datalist id="team-presets-list">
-                      {teamPresets.map(t => <option key={t} value={t} />)}
-                    </datalist>
-                  </div>
-                </Field>
+                {form.eventType !== 'tournament' && (
+                  <>
+                    {/* Mon équipe */}
+                    <Field label="Mon équipe">
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="text"
+                          list="team-presets-list"
+                          value={form.teamName}
+                          onChange={e => set('teamName', e.target.value)}
+                          placeholder={teamPresets.length > 0 ? 'Choisir ou saisir une équipe…' : 'Seniors A, U13 B…'}
+                          style={inputStyle}
+                          autoComplete="off"
+                        />
+                        <datalist id="team-presets-list">
+                          {teamPresets.map(t => <option key={t} value={t} />)}
+                        </datalist>
+                      </div>
+                    </Field>
 
-                {/* Catégorie auto */}
-                {form.category && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 10, backgroundColor: 'var(--sl-green-dim)', border: '1px solid rgba(34,217,106,0.2)' }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span style={{ fontSize: 12, color: 'var(--sl-green)', fontWeight: 600 }}>Catégorie : {form.category}</span>
-                  </div>
+                    {/* Catégorie auto */}
+                    {form.category && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 10, backgroundColor: 'var(--sl-green-dim)', border: '1px solid rgba(34,217,106,0.2)' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span style={{ fontSize: 12, color: 'var(--sl-green)', fontWeight: 600 }}>Catégorie : {form.category}</span>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* Level / Cup — animated */}
@@ -728,40 +737,44 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
                   form={form} set={set} inputStyle={inputStyle} myClub={myClub}
                 />
 
-                {/* Domicile / Extérieur */}
-                <Field label="Réception">
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    {[
-                      { value: 'home', label: '🏠 Domicile', desc: 'Match à domicile' },
-                      { value: 'away', label: '✈️ Extérieur', desc: 'Match en déplacement' },
-                    ].map(opt => (
-                      <button
-                        key={opt.value} type="button" onClick={() => set('homeOrAway', opt.value)}
-                        style={{
-                          padding: '12px 8px', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
-                          border: `2px solid ${form.homeOrAway === opt.value ? 'var(--sl-green)' : 'var(--sl-border)'}`,
-                          backgroundColor: form.homeOrAway === opt.value ? 'var(--sl-green-dim)' : 'var(--sl-surface)',
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        <div style={{ fontSize: 14, marginBottom: 2 }}>{opt.label.split(' ')[0]}</div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: form.homeOrAway === opt.value ? 'var(--sl-green)' : 'var(--sl-t1)' }}>{opt.label.split(' ').slice(1).join(' ')}</div>
-                        <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2 }}>{opt.desc}</div>
-                      </button>
-                    ))}
-                  </div>
-                </Field>
+                {form.eventType !== 'tournament' && (
+                  <>
+                    {/* Domicile / Extérieur */}
+                    <Field label="Réception">
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        {[
+                          { value: 'home', label: '🏠 Domicile', desc: 'Match à domicile' },
+                          { value: 'away', label: '✈️ Extérieur', desc: 'Match en déplacement' },
+                        ].map(opt => (
+                          <button
+                            key={opt.value} type="button" onClick={() => set('homeOrAway', opt.value)}
+                            style={{
+                              padding: '12px 8px', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
+                              border: `2px solid ${form.homeOrAway === opt.value ? 'var(--sl-green)' : 'var(--sl-border)'}`,
+                              backgroundColor: form.homeOrAway === opt.value ? 'var(--sl-green-dim)' : 'var(--sl-surface)',
+                              transition: 'all 0.15s',
+                            }}
+                          >
+                            <div style={{ fontSize: 14, marginBottom: 2 }}>{opt.label.split(' ')[0]}</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: form.homeOrAway === opt.value ? 'var(--sl-green)' : 'var(--sl-t1)' }}>{opt.label.split(' ').slice(1).join(' ')}</div>
+                            <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2 }}>{opt.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </Field>
 
-                {/* Adversaire */}
-                <Field label="Adversaire" hint={sameSportClubs.length > 1 ? `${sameSportClubs.length - 1} clubs ${myClub?.sport ?? ''} dans la base` : 'Saisissez le nom de l\'adversaire'}>
-                  <AdversaireField
-                    value={form.adversaire}
-                    onChange={v => set('adversaire', v)}
-                    sameSportClubs={sameSportClubs}
-                    myClubId={myClub?.id}
-                    inputStyle={inputStyle}
-                  />
-                </Field>
+                    {/* Adversaire */}
+                    <Field label="Adversaire" hint={sameSportClubs.length > 1 ? `${sameSportClubs.length - 1} clubs ${myClub?.sport ?? ''} dans la base` : 'Saisissez le nom de l\'adversaire'}>
+                      <AdversaireField
+                        value={form.adversaire}
+                        onChange={v => set('adversaire', v)}
+                        sameSportClubs={sameSportClubs}
+                        myClubId={myClub?.id}
+                        inputStyle={inputStyle}
+                      />
+                    </Field>
+                  </>
+                )}
               </>
             ) : (
               <>
@@ -771,7 +784,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
                     {sportOptions.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </Field>
-                {['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport) && (
+                {form.eventType !== 'tournament' && ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport) && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <Field label="Domicile">
                       <input type="text" value={form.homeTeam} onChange={e => set('homeTeam', e.target.value)} placeholder="FC Brest" style={inputStyle} />
@@ -781,26 +794,28 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
                     </Field>
                   </div>
                 )}
-                {(!['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport) || (!form.homeTeam && !form.awayTeam)) && (
+                {(form.eventType === 'tournament' || !['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport) || (!form.homeTeam && !form.awayTeam)) && (
                   <Field label="Nom de l'événement *">
-                    <input type="text" required={!['Football','Handball','Basketball','Rugby'].includes(form.sport)} value={form.title} onChange={e => set('title', e.target.value)} placeholder="Trail des Abers, Tournoi de basket…" style={inputStyle} />
+                    <input type="text" required={form.eventType === 'tournament' || !['Football','Handball','Basketball','Rugby'].includes(form.sport)} value={form.title} onChange={e => set('title', e.target.value)} placeholder="Trail des Abers, Tournoi de basket…" style={inputStyle} />
                   </Field>
                 )}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                  <Field label="Équipe">
-                    {teamPresets.length > 0 ? (
-                      <select value={form.teamName} onChange={e => set('teamName', e.target.value)} style={selectStyle}>
-                        <option value="">Équipe (optionnel)</option>
-                        {teamPresets.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    ) : (
-                      <input type="text" value={form.teamName} onChange={e => set('teamName', e.target.value)} placeholder="Seniors A, U13…" style={inputStyle} />
-                    )}
-                  </Field>
-                  <Field label="Catégorie">
-                    <input type="text" value={form.category} onChange={e => set('category', e.target.value)} placeholder="Senior, U18…" style={inputStyle} readOnly={!!inferCategory(form.teamName)} />
-                  </Field>
-                </div>
+                {form.eventType !== 'tournament' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <Field label="Équipe">
+                      {teamPresets.length > 0 ? (
+                        <select value={form.teamName} onChange={e => set('teamName', e.target.value)} style={selectStyle}>
+                          <option value="">Équipe (optionnel)</option>
+                          {teamPresets.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                      ) : (
+                        <input type="text" value={form.teamName} onChange={e => set('teamName', e.target.value)} placeholder="Seniors A, U13…" style={inputStyle} />
+                      )}
+                    </Field>
+                    <Field label="Catégorie">
+                      <input type="text" value={form.category} onChange={e => set('category', e.target.value)} placeholder="Senior, U18…" style={inputStyle} readOnly={!!inferCategory(form.teamName)} />
+                    </Field>
+                  </div>
+                )}
 
                 {/* Level / Cup — animated */}
                 <ContextualTypeFields

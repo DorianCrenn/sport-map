@@ -122,9 +122,10 @@ export default function PosterStudio({ event, onClose, club }) {
   const homeLogoRef = useRef(null);
   const awayLogoRef = useRef(null);
 
+  const isTournamentEvent = event?.eventType === 'tournament';
   const sportColor    = allSports[event?.sport]?.color ?? '#22D96A';
   const clubAccent    = club?.theme?.primary ?? club?.theme?.accent ?? null;
-  const initialAccent = clubAccent ?? sportColor;
+  const initialAccent = clubAccent ?? (isTournamentEvent ? '#8b5cf6' : sportColor);
   const initialFields = deriveInitialFields(event, club);
 
   const draftHook  = usePosterDraft(event?.id);
@@ -133,7 +134,7 @@ export default function PosterStudio({ event, onClose, club }) {
   const defTplHook = useDefaultTemplate(club?.id);
 
   const [poster, dispatch] = useReducer(posterReducer, {
-    format: 'story', templateId: 'simple',
+    format: 'story', templateId: isTournamentEvent ? 'tr-premium' : 'simple',
     accentColor: initialAccent,
     bgSrc: '', bgUrl: '', bgErr: false, bgMode: 'color',
     homeName: initialFields.homeName, awayName: initialFields.awayName,
@@ -208,10 +209,14 @@ export default function PosterStudio({ event, onClose, club }) {
   function loadFromLibrary(entry) { dispatch({ type: 'PATCH', payload: entry.state }); setActiveTab('template'); }
 
   // ── Templates ──
+  // Tournament events only show tournament templates; match events hide tournament templates
   const displayTemplates = useMemo(() => {
-    if (libFilter === 'all') return POSTER_TEMPLATES;
-    return POSTER_TEMPLATES.filter(t => favTplHook.isFav(t.id));
-  }, [libFilter, favVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+    const byType = isTournamentEvent
+      ? POSTER_TEMPLATES.filter(t => t.isTournament)
+      : POSTER_TEMPLATES.filter(t => !t.isTournament);
+    if (libFilter === 'all') return byType;
+    return byType.filter(t => favTplHook.isFav(t.id));
+  }, [libFilter, favVersion, isTournamentEvent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleFavTpl(id) { favTplHook.toggle(id); setFavVersion(v => v + 1); }
 
