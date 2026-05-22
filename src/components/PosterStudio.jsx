@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 import { useSports } from '../hooks/useSports.js';
 import { Z } from '../constants/zIndex.js';
-import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS } from './poster/PosterRenderer.jsx';
+import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS, BG_PRESETS } from './poster/PosterRenderer.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import {
@@ -137,13 +137,14 @@ export default function PosterStudio({ event, onClose, club }) {
     format: 'story', templateId: isTournamentEvent ? 'tr-premium' : 'simple',
     accentColor: initialAccent,
     bgSrc: '', bgUrl: '', bgErr: false, bgMode: 'color',
+    bgPreset: '',
     homeName: initialFields.homeName, awayName: initialFields.awayName,
     homeLogo: initialFields.homeLogo, awayLogo: initialFields.awayLogo,
     championship: initialFields.championship, tagline: initialFields.tagline,
     sponsorSrc: '', transforms: {},
   });
 
-  const { format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode,
+  const { format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode, bgPreset,
           homeName, awayName, homeLogo, awayLogo, championship, tagline,
           sponsorSrc, transforms } = poster;
   const set = (key, value) => dispatch({ type: key, value });
@@ -345,7 +346,7 @@ export default function PosterStudio({ event, onClose, club }) {
       >
         {/* Hidden HD renderer for export */}
         <div style={{ position: 'fixed', left: -9999, top: 0, width: w, height: h, pointerEvents: 'none', zIndex: -1 }}>
-          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} />
+          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} />
         </div>
 
         {/* Fullscreen preview */}
@@ -353,7 +354,7 @@ export default function PosterStudio({ event, onClose, club }) {
           {previewFull && (
             <motion.div key="full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, borderRadius: 'inherit' }}>
-              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} />
+              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} />
               <button onClick={() => setPreviewFull(false)}
                 style={{ padding: '9px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Fermer
@@ -557,7 +558,7 @@ export default function PosterStudio({ event, onClose, club }) {
             }}>
               <PosterRenderer
                 templateId={templateId} data={posterData} format={format}
-                previewWidth={PREVIEW_W} innerRef={posterRef} transforms={transforms}
+                previewWidth={PREVIEW_W} innerRef={posterRef} transforms={transforms} bgPresetId={bgPreset}
               />
             </div>
 
@@ -720,6 +721,66 @@ export default function PosterStudio({ event, onClose, club }) {
                 {/* ── VISUEL ── */}
                 {activeTab === 'visuel' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                    {/* ── Fonds premium ── */}
+                    <div>
+                      <SLabel>Fond premium</SLabel>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
+                        {/* None option */}
+                        <button
+                          onClick={() => set('bgPreset', '')}
+                          style={{
+                            borderRadius: 11, border: `2px solid ${bgPreset === '' ? accentColor : 'var(--sl-border-s)'}`,
+                            cursor: 'pointer', overflow: 'hidden', padding: 0,
+                            background: bgPreset === '' ? `${accentColor}18` : 'var(--sl-surface)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            gap: 4, height: 58,
+                          }}
+                        >
+                          <div style={{ fontSize: 14, opacity: 0.4 }}>✕</div>
+                          <div style={{ fontSize: 8.5, fontWeight: 700, color: bgPreset === '' ? accentColor : 'var(--sl-t3)' }}>Aucun</div>
+                        </button>
+                        {BG_PRESETS.map(bg => {
+                          const active = bgPreset === bg.id;
+                          const locked = bg.isPremium && !hasPremium;
+                          return (
+                            <button
+                              key={bg.id}
+                              onClick={() => { if (!locked) set('bgPreset', active ? '' : bg.id); }}
+                              style={{
+                                borderRadius: 11, border: `2px solid ${active ? accentColor : 'transparent'}`,
+                                cursor: locked ? 'default' : 'pointer', overflow: 'hidden',
+                                padding: 0, position: 'relative',
+                                boxShadow: active ? `0 0 0 1px ${accentColor}` : undefined,
+                              }}
+                            >
+                              {/* Preview gradient swatch */}
+                              <div style={{ width: '100%', height: 38, background: bg.preview }} />
+                              {/* Label */}
+                              <div style={{ padding: '3px 5px 5px', background: 'var(--sl-surface)', textAlign: 'center' }}>
+                                <div style={{ fontSize: 7.5, fontWeight: 800, color: active ? accentColor : 'var(--sl-t1)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bg.label}</div>
+                              </div>
+                              {locked && (
+                                <div style={{ position: 'absolute', inset: 0, borderRadius: 9, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(1px)' }}>
+                                  <span style={{ fontSize: 8, fontWeight: 800, color: '#D4AF37' }}>👑</span>
+                                </div>
+                              )}
+                              {active && (
+                                <div style={{ position: 'absolute', top: 4, right: 4, width: 12, height: 12, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {bgPreset && (
+                        <div style={{ marginTop: 8, padding: '7px 10px', borderRadius: 9, background: `${accentColor}10`, border: `1px solid ${accentColor}30`, fontSize: 11, color: accentColor, fontWeight: 600 }}>
+                          {BG_PRESETS.find(b => b.id === bgPreset)?.desc}
+                        </div>
+                      )}
+                    </div>
+
                     <div>
                       <SLabel>Couleur d'accent</SLabel>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { BG_PRESETS } from './posterBgLibrary.jsx';
 import TplSimple from './templates/TplSimple.jsx';
 import TplLight from './templates/TplLight.jsx';
 import TplColor from './templates/TplColor.jsx';
@@ -326,13 +327,18 @@ export const BASE_DIMS = {
   post:  { w: 360, h: 450 },
 };
 
-const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {} }) {
+export { BG_PRESETS };
+
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '' }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
 
   const tpl = POSTER_TEMPLATES.find(t => t.id === templateId) || POSTER_TEMPLATES[0];
   const { Component } = tpl;
+
+  const bgPreset = bgPresetId ? BG_PRESETS.find(b => b.id === bgPresetId) : null;
+  const BgComp = bgPreset?.Component ?? null;
 
   return (
     <div ref={outerRef} style={{ width: previewWidth, height: previewH, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
@@ -346,10 +352,15 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
         }}
       >
         <Component {...data} format={format} transforms={transforms} />
+        {BgComp && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none' }}>
+            <BgComp format={format} />
+          </div>
+        )}
         <div
           aria-hidden="true"
           style={{
-            position: 'absolute', bottom: 10, right: 12,
+            position: 'absolute', bottom: 10, right: 12, zIndex: 20,
             fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
             textTransform: 'uppercase', fontFamily: 'Inter, sans-serif',
             color: 'rgba(255,255,255,0.30)',
