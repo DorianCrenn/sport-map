@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { BG_PRESETS } from './posterBgLibrary.jsx';
+import { ELEMENT_LIBRARY } from './posterElements.jsx';
 import TplSimple from './templates/TplSimple.jsx';
 import TplLight from './templates/TplLight.jsx';
 import TplColor from './templates/TplColor.jsx';
@@ -359,7 +360,7 @@ export const BASE_DIMS = {
 
 export { BG_PRESETS };
 
-const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', effects = {} }) {
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', effects = {}, overlayElements = [] }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
@@ -369,6 +370,9 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
 
   const bgPreset = bgPresetId ? BG_PRESETS.find(b => b.id === bgPresetId) : null;
   const BgComp = bgPreset?.Component ?? null;
+
+  const belowEls = overlayElements.filter(e => !e.above);
+  const aboveEls = overlayElements.filter(e => e.above);
 
   return (
     <div ref={outerRef} style={{ width: previewWidth, height: previewH, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
@@ -400,6 +404,31 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
             <BgComp format={format} />
           </div>
         )}
+
+        {/* Decorative elements — below content (z=6, above bg/tint, below template text at z=10) */}
+        {belowEls.map(el => {
+          const meta = ELEMENT_LIBRARY.find(e => e.id === el.type);
+          if (!meta) return null;
+          const { Component: ElComp } = meta;
+          return (
+            <div key={el.uid} style={{ position: 'absolute', inset: 0, zIndex: 6, pointerEvents: 'none', opacity: el.opacity }}>
+              <ElComp h={h} color={el.color} />
+            </div>
+          );
+        })}
+
+        {/* Decorative elements — above content (z=15, above template text at z=10) */}
+        {aboveEls.map(el => {
+          const meta = ELEMENT_LIBRARY.find(e => e.id === el.type);
+          if (!meta) return null;
+          const { Component: ElComp } = meta;
+          return (
+            <div key={el.uid} style={{ position: 'absolute', inset: 0, zIndex: 15, pointerEvents: 'none', opacity: el.opacity }}>
+              <ElComp h={h} color={el.color} />
+            </div>
+          );
+        })}
+
         <div
           aria-hidden="true"
           style={{

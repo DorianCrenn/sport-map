@@ -4,6 +4,7 @@ import { toBlob } from 'html-to-image';
 import { useSports } from '../hooks/useSports.js';
 import { Z } from '../constants/zIndex.js';
 import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS, BG_PRESETS } from './poster/PosterRenderer.jsx';
+import { ELEMENT_LIBRARY } from './poster/posterElements.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import {
@@ -213,6 +214,7 @@ export default function PosterStudio({ event, onClose, club }) {
     bgSrc: '', bgUrl: '', bgErr: false, bgMode: 'color',
     bgPreset: '',
     bgTint: '', bgTintOp: 0,
+    overlayElements: [],
     homeName: initialFields.homeName, awayName: initialFields.awayName,
     homeLogo: initialFields.homeLogo, awayLogo: initialFields.awayLogo,
     championship: initialFields.championship, tagline: initialFields.tagline,
@@ -223,7 +225,7 @@ export default function PosterStudio({ event, onClose, club }) {
     format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode, bgPreset,
     bgTint, bgTintOp,
     homeName, awayName, homeLogo, awayLogo, championship, tagline,
-    sponsorSrc, transforms,
+    sponsorSrc, transforms, overlayElements,
   } = poster;
   const set = (key, value) => dispatch({ type: key, value });
 
@@ -320,6 +322,20 @@ export default function PosterStudio({ event, onClose, club }) {
   }
   function resetLayers() { set('transforms', {}); }
   const hasLayerChanges = Object.values(transforms).some(t => t.visible === false || (t.opacity !== undefined && t.opacity < 1));
+
+  // ── Overlay element helpers ──
+  function addOverlayElement(type) {
+    const meta = ELEMENT_LIBRARY.find(e => e.id === type);
+    const uid = `el-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
+    const newEl = { uid, type, color: meta?.defaultColor ?? accentColor, opacity: 0.70, above: false };
+    set('overlayElements', [...(overlayElements || []), newEl]);
+  }
+  function removeOverlayElement(uid) {
+    set('overlayElements', (overlayElements || []).filter(e => e.uid !== uid));
+  }
+  function updateOverlayElement(uid, patch) {
+    set('overlayElements', (overlayElements || []).map(e => e.uid === uid ? { ...e, ...patch } : e));
+  }
 
   // ── Poster data ──
   const posterData = {
@@ -448,7 +464,7 @@ export default function PosterStudio({ event, onClose, club }) {
       >
         {/* Hidden HD renderer for export */}
         <div style={{ position: 'fixed', left: -9999, top: 0, width: w, height: h, pointerEvents: 'none', zIndex: -1 }}>
-          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} />
+          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} />
         </div>
 
         {/* Fullscreen preview */}
@@ -456,7 +472,7 @@ export default function PosterStudio({ event, onClose, club }) {
           {previewFull && (
             <motion.div key="full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, borderRadius: 'inherit' }}>
-              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} />
+              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} />
               <button onClick={() => setPreviewFull(false)}
                 style={{ padding: '9px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Fermer
@@ -658,7 +674,7 @@ export default function PosterStudio({ event, onClose, club }) {
               <PosterRenderer
                 templateId={templateId} data={posterData} format={format}
                 previewWidth={PREVIEW_W} innerRef={posterRef} transforms={transforms}
-                bgPresetId={bgPreset} effects={posterEffects}
+                bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []}
               />
             </div>
 
@@ -929,61 +945,92 @@ export default function PosterStudio({ event, onClose, club }) {
                 {activeTab === 'fond' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-                    {/* Fonds premium */}
+                    {/* ── Éléments décoratifs ── */}
                     <div>
-                      <SLabel accent={accentColor}>Fond premium</SLabel>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
-                        <button
-                          onClick={() => set('bgPreset', '')}
-                          style={{
-                            borderRadius: 11, border: `2px solid ${bgPreset === '' ? accentColor : 'var(--sl-border-s)'}`,
-                            cursor: 'pointer', overflow: 'hidden', padding: 0,
-                            background: bgPreset === '' ? `${accentColor}18` : 'var(--sl-surface)',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                            gap: 4, height: 58,
-                          }}
-                        >
-                          <div style={{ fontSize: 14, opacity: 0.4 }}>✕</div>
-                          <div style={{ fontSize: 8.5, fontWeight: 700, color: bgPreset === '' ? accentColor : 'var(--sl-t3)' }}>Aucun</div>
-                        </button>
-                        {BG_PRESETS.map(bg => {
-                          const active = bgPreset === bg.id;
-                          const locked = bg.isPremium && !hasPremium;
-                          return (
-                            <button
-                              key={bg.id}
-                              onClick={() => { if (!locked) set('bgPreset', active ? '' : bg.id); }}
-                              style={{
-                                borderRadius: 11, border: `2px solid ${active ? accentColor : 'transparent'}`,
-                                cursor: locked ? 'default' : 'pointer', overflow: 'hidden',
-                                padding: 0, position: 'relative',
-                                boxShadow: active ? `0 0 0 1px ${accentColor}` : undefined,
-                              }}
-                            >
-                              <div style={{ width: '100%', height: 38, background: bg.preview }} />
-                              <div style={{ padding: '3px 5px 5px', background: 'var(--sl-surface)', textAlign: 'center' }}>
-                                <div style={{ fontSize: 7.5, fontWeight: 800, color: active ? accentColor : 'var(--sl-t1)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bg.label}</div>
-                              </div>
-                              {locked && (
-                                <div style={{ position: 'absolute', inset: 0, borderRadius: 9, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(1px)' }}>
-                                  <span style={{ fontSize: 8, fontWeight: 800, color: '#D4AF37' }}>👑</span>
-                                </div>
-                              )}
-                              {active && (
-                                <div style={{ position: 'absolute', top: 4, right: 4, width: 12, height: 12, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
+                      <SLabel accent={accentColor}>Éléments décoratifs</SLabel>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                        {ELEMENT_LIBRARY.map(el => (
+                          <button
+                            key={el.id}
+                            onClick={() => addOverlayElement(el.id)}
+                            style={{
+                              padding: '8px 4px 7px', borderRadius: 10, cursor: 'pointer', border: '1px solid var(--sl-border)',
+                              backgroundColor: 'var(--sl-surface)', display: 'flex', flexDirection: 'column',
+                              alignItems: 'center', gap: 4, transition: 'border-color 0.12s, background 0.12s',
+                            }}
+                          >
+                            <div style={{ width: '100%', height: 28, borderRadius: 6, background: el.preview, flexShrink: 0 }} />
+                            <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--sl-t1)', lineHeight: 1, textAlign: 'center' }}>{el.label}</span>
+                          </button>
+                        ))}
                       </div>
-                      {bgPreset && (
-                        <div style={{ marginTop: 8, padding: '7px 10px', borderRadius: 9, background: `${accentColor}10`, border: `1px solid ${accentColor}30`, fontSize: 11, color: accentColor, fontWeight: 600 }}>
-                          {BG_PRESETS.find(b => b.id === bgPreset)?.desc}
-                        </div>
-                      )}
+                      <div style={{ marginTop: 6, fontSize: 10, color: 'var(--sl-t3)', lineHeight: 1.5 }}>
+                        Cliquer pour ajouter sur l'affiche — régler ci-dessous
+                      </div>
                     </div>
+
+                    {/* ── Active elements list ── */}
+                    {(overlayElements || []).length > 0 && (
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <SLabel accent={accentColor}>Éléments actifs ({(overlayElements || []).length})</SLabel>
+                          <button
+                            onClick={() => set('overlayElements', [])}
+                            style={{ fontSize: 9.5, color: 'var(--sl-t3)', border: 'none', background: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 5, textDecoration: 'underline' }}
+                          >
+                            Tout effacer
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {(overlayElements || []).map(el => {
+                            const meta = ELEMENT_LIBRARY.find(e => e.id === el.type);
+                            return (
+                              <div key={el.uid} style={{ padding: '10px 12px', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
+                                {/* Row 1: icon + label + z-toggle + remove */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 }}>
+                                  <span style={{ fontSize: 15, flexShrink: 0 }}>{meta?.icon}</span>
+                                  <span style={{ flex: 1, fontSize: 11, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{meta?.label}</span>
+                                  {/* Z-order toggle: Fond = below content, Dessus = above content */}
+                                  <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--sl-border)', flexShrink: 0 }}>
+                                    {[['Fond', false], ['Dessus', true]].map(([lbl, val]) => (
+                                      <button key={lbl} onClick={() => updateOverlayElement(el.uid, { above: val })}
+                                        style={{
+                                          padding: '3px 9px', border: 'none', cursor: 'pointer',
+                                          fontSize: 9, fontWeight: 800, letterSpacing: '0.04em',
+                                          backgroundColor: el.above === val ? accentColor : 'var(--sl-surface)',
+                                          color: el.above === val ? '#fff' : 'var(--sl-t3)',
+                                          transition: 'all 0.12s',
+                                        }}>
+                                        {lbl}
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <button onClick={() => removeOverlayElement(el.uid)}
+                                    style={{ width: 22, height: 22, borderRadius: 6, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(239,68,68,0.10)', color: '#ef4444', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    ✕
+                                  </button>
+                                </div>
+                                {/* Row 2: color + opacity */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <div style={{ position: 'relative', width: 26, height: 26, borderRadius: 7, overflow: 'hidden', border: '1px solid var(--sl-border)', flexShrink: 0 }}>
+                                    <div style={{ position: 'absolute', inset: 0, background: el.color }} />
+                                    <input type="color" value={el.color}
+                                      onChange={e => updateOverlayElement(el.uid, { color: e.target.value })}
+                                      style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
+                                  </div>
+                                  <input type="range" min={0.05} max={1} step={0.05} value={el.opacity}
+                                    onChange={e => updateOverlayElement(el.uid, { opacity: parseFloat(e.target.value) })}
+                                    style={{ flex: 1, accentColor, cursor: 'pointer' }} />
+                                  <span style={{ fontSize: 10, color: 'var(--sl-t3)', width: 28, textAlign: 'right', fontWeight: 700, flexShrink: 0 }}>
+                                    {Math.round(el.opacity * 100)}%
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Teinte d'ambiance */}
                     <div>
@@ -1099,7 +1146,7 @@ export default function PosterStudio({ event, onClose, club }) {
           {PANEL_TABS.map(({ id, label, Icon }) => {
             const isActive = activeTab === id;
             const color = isActive ? accentColor : 'var(--sl-t3)';
-            const hasBadge = id === 'style' && hasLayerChanges;
+            const hasBadge = (id === 'style' && hasLayerChanges) || (id === 'fond' && (overlayElements || []).length > 0);
             return (
               <button key={id} onClick={() => handleTabClick(id)}
                 style={{
