@@ -359,7 +359,7 @@ export const BASE_DIMS = {
 
 export { BG_PRESETS };
 
-const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '' }) {
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', effects = {} }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
@@ -382,6 +382,19 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
         }}
       >
         <Component {...data} format={format} transforms={transforms} />
+
+        {/* Ambient tint overlay — sits above template bg, below content (z=10) */}
+        {effects.tint && effects.tintOp > 0 && (
+          <div
+            style={{
+              position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
+              backgroundColor: effects.tint,
+              opacity: effects.tintOp,
+              mixBlendMode: 'overlay',
+            }}
+          />
+        )}
+
         {BgComp && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none' }}>
             <BgComp format={format} />

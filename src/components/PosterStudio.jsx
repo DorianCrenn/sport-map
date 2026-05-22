@@ -22,9 +22,59 @@ function posterReducer(state, action) {
   return { ...state, [action.type]: action.value };
 }
 
+// ── Color system ───────────────────────────────────────────────────────────────
+
+const COLOR_PRESETS = [
+  { id: 'neon',     label: 'Neon',    color: '#00F5FF' },
+  { id: 'fire',     label: 'Feu',     color: '#FF4500' },
+  { id: 'gold',     label: 'Or',      color: '#D4AF37' },
+  { id: 'electric', label: 'Vert',    color: '#22D96A' },
+  { id: 'royal',    label: 'Mauve',   color: '#8b5cf6' },
+  { id: 'ice',      label: 'Bleu',    color: '#3b82f6' },
+  { id: 'crimson',  label: 'Rouge',   color: '#ef4444' },
+  { id: 'solar',    label: 'Orange',  color: '#f97316' },
+  { id: 'rose',     label: 'Rose',    color: '#ec4899' },
+  { id: 'silver',   label: 'Blanc',   color: '#ffffff' },
+  { id: 'lime',     label: 'Lime',    color: '#84cc16' },
+  { id: 'cyber',    label: 'Cyber',   color: '#a855f7' },
+];
+
+const SPORT_PALETTE = {
+  football: ['#22c55e', '#4ade80', '#16a34a'],
+  tennis:   ['#F5A87C', '#fbbf24', '#C0542A'],
+  basket:   ['#EA580C', '#FB923C', '#f97316'],
+  handball: ['#3b82f6', '#60A5FA', '#1d4ed8'],
+  volleyball: ['#8b5cf6', '#A78BFA', '#6d28d9'],
+  rugby:    ['#ef4444', '#F87171', '#dc2626'],
+  padel:    ['#0ea5e9', '#38BDF8', '#0369a1'],
+  squash:   ['#0ea5e9', '#38BDF8', '#0369a1'],
+  badminton:['#10b981', '#34D399', '#059669'],
+};
+
+const TINT_PALETTE = ['#FF4500', '#00F5FF', '#8b5cf6', '#D4AF37', '#22D96A', '#ef4444', '#f97316', '#ec4899'];
+
+// Blocks that templates expose via data-block="..." for layer control
+const LAYER_BLOCKS = [
+  { id: 'title',   label: 'Titre',       icon: '▬' },
+  { id: 'meta',    label: 'Date & lieu', icon: '📍' },
+  { id: 'champ',   label: 'Compétition', icon: '🏆' },
+  { id: 'vs',      label: 'VS / Score',  icon: '⚔' },
+  { id: 'tagline', label: 'Accroche',    icon: '◈' },
+  { id: 'teams',   label: 'Équipes',     icon: '◉' },
+];
+
 // ── Shared UI atoms ────────────────────────────────────────────────────────────
 
-function SLabel({ children }) {
+function SLabel({ children, accent }) {
+  if (accent) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8, marginTop: 2 }}>
+        <div style={{ width: 2, height: 13, borderRadius: 2, background: accent, flexShrink: 0 }} />
+        <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: accent }}>{children}</span>
+        <div style={{ flex: 1, height: 1, background: 'var(--sl-border)' }} />
+      </div>
+    );
+  }
   return (
     <div style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', marginBottom: 8, marginTop: 2 }}>
       {children}
@@ -50,12 +100,12 @@ function TextInput({ label, value, onChange, placeholder }) {
   );
 }
 
-function ColorSwatch({ color, active, onClick }) {
+function ColorSwatch({ color, active, onClick, size = 28 }) {
   return (
     <button
       onClick={onClick}
       style={{
-        width: 28, height: 28, borderRadius: 8, backgroundColor: color, border: 'none', cursor: 'pointer',
+        width: size, height: size, borderRadius: 8, backgroundColor: color, border: 'none', cursor: 'pointer',
         boxShadow: active ? `0 0 0 2px var(--sl-card), 0 0 0 4px ${color}` : '0 1px 3px rgba(0,0,0,0.25)',
         transition: 'box-shadow 0.15s', flexShrink: 0,
       }}
@@ -63,11 +113,28 @@ function ColorSwatch({ color, active, onClick }) {
   );
 }
 
-// ── Bottom tab icons ───────────────────────────────────────────────────────────
+function MiniToggle({ value, onChange, accent }) {
+  return (
+    <div
+      onClick={() => onChange(!value)}
+      style={{
+        width: 28, height: 16, borderRadius: 8, cursor: 'pointer', position: 'relative',
+        background: value ? accent : 'rgba(255,255,255,0.1)', transition: 'background 0.15s', flexShrink: 0,
+      }}
+    >
+      <div style={{
+        position: 'absolute', top: 2, left: value ? 13 : 2, width: 12, height: 12,
+        borderRadius: '50%', background: 'white', transition: 'left 0.15s',
+      }} />
+    </div>
+  );
+}
+
+// ── Tab icons ──────────────────────────────────────────────────────────────────
 
 function IcoModeles({ c }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
       <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
     </svg>
@@ -75,24 +142,32 @@ function IcoModeles({ c }) {
 }
 function IcoEquipes({ c }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
       <circle cx="9" cy="7" r="4"/>
       <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
     </svg>
   );
 }
-function IcoVisuel({ c }) {
+function IcoStyle({ c }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="3"/>
       <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
     </svg>
   );
 }
+function IcoFond({ c }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <path d="M3 9h18M9 21V9"/>
+    </svg>
+  );
+}
 function IcoExporter({ c }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
       <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
     </svg>
@@ -100,12 +175,11 @@ function IcoExporter({ c }) {
 }
 
 const PANEL_TABS = [
-  { id: 'template', label: 'Modèles', Icon: IcoModeles },
-  { id: 'teams',    label: 'Équipes', Icon: IcoEquipes },
-  { id: 'visuel',   label: 'Visuel',  Icon: IcoVisuel },
+  { id: 'template', label: 'Modèles',  Icon: IcoModeles },
+  { id: 'teams',    label: 'Équipes',  Icon: IcoEquipes },
+  { id: 'style',    label: 'Style',    Icon: IcoStyle   },
+  { id: 'fond',     label: 'Fond',     Icon: IcoFond    },
 ];
-
-const ACCENT_PALETTE = ['#D4AF37', '#22D96A', '#3b82f6', '#ef4444', '#f97316', '#a855f7', '#ec4899', '#ffffff'];
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -138,15 +212,19 @@ export default function PosterStudio({ event, onClose, club }) {
     accentColor: initialAccent,
     bgSrc: '', bgUrl: '', bgErr: false, bgMode: 'color',
     bgPreset: '',
+    bgTint: '', bgTintOp: 0,
     homeName: initialFields.homeName, awayName: initialFields.awayName,
     homeLogo: initialFields.homeLogo, awayLogo: initialFields.awayLogo,
     championship: initialFields.championship, tagline: initialFields.tagline,
     sponsorSrc: '', transforms: {},
   });
 
-  const { format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode, bgPreset,
-          homeName, awayName, homeLogo, awayLogo, championship, tagline,
-          sponsorSrc, transforms } = poster;
+  const {
+    format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode, bgPreset,
+    bgTint, bgTintOp,
+    homeName, awayName, homeLogo, awayLogo, championship, tagline,
+    sponsorSrc, transforms,
+  } = poster;
   const set = (key, value) => dispatch({ type: key, value });
 
   const [activeTab,     setActiveTab]     = useState('template');
@@ -182,7 +260,6 @@ export default function PosterStudio({ event, onClose, club }) {
     setTimeout(() => { skipAutoSave.current = false; }, 150);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Measure canvas area height to size the poster preview dynamically
   useEffect(() => {
     const el = canvasAreaRef.current;
     if (!el) return;
@@ -205,12 +282,28 @@ export default function PosterStudio({ event, onClose, club }) {
     return () => clearTimeout(t);
   }, [draftState]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Sport & club color palettes ──
+  const sportColors = useMemo(() => {
+    const sport = (event?.sport || '').toLowerCase();
+    for (const [key, colors] of Object.entries(SPORT_PALETTE)) {
+      if (sport.includes(key)) return colors;
+    }
+    return [];
+  }, [event?.sport]);
+
+  const clubColors = useMemo(() => {
+    const colors = [];
+    if (club?.theme?.primary)   colors.push(club.theme.primary);
+    if (club?.theme?.accent)    colors.push(club.theme.accent);
+    if (club?.theme?.secondary) colors.push(club.theme.secondary);
+    return [...new Set(colors)].slice(0, 4);
+  }, [club?.theme]);
+
   // ── Library ──
   function saveToLib() { libHook.save(draftState, libName.trim() || undefined); setLibName(''); }
   function loadFromLibrary(entry) { dispatch({ type: 'PATCH', payload: entry.state }); setActiveTab('template'); }
 
   // ── Templates ──
-  // Tournament events only show tournament templates; match events hide tournament templates
   const displayTemplates = useMemo(() => {
     const byType = isTournamentEvent
       ? POSTER_TEMPLATES.filter(t => t.isTournament)
@@ -221,6 +314,14 @@ export default function PosterStudio({ event, onClose, club }) {
 
   function toggleFavTpl(id) { favTplHook.toggle(id); setFavVersion(v => v + 1); }
 
+  // ── Layer helpers ──
+  function setLayerProp(blockId, key, value) {
+    set('transforms', { ...transforms, [blockId]: { ...(transforms[blockId] || {}), [key]: value } });
+  }
+  function resetLayers() { set('transforms', {}); }
+  const hasLayerChanges = Object.values(transforms).some(t => t.visible === false || (t.opacity !== undefined && t.opacity < 1));
+
+  // ── Poster data ──
   const posterData = {
     event,
     homeTeam: { name: homeName, logo: homeLogo },
@@ -230,8 +331,9 @@ export default function PosterStudio({ event, onClose, club }) {
     sponsor: sponsorSrc || null,
   };
 
+  const posterEffects = { tint: bgTint || null, tintOp: bgTintOp };
+
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
-  // Poster must fit in canvas: size by height (capped at 200px wide)
   const maxPosterH = Math.max(canvasH - 20, 80);
   const PREVIEW_W  = Math.min(Math.floor(maxPosterH * (w / h)), 200);
   const previewH   = Math.round(h * (PREVIEW_W / w));
@@ -346,7 +448,7 @@ export default function PosterStudio({ event, onClose, club }) {
       >
         {/* Hidden HD renderer for export */}
         <div style={{ position: 'fixed', left: -9999, top: 0, width: w, height: h, pointerEvents: 'none', zIndex: -1 }}>
-          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} />
+          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} />
         </div>
 
         {/* Fullscreen preview */}
@@ -354,7 +456,7 @@ export default function PosterStudio({ event, onClose, club }) {
           {previewFull && (
             <motion.div key="full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, borderRadius: 'inherit' }}>
-              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} />
+              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} />
               <button onClick={() => setPreviewFull(false)}
                 style={{ padding: '9px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Fermer
@@ -387,13 +489,9 @@ export default function PosterStudio({ event, onClose, club }) {
               exit={{ opacity: 0, y: 10, scale: 0.97 }}
               transition={{ duration: 0.16, ease: 'easeOut' }}
               style={{
-                position: 'absolute', bottom: 72, right: 12, left: 12,
-                zIndex: 30,
-                backgroundColor: 'var(--sl-card)',
-                border: '1px solid var(--sl-border)',
-                borderRadius: 20,
-                boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
-                padding: 8,
+                position: 'absolute', bottom: 72, right: 12, left: 12, zIndex: 30,
+                backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+                borderRadius: 20, boxShadow: '0 12px 40px rgba(0,0,0,0.3)', padding: 8,
               }}
             >
               {/* PNG */}
@@ -496,10 +594,9 @@ export default function PosterStudio({ event, onClose, club }) {
           </div>
         </div>
 
-        {/* ── FORMAT SEGMENTED CONTROL ────────────────────────────────────────── */}
+        {/* ── FORMAT + ACTIVE TEMPLATE ─────────────────────────────────────────── */}
         <div style={{
-          flexShrink: 0, padding: '8px 14px',
-          borderBottom: '1px solid var(--sl-border)',
+          flexShrink: 0, padding: '8px 14px', borderBottom: '1px solid var(--sl-border)',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <div style={{
@@ -508,8 +605,8 @@ export default function PosterStudio({ event, onClose, club }) {
             padding: 3, border: '1px solid var(--sl-border)',
           }}>
             {[
-              { id: 'post',  label: 'Post 4:5',  icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/></svg> },
-              { id: 'story', label: 'Story 9:16', icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="6" y="1" width="12" height="22" rx="2"/></svg> },
+              { id: 'post',  label: 'Post 4:5',   icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/></svg> },
+              { id: 'story', label: 'Story 9:16',  icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="6" y="1" width="12" height="22" rx="2"/></svg> },
             ].map(f => {
               const active = f.id === format;
               return (
@@ -540,6 +637,9 @@ export default function PosterStudio({ event, onClose, club }) {
             <span style={{ fontSize: 13, flexShrink: 0, lineHeight: 1 }}>{activeTpl.icon}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: activeTpl.color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeTpl.label}</span>
           </div>
+
+          {/* Accent color dot */}
+          <div style={{ width: 24, height: 24, borderRadius: 7, background: accentColor, flexShrink: 0, boxShadow: `0 0 8px ${accentColor}60` }} />
         </div>
 
         {/* ── CANVAS AREA ─────────────────────────────────────────────────────── */}
@@ -549,7 +649,6 @@ export default function PosterStudio({ event, onClose, club }) {
           onClick={() => exportOpen && setExportOpen(false)}
         >
           <div style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 10 }}>
-            {/* Poster with floating shadow */}
             <div style={{
               width: PREVIEW_W, height: previewH,
               borderRadius: 12, overflow: 'hidden', flexShrink: 0,
@@ -558,7 +657,8 @@ export default function PosterStudio({ event, onClose, club }) {
             }}>
               <PosterRenderer
                 templateId={templateId} data={posterData} format={format}
-                previewWidth={PREVIEW_W} innerRef={posterRef} transforms={transforms} bgPresetId={bgPreset}
+                previewWidth={PREVIEW_W} innerRef={posterRef} transforms={transforms}
+                bgPresetId={bgPreset} effects={posterEffects}
               />
             </div>
 
@@ -590,7 +690,7 @@ export default function PosterStudio({ event, onClose, club }) {
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.16 }}
               style={{
-                flexShrink: 0, overflowY: 'auto', maxHeight: '40dvh',
+                flexShrink: 0, overflowY: 'auto', maxHeight: '42dvh',
                 borderTop: '1px solid var(--sl-border)',
                 backgroundColor: 'var(--sl-card)',
               }}
@@ -718,15 +818,121 @@ export default function PosterStudio({ event, onClose, club }) {
                   </div>
                 )}
 
-                {/* ── VISUEL ── */}
-                {activeTab === 'visuel' && (
+                {/* ── STYLE ── */}
+                {activeTab === 'style' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-                    {/* ── Fonds premium ── */}
+                    {/* Couleur principale */}
                     <div>
-                      <SLabel>Fond premium</SLabel>
+                      <SLabel accent={accentColor}>Couleur principale</SLabel>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 10 }}>
+                        {COLOR_PRESETS.map(p => {
+                          const active = accentColor === p.color;
+                          return (
+                            <button key={p.id} onClick={() => set('accentColor', p.color)}
+                              style={{
+                                padding: '8px 4px', borderRadius: 10, cursor: 'pointer',
+                                border: `1.5px solid ${active ? p.color : 'var(--sl-border-s)'}`,
+                                background: active ? `${p.color}18` : 'var(--sl-surface)',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                                transition: 'all 0.12s',
+                              }}>
+                              <div style={{ width: 22, height: 22, borderRadius: 7, background: p.color, boxShadow: active ? `0 0 10px ${p.color}80` : 'none', transition: 'box-shadow 0.12s' }} />
+                              <span style={{ fontSize: 8.5, fontWeight: 700, color: active ? p.color : 'var(--sl-t3)', letterSpacing: '0.04em' }}>{p.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {/* Custom picker row */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
+                        <input type="color" value={accentColor} onChange={e => set('accentColor', e.target.value)}
+                          style={{ width: 32, height: 32, borderRadius: 8, border: 'none', cursor: 'pointer', padding: 2, backgroundColor: 'transparent', flexShrink: 0 }}/>
+                        <div style={{ flex: 1, height: 6, borderRadius: 3, background: `linear-gradient(90deg, #000 0%, ${accentColor} 50%, #fff 100%)` }}/>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', fontFamily: 'monospace', letterSpacing: '0.04em' }}>{accentColor.toUpperCase()}</span>
+                      </div>
+                    </div>
+
+                    {/* Sport palette */}
+                    {sportColors.length > 0 && (
+                      <div>
+                        <SLabel>Couleurs {event?.sport || 'sport'}</SLabel>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          {sportColors.map(c => (
+                            <ColorSwatch key={c} color={c} active={accentColor === c} onClick={() => set('accentColor', c)} />
+                          ))}
+                          <span style={{ fontSize: 10, color: 'var(--sl-t3)', marginLeft: 4 }}>Cliquer pour appliquer</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Club palette */}
+                    {clubColors.length > 0 && (
+                      <div>
+                        <SLabel>Couleurs du club</SLabel>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          {clubColors.map(c => (
+                            <ColorSwatch key={c} color={c} active={accentColor === c} onClick={() => set('accentColor', c)} />
+                          ))}
+                          <span style={{ fontSize: 10, color: 'var(--sl-t3)', marginLeft: 4 }}>Identité du club</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Calques */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <SLabel accent={accentColor}>Calques</SLabel>
+                        {hasLayerChanges && (
+                          <button onClick={resetLayers}
+                            style={{ fontSize: 9.5, color: 'var(--sl-t3)', border: 'none', background: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 5, textDecoration: 'underline' }}>
+                            Tout réinitialiser
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                        {LAYER_BLOCKS.map(block => {
+                          const t = transforms[block.id] || {};
+                          const visible = t.visible !== false;
+                          const opacity = t.opacity ?? 1;
+                          return (
+                            <div key={block.id}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: 8,
+                                padding: '8px 10px', borderRadius: 10,
+                                backgroundColor: 'var(--sl-surface)',
+                                border: `1px solid ${visible ? 'var(--sl-border)' : 'rgba(239,68,68,0.2)'}`,
+                                opacity: visible ? 1 : 0.5, transition: 'opacity 0.15s, border-color 0.15s',
+                              }}>
+                              <span style={{ fontSize: 12, width: 18, textAlign: 'center', flexShrink: 0 }}>{block.icon}</span>
+                              <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--sl-t1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{block.label}</span>
+                              {/* Opacity slider */}
+                              <input
+                                type="range" min={0.1} max={1} step={0.05} value={opacity}
+                                onChange={e => setLayerProp(block.id, 'opacity', parseFloat(e.target.value))}
+                                style={{ width: 46, accentColor, cursor: 'pointer', flexShrink: 0 }}
+                              />
+                              <span style={{ fontSize: 9, color: 'var(--sl-t3)', width: 22, textAlign: 'right', flexShrink: 0 }}>{Math.round(opacity * 100)}%</span>
+                              {/* Visibility toggle */}
+                              <MiniToggle value={visible} onChange={v => setLayerProp(block.id, 'visible', v)} accent={accentColor} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div style={{ marginTop: 8, padding: '7px 10px', borderRadius: 8, background: `${accentColor}08`, border: `1px solid ${accentColor}20`, fontSize: 10, color: 'var(--sl-t3)', lineHeight: 1.5 }}>
+                        Position & rotation → bouton ✏️ sur l'aperçu
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── FOND ── */}
+                {activeTab === 'fond' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                    {/* Fonds premium */}
+                    <div>
+                      <SLabel accent={accentColor}>Fond premium</SLabel>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
-                        {/* None option */}
                         <button
                           onClick={() => set('bgPreset', '')}
                           style={{
@@ -754,9 +960,7 @@ export default function PosterStudio({ event, onClose, club }) {
                                 boxShadow: active ? `0 0 0 1px ${accentColor}` : undefined,
                               }}
                             >
-                              {/* Preview gradient swatch */}
                               <div style={{ width: '100%', height: 38, background: bg.preview }} />
-                              {/* Label */}
                               <div style={{ padding: '3px 5px 5px', background: 'var(--sl-surface)', textAlign: 'center' }}>
                                 <div style={{ fontSize: 7.5, fontWeight: 800, color: active ? accentColor : 'var(--sl-t1)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bg.label}</div>
                               </div>
@@ -781,20 +985,49 @@ export default function PosterStudio({ event, onClose, club }) {
                       )}
                     </div>
 
+                    {/* Teinte d'ambiance */}
                     <div>
-                      <SLabel>Couleur d'accent</SLabel>
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        {ACCENT_PALETTE.map(c => (
-                          <ColorSwatch key={c} color={c} active={accentColor === c} onClick={() => set('accentColor', c)} />
+                      <SLabel>Teinte d'ambiance</SLabel>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                        {/* "None" option */}
+                        <button onClick={() => set('bgTint', '')}
+                          style={{
+                            width: 28, height: 28, borderRadius: 8, cursor: 'pointer', border: `1.5px dashed ${bgTint === '' ? accentColor : 'var(--sl-border-s)'}`,
+                            background: bgTint === '' ? `${accentColor}14` : 'var(--sl-surface)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--sl-t3)',
+                          }}>
+                          ✕
+                        </button>
+                        {TINT_PALETTE.map(c => (
+                          <button key={c} onClick={() => { set('bgTint', c); if (bgTintOp === 0) set('bgTintOp', 0.25); }}
+                            style={{
+                              width: 28, height: 28, borderRadius: 8, cursor: 'pointer', border: 'none',
+                              background: c,
+                              boxShadow: bgTint === c ? `0 0 0 2px var(--sl-card), 0 0 0 4px ${c}` : 'none',
+                              transition: 'box-shadow 0.12s',
+                            }}
+                          />
                         ))}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
-                          <label style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 600 }}>Autre :</label>
-                          <input type="color" value={accentColor} onChange={e => set('accentColor', e.target.value)}
-                            style={{ width: 28, height: 28, borderRadius: 8, border: 'none', cursor: 'pointer', padding: 2, backgroundColor: 'transparent' }} />
+                        {/* Custom tint picker */}
+                        <div style={{ position: 'relative', width: 28, height: 28, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--sl-border)', flexShrink: 0 }}>
+                          {bgTint && <div style={{ position: 'absolute', inset: 0, background: bgTint }} />}
+                          {!bgTint && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🎨</div>}
+                          <input type="color" value={bgTint || '#000000'} onChange={e => { set('bgTint', e.target.value); if (bgTintOp === 0) set('bgTintOp', 0.25); }}
+                            style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }}/>
                         </div>
                       </div>
+                      {bgTint && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 600, whiteSpace: 'nowrap' }}>Intensité</span>
+                          <input type="range" min={0} max={0.7} step={0.05} value={bgTintOp}
+                            onChange={e => set('bgTintOp', parseFloat(e.target.value))}
+                            style={{ flex: 1, accentColor, cursor: 'pointer' }}/>
+                          <span style={{ fontSize: 10, color: 'var(--sl-t3)', width: 30, textAlign: 'right', fontWeight: 700 }}>{Math.round(bgTintOp * 100)}%</span>
+                        </div>
+                      )}
                     </div>
 
+                    {/* Image de fond */}
                     <div>
                       <SLabel>Image de fond</SLabel>
                       <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
@@ -830,7 +1063,7 @@ export default function PosterStudio({ event, onClose, club }) {
                       {bgErr && <div style={{ padding: '7px 12px', borderRadius: 9, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#ef4444' }}>Image inaccessible — vérifiez le lien ou uploadez un fichier.</div>}
                     </div>
 
-                    {/* Sponsor */}
+                    {/* Logo partenaire */}
                     <div>
                       <SLabel>Logo partenaire / sponsor</SLabel>
                       <div style={{ display: 'flex', gap: 8 }}>
@@ -866,17 +1099,21 @@ export default function PosterStudio({ event, onClose, club }) {
           {PANEL_TABS.map(({ id, label, Icon }) => {
             const isActive = activeTab === id;
             const color = isActive ? accentColor : 'var(--sl-t3)';
+            const hasBadge = id === 'style' && hasLayerChanges;
             return (
               <button key={id} onClick={() => handleTabClick(id)}
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  gap: 4, padding: '10px 4px 8px',
+                  gap: 3, padding: '9px 4px 7px',
                   border: 'none', borderTop: `2px solid ${isActive ? accentColor : 'transparent'}`,
                   cursor: 'pointer', background: 'transparent',
-                  color, transition: 'color 0.15s',
+                  color, transition: 'color 0.15s', position: 'relative',
                 }}>
+                {hasBadge && (
+                  <div style={{ position: 'absolute', top: 7, right: '30%', width: 6, height: 6, borderRadius: '50%', background: accentColor }} />
+                )}
                 <Icon c={color} />
-                <span style={{ fontSize: 10, fontWeight: 700 }}>{label}</span>
+                <span style={{ fontSize: 9, fontWeight: 700 }}>{label}</span>
               </button>
             );
           })}
@@ -889,13 +1126,13 @@ export default function PosterStudio({ event, onClose, club }) {
                 onClick={() => { setActiveTab(null); setExportOpen(prev => !prev); }}
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  gap: 4, padding: '10px 4px 8px',
+                  gap: 3, padding: '9px 4px 7px',
                   border: 'none', borderTop: `2px solid ${exportOpen ? accentColor : 'transparent'}`,
                   cursor: 'pointer', background: 'transparent',
                   color, transition: 'color 0.15s',
                 }}>
                 <IcoExporter c={color} />
-                <span style={{ fontSize: 10, fontWeight: 700 }}>Exporter</span>
+                <span style={{ fontSize: 9, fontWeight: 700 }}>Exporter</span>
               </button>
             );
           })()}

@@ -54,5 +54,6 @@ export function blockStyle(transforms, id) {
   const s = {};
   if (parts.length) s.transform = parts.join(' ');
   if (t.opacity !== undefined) s.opacity = t.opacity;
+  if (t.visible === false) s.display = 'none';
   return s;
 }
