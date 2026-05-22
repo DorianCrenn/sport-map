@@ -9,8 +9,8 @@ export default function TplTrGradient({ event, homeTeam, championship, tagline, 
   const dt = fmtDate(event?.date);
   const tr = (id) => blockStyle(transforms, id);
   const sport = getSportMeta(event?.sport || '');
-  const a = sport.primary !== '#6D28D9' ? sport.primary : '#E11D48';
-  const a2 = sport.glow !== '#A78BFA' ? sport.glow : '#FB7185';
+  const a = accentColor || (sport.primary !== '#6D28D9' ? sport.primary : '#E11D48');
+  const a2 = accentColor || (sport.glow !== '#A78BFA' ? sport.glow : '#FB7185');
   const tName = event?.tournamentName || championship || 'TOURNOI';
   const organizer = event?.organizer || homeTeam?.name;
 

@@ -3,11 +3,11 @@ import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, bl
 const H = { story: 640, post: 450 };
 const GOLD = '#D4AF37';
 
-function DoubleRule() {
+function DoubleRule({ c }) {
   return (
     <div>
-      <div style={{ height: '0.5px', background: `linear-gradient(to right, transparent, ${GOLD}65, transparent)`, marginBottom: 3.5 }} />
-      <div style={{ height: '0.5px', background: `linear-gradient(to right, transparent, ${GOLD}22, transparent)` }} />
+      <div style={{ height: '0.5px', background: `linear-gradient(to right, transparent, ${c}65, transparent)`, marginBottom: 3.5 }} />
+      <div style={{ height: '0.5px', background: `linear-gradient(to right, transparent, ${c}22, transparent)` }} />
     </div>
   );
 }
@@ -17,7 +17,7 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
   const { home, away } = parseVs(event?.title || '');
   const dt = fmtDate(event?.date);
   const champ = championship || champLabel(event?.eventType, event?.level);
-  const a = GOLD;
+  const a = accentColor || GOLD;
   const homeName = homeTeam?.name || home || 'FC Club';
   const awayName = awayTeam?.name || away || 'Adversaire';
   const isStory = format === 'story';
@@ -47,7 +47,7 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
           </span>
         </div>
 
-        <DoubleRule />
+        <DoubleRule c={a} />
         <div style={{ height: 14 }} />
 
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
@@ -64,7 +64,7 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
           <div style={{ fontSize: isStory ? 80 : 66, fontWeight: 200, color: a, letterSpacing: '-0.03em', fontStyle: 'italic', marginTop: -5 }}>Day</div>
         </div>
 
-        <div style={{ marginBottom: 20 }}><DoubleRule /></div>
+        <div style={{ marginBottom: 20 }}><DoubleRule c={a} /></div>
 
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}>
@@ -111,7 +111,7 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
           </div>
         </div>
 
-        <div style={{ marginBottom: 16 }}><DoubleRule /></div>
+        <div style={{ marginBottom: 16 }}><DoubleRule c={a} /></div>
 
         <div data-block="meta" style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', marginBottom: 14, ...tr('meta') }}>
           {[

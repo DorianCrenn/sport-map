@@ -9,8 +9,8 @@ export default function TplTrSummer({ event, homeTeam, championship, tagline, ac
   const dt = fmtDate(event?.date);
   const tr = (id) => blockStyle(transforms, id);
   const sport = getSportMeta(event?.sport || '');
-  const a = sport.primary !== '#6D28D9' ? sport.primary : '#EA580C';
-  const aLight = sport.accent !== '#A78BFA' ? sport.accent : '#FB923C';
+  const a = accentColor || (sport.primary !== '#6D28D9' ? sport.primary : '#EA580C');
+  const aLight = accentColor || (sport.accent !== '#A78BFA' ? sport.accent : '#FB923C');
   const tName = event?.tournamentName || championship || 'SUMMER CUP';
   const organizer = event?.organizer || homeTeam?.name;
 

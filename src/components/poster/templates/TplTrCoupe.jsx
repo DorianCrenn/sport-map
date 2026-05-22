@@ -9,8 +9,8 @@ export default function TplTrCoupe({ event, homeTeam, championship, tagline, acc
   const dt = fmtDate(event?.date);
   const tr = (id) => blockStyle(transforms, id);
   const sport = getSportMeta(event?.sport || '');
-  const gold = '#C9A84C';
-  const gold2 = '#F2DC90';
+  const gold = accentColor || '#C9A84C';
+  const gold2 = accentColor || '#F2DC90';
   const navy = '#060D1C';
   const tName = event?.tournamentName || championship || 'COUPE NATIONALE';
   const organizer = event?.organizer || homeTeam?.name;

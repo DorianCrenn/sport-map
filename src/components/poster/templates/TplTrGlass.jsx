@@ -9,8 +9,8 @@ export default function TplTrGlass({ event, homeTeam, championship, tagline, acc
   const dt = fmtDate(event?.date);
   const tr = (id) => blockStyle(transforms, id);
   const sport = getSportMeta(event?.sport || '');
-  const indigo = sport.primary !== '#6D28D9' ? sport.glow : '#818CF8';
-  const violet = '#A855F7';
+  const indigo = accentColor || (sport.primary !== '#6D28D9' ? sport.glow : '#818CF8');
+  const violet = accentColor || '#A855F7';
   const tName = event?.tournamentName || championship || 'TOURNOI';
   const organizer = event?.organizer || homeTeam?.name;
 

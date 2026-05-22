@@ -1,7 +1,7 @@
 import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, venueFs, blockStyle } from '../posterUtils.js';
 
 const H = { story: 640, post: 450 };
-const BG = '#EDFF3A';
+const DEFAULT_BG = '#EDFF3A';
 const DARK = '#0A0A0A';
 
 export default function TplFluo({ event, homeTeam, awayTeam, championship, tagline, accentColor = '#EDFF3A', bgImage, format = 'story', transforms = {} }) {
@@ -9,7 +9,8 @@ export default function TplFluo({ event, homeTeam, awayTeam, championship, tagli
   const { home, away } = parseVs(event?.title || '');
   const dt = fmtDate(event?.date);
   const champ = championship || champLabel(event?.eventType, event?.level);
-  const a = accentColor;
+  const a = accentColor || DEFAULT_BG;
+  const bg = a;
   const homeName = homeTeam?.name || home || 'FC Club';
   const awayName = awayTeam?.name || away || 'Adversaire';
   const isStory = format === 'story';
@@ -20,7 +21,7 @@ export default function TplFluo({ event, homeTeam, awayTeam, championship, tagli
       width: 360, height: h, position: 'relative', overflow: 'hidden',
       fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
       display: 'flex', flexDirection: 'column',
-      backgroundColor: BG, boxSizing: 'border-box',
+      backgroundColor: bg, boxSizing: 'border-box',
     }}>
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%', padding: '22px 24px 20px' }}>
 

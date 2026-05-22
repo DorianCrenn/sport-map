@@ -9,8 +9,8 @@ export default function TplTrMinimal({ event, homeTeam, championship, tagline, a
   const dt = fmtDate(event?.date);
   const tr = (id) => blockStyle(transforms, id);
   const sport = getSportMeta(event?.sport || '');
-  const clay = sport.primary !== '#6D28D9' ? sport.primary : '#C0542A';
-  const clayLight = sport.accent !== '#A78BFA' ? sport.accent : '#F0A882';
+  const clay = accentColor || (sport.primary !== '#6D28D9' ? sport.primary : '#C0542A');
+  const clayLight = accentColor || (sport.accent !== '#A78BFA' ? sport.accent : '#F0A882');
   const ink = '#1A1008';
   const cream = '#F7EFE3';
   const tName = event?.tournamentName || championship || 'TOURNOI';

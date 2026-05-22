@@ -9,7 +9,7 @@ export default function TplTrCinema({ event, homeTeam, championship, tagline, ac
   const dt = fmtDate(event?.date);
   const tr = (id) => blockStyle(transforms, id);
   const sport = getSportMeta(event?.sport || '');
-  const amber = sport.accent !== '#A78BFA' ? sport.accent : '#D4B450';
+  const amber = accentColor || (sport.accent !== '#A78BFA' ? sport.accent : '#D4B450');
   const tName = event?.tournamentName || championship || 'GRAND TOURNOI';
   const organizer = event?.organizer || homeTeam?.name;
   const barH = isStory ? 72 : 50;

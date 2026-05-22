@@ -9,7 +9,7 @@ export default function TplTrNeon({ event, homeTeam, championship, tagline, acce
   const dt = fmtDate(event?.date);
   const tr = (id) => blockStyle(transforms, id);
   const sport = getSportMeta(event?.sport || '');
-  const orange = '#F97316';
+  const orange = accentColor || '#F97316';
   const coldBlue = '#00C2FF';
   const tName = event?.tournamentName || championship || 'TOURNAMENT';
   const organizer = event?.organizer || homeTeam?.name;

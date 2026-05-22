@@ -9,7 +9,7 @@ export default function TplTrStreet({ event, homeTeam, championship, tagline, ac
   const dt = fmtDate(event?.date);
   const tr = (id) => blockStyle(transforms, id);
   const sport = getSportMeta(event?.sport || '');
-  const a = sport.primary !== '#6D28D9' ? sport.primary : '#FF5500';
+  const a = accentColor || (sport.primary !== '#6D28D9' ? sport.primary : '#FF5500');
   const tName = event?.tournamentName || championship || 'TOURNOI';
   const organizer = event?.organizer || homeTeam?.name;
 
