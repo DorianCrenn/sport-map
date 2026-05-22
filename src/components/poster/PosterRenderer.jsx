@@ -32,6 +32,9 @@ import TplTrCoupe from './templates/TplTrCoupe.jsx';
 import TplTrSummer from './templates/TplTrSummer.jsx';
 import TplTrGlass from './templates/TplTrGlass.jsx';
 import TplTrGradient from './templates/TplTrGradient.jsx';
+import TplTrChampion from './templates/TplTrChampion.jsx';
+import TplTrField from './templates/TplTrField.jsx';
+import TplTrDynamic from './templates/TplTrDynamic.jsx';
 
 export const POSTER_TEMPLATES = [
   {
@@ -319,6 +322,33 @@ export const POSTER_TEMPLATES = [
     color: '#6D28D9',
     isTournament: true,
     Component: TplTrGradient,
+  },
+  {
+    id: 'tr-champion',
+    label: 'Champion',
+    desc: 'Neon · Spotlight · Radial',
+    icon: '◉',
+    color: '#00F5FF',
+    isTournament: true,
+    Component: TplTrChampion,
+  },
+  {
+    id: 'tr-field',
+    label: 'Field',
+    desc: 'Terrain · Immersif · Sport',
+    icon: '⬡',
+    color: '#22C55E',
+    isTournament: true,
+    Component: TplTrField,
+  },
+  {
+    id: 'tr-dynamic',
+    label: 'Dynamic',
+    desc: 'Diagonal · Contrasté · Impact',
+    icon: '◧',
+    color: '#FF6B00',
+    isTournament: true,
+    Component: TplTrDynamic,
   },
 ];
 
