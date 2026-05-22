@@ -1,137 +1,141 @@
-import { getSportMeta, SportBall, InfoRow, fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
+import { getSportMeta, SportBall, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
 
 const H = { story: 640, post: 450 };
 
-export default function TplTrPremium({ event, homeTeam, championship, tagline, accentColor = '#C9A84C', bgImage, format = 'story', transforms = {} }) {
+// Champions Night — dark stadium / god rays / gold. Football aesthetic.
+export default function TplTrPremium({ event, homeTeam, championship, tagline, accentColor, bgImage, format = 'story', transforms = {} }) {
   const h = H[format] || H.story;
   const isStory = format === 'story';
   const dt = fmtDate(event?.date);
   const tr = (id) => blockStyle(transforms, id);
-
   const sport = getSportMeta(event?.sport || '');
   const gold = '#C9A84C';
-  const gold2 = '#F0D080';
+  const gold2 = '#F2DC90';
   const tName = event?.tournamentName || championship || 'TOURNOI';
   const organizer = event?.organizer || homeTeam?.name;
 
   return (
-    <div style={{ width: 360, height: h, position: 'relative', overflow: 'hidden', fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif', background: '#07080D', boxSizing: 'border-box' }}>
+    <div style={{ width: 360, height: h, position: 'relative', overflow: 'hidden', fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif', background: '#040508', boxSizing: 'border-box' }}>
 
       {bgImage && <>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(7,8,13,0.90)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(4,5,8,0.88)' }} />
       </>}
 
-      {/* Subtle grid */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.03, backgroundImage: `linear-gradient(${gold}80 1px, transparent 1px), linear-gradient(90deg, ${gold}80 1px, transparent 1px)`, backgroundSize: '44px 44px' }} />
+      {/* Stadium arc system — looking up from the pitch */}
+      <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: isStory ? '55%' : '48%', pointerEvents: 'none' }} viewBox="0 0 360 350" preserveAspectRatio="xMidYMin meet">
+        <ellipse cx="180" cy="-40" rx="310" ry="255" fill="none" stroke={`${gold}18`} strokeWidth="1.5" />
+        <ellipse cx="180" cy="-40" rx="265" ry="215" fill="none" stroke={`${gold}12`} strokeWidth="1" />
+        <ellipse cx="180" cy="-40" rx="218" ry="178" fill="none" stroke={`${gold}09`} strokeWidth="0.8" />
+        <ellipse cx="180" cy="-40" rx="168" ry="140" fill="none" stroke={`${gold}06`} strokeWidth="0.5" />
+        {/* Radial structure spokes */}
+        {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg, i) => {
+          const rad = (deg * Math.PI) / 180;
+          const x1 = 180 + 310 * Math.cos(rad);
+          const y1 = -40 + 255 * Math.sin(rad);
+          const x2 = 180 + 168 * Math.cos(rad);
+          const y2 = -40 + 140 * Math.sin(rad);
+          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={`${gold}12`} strokeWidth="0.6" />;
+        })}
+        {/* Rim highlight — bottom visible arc */}
+        <ellipse cx="180" cy="-40" rx="310" ry="255" fill="none" stroke={`${gold}35`} strokeWidth="0.5" strokeDasharray="3 12" />
+      </svg>
 
-      {/* Gold radial glow top center */}
-      <div style={{ position: 'absolute', top: isStory ? '8%' : '5%', left: '50%', transform: 'translateX(-50%)', width: 280, height: 280, borderRadius: '50%', background: `radial-gradient(circle, ${gold}15 0%, transparent 60%)`, pointerEvents: 'none' }} />
+      {/* Ambient gold glow behind arc */}
+      <LightOrb top={isStory ? -80 : -60} left={-60} width={480} height={280} color={`rgba(201,168,76,0.22)`} blur={60} />
 
-      {/* Sport ball — large background */}
-      <div style={{ position: 'absolute', bottom: isStory ? 100 : 70, right: -30, pointerEvents: 'none' }}>
-        <SportBall sport={event?.sport || 'football'} size={isStory ? 200 : 150} color={gold} opacity={0.05} />
-      </div>
+      {/* Floodlights — 4 points on the arc */}
+      <LightOrb top={isStory ? 28 : 18} left={28} width={70} height={70} color="rgba(255,235,160,0.7)" blur={14} />
+      <LightOrb top={isStory ? 28 : 18} right={28} width={70} height={70} color="rgba(255,235,160,0.7)" blur={14} />
+      <LightOrb top={isStory ? 82 : 55} left={-10} width={50} height={50} color="rgba(255,220,120,0.45)" blur={12} />
+      <LightOrb top={isStory ? 82 : 55} right={-10} width={50} height={50} color="rgba(255,220,120,0.45)" blur={12} />
 
-      {/* Corner brackets */}
-      {[['top', 'left'], ['top', 'right'], ['bottom', 'left'], ['bottom', 'right']].map(([v, h2], i) => (
-        <div key={i} style={{ position: 'absolute', [v]: 16, [h2]: 16, width: 24, height: 24, borderTop: v === 'top' ? `1.5px solid ${gold}55` : 'none', borderBottom: v === 'bottom' ? `1.5px solid ${gold}55` : 'none', borderLeft: h2 === 'left' ? `1.5px solid ${gold}55` : 'none', borderRight: h2 === 'right' ? `1.5px solid ${gold}55` : 'none' }} />
+      {/* God rays — thin triangles from top center */}
+      {[-32, -18, -6, 8, 22, 38].map((angle, i) => (
+        <div key={i} style={{
+          position: 'absolute', top: 0, left: '50%',
+          width: i % 2 === 0 ? 1 : 2,
+          height: isStory ? `${32 + i * 4}%` : `${24 + i * 3}%`,
+          background: `linear-gradient(180deg, rgba(201,168,76,${0.5 - i * 0.05}) 0%, transparent 100%)`,
+          transformOrigin: 'top center',
+          transform: `translateX(-50%) rotate(${angle}deg)`,
+          filter: 'blur(2px)',
+          pointerEvents: 'none',
+        }} />
       ))}
 
-      {/* Gold top bar */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${gold}, transparent)` }} />
+      {/* Blue-black atmospheric depth — bottom */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: isStory ? '50%' : '45%', background: 'linear-gradient(0deg, #02020A 0%, transparent 100%)', pointerEvents: 'none' }} />
 
-      <div style={{ position: 'relative', zIndex: 10, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: isStory ? '34px 28px 26px' : '22px 24px 20px' }}>
+      <Vignette strength={0.82} cy="38%" />
+      <Grain opacity={0.05} />
 
-        {/* Header */}
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isStory ? 16 : 10 }}>
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 10, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: isStory ? '22px 26px 28px' : '16px 22px 22px' }}>
+
+        {/* Top — organizer + TOURNOI badge */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {homeTeam?.logo
-              ? <div style={{ width: 30, height: 30, borderRadius: 8, background: `${gold}15`, border: `1px solid ${gold}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  <img src={homeTeam.logo} alt="" crossOrigin="anonymous" style={{ width: 24, height: 24, objectFit: 'contain' }} />
-                </div>
-              : null}
-            <span style={{ fontSize: 8.5, fontWeight: 800, color: `${gold}BB`, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{organizer || 'SPORTLINK'}</span>
+            {homeTeam?.logo && <img src={homeTeam.logo} alt="" crossOrigin="anonymous" style={{ width: 22, height: 22, borderRadius: 5, objectFit: 'contain', opacity: 0.8 }} />}
+            {organizer && <span style={{ fontSize: 7.5, fontWeight: 800, color: `${gold}80`, letterSpacing: '0.32em', textTransform: 'uppercase' }}>{organizer}</span>}
           </div>
-          <div style={{ padding: '3px 10px', borderRadius: 3, border: `1px solid ${gold}40`, background: `${gold}0C` }}>
-            <span style={{ fontSize: 8, fontWeight: 900, color: gold, letterSpacing: '0.3em' }}>TOURNOI</span>
+          <div style={{ padding: '2px 9px', borderRadius: 2, border: `1px solid ${gold}35`, background: `${gold}0A` }}>
+            <span style={{ fontSize: 7.5, fontWeight: 900, color: `${gold}70`, letterSpacing: '0.38em' }}>TOURNOI</span>
           </div>
         </div>
 
-        {/* Sport label */}
-        {event?.sport && (
-          <div style={{ width: '100%', marginBottom: isStory ? 12 : 8 }}>
-            <span style={{ fontSize: 8, fontWeight: 700, color: sport.accent, letterSpacing: '0.35em', textTransform: 'uppercase', opacity: 0.9 }}>★ {event.sport.toUpperCase()} ★</span>
-          </div>
-        )}
+        {/* Spacer — visual area */}
+        <div style={{ flex: 1 }} />
 
-        {/* Trophy SVG */}
-        <div style={{ marginBottom: isStory ? 10 : 6, filter: `drop-shadow(0 4px 24px ${gold}50)` }}>
-          <svg width={isStory ? 62 : 46} height={isStory ? 72 : 53} viewBox="0 0 80 92" fill="none">
-            <path d="M22 8H58V38C58 56 40 66 40 66C40 66 22 56 22 38Z" fill={gold} opacity="0.9" />
-            <path d="M22 16C14 16 8 24 8 30C8 38 16 43 22 39" stroke={gold} strokeWidth="4.5" fill="none" opacity="0.6" />
-            <path d="M58 16C66 16 72 24 72 30C72 38 64 43 58 39" stroke={gold} strokeWidth="4.5" fill="none" opacity="0.6" />
-            <rect x="35" y="66" width="10" height="14" fill={gold} opacity="0.8" />
-            <rect x="24" y="80" width="32" height="8" rx="4" fill={gold} opacity="0.9" />
-            <path d="M32 18C32 18 36 32 34 44" stroke="rgba(255,255,255,0.22)" strokeWidth="3" strokeLinecap="round" fill="none" />
-          </svg>
-        </div>
+        {/* Bottom — hero block */}
+        <div>
+          {/* Sport label */}
+          {event?.sport && <div style={{ fontSize: 8, fontWeight: 700, color: sport.accent, letterSpacing: '0.38em', textTransform: 'uppercase', marginBottom: isStory ? 10 : 7, opacity: 0.75 }}>{event.sport}</div>}
 
-        {/* GRAND TOURNOI */}
-        <div style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.55em', color: `${gold}55`, textTransform: 'uppercase', marginBottom: isStory ? 14 : 10 }}>◆ GRAND TOURNOI ◆</div>
-
-        {/* Title */}
-        <div data-block="title" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center', width: '100%', ...tr('title') }}>
-          <div style={{ fontSize: isStory ? 36 : 26, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-0.025em', maxWidth: 290, margin: '0 auto' }}>
-            {truncate(tName, 34)}
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: isStory ? '18px auto' : '12px auto', width: '65%' }}>
-            <div style={{ flex: 1, height: '0.5px', background: `linear-gradient(90deg, transparent, ${gold}50)` }} />
-            <span style={{ fontSize: 11, color: gold }}>◆</span>
-            <div style={{ flex: 1, height: '0.5px', background: `linear-gradient(90deg, ${gold}50, transparent)` }} />
-          </div>
-
-          {/* Tournament type */}
-          {event?.tournamentType && (
-            <div style={{ marginBottom: 12 }}>
-              <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.22em', borderLeft: `2px solid ${gold}`, paddingLeft: 8 }}>
-                {event.tournamentType}
-              </span>
+          {/* Tournament name — MASSIVE */}
+          <div data-block="title" style={{ ...tr('title') }}>
+            <div style={{
+              fontSize: isStory ? 68 : 50,
+              fontWeight: 900,
+              lineHeight: 0.88,
+              letterSpacing: '-0.045em',
+              marginBottom: isStory ? 18 : 13,
+              background: `linear-gradient(165deg, ${gold2} 0%, ${gold} 55%, rgba(160,120,48,0.9) 100%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              textShadow: 'none',
+              filter: `drop-shadow(0 0 30px ${gold}40)`,
+            }}>
+              {truncate(tName, 16)}
             </div>
-          )}
+          </div>
 
-          {/* Categories */}
-          {event?.tournamentCategories && (
-            <div data-block="champ" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginBottom: 14, ...tr('champ') }}>
-              {event.tournamentCategories.split(',').map(c => c.trim()).filter(Boolean).slice(0, 4).map((c, i) => (
-                <span key={i} style={{ fontSize: 8, fontWeight: 700, color: `${gold}88`, border: `1px solid ${gold}28`, padding: '2px 9px', borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{c}</span>
+          {/* Gold rule */}
+          <div style={{ height: 1, background: `linear-gradient(90deg, ${gold}80, ${gold}18, transparent)`, marginBottom: isStory ? 14 : 10 }} />
+
+          {/* Tournament type + categories — small */}
+          {(event?.tournamentType || event?.tournamentCategories) && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: isStory ? 12 : 9 }}>
+              {event.tournamentType && <span style={{ fontSize: 8, fontWeight: 700, color: `${gold}70`, letterSpacing: '0.2em', textTransform: 'uppercase' }}>{event.tournamentType}</span>}
+              {event?.tournamentCategories && event.tournamentCategories.split(',').map(c => c.trim()).filter(Boolean).slice(0, 3).map((c, i) => (
+                <span key={i} style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.12em' }}>· {c}</span>
               ))}
             </div>
           )}
 
           {/* InfoRow */}
-          <div data-block="meta" style={{ display: 'flex', justifyContent: 'center', ...tr('meta') }}>
+          <div data-block="meta" style={{ ...tr('meta') }}>
             <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={gold} dimColor={`${gold}AA`} isStory={isStory} />
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div style={{ width: '100%', height: 1, background: `linear-gradient(90deg, transparent, ${gold}40, transparent)`, marginBottom: 14 }} />
-
-        {/* Date/venue */}
-        <div style={{ width: '100%', textAlign: 'center' }}>
-          <div style={{ fontSize: isStory ? 15 : 12, fontWeight: 800, color: gold, letterSpacing: '0.04em' }}>
-            {dt.weekday} {dt.day} {dt.month}{dt.time !== '—' ? ` · ${dt.time}` : ''}
-          </div>
-          <div style={{ fontSize: venueFs(event?.venue || event?.city || '', isStory ? 10 : 9), color: 'rgba(255,255,255,0.35)', fontWeight: 600, marginTop: 3 }}>
-            {event?.venue || event?.city || '—'}
-          </div>
-          {tagline && (
-            <div data-block="tagline" style={{ marginTop: 8, ...tr('tagline') }}>
-              <span style={{ fontSize: 8, letterSpacing: '0.38em', color: `${gold}35`, textTransform: 'uppercase' }}>{tagline}</span>
+            <div style={{ marginTop: isStory ? 10 : 7, fontSize: isStory ? 9.5 : 8.5, color: 'rgba(255,255,255,0.3)', fontWeight: 600, letterSpacing: '0.06em' }}>
+              {dt.weekday} {dt.day} {dt.month}{dt.time !== '—' ? ` · ${dt.time}` : ''}{(event?.venue || event?.city) ? ` · ${event?.venue || event?.city}` : ''}
             </div>
-          )}
+            {tagline && (
+              <div data-block="tagline" style={{ marginTop: 6, ...tr('tagline') }}>
+                <span style={{ fontSize: 7.5, color: `${gold}35`, letterSpacing: '0.3em', textTransform: 'uppercase' }}>{tagline}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,12 +1,13 @@
 import { fmtDate, truncate, blockStyle, venueFs } from '../posterUtils.js';
 export { fmtDate, truncate, blockStyle, venueFs };
 
+// ── Sport meta ──────────────────────────────────────────────────────────────
 export function getSportMeta(sport = '') {
   const s = (sport || '').toLowerCase();
   if (s.includes('football') || s.includes('foot') || s.includes('soccer'))
     return { unit: 'ÉQUIPES', icon: 'football', primary: '#16a34a', accent: '#4ade80', dark: '#052e16', glow: '#22c55e' };
   if (s.includes('tennis'))
-    return { unit: 'JOUEURS', icon: 'tennis', primary: '#D97706', accent: '#FCD34D', dark: '#451A03', glow: '#F59E0B' };
+    return { unit: 'JOUEURS', icon: 'tennis', primary: '#C0542A', accent: '#F5A87C', dark: '#3D1A0A', glow: '#E06030' };
   if (s.includes('basket'))
     return { unit: 'ÉQUIPES', icon: 'basketball', primary: '#EA580C', accent: '#FB923C', dark: '#431407', glow: '#F97316' };
   if (s.includes('handball') || s.includes('hand'))
@@ -22,6 +23,24 @@ export function getSportMeta(sport = '') {
   return { unit: 'ÉQUIPES', icon: 'generic', primary: '#6D28D9', accent: '#A78BFA', dark: '#1E1B4B', glow: '#7C3AED' };
 }
 
+// ── Atmosphere utilities ─────────────────────────────────────────────────────
+const GRAIN = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+
+export function Grain({ opacity = 0.045, blend = 'overlay' }) {
+  return <div style={{ position: 'absolute', inset: 0, backgroundImage: GRAIN, backgroundSize: '200px 200px', opacity, mixBlendMode: blend, pointerEvents: 'none' }} />;
+}
+
+export function Vignette({ strength = 0.78, cx = '50%', cy = '45%', rx = '55%', ry = '58%' }) {
+  return <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse ${rx} ${ry} at ${cx} ${cy}, transparent 0%, rgba(0,0,0,${strength}) 100%)`, pointerEvents: 'none' }} />;
+}
+
+export function LightOrb({ top, left, bottom, right, width = 280, height = 280, color = 'rgba(201,168,76,0.35)', blur = 50 }) {
+  return (
+    <div style={{ position: 'absolute', top, left, bottom, right, width, height, borderRadius: '50%', background: `radial-gradient(circle, ${color} 0%, transparent 65%)`, filter: `blur(${blur}px)`, pointerEvents: 'none' }} />
+  );
+}
+
+// ── Sport ball SVGs ──────────────────────────────────────────────────────────
 function FootballSVG({ size = 70, color = '#fff', opacity = 0.12 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 70 70" fill="none" style={{ opacity, display: 'block', flexShrink: 0 }}>
@@ -80,6 +99,7 @@ export function SportBall({ sport = '', size = 70, color = '#fff', opacity = 0.1
   return <FootballSVG size={size} color={color} opacity={opacity} />;
 }
 
+// ── InfoRow ──────────────────────────────────────────────────────────────────
 function PeopleIcon({ size = 13, color = '#fff' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -88,23 +108,19 @@ function PeopleIcon({ size = 13, color = '#fff' }) {
     </svg>
   );
 }
-
 function CalendarIcon({ size = 13, color = '#fff' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+      <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
     </svg>
   );
 }
-
 function TrophyIcon({ size = 13, color = '#fff' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
       <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
       <path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-      <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
     </svg>
   );
 }
