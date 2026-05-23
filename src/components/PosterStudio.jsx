@@ -16,6 +16,7 @@ import {
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
+import { generateVariants } from '../lib/posterVariants.js';
 import { sanitizeFilename } from '../lib/sanitize.js';
 
 // ── Reducer ────────────────────────────────────────────────────────────────────
@@ -261,6 +262,9 @@ export default function PosterStudio({ event, onClose, club }) {
   const [mediaFavOnly,  setMediaFavOnly]  = useState(false);
   const [isDragOver,    setIsDragOver]    = useState(false);
   const [playerName,    setPlayerName]    = useState('');
+  const [variants,      setVariants]      = useState([]);
+  const [variantSeed,   setVariantSeed]   = useState(0);
+  const [variantsOpen,  setVariantsOpen]  = useState(false);
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
   const playerFileRef = useRef(null);
@@ -860,6 +864,91 @@ export default function PosterStudio({ event, onClose, club }) {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {/* ── VARIANTES IA — PS-UX-014→018 ── */}
+                    {clubDNA.daProfile && (
+                      <div>
+                        <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '2px 0 12px' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <SLabel accent={accentColor}>Variantes IA</SLabel>
+                          {variants.length > 0 && (
+                            <button
+                              onClick={() => {
+                                const newSeed = variantSeed + 1;
+                                setVariantSeed(newSeed);
+                                setVariants(generateVariants(clubDNA.daProfile, poster, displayTemplates, 8, newSeed));
+                              }}
+                              style={{ fontSize: 10, fontWeight: 700, color: accentColor, border: `1px solid ${accentColor}40`, background: `${accentColor}10`, borderRadius: 7, padding: '4px 10px', cursor: 'pointer' }}>
+                              ↺ Régénérer
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Generate button */}
+                        {variants.length === 0 && (
+                          <button
+                            onClick={() => {
+                              const vs = generateVariants(clubDNA.daProfile, poster, displayTemplates, 8, variantSeed);
+                              setVariants(vs);
+                              setVariantsOpen(true);
+                            }}
+                            style={{
+                              width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                              background: `linear-gradient(135deg, ${clubDNA.daProfile.colors.accent}CC, ${accentColor})`,
+                              color: '#fff', border: 'none',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                            }}>
+                            <span style={{ fontSize: 16 }}>✨</span>
+                            Générer des variantes
+                            <span style={{ fontSize: 10, opacity: 0.8, fontWeight: 600 }}>basées sur votre style club</span>
+                          </button>
+                        )}
+
+                        {/* Variants gallery — PS-UX-015 */}
+                        {variants.length > 0 && (
+                          <div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                              {variants.map(v => (
+                                <button
+                                  key={v.variantId}
+                                  onClick={() => {
+                                    dispatch({ type: 'PATCH', payload: v.state });
+                                  }}
+                                  style={{
+                                    padding: 0, border: `2px solid ${templateId === v.templateId && accentColor === v.accentColor ? v.tplColor : 'var(--sl-border-s)'}`,
+                                    borderRadius: 10, cursor: 'pointer', overflow: 'hidden',
+                                    background: 'var(--sl-surface)',
+                                    transition: 'border-color 0.15s',
+                                  }}>
+                                  {/* Mini PosterRenderer preview */}
+                                  <div style={{ width: '100%', aspectRatio: format === 'story' ? '9/16' : '4/5', overflow: 'hidden', pointerEvents: 'none' }}>
+                                    <PosterRenderer
+                                      templateId={v.templateId}
+                                      data={{ ...posterData, accentColor: v.accentColor }}
+                                      format={format}
+                                      previewWidth={72}
+                                      transforms={{}}
+                                      bgPresetId={v.state.bgPreset}
+                                      effects={{ tint: null, tintOp: 0 }}
+                                      overlayElements={v.state.overlayElements || []}
+                                      playerLayers={[]}
+                                    />
+                                  </div>
+                                  {/* PS-UX-018 label */}
+                                  <div style={{ padding: '4px 5px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <div style={{ width: 8, height: 8, borderRadius: 3, background: v.accentColor, flexShrink: 0, boxShadow: `0 0 4px ${v.accentColor}80` }} />
+                                    <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--sl-t2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.label}</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                            <div style={{ marginTop: 8, fontSize: 9.5, color: 'var(--sl-t3)', textAlign: 'center' }}>
+                              Cliquer pour appliquer · {variants.length} variantes générées depuis votre style {clubDNA.daProfile.styleLabel}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

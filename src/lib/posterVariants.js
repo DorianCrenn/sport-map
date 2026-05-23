@@ -1,0 +1,115 @@
+// PS-VAR-001/002/003 — Parametric variant generation from DA profile
+// Phase 1: local parametric (template + color + bg preset + overlays)
+// Phase 4: replace/augment with Fal.ai Flux background generation
+
+// ── PS-VAR-002 — Style → BG presets ───────────────────────────────────────────
+
+const STYLE_TO_PRESETS = {
+  premium:    ['gold-rush', 'trophy-room', 'noir-luxe', 'golden-hour'],
+  bold:       ['power-surge', 'raw-power', 'voltage', 'abstract-force'],
+  cinematic:  ['smoke-lights', 'light-streams', 'stadium-night', 'noir-luxe'],
+  minimalist: ['frosted-arena', 'blue-steel', 'chrome-rush', ''],
+  street:     ['concrete-jungle', 'ignite', 'raw-power', 'abstract-force'],
+  esport:     ['cyber-grid', 'neon-pulse', 'voltage', 'prism'],
+  classic:    ['stadium-night', 'blue-steel', 'carbon-fiber', 'chrome-rush'],
+};
+
+// ── PS-VAR-003 — Style → overlay combinations ─────────────────────────────────
+
+const STYLE_TO_OVERLAYS = {
+  premium:    [['stars', 'sparks'], ['stars'], ['sparks'], []],
+  bold:       [['lightning', 'fire'], ['shards', 'speed'], ['lightning'], ['fire']],
+  cinematic:  [['smoke'], ['smoke', 'tear'], ['tear'], []],
+  minimalist: [[], [], ['stars'], []],
+  street:     [['shards', 'speed'], ['cracks', 'shards'], ['speed'], ['cracks']],
+  esport:     [['lightning', 'sparks'], ['shards', 'lightning'], ['smoke', 'lightning'], ['sparks']],
+  classic:    [[], ['stars'], ['ball-foot'], []],
+};
+
+// ── Seeded pseudo-random ───────────────────────────────────────────────────────
+
+function seededRng(seed) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function seededShuffle(arr, rng) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── PS-VAR-001 — Main variant generator ───────────────────────────────────────
+
+/**
+ * @param {object} daProfile  - from useClubDNA
+ * @param {object} baseState  - current poster state (spread as base)
+ * @param {Array}  templateList - POSTER_TEMPLATES array from PosterRenderer
+ * @param {number} count       - how many variants to produce (default 8)
+ * @param {number} seed        - random seed (increment to "reroll")
+ * @returns {Array<{variantId, label, templateId, accentColor, state}>}
+ */
+export function generateVariants(daProfile, baseState, templateList, count = 8, seed = 0) {
+  if (!daProfile || !templateList?.length) return [];
+
+  const rng = seededRng(seed + 1);
+  const style = daProfile.style || 'classic';
+
+  // 1. Filter templates to affinities; fallback to all non-tournament
+  const affinities = daProfile.templateAffinities || [];
+  let candidates = templateList.filter(t => !t.isTournament && affinities.some(a => t.id.includes(a)));
+  if (candidates.length < 3) {
+    candidates = templateList.filter(t => !t.isTournament);
+  }
+  candidates = seededShuffle(candidates, rng);
+
+  // 2. Color sequence from palette (cycle through)
+  const palette = (daProfile.palette?.length ? daProfile.palette : [daProfile.colors?.accent || '#8b5cf6']);
+  const shuffledColors = seededShuffle(palette, rng);
+
+  // 3. BG presets for this style
+  const bgPresets = seededShuffle(STYLE_TO_PRESETS[style] || STYLE_TO_PRESETS.classic, rng);
+
+  // 4. Overlay combos
+  const overlayCombos = seededShuffle(STYLE_TO_OVERLAYS[style] || [[]], rng);
+
+  const variants = [];
+  for (let i = 0; i < count; i++) {
+    const tpl = candidates[i % candidates.length];
+    const accent = shuffledColors[i % shuffledColors.length];
+    const bgPreset = bgPresets[i % bgPresets.length] ?? '';
+    const overlayTypes = overlayCombos[i % overlayCombos.length] ?? [];
+
+    const overlayElements = overlayTypes.map((type, idx) => ({
+      uid: `var-${i}-${idx}`,
+      type,
+      color: accent,
+      opacity: 0.65,
+      above: idx % 2 === 0,
+    }));
+
+    variants.push({
+      variantId: `v-${seed}-${i}`,
+      label: tpl.label,
+      templateId: tpl.id,
+      accentColor: accent,
+      tplColor: tpl.color,
+      state: {
+        ...baseState,
+        templateId: tpl.id,
+        accentColor: accent,
+        bgPreset,
+        overlayElements,
+      },
+    });
+  }
+
+  return variants;
+}

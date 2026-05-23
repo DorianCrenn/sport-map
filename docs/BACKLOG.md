@@ -1,6 +1,6 @@
 # SportLink — Backlog Technique & Produit
 > Document vivant — mis à jour au fil des sprints  
-> Dernière mise à jour : 2026-05-23 — PS Phase 2 implémentée (DNA club + Identité visuelle)
+> Dernière mise à jour : 2026-05-23 — PS Phase 3 implémentée (Variantes IA paramétriques)
 
 ---
 
@@ -559,17 +559,17 @@ fetch('/functions/v1/send-push', {
 
 #### Phase 1 — Variantes paramétriques (no API)
 
-- ⬜ **PS-VAR-001** — Algorithme `generateVariants(daProfile, baseState, count=8)` : sélectionne templates compatibles via `templateAffinities`, varie couleur (palette du club), BG preset (mapping `STYLE_TO_PRESETS`), overlays SVG (`styleToOverlays`), retourne N `{ variantId, label, state }` `[L]`
-- ⬜ **PS-VAR-002** — Mapping `STYLE_TO_PRESETS` : premium → [gold-rush, trophy-room, noir-luxe], bold → [power-surge, raw-power], cinematic → [smoke-lights, light-streams], esport → [cyber-grid, neon-pulse], street → [concrete-jungle, ignite] `[S]`
-- ⬜ **PS-VAR-003** — Mapping `styleToOverlays` : génère combinaisons d'éléments SVG cohérentes avec le style DA (ex : premium → stars + sparks, street → shards + speed) `[S]`
+- ✅ **PS-VAR-001** — Algorithme `generateVariants(daProfile, baseState, count=8)` : sélectionne templates compatibles via `templateAffinities`, varie couleur (palette du club), BG preset (mapping `STYLE_TO_PRESETS`), overlays SVG (`styleToOverlays`), retourne N `{ variantId, label, state }` `[L]`
+- ✅ **PS-VAR-002** — Mapping `STYLE_TO_PRESETS` : premium → [gold-rush, trophy-room, noir-luxe], bold → [power-surge, raw-power], cinematic → [smoke-lights, light-streams], esport → [cyber-grid, neon-pulse], street → [concrete-jungle, ignite] `[S]`
+- ✅ **PS-VAR-003** — Mapping `styleToOverlays` : génère combinaisons d'éléments SVG cohérentes avec le style DA (ex : premium → stars + sparks, street → shards + speed) `[S]`
 
 #### UX — Galerie variantes
 
-- ⬜ **PS-UX-014** — Bouton "✨ Générer des variantes" dans onglet Modèles (visible si `da_profile` existe) `[S]`
-- ⬜ **PS-UX-015** — Galerie 4 colonnes de mini-previews : vrais `<PosterRenderer>` à scale 0.22, lazy render via IntersectionObserver `[M]`
-- ⬜ **PS-UX-016** — Click sur variante → charge son `state` dans le poster principal via dispatch PATCH `[S]`
-- ⬜ **PS-UX-017** — Bouton "← Régénérer" : reroll les combinaisons paramétriques (seed différent) `[S]`
-- ⬜ **PS-UX-018** — Label sous chaque variante : nom du template + accentColor swatch `[XS]`
+- ✅ **PS-UX-014** — Bouton "✨ Générer des variantes" dans onglet Modèles (visible si `da_profile` existe) `[S]`
+- ✅ **PS-UX-015** — Galerie 4 colonnes de mini-previews : vrais `<PosterRenderer>` à scale 0.22, lazy render via IntersectionObserver `[M]`
+- ✅ **PS-UX-016** — Click sur variante → charge son `state` dans le poster principal via dispatch PATCH `[S]`
+- ✅ **PS-UX-017** — Bouton "← Régénérer" : reroll les combinaisons paramétriques (seed différent) `[S]`
+- ✅ **PS-UX-018** — Label sous chaque variante : nom du template + accentColor swatch `[XS]`
 
 #### Phase 2 — Fond custom IA (Fal.ai Flux)
 
@@ -747,14 +747,14 @@ POSTER STUDIO PREMIUM — Phase 2 (DA Intelligence)
 └── PS-UX-013   Badge "Style analysé ✓" + Ré-analyser       [S]  ✅
 
 POSTER STUDIO PREMIUM — Phase 3 (Variantes)
-├── PS-VAR-001  Algorithme generateVariants paramétrique    [L]  ⬜
-├── PS-VAR-002  Mapping STYLE_TO_PRESETS                    [S]  ⬜
-├── PS-VAR-003  Mapping styleToOverlays                     [S]  ⬜
-├── PS-UX-014   Bouton "Générer des variantes"              [S]  ⬜
-├── PS-UX-015   Galerie mini-previews 4col IntersectionObs  [M]  ⬜
-├── PS-UX-016   Click variante → charge state poster        [S]  ⬜
-├── PS-UX-017   Bouton Régénérer                            [S]  ⬜
-└── PS-UX-018   Labels variantes (template + swatch)        [XS] ⬜
+├── PS-VAR-001  Algorithme generateVariants paramétrique    [L]  ✅
+├── PS-VAR-002  Mapping STYLE_TO_PRESETS                    [S]  ✅
+├── PS-VAR-003  Mapping styleToOverlays                     [S]  ✅
+├── PS-UX-014   Bouton "Générer des variantes"              [S]  ✅
+├── PS-UX-015   Galerie mini-previews 4col IntersectionObs  [M]  ✅
+├── PS-UX-016   Click variante → charge state poster        [S]  ✅
+├── PS-UX-017   Bouton Régénérer                            [S]  ✅
+└── PS-UX-018   Labels variantes (template + swatch)        [XS] ✅
 
 POSTER STUDIO PREMIUM — Phase 4 (API réelle + Polish)
 ├── PS-API-001  Remove.bg API dans Edge Function            [M]  ⬜
