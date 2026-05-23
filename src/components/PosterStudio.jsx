@@ -14,6 +14,7 @@ import {
   useDefaultTemplate,
 } from '../hooks/usePosterDraft.js';
 import { useClubMedia } from '../hooks/useClubMedia.js';
+import { useClubDNA } from '../hooks/useClubDNA.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
 import { sanitizeFilename } from '../lib/sanitize.js';
 
@@ -219,6 +220,7 @@ export default function PosterStudio({ event, onClose, club }) {
   const favTplHook = useFavoriteTemplates();
   const defTplHook = useDefaultTemplate(club?.id);
   const clubMedia  = useClubMedia(club?.id);
+  const clubDNA    = useClubDNA(club?.id);
 
   const [poster, dispatch] = useReducer(posterReducer, {
     format: 'story', templateId: isTournamentEvent ? 'tr-premium' : 'simple',
@@ -262,6 +264,7 @@ export default function PosterStudio({ event, onClose, club }) {
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
   const playerFileRef = useRef(null);
+  const dnaFileRef    = useRef(null);
 
   useEffect(() => {
     favTplHook.loadFromDB();
@@ -1000,6 +1003,168 @@ export default function PosterStudio({ event, onClose, club }) {
                         Position & rotation → bouton ✏️ sur l'aperçu
                       </div>
                     </div>
+
+                    {/* ── IDENTITÉ VISUELLE ── */}
+                    {(() => {
+                      const { daProfile, analyzing, analyzeError } = clubDNA;
+                      const STYLE_ICONS = { premium: '✦', bold: '⚡', cinematic: '🎬', minimalist: '◻', street: '🔥', esport: '⚙', classic: '◈' };
+                      return (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <SLabel accent={daProfile ? '#22D96A' : accentColor}>
+                              {daProfile ? '✓ Identité visuelle analysée' : 'Identité visuelle IA'}
+                            </SLabel>
+                            {daProfile && (
+                              <button onClick={() => dnaFileRef.current?.click()}
+                                style={{ fontSize: 9.5, color: 'var(--sl-t3)', border: 'none', background: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 5, textDecoration: 'underline' }}>
+                                Ré-analyser
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Upload zone — shown when no profile yet */}
+                          {!daProfile && !analyzing && (
+                            <div onClick={() => dnaFileRef.current?.click()}
+                              style={{
+                                padding: '20px 16px', borderRadius: 14, cursor: 'pointer', textAlign: 'center',
+                                border: `2px dashed ${accentColor}50`,
+                                background: `${accentColor}07`,
+                                transition: 'all 0.15s',
+                              }}>
+                              <div style={{ fontSize: 26, marginBottom: 6 }}>🎨</div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 3 }}>
+                                Importez une affiche existante
+                              </div>
+                              <div style={{ fontSize: 10, color: 'var(--sl-t3)', lineHeight: 1.5 }}>
+                                Notre IA analyse votre identité visuelle<br />et adapte les templates à votre style de club
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Analyzing state */}
+                          {analyzing && (
+                            <div style={{ padding: '20px 16px', borderRadius: 14, background: 'var(--sl-surface)', border: `1px solid ${accentColor}30`, textAlign: 'center' }}>
+                              <div style={{ fontSize: 24, marginBottom: 8 }}>🎨</div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: accentColor, marginBottom: 6 }}>
+                                Analyse de votre identité visuelle…
+                              </div>
+                              <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginBottom: 10 }}>
+                                Extraction des couleurs et classification du style
+                              </div>
+                              <div style={{ height: 3, borderRadius: 2, background: 'var(--sl-border)', overflow: 'hidden' }}>
+                                <motion.div
+                                  style={{ height: '100%', background: accentColor, borderRadius: 2 }}
+                                  animate={{ width: ['0%', '60%', '90%'] }}
+                                  transition={{ duration: 2.2, ease: 'easeInOut' }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Analysis result */}
+                          {daProfile && !analyzing && (
+                            <div style={{ borderRadius: 14, background: 'var(--sl-surface)', border: `1.5px solid ${daProfile.colors.accent}40`, overflow: 'hidden' }}>
+                              {/* Color palette header */}
+                              <div style={{ display: 'flex', height: 10 }}>
+                                {daProfile.palette.map((hex, i) => (
+                                  <div key={i} style={{ flex: 1, background: hex }} />
+                                ))}
+                              </div>
+                              <div style={{ padding: '12px 14px' }}>
+                                {/* Style label + confidence */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                  <div style={{ width: 34, height: 34, borderRadius: 9, background: `${daProfile.colors.accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
+                                    {STYLE_ICONS[daProfile.style] || '🎨'}
+                                  </div>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 2 }}>{daProfile.styleLabel}</div>
+                                    <div style={{ display: 'flex', gap: 4 }}>
+                                      {daProfile.mood.slice(0, 3).map(m => (
+                                        <span key={m} style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: `${daProfile.colors.accent}18`, color: daProfile.colors.accent, textTransform: 'capitalize' }}>{m}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 800, color: '#22D96A' }}>{Math.round(daProfile.confidence * 100)}%</div>
+                                    <div style={{ fontSize: 8.5, color: 'var(--sl-t3)' }}>confiance</div>
+                                  </div>
+                                </div>
+
+                                {/* 5 color swatches */}
+                                <div style={{ marginBottom: 10 }}>
+                                  <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', marginBottom: 6 }}>Palette extraite</div>
+                                  <div style={{ display: 'flex', gap: 5 }}>
+                                    {daProfile.palette.map((hex, i) => (
+                                      <button key={i} onClick={() => set('accentColor', hex)} title={hex}
+                                        style={{ flex: 1, height: 28, borderRadius: 7, background: hex, border: accentColor === hex ? `2px solid white` : '2px solid transparent', cursor: 'pointer', transition: 'transform 0.12s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
+                                    ))}
+                                  </div>
+                                  <div style={{ fontSize: 9, color: 'var(--sl-t3)', marginTop: 4 }}>Cliquer pour appliquer comme couleur principale</div>
+                                </div>
+
+                                {/* Template recommendations */}
+                                {daProfile.templateAffinities?.length > 0 && (
+                                  <div style={{ marginBottom: 12 }}>
+                                    <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', marginBottom: 6 }}>Templates recommandés</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                      {daProfile.templateAffinities.map(tpl => (
+                                        <span key={tpl} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: `${daProfile.colors.accent}14`, color: daProfile.colors.accent, border: `1px solid ${daProfile.colors.accent}30`, textTransform: 'capitalize' }}>
+                                          {tpl}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Apply button */}
+                                <button
+                                  onClick={() => {
+                                    clubDNA.applyToStudio(dispatch);
+                                    // Also apply the dominant color to accent
+                                    set('accentColor', daProfile.colors.accent);
+                                  }}
+                                  style={{
+                                    width: '100%', padding: '10px 14px', borderRadius: 10, fontSize: 12, fontWeight: 800,
+                                    background: `linear-gradient(135deg, ${daProfile.colors.accent}, ${daProfile.colors.dominant})`,
+                                    color: '#fff', border: 'none', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                                  }}>
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                  Appliquer à mes affiches
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Error */}
+                          {analyzeError && (
+                            <div style={{ marginTop: 8, padding: '7px 11px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#ef4444' }}>
+                              {analyzeError}
+                            </div>
+                          )}
+
+                          {/* Clear */}
+                          {daProfile && (
+                            <button onClick={() => clubDNA.clearDNA()}
+                              style={{ marginTop: 8, width: '100%', padding: '7px', borderRadius: 9, fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', background: 'none', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>
+                              Supprimer l'analyse
+                            </button>
+                          )}
+
+                          {/* Mode test notice */}
+                          <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, background: `${accentColor}08`, border: `1px solid ${accentColor}15`, fontSize: 9.5, color: 'var(--sl-t3)' }}>
+                            🧪 Phase 1 — analyse canvas locale. Phase 4 : Claude Vision API.
+                          </div>
+
+                          <input ref={dnaFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                            onChange={async e => {
+                              const file = e.target.files?.[0];
+                              if (file) await clubDNA.analyzePoster(file);
+                              e.target.value = '';
+                            }} />
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
 

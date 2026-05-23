@@ -1,6 +1,6 @@
 # SportLink — Backlog Technique & Produit
 > Document vivant — mis à jour au fil des sprints  
-> Dernière mise à jour : 2026-05-23 — PS Phase 1 implémentée
+> Dernière mise à jour : 2026-05-23 — PS Phase 2 implémentée (DNA club + Identité visuelle)
 
 ---
 
@@ -537,17 +537,17 @@ fetch('/functions/v1/send-push', {
 
 #### Hook `useClubDNA`
 
-- ⬜ **PS-HK-003** — `useClubDNA(clubId)` : charge `da_profile` depuis `club_brand_kits`, expose `analyzePoster(imageBase64)`, `applyToStudio(dispatch)`, `clearDNA()` `[M]`
-- ⬜ **PS-HK-004** — `applyToStudio` : met à jour `accentColor` ← `da_profile.colors.accent`, pré-filtre selector de templates sur `templateAffinities`, sauvegarde via `useDefaultTemplate` `[S]`
+- ✅ **PS-HK-003** — `useClubDNA(clubId)` : charge `da_profile` depuis `club_brand_kits`, expose `analyzePoster(imageBase64)`, `applyToStudio(dispatch)`, `clearDNA()` `[M]`
+- ✅ **PS-HK-004** — `applyToStudio` : met à jour `accentColor` ← `da_profile.colors.accent`, pré-filtre selector de templates sur `templateAffinities`, sauvegarde via `useDefaultTemplate` `[S]`
 
 #### UX — "Mon style club"
 
-- ⬜ **PS-UX-008** — Section "Identité visuelle" dans onglet Style de PosterStudio (sous les palettes couleurs) `[S]`
-- ⬜ **PS-UX-009** — Zone upload affiche existante avec instruction "Importez une de vos affiches pour que l'IA comprenne votre style" `[M]`
-- ⬜ **PS-UX-010** — Loading state : "Notre IA analyse votre identité visuelle..." avec animation subtile (~3s) `[S]`
-- ⬜ **PS-UX-011** — Résultat : swatches palette détectée + label style (ex : "Élégant · Premium · Gold"), barre de confiance, templates recommandés (chips cliquables) `[M]`
-- ⬜ **PS-UX-012** — Bouton "Appliquer à mes affiches" → `applyToStudio()` + toast confirmation "Votre identité visuelle est mémorisée" `[S]`
-- ⬜ **PS-UX-013** — Badge "Style analysé ✓" persistant si `da_profile` existe, bouton "Ré-analyser" `[S]`
+- ✅ **PS-UX-008** — Section "Identité visuelle" dans onglet Style de PosterStudio (sous les palettes couleurs) `[S]`
+- ✅ **PS-UX-009** — Zone upload affiche existante avec instruction "Importez une de vos affiches pour que l'IA comprenne votre style" `[M]`
+- ✅ **PS-UX-010** — Loading state : "Notre IA analyse votre identité visuelle..." avec animation subtile (~3s) `[S]`
+- ✅ **PS-UX-011** — Résultat : swatches palette détectée + label style (ex : "Élégant · Premium · Gold"), barre de confiance, templates recommandés (chips cliquables) `[M]`
+- ✅ **PS-UX-012** — Bouton "Appliquer à mes affiches" → `applyToStudio()` + toast confirmation "Votre identité visuelle est mémorisée" `[S]`
+- ✅ **PS-UX-013** — Badge "Style analysé ✓" persistant si `da_profile` existe, bouton "Ré-analyser" `[S]`
 
 ---
 
@@ -737,14 +737,14 @@ POSTER STUDIO PREMIUM — Phase 2 (DA Intelligence)
 ├── PS-DNA-003  Calculs luminosity/contrast/température     [S]  ⬜
 ├── PS-DNA-004  Upsert club_brand_kits.da_profile           [S]  ⬜
 ├── PS-DNA-005  Log ai_jobs type=dna                        [XS] ⬜
-├── PS-HK-003   Hook useClubDNA                             [M]  ⬜
-├── PS-HK-004   applyToStudio() → accentColor + templates   [S]  ⬜
-├── PS-UX-008   Section "Identité visuelle" onglet Style    [S]  ⬜
-├── PS-UX-009   Zone upload affiche existante               [M]  ⬜
-├── PS-UX-010   Loading state analyse IA                    [S]  ⬜
-├── PS-UX-011   Résultat : palette + style + recommandations[M]  ⬜
-├── PS-UX-012   Bouton "Appliquer à mes affiches"           [S]  ⬜
-└── PS-UX-013   Badge "Style analysé ✓" + Ré-analyser       [S]  ⬜
+├── PS-HK-003   Hook useClubDNA                             [M]  ✅
+├── PS-HK-004   applyToStudio() → accentColor + templates   [S]  ✅
+├── PS-UX-008   Section "Identité visuelle" onglet Style    [S]  ✅
+├── PS-UX-009   Zone upload affiche existante               [M]  ✅
+├── PS-UX-010   Loading state analyse IA                    [S]  ✅
+├── PS-UX-011   Résultat : palette + style + recommandations[M]  ✅
+├── PS-UX-012   Bouton "Appliquer à mes affiches"           [S]  ✅
+└── PS-UX-013   Badge "Style analysé ✓" + Ré-analyser       [S]  ✅
 
 POSTER STUDIO PREMIUM — Phase 3 (Variantes)
 ├── PS-VAR-001  Algorithme generateVariants paramétrique    [L]  ⬜
