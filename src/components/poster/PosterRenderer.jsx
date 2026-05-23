@@ -360,7 +360,42 @@ export const BASE_DIMS = {
 
 export { BG_PRESETS };
 
-const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', effects = {}, overlayElements = [] }) {
+// ── Player layer renderer ─────────────────────────────────────────────────────
+
+function PlayerLayer({ layer, accentColor }) {
+  const { assetUrl, x = 50, yBottom = 0, scale = 1, opacity = 1, shadow, glow, flip } = layer;
+  if (!assetUrl) return null;
+
+  const filters = [
+    shadow ? 'drop-shadow(0 10px 28px rgba(0,0,0,0.65))' : '',
+    glow   ? `drop-shadow(0 0 18px ${accentColor || '#ffffff'}66)` : '',
+  ].filter(Boolean).join(' ');
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      <img
+        src={assetUrl}
+        alt=""
+        crossOrigin="anonymous"
+        style={{
+          position: 'absolute',
+          left: `${x}%`,
+          bottom: `${yBottom}%`,
+          transform: `translateX(-50%)${flip ? ' scaleX(-1)' : ''}`,
+          transformOrigin: 'bottom center',
+          height: `${Math.round(80 * scale)}%`,
+          width: 'auto',
+          maxWidth: '90%',
+          objectFit: 'contain',
+          opacity,
+          filter: filters || undefined,
+        }}
+      />
+    </div>
+  );
+}
+
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', effects = {}, overlayElements = [], playerLayers = [] }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
@@ -373,6 +408,8 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
 
   const belowEls = overlayElements.filter(e => !e.above);
   const aboveEls = overlayElements.filter(e => e.above);
+  const belowPlayers = playerLayers.filter(p => !p.zAbove);
+  const abovePlayers = playerLayers.filter(p => p.zAbove !== false);
 
   return (
     <div ref={outerRef} style={{ width: previewWidth, height: previewH, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
@@ -405,7 +442,7 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
           </div>
         )}
 
-        {/* Decorative elements — below content (z=6, above bg/tint, below template text at z=10) */}
+        {/* Decorative elements — below content (z=6) */}
         {belowEls.map(el => {
           const meta = ELEMENT_LIBRARY.find(e => e.id === el.type);
           if (!meta) return null;
@@ -417,7 +454,21 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
           );
         })}
 
-        {/* Decorative elements — above content (z=15, above template text at z=10) */}
+        {/* Player layers — below content (z=7) */}
+        {belowPlayers.map(pl => (
+          <div key={pl.uid} style={{ position: 'absolute', inset: 0, zIndex: 7, pointerEvents: 'none' }}>
+            <PlayerLayer layer={pl} accentColor={data?.accentColor} />
+          </div>
+        ))}
+
+        {/* Player layers — above content (z=12) */}
+        {abovePlayers.map(pl => (
+          <div key={pl.uid} style={{ position: 'absolute', inset: 0, zIndex: 12, pointerEvents: 'none' }}>
+            <PlayerLayer layer={pl} accentColor={data?.accentColor} />
+          </div>
+        ))}
+
+        {/* Decorative elements — above content (z=15) */}
         {aboveEls.map(el => {
           const meta = ELEMENT_LIBRARY.find(e => e.id === el.type);
           if (!meta) return null;

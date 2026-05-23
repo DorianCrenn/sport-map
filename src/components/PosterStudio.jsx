@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, useReducer } from 'react';
+import { useRef, useState, useEffect, useMemo, useReducer, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 import { useSports } from '../hooks/useSports.js';
@@ -13,6 +13,7 @@ import {
   useFavoriteTemplates,
   useDefaultTemplate,
 } from '../hooks/usePosterDraft.js';
+import { useClubMedia } from '../hooks/useClubMedia.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
 import { sanitizeFilename } from '../lib/sanitize.js';
 
@@ -166,6 +167,15 @@ function IcoFond({ c }) {
     </svg>
   );
 }
+function IcoJoueurs({ c }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeOpacity="0.5"/>
+    </svg>
+  );
+}
 function IcoExporter({ c }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -180,6 +190,7 @@ const PANEL_TABS = [
   { id: 'teams',    label: 'Équipes',  Icon: IcoEquipes },
   { id: 'style',    label: 'Style',    Icon: IcoStyle   },
   { id: 'fond',     label: 'Fond',     Icon: IcoFond    },
+  { id: 'joueurs',  label: 'Joueurs',  Icon: IcoJoueurs },
 ];
 
 // ── Main component ─────────────────────────────────────────────────────────────
@@ -207,6 +218,7 @@ export default function PosterStudio({ event, onClose, club }) {
   const libHook    = usePosterLibrary();
   const favTplHook = useFavoriteTemplates();
   const defTplHook = useDefaultTemplate(club?.id);
+  const clubMedia  = useClubMedia(club?.id);
 
   const [poster, dispatch] = useReducer(posterReducer, {
     format: 'story', templateId: isTournamentEvent ? 'tr-premium' : 'simple',
@@ -215,6 +227,7 @@ export default function PosterStudio({ event, onClose, club }) {
     bgPreset: '',
     bgTint: '', bgTintOp: 0,
     overlayElements: [],
+    playerLayers: [],
     homeName: initialFields.homeName, awayName: initialFields.awayName,
     homeLogo: initialFields.homeLogo, awayLogo: initialFields.awayLogo,
     championship: initialFields.championship, tagline: initialFields.tagline,
@@ -225,7 +238,7 @@ export default function PosterStudio({ event, onClose, club }) {
     format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode, bgPreset,
     bgTint, bgTintOp,
     homeName, awayName, homeLogo, awayLogo, championship, tagline,
-    sponsorSrc, transforms, overlayElements,
+    sponsorSrc, transforms, overlayElements, playerLayers,
   } = poster;
   const set = (key, value) => dispatch({ type: key, value });
 
@@ -242,8 +255,13 @@ export default function PosterStudio({ event, onClose, club }) {
   const [libFilter,     setLibFilter]     = useState('all');
   const [favVersion,    setFavVersion]    = useState(0);
   const [canvasH,       setCanvasH]       = useState(260);
+  const [mediaSearch,   setMediaSearch]   = useState('');
+  const [mediaFavOnly,  setMediaFavOnly]  = useState(false);
+  const [isDragOver,    setIsDragOver]    = useState(false);
+  const [playerName,    setPlayerName]    = useState('');
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
+  const playerFileRef = useRef(null);
 
   useEffect(() => {
     favTplHook.loadFromDB();
@@ -336,6 +354,49 @@ export default function PosterStudio({ event, onClose, club }) {
   function updateOverlayElement(uid, patch) {
     set('overlayElements', (overlayElements || []).map(e => e.uid === uid ? { ...e, ...patch } : e));
   }
+
+  // ── Player layer helpers ──
+  function addPlayerLayer(asset) {
+    const uid = `pl-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
+    const layer = {
+      uid,
+      assetId: asset.id,
+      assetUrl: asset.processedDataUrl,
+      thumbUrl: asset.thumbDataUrl,
+      name: asset.name,
+      x: 50, yBottom: 0, scale: 1.0,
+      opacity: 1.0, shadow: true, glow: false, flip: false,
+      zAbove: true,
+    };
+    set('playerLayers', [...(playerLayers || []), layer]);
+  }
+  function removePlayerLayer(uid) {
+    set('playerLayers', (playerLayers || []).filter(p => p.uid !== uid));
+  }
+  function updatePlayerLayer(uid, patch) {
+    set('playerLayers', (playerLayers || []).map(p => p.uid === uid ? { ...p, ...patch } : p));
+  }
+
+  // ── Player upload handler ──
+  async function handlePlayerFile(file) {
+    if (!file) return;
+    clubMedia.resetUpload();
+    try {
+      const asset = await clubMedia.uploadPlayer(file, playerName);
+      setPlayerName('');
+      addPlayerLayer(asset);
+    } catch {}
+  }
+
+  // ── Drag & drop handlers ──
+  const handleDragOver = useCallback(e => { e.preventDefault(); setIsDragOver(true); }, []);
+  const handleDragLeave = useCallback(() => setIsDragOver(false), []);
+  const handleDrop = useCallback(e => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file?.type.startsWith('image/')) handlePlayerFile(file);
+  }, [playerName, clubMedia]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Poster data ──
   const posterData = {
@@ -464,7 +525,7 @@ export default function PosterStudio({ event, onClose, club }) {
       >
         {/* Hidden HD renderer for export */}
         <div style={{ position: 'fixed', left: -9999, top: 0, width: w, height: h, pointerEvents: 'none', zIndex: -1 }}>
-          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} />
+          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} playerLayers={playerLayers || []} />
         </div>
 
         {/* Fullscreen preview */}
@@ -472,7 +533,7 @@ export default function PosterStudio({ event, onClose, club }) {
           {previewFull && (
             <motion.div key="full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, borderRadius: 'inherit' }}>
-              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} />
+              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} playerLayers={playerLayers || []} />
               <button onClick={() => setPreviewFull(false)}
                 style={{ padding: '9px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Fermer
@@ -675,6 +736,7 @@ export default function PosterStudio({ event, onClose, club }) {
                 templateId={templateId} data={posterData} format={format}
                 previewWidth={PREVIEW_W} innerRef={posterRef} transforms={transforms}
                 bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []}
+                playerLayers={playerLayers || []}
               />
             </div>
 
@@ -941,6 +1003,237 @@ export default function PosterStudio({ event, onClose, club }) {
                   </div>
                 )}
 
+                {/* ── JOUEURS ── */}
+                {activeTab === 'joueurs' && (() => {
+                  const { uploadPhase, uploadError, lastUpload } = clubMedia;
+                  const isUploading = uploadPhase && uploadPhase !== 'done' && uploadPhase !== 'error';
+                  const filteredAssets = mediaSearch
+                    ? clubMedia.searchAssets(mediaSearch)
+                    : mediaFavOnly ? clubMedia.filterByFavorites() : clubMedia.assets;
+                  const PHASE_LABELS = {
+                    compressing: 'Compression…',
+                    processing:  'Détourage IA…',
+                    thumbnail:   'Finalisation…',
+                  };
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+                      {/* Mode test notice */}
+                      <div style={{ padding: '7px 11px', borderRadius: 9, background: `${accentColor}10`, border: `1px solid ${accentColor}25`, fontSize: 10, color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <span style={{ fontSize: 13 }}>🧪</span>
+                        <span>Mode test — détourage local par couleur de fond. Intégration Remove.bg en Phase 4.</span>
+                      </div>
+
+                      {/* Upload zone */}
+                      {!isUploading && uploadPhase !== 'done' && (
+                        <div>
+                          <SLabel accent={accentColor}>Ajouter un joueur</SLabel>
+                          <div style={{ marginBottom: 8 }}>
+                            <input
+                              value={playerName}
+                              onChange={e => setPlayerName(e.target.value)}
+                              placeholder="Nom du joueur (optionnel)"
+                              style={{ width: '100%', padding: '8px 10px', borderRadius: 9, fontSize: 12, fontWeight: 500, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
+                            />
+                          </div>
+                          <div
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() => playerFileRef.current?.click()}
+                            style={{
+                              padding: '22px 16px', borderRadius: 14, cursor: 'pointer', textAlign: 'center',
+                              border: `2px dashed ${isDragOver ? accentColor : 'var(--sl-border-s)'}`,
+                              background: isDragOver ? `${accentColor}10` : 'var(--sl-surface)',
+                              transition: 'all 0.15s',
+                            }}
+                          >
+                            <div style={{ fontSize: 26, marginBottom: 6 }}>📸</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 3 }}>
+                              {isDragOver ? 'Déposer l\'image' : 'Déposer une photo ou cliquer'}
+                            </div>
+                            <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>JPEG · PNG · max 10 Mo · fond uni recommandé</div>
+                          </div>
+                          <input ref={playerFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                            onChange={e => handlePlayerFile(e.target.files?.[0])} />
+                          {uploadError && (
+                            <div style={{ marginTop: 8, padding: '7px 11px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#ef4444' }}>
+                              {uploadError}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Upload progress */}
+                      {isUploading && (
+                        <div style={{ padding: '22px 16px', borderRadius: 14, background: 'var(--sl-surface)', border: `1px solid ${accentColor}30`, textAlign: 'center' }}>
+                          <div style={{ fontSize: 26, marginBottom: 8 }}>
+                            {uploadPhase === 'compressing' ? '📦' : uploadPhase === 'processing' ? '✂️' : '🖼️'}
+                          </div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: accentColor, marginBottom: 6 }}>
+                            {PHASE_LABELS[uploadPhase] || 'Traitement…'}
+                          </div>
+                          <div style={{ height: 3, borderRadius: 2, background: 'var(--sl-border)', overflow: 'hidden' }}>
+                            <motion.div
+                              style={{ height: '100%', background: accentColor, borderRadius: 2 }}
+                              animate={{ width: uploadPhase === 'compressing' ? '30%' : uploadPhase === 'processing' ? '75%' : '100%' }}
+                              transition={{ duration: 0.5 }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Upload result preview */}
+                      {uploadPhase === 'done' && lastUpload && (
+                        <div style={{ padding: '14px', borderRadius: 14, background: `${accentColor}0E`, border: `1.5px solid ${accentColor}40` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                            <div style={{ width: 60, height: 80, borderRadius: 10, overflow: 'hidden', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--sl-border)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <img src={lastUpload.thumbDataUrl} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 3 }}>{lastUpload.name}</div>
+                              <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Détourage effectué · Fond supprimé</div>
+                              <div style={{ fontSize: 10, color: accentColor, marginTop: 2 }}>✓ Ajouté sur l'affiche</div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 7 }}>
+                            <button onClick={clubMedia.resetUpload}
+                              style={{ flex: 1, padding: '8px', borderRadius: 10, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: 'var(--sl-surface)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border)' }}>
+                              + Autre joueur
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Joueurs sur cette affiche */}
+                      {(playerLayers || []).length > 0 && (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <SLabel accent={accentColor}>Sur cette affiche ({playerLayers.length})</SLabel>
+                            <button onClick={() => set('playerLayers', [])}
+                              style={{ fontSize: 9.5, color: 'var(--sl-t3)', border: 'none', background: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 5, textDecoration: 'underline' }}>
+                              Tout retirer
+                            </button>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {(playerLayers || []).map(pl => (
+                              <div key={pl.uid} style={{ padding: '10px 12px', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
+                                {/* Row 1: thumb + name + controls */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 }}>
+                                  <div style={{ width: 36, height: 44, borderRadius: 7, overflow: 'hidden', flexShrink: 0, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {pl.thumbUrl
+                                      ? <img src={pl.thumbUrl} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                      : <span style={{ fontSize: 18 }}>🧍</span>
+                                    }
+                                  </div>
+                                  <span style={{ flex: 1, fontSize: 11, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pl.name}</span>
+                                  {/* Z-order toggle */}
+                                  <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--sl-border)', flexShrink: 0 }}>
+                                    {[['Fond', false], ['Dessus', true]].map(([lbl, val]) => (
+                                      <button key={lbl} onClick={() => updatePlayerLayer(pl.uid, { zAbove: val })}
+                                        style={{ padding: '3px 8px', border: 'none', cursor: 'pointer', fontSize: 9, fontWeight: 800, backgroundColor: pl.zAbove === val ? accentColor : 'var(--sl-surface)', color: pl.zAbove === val ? '#fff' : 'var(--sl-t3)', transition: 'all 0.12s' }}>
+                                        {lbl}
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <button onClick={() => removePlayerLayer(pl.uid)}
+                                    style={{ width: 22, height: 22, borderRadius: 6, border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.10)', color: '#ef4444', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    ✕
+                                  </button>
+                                </div>
+                                {/* Row 2: scale + opacity */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: 9, color: 'var(--sl-t3)', width: 38, flexShrink: 0 }}>Taille</span>
+                                    <input type="range" min={0.3} max={1.6} step={0.05} value={pl.scale}
+                                      onChange={e => updatePlayerLayer(pl.uid, { scale: parseFloat(e.target.value) })}
+                                      style={{ flex: 1, accentColor, cursor: 'pointer' }} />
+                                    <span style={{ fontSize: 9, color: 'var(--sl-t3)', width: 26, textAlign: 'right', flexShrink: 0 }}>{Math.round(pl.scale * 100)}%</span>
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: 9, color: 'var(--sl-t3)', width: 38, flexShrink: 0 }}>Opacité</span>
+                                    <input type="range" min={0.1} max={1} step={0.05} value={pl.opacity}
+                                      onChange={e => updatePlayerLayer(pl.uid, { opacity: parseFloat(e.target.value) })}
+                                      style={{ flex: 1, accentColor, cursor: 'pointer' }} />
+                                    <span style={{ fontSize: 9, color: 'var(--sl-t3)', width: 26, textAlign: 'right', flexShrink: 0 }}>{Math.round(pl.opacity * 100)}%</span>
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: 9, color: 'var(--sl-t3)', width: 38, flexShrink: 0 }}>Position</span>
+                                    <input type="range" min={5} max={95} step={1} value={pl.x}
+                                      onChange={e => updatePlayerLayer(pl.uid, { x: parseInt(e.target.value) })}
+                                      style={{ flex: 1, accentColor, cursor: 'pointer' }} />
+                                    <span style={{ fontSize: 9, color: 'var(--sl-t3)', width: 26, textAlign: 'right', flexShrink: 0 }}>↔</span>
+                                  </div>
+                                </div>
+                                {/* Row 3: effects */}
+                                <div style={{ display: 'flex', gap: 6, marginTop: 9, flexWrap: 'wrap' }}>
+                                  {[
+                                    { key: 'shadow', label: '🌑 Ombre' },
+                                    { key: 'glow',   label: '✨ Glow'  },
+                                    { key: 'flip',   label: '↔ Miroir' },
+                                  ].map(({ key, label }) => (
+                                    <button key={key} onClick={() => updatePlayerLayer(pl.uid, { [key]: !pl[key] })}
+                                      style={{ padding: '4px 10px', borderRadius: 7, fontSize: 9.5, fontWeight: 700, cursor: 'pointer', border: `1.5px solid ${pl[key] ? accentColor : 'var(--sl-border-s)'}`, background: pl[key] ? `${accentColor}16` : 'var(--sl-surface)', color: pl[key] ? accentColor : 'var(--sl-t3)', transition: 'all 0.12s' }}>
+                                      {label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bibliothèque */}
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <SLabel>Bibliothèque ({clubMedia.assets.length}/{10})</SLabel>
+                          <button onClick={() => setMediaFavOnly(v => !v)}
+                            style={{ fontSize: 9.5, color: mediaFavOnly ? '#ef4444' : 'var(--sl-t3)', border: 'none', background: 'none', cursor: 'pointer', padding: '2px 6px' }}>
+                            {mediaFavOnly ? '❤ Favoris' : '♡ Favoris'}
+                          </button>
+                        </div>
+                        <input
+                          value={mediaSearch} onChange={e => setMediaSearch(e.target.value)}
+                          placeholder="Rechercher un joueur…"
+                          style={{ width: '100%', padding: '8px 10px', borderRadius: 9, fontSize: 12, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
+                        />
+                        {filteredAssets.length === 0 ? (
+                          <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--sl-t3)', fontSize: 11 }}>
+                            {clubMedia.assets.length === 0 ? 'Ajoutez votre premier joueur ci-dessus.' : 'Aucun résultat.'}
+                          </div>
+                        ) : (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                            {filteredAssets.map(asset => (
+                              <div key={asset.id} style={{ position: 'relative' }}>
+                                <button
+                                  onClick={() => addPlayerLayer(asset)}
+                                  style={{ width: '100%', aspectRatio: '3/4', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  {asset.thumbDataUrl
+                                    ? <img src={asset.thumbDataUrl} alt={asset.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    : <span style={{ fontSize: 22 }}>🧍</span>
+                                  }
+                                </button>
+                                <button onClick={() => clubMedia.toggleFavorite(asset.id)}
+                                  style={{ position: 'absolute', top: 4, right: 4, width: 18, height: 18, borderRadius: 5, border: 'none', cursor: 'pointer', background: 'rgba(0,0,0,0.45)', color: asset.isFavorite ? '#ef4444' : 'rgba(255,255,255,0.7)', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                                  {asset.isFavorite ? '❤' : '♡'}
+                                </button>
+                                <button onClick={() => clubMedia.deleteAsset(asset.id)}
+                                  style={{ position: 'absolute', top: 4, left: 4, width: 18, height: 18, borderRadius: 5, border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.55)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                                  ✕
+                                </button>
+                                <div style={{ marginTop: 3, fontSize: 9, color: 'var(--sl-t3)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                                  {asset.name}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* ── FOND ── */}
                 {activeTab === 'fond' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1146,7 +1439,9 @@ export default function PosterStudio({ event, onClose, club }) {
           {PANEL_TABS.map(({ id, label, Icon }) => {
             const isActive = activeTab === id;
             const color = isActive ? accentColor : 'var(--sl-t3)';
-            const hasBadge = (id === 'style' && hasLayerChanges) || (id === 'fond' && (overlayElements || []).length > 0);
+            const hasBadge = (id === 'style' && hasLayerChanges)
+              || (id === 'fond' && (overlayElements || []).length > 0)
+              || (id === 'joueurs' && (playerLayers || []).length > 0);
             return (
               <button key={id} onClick={() => handleTabClick(id)}
                 style={{
