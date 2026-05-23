@@ -1,6 +1,6 @@
 // PS-HK-003/004 — Club DA (Direction Artistique) profile hook
-// Phase 1: client-side canvas color analysis (mock)
-// Phase 4: replace analyzeWithCanvas() with Claude Vision API call
+// Calls analyze-poster-dna Edge Function (Claude Haiku Vision).
+// Falls back to client-side canvas analysis if ANTHROPIC_API_KEY not configured.
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
@@ -149,6 +149,30 @@ function classifyStyle(palette) {
   return { style, mood, templateAffinities };
 }
 
+// ── Claude Vision via Edge Function (PS-DNA-001) ─────────────────────────────
+
+async function analyzeWithAPI(file, clubId) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      try {
+        const dataUrl = ev.target.result;
+        const { data, error } = await supabase.functions.invoke('analyze-poster-dna', {
+          body: { imageBase64: dataUrl, clubId: clubId || null },
+        });
+        if (error || data?.mockFallback || data?.error) {
+          throw new Error(data?.error ?? error?.message ?? 'API unavailable');
+        }
+        resolve({ ...data, mockMode: false });
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.onerror = () => reject(new Error('Lecture fichier impossible'));
+    reader.readAsDataURL(file);
+  });
+}
+
 // ── Main analysis ─────────────────────────────────────────────────────────────
 
 const STYLE_LABELS = {
@@ -246,16 +270,23 @@ export function useClubDNA(clubId) {
     );
   }
 
-  // PS-HK-003 — analyze poster image
+  // PS-HK-003 — analyze poster image (API first, canvas fallback)
   async function analyzePoster(file) {
     setAnalyzeError(null);
     setAnalyzing(true);
     try {
-      // Simulate analysis time (Claude API call in Phase 4)
-      const [profile] = await Promise.all([
-        analyzeWithCanvas(file),
-        new Promise(r => setTimeout(r, 2200)),
-      ]);
+      let profile;
+      try {
+        // Try Claude Vision API (fast when configured, ~2s)
+        profile = await analyzeWithAPI(file, clubId);
+      } catch {
+        // Fallback: canvas analysis + simulated delay for UX
+        const [canvasProfile] = await Promise.all([
+          analyzeWithCanvas(file),
+          new Promise(r => setTimeout(r, 1800)),
+        ]);
+        profile = canvasProfile;
+      }
       persist(profile);
       return profile;
     } catch (err) {

@@ -1,6 +1,6 @@
-// PS-VAR-001/002/003 — Parametric variant generation from DA profile
-// Phase 1: local parametric (template + color + bg preset + overlays)
-// Phase 4: replace/augment with Fal.ai Flux background generation
+// PS-VAR-001→006 — Parametric + AI variant generation from DA profile
+// Parametric: local (template + color + bg preset + overlays)
+// AI backgrounds: Fal.ai Flux via generate-variant-bg Edge Function (PS-VAR-004)
 
 // ── PS-VAR-002 — Style → BG presets ───────────────────────────────────────────
 
@@ -112,4 +112,34 @@ export function generateVariants(daProfile, baseState, templateList, count = 8, 
   }
 
   return variants;
+}
+
+// ── PS-VAR-004/005 — AI background generation via Fal.ai Flux ────────────────
+
+/**
+ * Generates 1 AI background image for a variant using the Fal.ai Flux Edge Function.
+ * Falls back gracefully if FAL_API_KEY is not configured (returns null imageUrl).
+ *
+ * @param {object} daProfile  — from useClubDNA
+ * @param {string} sport      — event sport string
+ * @param {import('../lib/supabase.js').supabase} supabaseClient
+ * @returns {Promise<{imageUrl: string|null, prompt: string, apiMode: boolean}>}
+ */
+export async function generateAIBackground(daProfile, sport, supabaseClient) {
+  try {
+    const { data, error } = await supabaseClient.functions.invoke('generate-variant-bg', {
+      body: {
+        style: daProfile.style,
+        mood: daProfile.mood ?? [],
+        sport: sport ?? '',
+        accentColor: daProfile.colors?.accent ?? null,
+      },
+    });
+    if (error || data?.mockFallback || !data?.imageUrl) {
+      return { imageUrl: null, prompt: '', apiMode: false };
+    }
+    return { imageUrl: data.imageUrl, prompt: data.prompt ?? '', apiMode: true };
+  } catch {
+    return { imageUrl: null, prompt: '', apiMode: false };
+  }
 }

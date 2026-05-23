@@ -1,6 +1,6 @@
 # SportLink — Backlog Technique & Produit
 > Document vivant — mis à jour au fil des sprints  
-> Dernière mise à jour : 2026-05-23 — PS Phase 3 implémentée (Variantes IA paramétriques)
+> Dernière mise à jour : 2026-05-23 — PS Phase 4 implémentée (APIs réelles : Remove.bg + Claude Vision + Fal.ai Flux)
 
 ---
 
@@ -480,7 +480,7 @@ fetch('/functions/v1/send-push', {
 
 #### Infrastructure
 
-- ⬜ **PS-INF-001** — Bucket Supabase Storage `club-media` + policies RLS par `club_id` `[S]` *(manuel Dashboard)*
+- ✅ **PS-INF-001** — Bucket Supabase Storage `club-media` + policies RLS par `club_id` `[S]` — `supabase/migrations/20260523_club_media_bucket.sql`
 - ✅ **PS-INF-002** — Migration SQL : table `club_media_assets` `[S]` — `supabase/migrations/20260523_club_media_assets.sql`
 - ✅ **PS-INF-003** — Migration SQL : index GIN sur `tags` + index `(club_id, type, is_favorite)` `[XS]`
 
@@ -515,7 +515,7 @@ fetch('/functions/v1/send-push', {
 
 #### Phase finale — Intégration API réelle
 
-- ⬜ **PS-API-001** — Intégrer Remove.bg API dans Edge Function (remplace le mock) : POST multipart → transparent PNG, edge smoothing alpha `[M]`
+- ✅ **PS-API-001** — Intégrer Remove.bg API dans Edge Function (remplace le mock) : POST multipart → transparent PNG, edge smoothing alpha `[M]`
 - ⬜ **PS-API-002** — Fallback vers Fal.ai BRIA RMBG 2.0 si Remove.bg quota épuisé `[M]`
 - ⬜ **PS-API-003** — UI quota : afficher "X imports restants ce mois" depuis `club_ai_usage` `[S]`
 
@@ -529,11 +529,11 @@ fetch('/functions/v1/send-push', {
 
 #### Edge Function `analyze-poster-dna`
 
-- ⬜ **PS-DNA-001** — Edge Function `analyze-poster-dna` : reçoit image base64 + `club_id`, appelle Claude claude-haiku-4-5 Vision avec prompt DA structuré, parse JSON retourné `[L]`
-- ⬜ **PS-DNA-002** — Prompt DA : extrait `colors` (dominant/secondary/accent/bg/text), `palette` (5 hex), `typography` (weight/style/tracking), `composition` (type/density), `mood` (array), `elements` (gradients/glow/textures), `style` (minimalist/bold/cinematic/esport/classic/street/premium), `templateAffinities` (array d'IDs templates) `[M]`
-- ⬜ **PS-DNA-003** — Enrichissement calculs complémentaires : luminosity score (dark/light), contrast ratio (accessibilité), température de couleur (warm/cool/neutral) `[S]`
-- ⬜ **PS-DNA-004** — Upsert `club_brand_kits.da_profile` JSONB avec résultat + `analysedAt` + `confidence` `[S]`
-- ⬜ **PS-DNA-005** — Log dans `ai_jobs` (type='dna', status pending→done/failed) `[XS]`
+- ✅ **PS-DNA-001** — Edge Function `analyze-poster-dna` : reçoit image base64 + `club_id`, appelle Claude claude-haiku-4-5 Vision avec prompt DA structuré, parse JSON retourné `[L]`
+- ✅ **PS-DNA-002** — Prompt DA : extrait `colors` (dominant/secondary/accent/bg/text), `palette` (5 hex), `typography` (weight/style/tracking), `composition` (type/density), `mood` (array), `elements` (gradients/glow/textures), `style` (minimalist/bold/cinematic/esport/classic/street/premium), `templateAffinities` (array d'IDs templates) `[M]`
+- ✅ **PS-DNA-003** — Enrichissement calculs complémentaires : luminosity score (dark/light), contrast ratio (accessibilité), température de couleur (warm/cool/neutral) `[S]`
+- ✅ **PS-DNA-004** — Upsert `club_brand_kits.da_profile` JSONB avec résultat + `analysedAt` + `confidence` `[S]`
+- ✅ **PS-DNA-005** — Log dans `ai_jobs` (type='dna', status pending→done/failed) `[XS]`
 
 #### Hook `useClubDNA`
 
@@ -573,9 +573,9 @@ fetch('/functions/v1/send-push', {
 
 #### Phase 2 — Fond custom IA (Fal.ai Flux)
 
-- ⬜ **PS-VAR-004** — Edge Function `generate-variant-bg` : prend `da_profile.mood` + `da_profile.style` + `sport`, génère prompt Flux, appelle Fal.ai Flux-schnell API, retourne URL image background `[XL]`
-- ⬜ **PS-VAR-005** — Intégration du fond généré comme `bgSrc` dans le state de la variante `[S]`
-- ⬜ **PS-VAR-006** — UI : section "Fonds IA" dans galerie variantes (après les paramétriques), badge "IA" sur les variantes avec fond généré `[M]`
+- ✅ **PS-VAR-004** — Edge Function `generate-variant-bg` : prend `da_profile.mood` + `da_profile.style` + `sport`, génère prompt Flux, appelle Fal.ai Flux-schnell API, retourne URL image background `[XL]`
+- ✅ **PS-VAR-005** — Intégration du fond généré comme `bgSrc` dans le state de la variante `[S]`
+- ✅ **PS-VAR-006** — UI : section "Fonds IA" dans galerie variantes (après les paramétriques), badge "IA" sur les variantes avec fond généré `[M]`
 
 ---
 
@@ -710,7 +710,7 @@ LONG TERME
 └── UX-004   Éditeur club mode Simple/Avancé                [L]  ✅
 
 POSTER STUDIO PREMIUM — Phase 1 (Infrastructure + Joueurs) ✅ 2026-05-23
-├── PS-INF-001  Bucket Storage club-media + RLS             [S]  ⬜ (manuel Dashboard)
+├── PS-INF-001  Bucket Storage club-media + RLS             [S]  ✅
 ├── PS-INF-002  Migration table club_media_assets           [S]  ✅
 ├── PS-INF-003  Index GIN tags + index club/type            [XS] ✅
 ├── PS-IMG-001  Edge Function process-player-image (mock)   [L]  ⬜ (Phase 4)
@@ -732,11 +732,11 @@ POSTER STUDIO PREMIUM — Phase 1 (Infrastructure + Joueurs) ✅ 2026-05-23
 └── PS-UX-007   Suppression asset localStorage              [S]  ✅
 
 POSTER STUDIO PREMIUM — Phase 2 (DA Intelligence)
-├── PS-DNA-001  Edge Function analyze-poster-dna            [L]  ⬜
-├── PS-DNA-002  Prompt DA structuré (couleurs/style/mood)   [M]  ⬜
-├── PS-DNA-003  Calculs luminosity/contrast/température     [S]  ⬜
-├── PS-DNA-004  Upsert club_brand_kits.da_profile           [S]  ⬜
-├── PS-DNA-005  Log ai_jobs type=dna                        [XS] ⬜
+├── PS-DNA-001  Edge Function analyze-poster-dna            [L]  ✅
+├── PS-DNA-002  Prompt DA structuré (couleurs/style/mood)   [M]  ✅
+├── PS-DNA-003  Calculs luminosity/contrast/température     [S]  ✅
+├── PS-DNA-004  Upsert club_brand_kits.da_profile           [S]  ✅
+├── PS-DNA-005  Log ai_jobs type=dna                        [XS] ✅
 ├── PS-HK-003   Hook useClubDNA                             [M]  ✅
 ├── PS-HK-004   applyToStudio() → accentColor + templates   [S]  ✅
 ├── PS-UX-008   Section "Identité visuelle" onglet Style    [S]  ✅
@@ -757,12 +757,12 @@ POSTER STUDIO PREMIUM — Phase 3 (Variantes)
 └── PS-UX-018   Labels variantes (template + swatch)        [XS] ✅
 
 POSTER STUDIO PREMIUM — Phase 4 (API réelle + Polish)
-├── PS-API-001  Remove.bg API dans Edge Function            [M]  ⬜
+├── PS-API-001  Remove.bg API dans Edge Function            [M]  ✅
 ├── PS-API-002  Fallback Fal.ai BRIA RMBG 2.0              [M]  ⬜
 ├── PS-API-003  UI quota imports restants                   [S]  ⬜
-├── PS-VAR-004  Edge Function generate-variant-bg (Flux)   [XL] ⬜
-├── PS-VAR-005  Fond généré comme bgSrc variante            [S]  ⬜
-├── PS-VAR-006  Section "Fonds IA" + badge IA               [M]  ⬜
+├── PS-VAR-004  Edge Function generate-variant-bg (Flux)   [XL] ✅
+├── PS-VAR-005  Fond généré comme bgSrc variante            [S]  ✅
+├── PS-VAR-006  Section "Fonds IA" + badge IA               [M]  ✅
 ├── PS-LIB-001  Tags assets inline                          [S]  ⬜
 ├── PS-LIB-002  Versions d'un asset                         [M]  ⬜
 ├── PS-LIB-003  Remplacement image sans changer ID          [M]  ⬜

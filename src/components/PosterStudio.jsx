@@ -16,7 +16,8 @@ import {
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
-import { generateVariants } from '../lib/posterVariants.js';
+import { generateVariants, generateAIBackground } from '../lib/posterVariants.js';
+import { supabase } from '../lib/supabase.js';
 import { sanitizeFilename } from '../lib/sanitize.js';
 
 // ── Reducer ────────────────────────────────────────────────────────────────────
@@ -265,6 +266,8 @@ export default function PosterStudio({ event, onClose, club }) {
   const [variants,      setVariants]      = useState([]);
   const [variantSeed,   setVariantSeed]   = useState(0);
   const [variantsOpen,  setVariantsOpen]  = useState(false);
+  const [aiBgLoading,   setAiBgLoading]   = useState(false);
+  const [aiBgResult,    setAiBgResult]    = useState(null); // { imageUrl, prompt, apiMode }
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
   const playerFileRef = useRef(null);
@@ -946,6 +949,62 @@ export default function PosterStudio({ event, onClose, club }) {
                             </div>
                             <div style={{ marginTop: 8, fontSize: 9.5, color: 'var(--sl-t3)', textAlign: 'center' }}>
                               Cliquer pour appliquer · {variants.length} variantes générées depuis votre style {clubDNA.daProfile.styleLabel}
+                            </div>
+
+                            {/* ── PS-VAR-006 — Fonds IA section ── */}
+                            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--sl-border)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--sl-t3)' }}>Fond IA</span>
+                                <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(139,92,246,0.15)', color: '#a78bfa', fontWeight: 700 }}>Fal.ai Flux</span>
+                              </div>
+
+                              {!aiBgResult && (
+                                <button
+                                  disabled={aiBgLoading}
+                                  onClick={async () => {
+                                    setAiBgLoading(true);
+                                    const res = await generateAIBackground(clubDNA.daProfile, event?.sport, supabase);
+                                    setAiBgResult(res);
+                                    setAiBgLoading(false);
+                                    if (res.imageUrl) {
+                                      dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'image', bgErr: false } });
+                                    }
+                                  }}
+                                  style={{
+                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: aiBgLoading ? 'wait' : 'pointer',
+                                    border: '1px dashed rgba(139,92,246,0.4)', background: 'rgba(139,92,246,0.07)', color: '#a78bfa',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, opacity: aiBgLoading ? 0.7 : 1,
+                                  }}>
+                                  {aiBgLoading
+                                    ? <><span style={{ fontSize: 14 }}>⏳</span> Génération en cours…</>
+                                    : <><span style={{ fontSize: 14 }}>🎨</span> Générer un fond IA</>}
+                                </button>
+                              )}
+
+                              {aiBgResult && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  {aiBgResult.imageUrl ? (
+                                    <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: `1.5px solid rgba(139,92,246,0.4)` }}>
+                                      <img src={aiBgResult.imageUrl} alt="AI background" style={{ width: '100%', height: 80, objectFit: 'cover', display: 'block' }} />
+                                      <div style={{ position: 'absolute', top: 5, right: 5, fontSize: 8, fontWeight: 800, padding: '2px 5px', borderRadius: 4, background: 'rgba(139,92,246,0.85)', color: '#fff' }}>IA</div>
+                                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0, transition: 'opacity 0.15s', background: 'rgba(0,0,0,0.4)' }}
+                                        onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                                        onMouseLeave={e => e.currentTarget.style.opacity = 0}>
+                                        <button onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: aiBgResult.imageUrl, bgMode: 'image', bgErr: false } })}
+                                          style={{ padding: '5px 10px', borderRadius: 7, fontSize: 10, fontWeight: 700, background: '#fff', color: '#111', border: 'none', cursor: 'pointer' }}>Appliquer</button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div style={{ padding: '8px 10px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 10, color: '#ef4444' }}>
+                                      Fal.ai non configuré — FAL_API_KEY requis dans les secrets Edge Function.
+                                    </div>
+                                  )}
+                                  <button onClick={() => setAiBgResult(null)}
+                                    style={{ fontSize: 10, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textAlign: 'left' }}>
+                                    Régénérer un fond IA
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}

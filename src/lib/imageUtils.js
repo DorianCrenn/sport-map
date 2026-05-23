@@ -1,6 +1,5 @@
 // PS-IMG-002/003 — Client-side image utilities
-// Compression + mock background removal (canvas-based)
-// Replace mockDetourage with real API call (Remove.bg / Fal.ai) in Phase 4
+// Compression + background removal (Remove.bg via Edge Function, canvas fallback)
 
 // ── Compression ────────────────────────────────────────────────────────────────
 
@@ -36,10 +35,27 @@ export function compressImage(file, { maxWidth = 1200, quality = 0.85 } = {}) {
   });
 }
 
-// ── Mock background removal (canvas-based, Phase 1 internal test) ─────────────
+// ── Remove.bg via Edge Function (PS-API-001) ──────────────────────────────────
+// Calls Supabase Edge Function → Remove.bg API.
+// Falls back to canvas mock if API key is not configured.
+
+export async function removeBackground(dataUrl) {
+  try {
+    const { supabase } = await import('./supabase.js');
+    const { data, error } = await supabase.functions.invoke('remove-background', {
+      body: { imageBase64: dataUrl },
+    });
+    if (error || data?.mockFallback) throw new Error(data?.error ?? error?.message ?? 'API unavailable');
+    return { result: data.resultBase64, apiMode: true };
+  } catch {
+    // Graceful fallback to canvas-based mock
+    const result = await mockDetourage(dataUrl);
+    return { result, apiMode: false };
+  }
+}
+
+// ── Canvas-based mock (fallback when Remove.bg not configured) ────────────────
 // Samples edge pixels to detect background color, then removes close matches.
-// Works well for: studio white/gray backgrounds, solid color backgrounds.
-// Replace this function with API call in Phase 4 (PS-API-001).
 
 export function mockDetourage(dataUrl) {
   return new Promise((resolve, reject) => {
@@ -134,11 +150,9 @@ export async function processPlayerImage(file, { onPhase } = {}) {
   const { dataUrl: compressed, w, h } = await compressImage(file, { maxWidth: 1200, quality: 0.88 });
 
   onPhase?.('processing');
-  // Simulate processing time so UX feels real (remove in Phase 4 with real API)
-  const [processed] = await Promise.all([
-    mockDetourage(compressed),
-    new Promise(r => setTimeout(r, 1400)),
-  ]);
+  const { result: processed, apiMode } = await removeBackground(compressed);
+  // Add a small delay only in mock mode so the UX feels intentional
+  if (!apiMode) await new Promise(r => setTimeout(r, 900));
 
   onPhase?.('thumbnail');
   const thumb = await generateThumbnail(processed, 120);
@@ -147,6 +161,6 @@ export async function processPlayerImage(file, { onPhase } = {}) {
     originalDataUrl: compressed,
     processedDataUrl: processed,
     thumbDataUrl: thumb,
-    metadata: { width: w, height: h, fileSize: file.size, mockMode: true },
+    metadata: { width: w, height: h, fileSize: file.size, mockMode: !apiMode },
   };
 }

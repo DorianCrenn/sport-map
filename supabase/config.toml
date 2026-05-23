@@ -3,3 +3,12 @@ enabled = true
 
 [functions.send-weekly-digest]
 enabled = true
+
+[functions.remove-background]
+enabled = true
+
+[functions.analyze-poster-dna]
+enabled = true
+
+[functions.generate-variant-bg]
+enabled = true
