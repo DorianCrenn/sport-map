@@ -467,7 +467,7 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
 
         {/* AI overlay elements — below content (z=6, screen blend) */}
         {belowAiEls.map(el => (
-          <div key={el.uid} style={{ position: 'absolute', inset: 0, zIndex: 6, pointerEvents: 'none', opacity: el.opacity ?? 0.85, mixBlendMode: el.blendMode || 'screen' }}>
+          <div key={el.uid} style={{ position: 'absolute', inset: 0, zIndex: 6, pointerEvents: 'none', opacity: el.opacity ?? 0.85, mixBlendMode: el.blendMode || 'screen', transform: `translate(${el.dx ?? 0}px, ${el.dy ?? 0}px) scale(${el.scale ?? 1}) rotate(${el.rotation ?? 0}deg)`, transformOrigin: 'center center' }}>
             <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         ))}
@@ -488,7 +488,7 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
 
         {/* AI overlay elements — above content (z=16, screen blend) */}
         {aboveAiEls.map(el => (
-          <div key={el.uid} style={{ position: 'absolute', inset: 0, zIndex: 16, pointerEvents: 'none', opacity: el.opacity ?? 0.85, mixBlendMode: el.blendMode || 'screen' }}>
+          <div key={el.uid} style={{ position: 'absolute', inset: 0, zIndex: 16, pointerEvents: 'none', opacity: el.opacity ?? 0.85, mixBlendMode: el.blendMode || 'screen', transform: `translate(${el.dx ?? 0}px, ${el.dy ?? 0}px) scale(${el.scale ?? 1}) rotate(${el.rotation ?? 0}deg)`, transformOrigin: 'center center' }}>
             <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         ))}

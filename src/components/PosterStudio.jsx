@@ -6,6 +6,7 @@ import { Z } from '../constants/zIndex.js';
 import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS, BG_PRESETS } from './poster/PosterRenderer.jsx';
 import { ELEMENT_LIBRARY } from './poster/posterElements.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
+import AiElementEditor from './poster/AiElementEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import {
   usePosterDraft,
@@ -284,6 +285,7 @@ export default function PosterStudio({ event, onClose, club }) {
   const [customPrompt,  setCustomPrompt]  = useState('');
   const [elementPrompt, setElementPrompt] = useState('');
   const [aiElLoading,   setAiElLoading]   = useState(false);
+  const [aiElEditorUid, setAiElEditorUid] = useState(null);
   const [savedAiBgs,    setSavedAiBgs]    = useState(() => loadSavedBgs(club?.id));
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
@@ -591,6 +593,23 @@ export default function PosterStudio({ event, onClose, club }) {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* AI Element editor — full-screen overlay */}
+        {aiElEditorUid !== null && (aiOverlayElements || []).length > 0 && (
+          <AiElementEditor
+            elements={aiOverlayElements || []}
+            initialUid={aiElEditorUid}
+            posterData={posterData}
+            templateId={templateId}
+            format={format}
+            bgPresetId={bgPreset}
+            effects={posterEffects}
+            overlayElements={overlayElements || []}
+            onChange={(uid, patch) => updateAiOverlay(uid, patch)}
+            onRemove={(uid) => { removeAiOverlay(uid); if ((aiOverlayElements || []).length <= 1) setAiElEditorUid(null); }}
+            onClose={() => setAiElEditorUid(null)}
+          />
+        )}
 
         {/* Visual editor overlay */}
         <AnimatePresence>
@@ -1702,6 +1721,10 @@ export default function PosterStudio({ event, onClose, club }) {
                               <div style={{ position: 'relative', height: 52 }}>
                                 <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', mixBlendMode: 'normal' }} />
                                 <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 4 }}>
+                                  <button onClick={() => setAiElEditorUid(el.uid)}
+                                    style={{ width: 18, height: 18, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(139,92,246,0.9)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }} title="Éditer">
+                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                  </button>
                                   <button onClick={() => removeAiOverlay(el.uid)}
                                     style={{ width: 18, height: 18, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.9)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>✕</button>
                                 </div>
