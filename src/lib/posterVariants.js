@@ -62,12 +62,13 @@ export function generateVariants(daProfile, baseState, templateList, count = 8, 
   const rng = seededRng(seed + 1);
   const style = daProfile.style || 'classic';
 
-  // 1. Filter templates to affinities; fallback to all non-tournament
+  // 1. Filter templates to affinities — templateList is already pre-filtered by caller
   const affinities = daProfile.templateAffinities || [];
-  let candidates = templateList.filter(t => !t.isTournament && affinities.some(a => t.id.includes(a)));
-  if (candidates.length < 3) {
-    candidates = templateList.filter(t => !t.isTournament);
-  }
+  let candidates = affinities.length
+    ? templateList.filter(t => affinities.some(a => t.id.includes(a)))
+    : [];
+  if (candidates.length < 3) candidates = [...templateList];
+  if (!candidates.length) return [];
   candidates = seededShuffle(candidates, rng);
 
   // 2. Color sequence from palette (cycle through)
