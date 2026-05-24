@@ -49,15 +49,37 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
       const el = outerRef.current.querySelector(`[data-block="${id}"]`);
       if (!el) return;
       const elRect = el.getBoundingClientRect();
+      // Use Range to get the tight content bounding box (avoids full-width block spans)
+      let useRect = elRect;
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const cr = range.getBoundingClientRect();
+        if (cr.width > 4 && cr.height > 4 && cr.width < elRect.width * 0.95) useRect = cr;
+      } catch (_) {}
       rects[id] = {
-        left: elRect.left - outerRect.left,
-        top: elRect.top - outerRect.top,
-        width: elRect.width,
-        height: elRect.height,
+        left: useRect.left - outerRect.left,
+        top: useRect.top - outerRect.top,
+        width: useRect.width,
+        height: useRect.height,
       };
     });
     setBlockRects(rects);
   }, [transforms, templateId, format]);
+
+  const alignBlock = useCallback((direction) => {
+    const rect = blockRects[activeBlock];
+    if (!rect || !activeBlock) return;
+    const t = transforms[activeBlock] || {};
+    const currentDx = t.dx ?? 0;
+    const naturalLeft = rect.left - currentDx * scale;
+    const pad = 12; // px in preview space
+    let newDx;
+    if (direction === 'left')  newDx = (pad - naturalLeft) / scale;
+    else if (direction === 'right') newDx = (PREVIEW_W - pad - rect.width - naturalLeft) / scale;
+    else newDx = (PREVIEW_W / 2 - naturalLeft - rect.width / 2) / scale;
+    onChange(activeBlock, { ...t, dx: newDx });
+  }, [activeBlock, blockRects, transforms, scale, onChange]);
 
   const handlePointerDown = useCallback((e, blockId) => {
     e.preventDefault();
@@ -240,11 +262,30 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
         {activeBlock ? (
           <div style={{ padding: '14px 20px' }}>
             {/* Panel header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 12, fontWeight: 800, color: ACCENT, letterSpacing: '0.06em' }}>
                 {BLOCK_LABELS[activeBlock]}
               </span>
-              <div style={{ display: 'flex', gap: 7 }}>
+              <div style={{ display: 'flex', gap: 5 }}>
+                {/* Alignment buttons */}
+                {[
+                  { dir: 'left', title: 'Aligner à gauche', icon: <><rect x="3" y="5" width="12" height="2" rx="1" fill="currentColor"/><rect x="3" y="9" width="18" height="2" rx="1" fill="currentColor"/><rect x="3" y="13" width="10" height="2" rx="1" fill="currentColor"/></> },
+                  { dir: 'center', title: 'Centrer', icon: <><rect x="6" y="5" width="12" height="2" rx="1" fill="currentColor"/><rect x="3" y="9" width="18" height="2" rx="1" fill="currentColor"/><rect x="7" y="13" width="10" height="2" rx="1" fill="currentColor"/></> },
+                  { dir: 'right', title: 'Aligner à droite', icon: <><rect x="9" y="5" width="12" height="2" rx="1" fill="currentColor"/><rect x="3" y="9" width="18" height="2" rx="1" fill="currentColor"/><rect x="11" y="13" width="10" height="2" rx="1" fill="currentColor"/></> },
+                ].map(({ dir, title, icon }) => (
+                  <button
+                    key={dir}
+                    onClick={() => alignBlock(dir)}
+                    title={title}
+                    style={{
+                      width: 28, height: 28, borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'none', border: '1px solid rgba(255,255,255,0.13)', color: 'rgba(255,255,255,0.5)',
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24">{icon}</svg>
+                  </button>
+                ))}
+                <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', margin: '0 2px' }} />
                 <button
                   onClick={() => onChange(activeBlock, {})}
                   style={{
