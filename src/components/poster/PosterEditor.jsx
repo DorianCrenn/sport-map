@@ -49,19 +49,44 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
       const el = outerRef.current.querySelector(`[data-block="${id}"]`);
       if (!el) return;
       const elRect = el.getBoundingClientRect();
-      // Use Range to get the tight content bounding box (avoids full-width block spans)
-      let useRect = elRect;
-      try {
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        const cr = range.getBoundingClientRect();
-        if (cr.width > 4 && cr.height > 4 && cr.width < elRect.width * 0.95) useRect = cr;
-      } catch (_) {}
-      rects[id] = {
-        left: useRect.left - outerRect.left,
-        top: useRect.top - outerRect.top,
-        width: useRect.width,
-        height: useRect.height,
+
+      // Walk all text nodes + SVG/img to get the true visual bounding box
+      let minL = Infinity, minT = Infinity, maxR = -Infinity, maxB = -Infinity;
+      const textWalker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = textWalker.nextNode())) {
+        if (!node.textContent.trim()) continue;
+        try {
+          const r = document.createRange();
+          r.selectNodeContents(node);
+          const cr = r.getBoundingClientRect();
+          if (cr.width > 0 && cr.height > 0) {
+            minL = Math.min(minL, cr.left); minT = Math.min(minT, cr.top);
+            maxR = Math.max(maxR, cr.right); maxB = Math.max(maxB, cr.bottom);
+          }
+        } catch (_) {}
+      }
+      el.querySelectorAll('svg, img').forEach(child => {
+        const cr = child.getBoundingClientRect();
+        if (cr.width > 0 && cr.height > 0) {
+          minL = Math.min(minL, cr.left); minT = Math.min(minT, cr.top);
+          maxR = Math.max(maxR, cr.right); maxB = Math.max(maxB, cr.bottom);
+        }
+      });
+
+      const pad = 4;
+      const tight = (minL < Infinity) ? {
+        left: minL - outerRect.left - pad,
+        top: minT - outerRect.top - pad,
+        width: maxR - minL + pad * 2,
+        height: maxB - minT + pad * 2,
+      } : null;
+
+      rects[id] = tight ?? {
+        left: elRect.left - outerRect.left,
+        top: elRect.top - outerRect.top,
+        width: elRect.width,
+        height: elRect.height,
       };
     });
     setBlockRects(rects);
