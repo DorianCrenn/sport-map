@@ -136,9 +136,9 @@ export async function generateAIBackground(daProfile, sport, supabaseClient) {
       },
     });
     if (error || data?.mockFallback || !data?.imageUrl) {
-      return { imageUrl: null, prompt: '', apiMode: false };
+      return { imageUrl: null, prompt: '', apiMode: false, provider: null };
     }
-    return { imageUrl: data.imageUrl, prompt: data.prompt ?? '', apiMode: true };
+    return { imageUrl: data.imageUrl, prompt: data.prompt ?? '', apiMode: true, provider: data.provider ?? 'fal' };
   } catch {
     return { imageUrl: null, prompt: '', apiMode: false };
   }

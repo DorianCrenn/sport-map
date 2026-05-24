@@ -986,7 +986,7 @@ export default function PosterStudio({ event, onClose, club }) {
                                   {aiBgResult.imageUrl ? (
                                     <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: `1.5px solid rgba(139,92,246,0.4)` }}>
                                       <img src={aiBgResult.imageUrl} alt="AI background" style={{ width: '100%', height: 80, objectFit: 'cover', display: 'block' }} />
-                                      <div style={{ position: 'absolute', top: 5, right: 5, fontSize: 8, fontWeight: 800, padding: '2px 5px', borderRadius: 4, background: 'rgba(139,92,246,0.85)', color: '#fff' }}>IA</div>
+                                      <div style={{ position: 'absolute', top: 5, right: 5, fontSize: 8, fontWeight: 800, padding: '2px 5px', borderRadius: 4, background: 'rgba(139,92,246,0.85)', color: '#fff' }}>{aiBgResult.provider === 'fal' ? 'Fal.ai' : 'IA'}</div>
                                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0, transition: 'opacity 0.15s', background: 'rgba(0,0,0,0.4)' }}
                                         onMouseEnter={e => e.currentTarget.style.opacity = 1}
                                         onMouseLeave={e => e.currentTarget.style.opacity = 0}>

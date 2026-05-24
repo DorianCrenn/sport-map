@@ -44,13 +44,6 @@ Deno.serve(async (req: Request) => {
     const { style, mood, sport, accentColor } = await req.json();
     const FAL_KEY = Deno.env.get('FAL_API_KEY');
 
-    if (!FAL_KEY) {
-      return new Response(
-        JSON.stringify({ error: 'FAL_API_KEY not configured', mockFallback: true }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      );
-    }
-
     const stylePrompt = STYLE_PROMPTS[style] ?? STYLE_PROMPTS.classic;
     const sportCtx = SPORT_CONTEXT[(sport ?? '').toLowerCase()] ?? 'sports arena venue';
     const moodStr = Array.isArray(mood) && mood.length > 0 ? mood.join(', ') : '';
@@ -60,34 +53,36 @@ Deno.serve(async (req: Request) => {
       'high quality 4k photography, sports poster background, no text, no people, no logos',
     ].filter(Boolean).join(', ');
 
-    const response = await fetch('https://queue.fal.run/fal-ai/flux/schnell', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${FAL_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt,
-        image_size: 'portrait_4_3',
-        num_images: 1,
-        num_inference_steps: 4,
-        enable_safety_checker: true,
-      }),
-    });
+    // ── Fal.ai Flux (production) ──────────────────────────────────────────────
+    if (FAL_KEY) {
+      const response = await fetch('https://queue.fal.run/fal-ai/flux/schnell', {
+        method: 'POST',
+        headers: { 'Authorization': `Key ${FAL_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, image_size: 'portrait_4_3', num_images: 1, num_inference_steps: 4, enable_safety_checker: true }),
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
+      if (!response.ok) {
+        const errorText = await response.text();
+        return new Response(
+          JSON.stringify({ error: `Fal.ai: ${errorText}` }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
+      }
+
+      const result = await response.json();
+      const imageUrl = result.images?.[0]?.url ?? null;
       return new Response(
-        JSON.stringify({ error: `Fal.ai: ${errorText}` }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        JSON.stringify({ imageUrl, prompt, provider: 'fal' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
-    const result = await response.json();
-    const imageUrl = result.images?.[0]?.url ?? null;
+    // ── Pollinations.ai (free fallback — no key required) ────────────────────
+    const encodedPrompt = encodeURIComponent(prompt);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=1024&model=flux&nologo=true&seed=${Math.floor(Math.random() * 99999)}`;
 
     return new Response(
-      JSON.stringify({ imageUrl, prompt }),
+      JSON.stringify({ imageUrl, prompt, provider: 'pollinations' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err: unknown) {
