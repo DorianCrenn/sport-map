@@ -77,7 +77,8 @@ export default function TplTrNeon({ event, homeTeam, championship, tagline, acce
         {/* MASSIVE stacked title — left aligned */}
         <div data-block="title" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', ...tr('title') }}>
           <div style={{
-            fontSize: scaledTitle(tName, isStory ? 58 : 44, isStory ? 24 : 18),
+            fontSize: transforms?.title?.fontSize ?? scaledTitle(tName, isStory ? 58 : 44, isStory ? 24 : 18),
+            fontFamily: transforms?.title?.fontFamily,
             fontWeight: 900,
             lineHeight: 0.86,
             letterSpacing: '-0.05em',
@@ -85,8 +86,6 @@ export default function TplTrNeon({ event, homeTeam, championship, tagline, acce
             textShadow: `0 0 40px ${orange}70, 0 0 80px ${orange}30`,
             marginBottom: isStory ? 22 : 16,
             color: '#fff',
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
           }}>
             {tName}
           </div>

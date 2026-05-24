@@ -97,13 +97,13 @@ export default function TplTrCinema({ event, homeTeam, championship, tagline, ac
             {event?.tournamentType || 'GRAND TOURNOI'}
           </div>
           <div style={{
-            fontSize: scaledTitle(tName, isStory ? 52 : 38, isStory ? 22 : 16),
+            fontSize: transforms?.title?.fontSize ?? scaledTitle(tName, isStory ? 52 : 38, isStory ? 22 : 16),
+            fontFamily: transforms?.title?.fontFamily,
             fontWeight: 900,
             color: '#fff',
             lineHeight: 0.93,
             letterSpacing: '-0.03em',
             textShadow: `0 0 40px ${amber}45`,
-            overflowWrap: 'break-word',
           }}>
             {tName}
           </div>

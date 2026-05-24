@@ -96,12 +96,12 @@ export default function TplTrMinimal({ event, homeTeam, championship, tagline, a
           {/* Tournament name — HUGE on dark bg */}
           <div data-block="title" style={{ marginBottom: isStory ? 16 : 11, ...tr('title') }}>
             <div style={{
-              fontSize: scaledTitle(tName, isStory ? 62 : 46, isStory ? 24 : 18),
+              fontSize: transforms?.title?.fontSize ?? scaledTitle(tName, isStory ? 62 : 46, isStory ? 24 : 18),
+              fontFamily: transforms?.title?.fontFamily,
               fontWeight: 900,
               color: cream,
               lineHeight: 0.9,
               letterSpacing: '-0.04em',
-              overflowWrap: 'break-word',
             }}>
               {tName}
             </div>

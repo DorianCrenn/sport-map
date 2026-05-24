@@ -95,7 +95,8 @@ export default function TplTrPremium({ event, homeTeam, championship, tagline, a
           {/* Tournament name — MASSIVE */}
           <div data-block="title" style={{ ...tr('title') }}>
             <div style={{
-              fontSize: scaledTitle(tName, isStory ? 68 : 50, isStory ? 28 : 22),
+              fontSize: transforms?.title?.fontSize ?? scaledTitle(tName, isStory ? 68 : 50, isStory ? 28 : 22),
+              fontFamily: transforms?.title?.fontFamily,
               fontWeight: 900,
               lineHeight: 0.88,
               letterSpacing: '-0.045em',
@@ -106,7 +107,6 @@ export default function TplTrPremium({ event, homeTeam, championship, tagline, a
               backgroundClip: 'text',
               textShadow: 'none',
               filter: `drop-shadow(0 0 30px ${gold}40)`,
-              overflowWrap: 'break-word',
             }}>
               {tName}
             </div>

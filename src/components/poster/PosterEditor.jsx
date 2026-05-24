@@ -2,6 +2,17 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import PosterRenderer, { BASE_DIMS } from './PosterRenderer.jsx';
 
 const BLOCK_IDS = ['title', 'champ', 'home-team', 'away-team', 'teams', 'info', 'meta', 'tagline'];
+const FONT_FAMILIES = [
+  { label: 'Par défaut', value: '' },
+  { label: 'Inter', value: '"Inter", sans-serif' },
+  { label: 'Oswald', value: '"Oswald", sans-serif' },
+  { label: 'Bebas Neue', value: '"Bebas Neue", sans-serif' },
+  { label: 'Montserrat', value: '"Montserrat", sans-serif' },
+  { label: 'Roboto Condensed', value: '"Roboto Condensed", sans-serif' },
+  { label: 'Playfair Display', value: '"Playfair Display", serif' },
+  { label: 'Anton', value: '"Anton", sans-serif' },
+  { label: 'Barlow Condensed', value: '"Barlow Condensed", sans-serif' },
+];
 const BLOCK_LABELS = {
   title: 'Titre',
   champ: 'Compétition',
@@ -252,6 +263,62 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                 >
                   {transforms[activeBlock]?.hidden ? 'Afficher' : 'Masquer'}
                 </button>
+              </div>
+            </div>
+
+            {/* Font controls */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginBottom: 10 }}>
+              {/* Font size */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+                  <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.45)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Taille</span>
+                  <span style={{ fontSize: 10, color: t.fontSize != null ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.3)', fontWeight: 700 }}>
+                    {t.fontSize != null ? `${Math.round(t.fontSize)}px` : 'Auto'}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={8} max={120} step={1}
+                  value={t.fontSize ?? 32}
+                  disabled={t.fontSize == null}
+                  onChange={e => onChange(activeBlock, { ...(transforms[activeBlock] || {}), fontSize: parseInt(e.target.value, 10) })}
+                  style={{ width: '100%', accentColor: ACCENT, cursor: t.fontSize == null ? 'default' : 'pointer', opacity: t.fontSize == null ? 0.3 : 1 }}
+                />
+                <button
+                  onClick={() => {
+                    if (t.fontSize != null) {
+                      const { fontSize: _, ...rest } = transforms[activeBlock] || {};
+                      onChange(activeBlock, rest);
+                    } else {
+                      onChange(activeBlock, { ...(transforms[activeBlock] || {}), fontSize: 32 });
+                    }
+                  }}
+                  style={{ marginTop: 4, fontSize: 9, fontWeight: 600, color: t.fontSize != null ? ACCENT : 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {t.fontSize != null ? '↩ Auto' : '+ Personnaliser'}
+                </button>
+              </div>
+              {/* Font family */}
+              <div>
+                <div style={{ marginBottom: 5 }}>
+                  <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.45)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Police</span>
+                </div>
+                <select
+                  value={t.fontFamily ?? ''}
+                  onChange={e => {
+                    const val = e.target.value;
+                    onChange(activeBlock, { ...(transforms[activeBlock] || {}), fontFamily: val || undefined });
+                  }}
+                  style={{
+                    width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
+                    color: 'rgba(255,255,255,0.8)', borderRadius: 6, padding: '5px 8px', fontSize: 10,
+                    cursor: 'pointer', outline: 'none',
+                  }}
+                >
+                  {FONT_FAMILIES.map(f => (
+                    <option key={f.value} value={f.value} style={{ background: '#1a1a2e' }}>{f.label}</option>
+                  ))}
+                </select>
               </div>
             </div>
 

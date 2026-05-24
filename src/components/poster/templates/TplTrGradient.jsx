@@ -123,13 +123,13 @@ export default function TplTrGradient({ event, homeTeam, championship, tagline, 
         {/* Title — massive left-aligned */}
         <div data-block="title" style={{ marginBottom: isStory ? 20 : 14, maxWidth: '72%', ...tr('title') }}>
           <div style={{
-            fontSize: scaledTitle(tName, isStory ? 64 : 48, isStory ? 26 : 20),
+            fontSize: transforms?.title?.fontSize ?? scaledTitle(tName, isStory ? 64 : 48, isStory ? 26 : 20),
+            fontFamily: transforms?.title?.fontFamily,
             fontWeight: 900,
             lineHeight: 0.9,
             letterSpacing: '-0.04em',
             color: '#fff',
             textShadow: `0 0 40px ${a}40, 0 2px 0 rgba(0,0,0,0.4)`,
-            overflowWrap: 'break-word',
           }}>
             {tName}
           </div>

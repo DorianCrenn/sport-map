@@ -64,5 +64,8 @@ export function blockStyle(transforms, id) {
   if (parts.length) s.transform = parts.join(' ');
   if (t.opacity !== undefined) s.opacity = t.opacity;
   if (t.visible === false) s.display = 'none';
+  if (t.hidden === true) s.display = 'none';
+  if (t.fontSize !== undefined) s.fontSize = t.fontSize;
+  if (t.fontFamily) s.fontFamily = t.fontFamily;
   return s;
 }

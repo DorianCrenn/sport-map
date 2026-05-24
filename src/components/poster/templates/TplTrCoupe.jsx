@@ -94,7 +94,8 @@ export default function TplTrCoupe({ event, homeTeam, championship, tagline, acc
         {/* Tournament name */}
         <div data-block="title" style={{ marginBottom: isStory ? 16 : 12, ...tr('title') }}>
           <div style={{
-            fontSize: scaledTitle(tName, isStory ? 54 : 40, isStory ? 22 : 16),
+            fontSize: transforms?.title?.fontSize ?? scaledTitle(tName, isStory ? 54 : 40, isStory ? 22 : 16),
+            fontFamily: transforms?.title?.fontFamily,
             fontWeight: 900,
             lineHeight: 0.92,
             letterSpacing: '-0.035em',
@@ -103,7 +104,6 @@ export default function TplTrCoupe({ event, homeTeam, championship, tagline, acc
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
             filter: `drop-shadow(0 0 20px ${gold}35)`,
-            overflowWrap: 'break-word',
           }}>
             {tName}
           </div>

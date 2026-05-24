@@ -81,13 +81,13 @@ export default function TplTrSummer({ event, homeTeam, championship, tagline, ac
           {/* MASSIVE tournament name */}
           <div data-block="title" style={{ marginBottom: isStory ? 18 : 13, ...tr('title') }}>
             <div style={{
-              fontSize: scaledTitle(tName, isStory ? 68 : 50, isStory ? 26 : 20),
+              fontSize: transforms?.title?.fontSize ?? scaledTitle(tName, isStory ? 68 : 50, isStory ? 26 : 20),
+              fontFamily: transforms?.title?.fontFamily,
               fontWeight: 900,
               color: '#fff',
               lineHeight: 0.88,
               letterSpacing: '-0.045em',
               textShadow: `0 2px 30px rgba(0,0,0,0.4), 0 0 60px ${a}30`,
-              overflowWrap: 'break-word',
             }}>
               {tName}
             </div>

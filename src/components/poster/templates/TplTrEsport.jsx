@@ -96,14 +96,14 @@ export default function TplTrEsport({ event, homeTeam, championship, tagline, ac
         {/* Title — massive, pushed lower */}
         <div data-block="title" style={{ marginBottom: isStory ? 20 : 14, ...tr('title') }}>
           <div style={{
-            fontSize: scaledTitle(tName, isStory ? 62 : 46, isStory ? 24 : 18),
+            fontSize: transforms?.title?.fontSize ?? scaledTitle(tName, isStory ? 62 : 46, isStory ? 24 : 18),
+            fontFamily: transforms?.title?.fontFamily,
             fontWeight: 900,
             color: '#fff',
             lineHeight: 0.9,
             letterSpacing: '-0.04em',
             textTransform: 'uppercase',
             textShadow: `0 0 30px ${a}55, 0 0 60px ${a}22`,
-            overflowWrap: 'break-word',
           }}>
             {tName}
           </div>
