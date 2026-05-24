@@ -1698,6 +1698,13 @@ export default function PosterStudio({ event, onClose, club }) {
                           onChange={e => setElementPrompt(e.target.value)}
                           placeholder="Décris l'effet décoratif…"
                           disabled={aiElLoading}
+                          onKeyDown={async e => {
+                            if (e.key !== 'Enter' || aiElLoading || !elementPrompt.trim()) return;
+                            setAiElLoading(true);
+                            const res = await generateCustomElement(elementPrompt.trim(), accentColor);
+                            setAiElLoading(false);
+                            if (res.imageUrl) addAiOverlay({ imageUrl: res.imageUrl, prompt: res.prompt });
+                          }}
                           style={{
                             flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 11, fontWeight: 500,
                             border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)',
@@ -1923,6 +1930,19 @@ export default function PosterStudio({ event, onClose, club }) {
                             onChange={e => setCustomPrompt(e.target.value)}
                             placeholder="Décris le fond que tu veux…"
                             disabled={aiBgLoading}
+                            onKeyDown={async e => {
+                              if (e.key !== 'Enter' || aiBgLoading) return;
+                              setAiBgLoading(true);
+                              setAiBgResult(null);
+                              const res = customPrompt.trim()
+                                ? await generateCustomBackground(customPrompt.trim())
+                                : await generateAIBackground(dnaForBg, event?.sport, supabase);
+                              setAiBgResult(res);
+                              setAiBgLoading(false);
+                              if (res.imageUrl) {
+                                dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } });
+                              }
+                            }}
                             style={{
                               flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 11, fontWeight: 500,
                               border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)',
