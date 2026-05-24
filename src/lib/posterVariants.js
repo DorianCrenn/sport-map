@@ -139,6 +139,15 @@ export async function generateAIBackground(daProfile, sport, supabaseClient) {
     if (error || data?.mockFallback || !data?.imageUrl) {
       return { imageUrl: null, prompt: '', apiMode: false, provider: null };
     }
+    // Pre-load image so CSS background-image has it in cache when applied
+    if (!data.imageUrl.startsWith('data:')) {
+      await new Promise((resolve) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = resolve;
+        img.src = data.imageUrl;
+      });
+    }
     return { imageUrl: data.imageUrl, prompt: data.prompt ?? '', apiMode: true, provider: data.provider ?? 'fal' };
   } catch {
     return { imageUrl: null, prompt: '', apiMode: false };
