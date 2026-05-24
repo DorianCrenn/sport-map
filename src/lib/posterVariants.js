@@ -139,7 +139,7 @@ export const BG_PROMPT_SUGGESTIONS = [
 ];
 
 export async function generateCustomBackground(userPrompt) {
-  const fullPrompt = `${userPrompt}, sports poster background, high quality 4k photography, no text, no people, no logos`;
+  const fullPrompt = `vertical portrait composition, tall format, ${userPrompt}, sports poster background, high quality 4k photography, no text, no people, no logos`;
   const seed = Math.floor(Math.random() * 99999);
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=576&height=1024&model=flux&nologo=true&seed=${seed}`;
   await preloadImage(url);
@@ -160,7 +160,7 @@ export const ELEMENT_PROMPT_SUGGESTIONS = [
 ];
 
 export async function generateCustomElement(userPrompt, accentColor = '#ffffff') {
-  const fullPrompt = `${userPrompt}, isolated effect on pure black background, dramatic, vibrant, high contrast, no people, no text, no logos, photorealistic`;
+  const fullPrompt = `vertical portrait orientation, ${userPrompt}, isolated on pure black background, dramatic, vibrant, high contrast, centered composition, no people, no text, no logos, photorealistic`;
   const seed = Math.floor(Math.random() * 99999);
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=576&height=1024&model=flux&nologo=true&seed=${seed}`;
   await preloadImage(url);
