@@ -209,6 +209,18 @@ function persistSavedBgs(clubId, bgs) {
   catch {}
 }
 
+// ── AI element favorites (localStorage) ───────────────────────────────────────
+
+const aiElLsKey = (clubId) => `sl-ai-els-${clubId || 'anon'}`;
+function loadSavedEls(clubId) {
+  try { return JSON.parse(localStorage.getItem(aiElLsKey(clubId)) || '[]'); }
+  catch { return []; }
+}
+function persistSavedEls(clubId, els) {
+  try { localStorage.setItem(aiElLsKey(clubId), JSON.stringify(els)); }
+  catch {}
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function PosterStudio({ event, onClose, club }) {
@@ -287,6 +299,7 @@ export default function PosterStudio({ event, onClose, club }) {
   const [aiElLoading,   setAiElLoading]   = useState(false);
   const [aiElEditorUid, setAiElEditorUid] = useState(null);
   const [savedAiBgs,    setSavedAiBgs]    = useState(() => loadSavedBgs(club?.id));
+  const [savedAiEls,    setSavedAiEls]    = useState(() => loadSavedEls(club?.id));
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
   const playerFileRef = useRef(null);
@@ -341,6 +354,17 @@ export default function PosterStudio({ event, onClose, club }) {
     const newBgs = savedAiBgs.filter(b => b.id !== bgId);
     setSavedAiBgs(newBgs);
     persistSavedBgs(club?.id, newBgs);
+  }
+
+  function addSavedEl(elEntry) {
+    const newEls = [{ ...elEntry, id: `el-${Date.now()}`, savedAt: new Date().toISOString() }, ...savedAiEls].slice(0, 12);
+    setSavedAiEls(newEls);
+    persistSavedEls(club?.id, newEls);
+  }
+  function removeSavedEl(elId) {
+    const newEls = savedAiEls.filter(e => e.id !== elId);
+    setSavedAiEls(newEls);
+    persistSavedEls(club?.id, newEls);
   }
 
   // ── AI overlay element helpers ──
@@ -1704,10 +1728,10 @@ export default function PosterStudio({ event, onClose, club }) {
                         </div>
                       )}
 
-                      {/* Active AI elements */}
+                      {/* Active AI elements — portrait 2-col grid */}
                       {(aiOverlayElements || []).length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ marginTop: 4 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                             <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)' }}>
                               Actifs ({(aiOverlayElements || []).length})
                             </span>
@@ -1716,42 +1740,72 @@ export default function PosterStudio({ event, onClose, club }) {
                               Tout effacer
                             </button>
                           </div>
-                          {(aiOverlayElements || []).map(el => (
-                            <div key={el.uid} style={{ borderRadius: 10, border: '1px solid var(--sl-border)', overflow: 'hidden', background: 'var(--sl-surface)' }}>
-                              <div style={{ position: 'relative', height: 52 }}>
-                                <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', mixBlendMode: 'normal' }} />
-                                <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 4 }}>
-                                  <button onClick={() => setAiElEditorUid(el.uid)}
-                                    style={{ width: 18, height: 18, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(139,92,246,0.9)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }} title="Éditer">
-                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                  </button>
-                                  <button onClick={() => removeAiOverlay(el.uid)}
-                                    style={{ width: 18, height: 18, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.9)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>✕</button>
-                                </div>
-                              </div>
-                              <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                {/* Z position */}
-                                <div style={{ display: 'flex', borderRadius: 7, overflow: 'hidden', border: '1px solid var(--sl-border)', alignSelf: 'flex-start' }}>
-                                  {[['Fond', false], ['Dessus', true]].map(([lbl, val]) => (
-                                    <button key={lbl} onClick={() => updateAiOverlay(el.uid, { above: val })}
-                                      style={{ padding: '3px 10px', border: 'none', cursor: 'pointer', fontSize: 9, fontWeight: 800,
-                                        backgroundColor: el.above === val ? accentColor : 'var(--sl-surface)',
-                                        color: el.above === val ? '#fff' : 'var(--sl-t3)', transition: 'all 0.12s' }}>
-                                      {lbl}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                            {(aiOverlayElements || []).map(el => (
+                              <div key={el.uid} style={{ borderRadius: 10, border: '1px solid var(--sl-border)', overflow: 'hidden', background: '#000' }}>
+                                {/* Portrait thumbnail */}
+                                <div style={{ position: 'relative', aspectRatio: '9/16' }}>
+                                  <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                                  {/* Top-right action buttons */}
+                                  <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                    <button onClick={() => setAiElEditorUid(el.uid)}
+                                      style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(139,92,246,0.9)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Éditer">
+                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                                     </button>
-                                  ))}
+                                    <button onClick={() => addSavedEl({ imageUrl: el.imageUrl, prompt: el.prompt })}
+                                      style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', cursor: 'pointer', background: savedAiEls.some(s => s.imageUrl === el.imageUrl) ? 'rgba(239,68,68,0.9)' : 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Enregistrer en favori">
+                                      ♥
+                                    </button>
+                                    <button onClick={() => removeAiOverlay(el.uid)}
+                                      style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.85)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>✕</button>
+                                  </div>
+                                  {/* Bottom: above/below badge */}
+                                  <div style={{ position: 'absolute', bottom: 4, left: 4 }}>
+                                    <button onClick={() => updateAiOverlay(el.uid, { above: !el.above })}
+                                      style={{ padding: '2px 7px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 8, fontWeight: 800, background: el.above ? accentColor : 'rgba(0,0,0,0.6)', color: el.above ? '#000' : '#fff' }}>
+                                      {el.above ? 'Dessus' : 'Fond'}
+                                    </button>
+                                  </div>
                                 </div>
-                                {/* Opacity */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                  <span style={{ fontSize: 9.5, color: 'var(--sl-t3)', fontWeight: 600, whiteSpace: 'nowrap' }}>Opacité</span>
-                                  <input type="range" min={0.1} max={1} step={0.05} value={el.opacity}
+                                {/* Opacity slider */}
+                                <div style={{ padding: '6px 8px', display: 'flex', alignItems: 'center', gap: 5, background: 'var(--sl-surface)' }}>
+                                  <input type="range" min={0.1} max={1} step={0.05} value={el.opacity ?? 0.85}
                                     onChange={e => updateAiOverlay(el.uid, { opacity: parseFloat(e.target.value) })}
                                     style={{ flex: 1, accentColor, cursor: 'pointer' }} />
-                                  <span style={{ fontSize: 9.5, color: 'var(--sl-t3)', fontWeight: 700, width: 28, textAlign: 'right' }}>{Math.round(el.opacity * 100)}%</span>
+                                  <span style={{ fontSize: 9, color: 'var(--sl-t3)', fontWeight: 700, width: 24, textAlign: 'right', flexShrink: 0 }}>{Math.round((el.opacity ?? 0.85) * 100)}%</span>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Saved AI elements grid */}
+                      {savedAiEls.length > 0 && (
+                        <div style={{ marginTop: 8 }}>
+                          <div style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', marginBottom: 6 }}>
+                            Effets enregistrés ({savedAiEls.length})
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+                            {savedAiEls.map(el => (
+                              <div key={el.id}
+                                onClick={() => addAiOverlay({ imageUrl: el.imageUrl, prompt: el.prompt })}
+                                style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1.5px solid var(--sl-border-s)', cursor: 'pointer', background: '#000', aspectRatio: '9/16' }}>
+                                <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                                {/* Apply hint */}
+                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.15s' }}
+                                  onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                  onMouseLeave={e => e.currentTarget.style.opacity = '0'}>
+                                  <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'rgba(0,0,0,0.7)', padding: '3px 7px', borderRadius: 6 }}>+ Ajouter</span>
+                                </div>
+                                <button
+                                  onClick={e => { e.stopPropagation(); removeSavedEl(el.id); }}
+                                  style={{ position: 'absolute', top: 3, right: 3, width: 16, height: 16, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.85)', color: '#fff', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
