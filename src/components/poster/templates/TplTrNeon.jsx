@@ -101,7 +101,9 @@ export default function TplTrNeon({ event, homeTeam, championship, tagline, acce
 
           {/* InfoRow */}
           <div data-block="champ" style={{ ...tr('champ') }}>
-            <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={orange} dimColor={`${orange}AA`} isStory={isStory} />
+            <div data-block="info" style={{ ...tr('info') }}>
+              <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={orange} dimColor={`${orange}AA`} isStory={isStory} />
+            </div>
           </div>
         </div>
 

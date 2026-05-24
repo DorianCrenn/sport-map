@@ -120,7 +120,9 @@ export default function TplTrMinimal({ event, homeTeam, championship, tagline, a
           )}
 
           {/* InfoRow */}
-          <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={clayLight} dimColor={`${clayLight}AA`} isStory={isStory} />
+          <div data-block="info" style={{ ...tr('info') }}>
+            <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={clayLight} dimColor={`${clayLight}AA`} isStory={isStory} />
+          </div>
 
           {/* Date/venue */}
           <div data-block="meta" style={{ marginTop: isStory ? 14 : 10, ...tr('meta') }}>

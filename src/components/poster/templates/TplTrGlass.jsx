@@ -147,7 +147,9 @@ export default function TplTrGlass({ event, homeTeam, championship, tagline, acc
           )}
 
           {/* InfoRow */}
-          <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={indigo} dimColor={`${indigo}AA`} isStory={isStory} />
+          <div data-block="info" style={{ ...tr('info') }}>
+            <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={indigo} dimColor={`${indigo}AA`} isStory={isStory} />
+          </div>
         </div>
 
         {/* Bottom */}

@@ -1,13 +1,15 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import PosterRenderer, { BASE_DIMS } from './PosterRenderer.jsx';
 
-const BLOCK_IDS = ['title', 'champ', 'home-team', 'away-team', 'meta', 'tagline'];
+const BLOCK_IDS = ['title', 'champ', 'home-team', 'away-team', 'teams', 'info', 'meta', 'tagline'];
 const BLOCK_LABELS = {
   title: 'Titre',
   champ: 'Compétition',
   'home-team': 'Domicile',
   'away-team': 'Visiteur',
-  meta: 'Infos match',
+  teams: 'Équipes',
+  info: 'Infos tournoi',
+  meta: 'Date · Lieu',
   tagline: 'Accroche',
 };
 const ACCENT = '#63FFB8';

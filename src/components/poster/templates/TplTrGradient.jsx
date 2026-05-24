@@ -146,7 +146,9 @@ export default function TplTrGradient({ event, homeTeam, championship, tagline, 
         )}
 
         {/* InfoRow */}
-        <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={a2} dimColor={`${a2}AA`} isStory={isStory} />
+        <div data-block="info" style={{ ...tr('info') }}>
+          <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={a2} dimColor={`${a2}AA`} isStory={isStory} />
+        </div>
 
         {/* Bottom — date + venue */}
         <div data-block="meta" style={{ marginTop: isStory ? 16 : 12, paddingTop: isStory ? 14 : 10, borderTop: `1px solid ${a}25`, ...tr('meta') }}>

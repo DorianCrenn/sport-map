@@ -126,7 +126,9 @@ export default function TplTrPremium({ event, homeTeam, championship, tagline, a
 
           {/* InfoRow */}
           <div data-block="meta" style={{ ...tr('meta') }}>
-            <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={gold} dimColor={`${gold}AA`} isStory={isStory} />
+            <div data-block="info" style={{ ...tr('info') }}>
+              <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={gold} dimColor={`${gold}AA`} isStory={isStory} />
+            </div>
             <div style={{ marginTop: isStory ? 10 : 7, fontSize: isStory ? 9.5 : 8.5, color: 'rgba(255,255,255,0.3)', fontWeight: 600, letterSpacing: '0.06em' }}>
               {dt.weekday} {dt.day} {dt.month}{dt.time !== '—' ? ` · ${dt.time}` : ''}{(event?.venue || event?.city) ? ` · ${event?.venue || event?.city}` : ''}
             </div>

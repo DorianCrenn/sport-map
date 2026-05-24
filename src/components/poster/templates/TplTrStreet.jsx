@@ -117,7 +117,9 @@ export default function TplTrStreet({ event, homeTeam, championship, tagline, ac
                 ))}
               </div>
             )}
-            <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={a} dimColor={`${a}AA`} isStory={isStory} />
+            <div data-block="info" style={{ ...tr('info') }}>
+              <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={a} dimColor={`${a}AA`} isStory={isStory} />
+            </div>
           </div>
 
           <div data-block="meta" style={{ borderTop: `1px solid rgba(255,255,255,0.06)`, paddingTop: isStory ? 12 : 9, display: 'flex', justifyContent: 'space-between', alignItems: 'center', ...tr('meta') }}>

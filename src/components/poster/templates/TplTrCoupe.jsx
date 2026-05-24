@@ -122,7 +122,9 @@ export default function TplTrCoupe({ event, homeTeam, championship, tagline, acc
         )}
 
         {/* InfoRow */}
-        <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={gold} dimColor={`${gold}AA`} isStory={isStory} />
+        <div data-block="info" style={{ ...tr('info') }}>
+          <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={gold} dimColor={`${gold}AA`} isStory={isStory} />
+        </div>
 
         {/* Date/venue */}
         <div data-block="meta" style={{ marginTop: isStory ? 14 : 10, ...tr('meta') }}>

@@ -103,7 +103,9 @@ export default function TplTrSummer({ event, homeTeam, championship, tagline, ac
           )}
 
           {/* InfoRow */}
-          <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color="#fff" dimColor="rgba(255,255,255,0.75)" isStory={isStory} />
+          <div data-block="info" style={{ ...tr('info') }}>
+            <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color="#fff" dimColor="rgba(255,255,255,0.75)" isStory={isStory} />
+          </div>
 
           {/* Date/venue */}
           <div data-block="meta" style={{ marginTop: isStory ? 14 : 10, ...tr('meta') }}>

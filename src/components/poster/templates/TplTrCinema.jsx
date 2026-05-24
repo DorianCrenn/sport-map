@@ -110,7 +110,9 @@ export default function TplTrCinema({ event, homeTeam, championship, tagline, ac
 
         {/* InfoRow — sparse */}
         <div data-block="champ" style={{ display: 'flex', justifyContent: 'center', marginBottom: isStory ? 16 : 12, ...tr('champ') }}>
-          <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={amber} dimColor={`${amber}AA`} isStory={isStory} />
+          <div data-block="info" style={{ ...tr('info') }}>
+            <InfoRow numTeams={event?.numTeams} tournamentFormat={event?.tournamentFormat} prize={event?.prize} unit={sport.unit} color={amber} dimColor={`${amber}AA`} isStory={isStory} />
+          </div>
         </div>
 
         {/* Date/venue — small */}
