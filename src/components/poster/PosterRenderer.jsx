@@ -422,7 +422,16 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
           position: 'absolute', top: 0, left: 0,
         }}
       >
-        <Component {...data} format={format} transforms={transforms} />
+        {/* Template renders without bgImage — PosterRenderer owns that layer */}
+        <Component {...data} bgImage={undefined} format={format} transforms={transforms} />
+
+        {/* Custom bg image at z=1 — above template's own solid bg, below content at z=10 */}
+        {data.bgImage && (
+          <>
+            <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', backgroundImage: `url(${data.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            <div style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none', backgroundColor: 'rgba(0,0,0,0.52)' }} />
+          </>
+        )}
 
         {/* Ambient tint overlay — sits above template bg, below content (z=10) */}
         {effects.tint && effects.tintOp > 0 && (
