@@ -1708,7 +1708,7 @@ export default function PosterStudio({ event, onClose, club }) {
                             setAiBgResult(res);
                             setAiBgLoading(false);
                             if (res.imageUrl) {
-                              dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'image', bgErr: false } });
+                              dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } });
                             }
                           }}
                           style={{
@@ -1736,7 +1736,7 @@ export default function PosterStudio({ event, onClose, club }) {
                                   onMouseEnter={e => e.currentTarget.style.opacity = 1}
                                   onMouseLeave={e => e.currentTarget.style.opacity = 0}>
                                   <button
-                                    onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: aiBgResult.imageUrl, bgMode: 'image', bgErr: false } })}
+                                    onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: aiBgResult.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } })}
                                     style={{ padding: '5px 10px', borderRadius: 7, fontSize: 10, fontWeight: 700, background: '#fff', color: '#111', border: 'none', cursor: 'pointer' }}>
                                     Appliquer
                                   </button>
@@ -1764,7 +1764,7 @@ export default function PosterStudio({ event, onClose, club }) {
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
                               {savedAiBgs.map(bg => (
                                 <div key={bg.id} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: `1.5px solid ${bgSrc === bg.imageUrl ? accentColor : 'var(--sl-border-s)'}`, cursor: 'pointer' }}
-                                  onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: bg.imageUrl, bgMode: 'image', bgErr: false } })}>
+                                  onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: bg.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } })}>
                                   <img src={bg.imageUrl} alt="" style={{ width: '100%', height: 56, objectFit: 'cover', display: 'block' }} />
                                   {bgSrc === bg.imageUrl && (
                                     <div style={{ position: 'absolute', top: 3, left: 3, width: 14, height: 14, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
