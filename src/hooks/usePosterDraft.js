@@ -61,19 +61,27 @@ export function usePosterDraft(eventId) {
   function saveDraft(state) {
     ls_set(DRAFT_KEY, { eventKey, savedAt: new Date().toISOString(), state });
     if (!isRealEvent || !userId) return;
-    supabase.from('posters').upsert(
-      {
-        event_id:    eventId,
-        user_id:     userId,
-        name:        'Brouillon',
-        status:      'draft',
-        format:      state.format ?? 'story',
-        template_id: state.templateId ?? 'simple',
-        layers:      state,
-        updated_at:  new Date().toISOString(),
-      },
-      { onConflict: 'event_id,user_id', ignoreDuplicates: false }
-    ).then(() => {}).catch(() => {});
+    const payload = {
+      user_id:     userId,
+      event_id:    eventId,
+      name:        'Brouillon',
+      status:      'draft',
+      format:      state.format ?? 'story',
+      template_id: state.templateId ?? 'simple',
+      layers:      state,
+      updated_at:  new Date().toISOString(),
+    };
+    // Partial unique index not usable via on_conflict — do explicit update then insert
+    supabase.from('posters')
+      .update({ layers: state, template_id: payload.template_id, format: payload.format, updated_at: payload.updated_at })
+      .eq('event_id', eventId).eq('user_id', userId).eq('status', 'draft')
+      .select('id')
+      .then(({ data }) => {
+        if (!data || data.length === 0) {
+          supabase.from('posters').insert(payload).then(() => {}).catch(() => {});
+        }
+      })
+      .catch(() => {});
   }
 
   function clearDraft() {
