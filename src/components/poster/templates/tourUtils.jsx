@@ -129,8 +129,8 @@ export function InfoRow({ numTeams, tournamentFormat, prize, unit = 'ÉQUIPES', 
   const dc = dimColor || color;
   const items = [];
   if (numTeams) items.push({ Icon: PeopleIcon, label: String(numTeams), sub: unit });
-  if (tournamentFormat) items.push({ Icon: CalendarIcon, label: truncate(tournamentFormat, 12), sub: 'FORMAT' });
-  if (prize) items.push({ Icon: TrophyIcon, label: truncate(prize, 14), sub: 'DOTATION' });
+  if (tournamentFormat) items.push({ Icon: CalendarIcon, label: tournamentFormat, sub: 'FORMAT' });
+  if (prize) items.push({ Icon: TrophyIcon, label: prize, sub: 'DOTATION' });
   if (!items.length) return null;
   return (
     <div style={{ display: 'flex', gap: isStory ? 16 : 12, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -138,7 +138,7 @@ export function InfoRow({ numTeams, tournamentFormat, prize, unit = 'ÉQUIPES', 
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <Icon size={isStory ? 13 : 11} color={color} />
           <div style={{ lineHeight: 1 }}>
-            <div style={{ fontSize: isStory ? 13 : 11, fontWeight: 900, color, whiteSpace: 'nowrap' }}>{label}</div>
+            <div style={{ fontSize: isStory ? 13 : 11, fontWeight: 900, color }}>{label}</div>
             <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: '0.12em', color: dc, opacity: 0.6, textTransform: 'uppercase', marginTop: 1 }}>{sub}</div>
           </div>
           {i < items.length - 1 && <span style={{ color, opacity: 0.15, fontSize: 18, marginLeft: 2 }}>·</span>}
