@@ -16,7 +16,7 @@ import {
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
-import { generateVariants, generateAIBackground } from '../lib/posterVariants.js';
+import { generateVariants, generateAIBackground, generateCustomBackground, BG_PROMPT_SUGGESTIONS } from '../lib/posterVariants.js';
 import { supabase } from '../lib/supabase.js';
 import { sanitizeFilename } from '../lib/sanitize.js';
 
@@ -280,6 +280,7 @@ export default function PosterStudio({ event, onClose, club }) {
   const [variantsOpen,  setVariantsOpen]  = useState(false);
   const [aiBgLoading,   setAiBgLoading]   = useState(false);
   const [aiBgResult,    setAiBgResult]    = useState(null);
+  const [customPrompt,  setCustomPrompt]  = useState('');
   const [savedAiBgs,    setSavedAiBgs]    = useState(() => loadSavedBgs(club?.id));
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
@@ -1698,30 +1699,65 @@ export default function PosterStudio({ event, onClose, club }) {
                           <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(139,92,246,0.15)', color: '#a78bfa', fontWeight: 700 }}>Flux · IA</span>
                         </div>
 
-                        {/* Generate button */}
-                        <button
-                          disabled={aiBgLoading}
-                          onClick={async () => {
-                            setAiBgLoading(true);
-                            setAiBgResult(null);
-                            const res = await generateAIBackground(dnaForBg, event?.sport, supabase);
-                            setAiBgResult(res);
-                            setAiBgLoading(false);
-                            if (res.imageUrl) {
-                              dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } });
-                            }
-                          }}
-                          style={{
-                            width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700,
-                            cursor: aiBgLoading ? 'wait' : 'pointer',
-                            border: '1px dashed rgba(139,92,246,0.4)', background: 'rgba(139,92,246,0.07)', color: '#a78bfa',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                            opacity: aiBgLoading ? 0.7 : 1, marginBottom: 8,
-                          }}>
-                          {aiBgLoading
-                            ? <><span style={{ fontSize: 14 }}>⏳</span> Génération en cours…</>
-                            : <><span style={{ fontSize: 14 }}>🎨</span> Générer un fond IA</>}
-                        </button>
+                        {/* Prompt suggestions */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
+                          {BG_PROMPT_SUGGESTIONS.map(s => (
+                            <button key={s} onClick={() => setCustomPrompt(s)}
+                              style={{
+                                padding: '4px 9px', borderRadius: 20, fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                                border: `1px solid ${customPrompt === s ? accentColor : 'var(--sl-border-s)'}`,
+                                background: customPrompt === s ? `${accentColor}18` : 'var(--sl-surface)',
+                                color: customPrompt === s ? accentColor : 'var(--sl-t2)',
+                                transition: 'all 0.12s',
+                              }}>
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Custom prompt input */}
+                        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                          <input
+                            value={customPrompt}
+                            onChange={e => setCustomPrompt(e.target.value)}
+                            placeholder="Décris le fond que tu veux…"
+                            disabled={aiBgLoading}
+                            style={{
+                              flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 11, fontWeight: 500,
+                              border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)',
+                              color: 'var(--sl-t1)', outline: 'none',
+                            }}
+                          />
+                          <button
+                            disabled={aiBgLoading}
+                            onClick={async () => {
+                              setAiBgLoading(true);
+                              setAiBgResult(null);
+                              const res = customPrompt.trim()
+                                ? await generateCustomBackground(customPrompt.trim())
+                                : await generateAIBackground(dnaForBg, event?.sport, supabase);
+                              setAiBgResult(res);
+                              setAiBgLoading(false);
+                              if (res.imageUrl) {
+                                dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } });
+                              }
+                            }}
+                            style={{
+                              padding: '9px 13px', borderRadius: 10, fontSize: 12, fontWeight: 800,
+                              cursor: aiBgLoading ? 'wait' : 'pointer',
+                              background: `linear-gradient(135deg, #a855f7, #6366f1)`,
+                              color: '#fff', border: 'none', opacity: aiBgLoading ? 0.6 : 1,
+                              display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+                            }}>
+                            {aiBgLoading ? '⏳' : '✨'}
+                          </button>
+                        </div>
+
+                        {aiBgLoading && (
+                          <div style={{ fontSize: 10, color: '#a78bfa', textAlign: 'center', marginBottom: 8, fontWeight: 600 }}>
+                            Génération en cours… (30-60s)
+                          </div>
+                        )}
 
                         {/* Generated result */}
                         {aiBgResult && (
@@ -1730,26 +1766,24 @@ export default function PosterStudio({ event, onClose, club }) {
                               <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: `1.5px solid rgba(139,92,246,0.4)` }}>
                                 <img src={aiBgResult.imageUrl} alt="Fond IA" style={{ width: '100%', height: 90, objectFit: 'cover', display: 'block' }} />
                                 <div style={{ position: 'absolute', top: 5, left: 5, fontSize: 8, fontWeight: 800, padding: '2px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
-                                  {aiBgResult.provider === 'fal' ? 'Fal.ai' : 'Pollinations IA'}
+                                  Pollinations IA · Gratuit
                                 </div>
-                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0, transition: 'opacity 0.15s', background: 'rgba(0,0,0,0.45)' }}
-                                  onMouseEnter={e => e.currentTarget.style.opacity = 1}
-                                  onMouseLeave={e => e.currentTarget.style.opacity = 0}>
+                                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: 5, padding: 6, background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}>
                                   <button
                                     onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: aiBgResult.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } })}
-                                    style={{ padding: '5px 10px', borderRadius: 7, fontSize: 10, fontWeight: 700, background: '#fff', color: '#111', border: 'none', cursor: 'pointer' }}>
+                                    style={{ flex: 1, padding: '5px 0', borderRadius: 7, fontSize: 10, fontWeight: 700, background: '#fff', color: '#111', border: 'none', cursor: 'pointer' }}>
                                     Appliquer
                                   </button>
                                   <button
                                     onClick={() => addSavedBg({ imageUrl: aiBgResult.imageUrl, prompt: aiBgResult.prompt, provider: aiBgResult.provider })}
-                                    style={{ padding: '5px 10px', borderRadius: 7, fontSize: 10, fontWeight: 700, background: accentColor, color: '#fff', border: 'none', cursor: 'pointer' }}>
+                                    style={{ flex: 1, padding: '5px 0', borderRadius: 7, fontSize: 10, fontWeight: 700, background: accentColor, color: '#fff', border: 'none', cursor: 'pointer' }}>
                                     Enregistrer
                                   </button>
                                 </div>
                               </div>
                             ) : (
                               <div style={{ padding: '8px 10px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 10, color: '#ef4444' }}>
-                                Génération impossible — réessayez ou configurez FAL_API_KEY.
+                                Génération échouée ou timeout — réessaie.
                               </div>
                             )}
                           </div>

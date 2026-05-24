@@ -115,6 +115,37 @@ export function generateVariants(daProfile, baseState, templateList, count = 8, 
   return variants;
 }
 
+// ── Image preload helper (90s timeout) ───────────────────────────────────────
+
+function preloadImage(url) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, 90_000);
+    const img = new Image();
+    img.onload  = () => { clearTimeout(timer); resolve(); };
+    img.onerror = () => { clearTimeout(timer); resolve(); };
+    img.src = url;
+  });
+}
+
+// ── PS-VAR-007 — Custom prompt → Pollinations.ai (direct, no edge fn) ────────
+
+export const BG_PROMPT_SUGGESTIONS = [
+  'Stade plein sous les projecteurs',
+  'Terrain de football la nuit',
+  'Vestiaires dramatiques',
+  'Fumée et lumières colorées',
+  'Ville vue du ciel au crépuscule',
+  'Abstrait énergie sportive',
+];
+
+export async function generateCustomBackground(userPrompt) {
+  const fullPrompt = `${userPrompt}, sports poster background, high quality 4k photography, no text, no people, no logos`;
+  const seed = Math.floor(Math.random() * 99999);
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=768&height=1024&model=flux&nologo=true&seed=${seed}`;
+  await preloadImage(url);
+  return { imageUrl: url, prompt: fullPrompt, provider: 'pollinations' };
+}
+
 // ── PS-VAR-004/005 — AI background generation via Fal.ai Flux ────────────────
 
 /**
@@ -141,12 +172,7 @@ export async function generateAIBackground(daProfile, sport, supabaseClient) {
     }
     // Pre-load image so CSS background-image has it in cache when applied
     if (!data.imageUrl.startsWith('data:')) {
-      await new Promise((resolve) => {
-        const img = new Image();
-        img.onload = resolve;
-        img.onerror = resolve;
-        img.src = data.imageUrl;
-      });
+      await preloadImage(data.imageUrl);
     }
     return { imageUrl: data.imageUrl, prompt: data.prompt ?? '', apiMode: true, provider: data.provider ?? 'fal' };
   } catch {
