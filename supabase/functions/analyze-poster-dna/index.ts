@@ -76,49 +76,26 @@ Deno.serve(async (req: Request) => {
 
     const client = new Anthropic({ apiKey: ANTHROPIC_KEY });
 
-    // PS-DNA-005 — log ai_job as pending
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    );
-    const { data: job } = await supabase.from('ai_jobs').insert({
-      type: 'dna',
-      club_id: clubId ?? null,
-      status: 'processing',
-      priority: 5,
-      input_ref: null,
-    }).select('id').single();
+    // PS-DNA-001/002 — Claude Haiku Vision call
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } },
+          { type: 'text', text: DNA_PROMPT },
+        ],
+      }],
+    });
 
-    let profile: Record<string, unknown>;
-    try {
-      // PS-DNA-001/002 — Claude Haiku Vision call
-      const response = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } },
-            { type: 'text', text: DNA_PROMPT },
-          ],
-        }],
-      });
-
-      const text = response.content[0].type === 'text' ? response.content[0].text.trim() : '';
-      // Strip markdown code fences
-      const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-      profile = JSON.parse(cleaned);
-    } catch (parseErr: unknown) {
-      if (job?.id) {
-        await supabase.from('ai_jobs').update({ status: 'failed', error_message: String(parseErr) }).eq('id', job.id);
-      }
-      throw parseErr;
-    }
+    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : '';
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    const profile: Record<string, unknown> = JSON.parse(cleaned);
 
     // PS-DNA-003 — enrich with computed metrics
     const accentHex = profile.colors && typeof (profile.colors as Record<string,string>).accent === 'string'
-      ? (profile.colors as Record<string,string>).accent
-      : '#8b5cf6';
+      ? (profile.colors as Record<string,string>).accent : '#8b5cf6';
     const r = parseInt(accentHex.slice(1, 3), 16);
     const g = parseInt(accentHex.slice(3, 5), 16);
     const b = parseInt(accentHex.slice(5, 7), 16);
@@ -133,17 +110,35 @@ Deno.serve(async (req: Request) => {
       mockMode: false,
     };
 
-    // PS-DNA-004 — upsert club_brand_kits
-    if (clubId) {
-      await supabase.from('club_brand_kits').upsert(
-        { club_id: clubId, da_profile: result },
-        { onConflict: 'club_id' },
+    // PS-DNA-004/005 — upsert + log (best-effort, never block the response)
+    try {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       );
-    }
+      // Extract user_id from JWT (Authorization header)
+      const authHeader = req.headers.get('Authorization') ?? '';
+      const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+      const userId = user?.id ?? null;
 
-    // PS-DNA-005 — mark job done
-    if (job?.id) {
-      await supabase.from('ai_jobs').update({ status: 'done' }).eq('id', job.id);
+      if (clubId && userId) {
+        await supabase.from('club_brand_kits').upsert(
+          { club_id: clubId, da_profile: result },
+          { onConflict: 'club_id' },
+        );
+      }
+      if (userId) {
+        await supabase.from('ai_jobs').insert({
+          type: 'dna',
+          user_id: userId,
+          club_id: clubId ?? null,
+          status: 'done',
+          priority: 5,
+          output_data: { style: profile.style, confidence: result.confidence },
+        });
+      }
+    } catch (_logErr) {
+      // Logging failure must not break the response
     }
 
     return new Response(JSON.stringify(result), {
