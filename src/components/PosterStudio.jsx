@@ -196,6 +196,18 @@ const PANEL_TABS = [
   { id: 'joueurs',  label: 'Joueurs',  Icon: IcoJoueurs },
 ];
 
+// ── AI background favorites (localStorage) ────────────────────────────────────
+
+const aiBgLsKey = (clubId) => `sl-ai-bgs-${clubId || 'anon'}`;
+function loadSavedBgs(clubId) {
+  try { return JSON.parse(localStorage.getItem(aiBgLsKey(clubId)) || '[]'); }
+  catch { return []; }
+}
+function persistSavedBgs(clubId, bgs) {
+  try { localStorage.setItem(aiBgLsKey(clubId), JSON.stringify(bgs)); }
+  catch {}
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function PosterStudio({ event, onClose, club }) {
@@ -267,7 +279,8 @@ export default function PosterStudio({ event, onClose, club }) {
   const [variantSeed,   setVariantSeed]   = useState(0);
   const [variantsOpen,  setVariantsOpen]  = useState(false);
   const [aiBgLoading,   setAiBgLoading]   = useState(false);
-  const [aiBgResult,    setAiBgResult]    = useState(null); // { imageUrl, prompt, apiMode }
+  const [aiBgResult,    setAiBgResult]    = useState(null);
+  const [savedAiBgs,    setSavedAiBgs]    = useState(() => loadSavedBgs(club?.id));
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
   const playerFileRef = useRef(null);
@@ -311,6 +324,18 @@ export default function PosterStudio({ event, onClose, club }) {
     }, 2000);
     return () => clearTimeout(t);
   }, [draftState]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── AI background favorites helpers ──
+  function addSavedBg(bgEntry) {
+    const newBgs = [{ ...bgEntry, id: `bg-${Date.now()}`, savedAt: new Date().toISOString() }, ...savedAiBgs].slice(0, 12);
+    setSavedAiBgs(newBgs);
+    persistSavedBgs(club?.id, newBgs);
+  }
+  function removeSavedBg(bgId) {
+    const newBgs = savedAiBgs.filter(b => b.id !== bgId);
+    setSavedAiBgs(newBgs);
+    persistSavedBgs(club?.id, newBgs);
+  }
 
   // ── Sport & club color palettes ──
   const sportColors = useMemo(() => {
@@ -951,61 +976,6 @@ export default function PosterStudio({ event, onClose, club }) {
                               Cliquer pour appliquer · {variants.length} variantes générées depuis votre style {clubDNA.daProfile.styleLabel}
                             </div>
 
-                            {/* ── PS-VAR-006 — Fonds IA section ── */}
-                            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--sl-border)' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                                <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--sl-t3)' }}>Fond IA</span>
-                                <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(139,92,246,0.15)', color: '#a78bfa', fontWeight: 700 }}>Fal.ai Flux</span>
-                              </div>
-
-                              {!aiBgResult && (
-                                <button
-                                  disabled={aiBgLoading}
-                                  onClick={async () => {
-                                    setAiBgLoading(true);
-                                    const res = await generateAIBackground(clubDNA.daProfile, event?.sport, supabase);
-                                    setAiBgResult(res);
-                                    setAiBgLoading(false);
-                                    if (res.imageUrl) {
-                                      dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'image', bgErr: false } });
-                                    }
-                                  }}
-                                  style={{
-                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: aiBgLoading ? 'wait' : 'pointer',
-                                    border: '1px dashed rgba(139,92,246,0.4)', background: 'rgba(139,92,246,0.07)', color: '#a78bfa',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, opacity: aiBgLoading ? 0.7 : 1,
-                                  }}>
-                                  {aiBgLoading
-                                    ? <><span style={{ fontSize: 14 }}>⏳</span> Génération en cours…</>
-                                    : <><span style={{ fontSize: 14 }}>🎨</span> Générer un fond IA</>}
-                                </button>
-                              )}
-
-                              {aiBgResult && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                  {aiBgResult.imageUrl ? (
-                                    <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: `1.5px solid rgba(139,92,246,0.4)` }}>
-                                      <img src={aiBgResult.imageUrl} alt="AI background" style={{ width: '100%', height: 80, objectFit: 'cover', display: 'block' }} />
-                                      <div style={{ position: 'absolute', top: 5, right: 5, fontSize: 8, fontWeight: 800, padding: '2px 5px', borderRadius: 4, background: 'rgba(139,92,246,0.85)', color: '#fff' }}>{aiBgResult.provider === 'fal' ? 'Fal.ai' : 'IA'}</div>
-                                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0, transition: 'opacity 0.15s', background: 'rgba(0,0,0,0.4)' }}
-                                        onMouseEnter={e => e.currentTarget.style.opacity = 1}
-                                        onMouseLeave={e => e.currentTarget.style.opacity = 0}>
-                                        <button onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: aiBgResult.imageUrl, bgMode: 'image', bgErr: false } })}
-                                          style={{ padding: '5px 10px', borderRadius: 7, fontSize: 10, fontWeight: 700, background: '#fff', color: '#111', border: 'none', cursor: 'pointer' }}>Appliquer</button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div style={{ padding: '8px 10px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 10, color: '#ef4444' }}>
-                                      Fal.ai non configuré — FAL_API_KEY requis dans les secrets Edge Function.
-                                    </div>
-                                  )}
-                                  <button onClick={() => setAiBgResult(null)}
-                                    style={{ fontSize: 10, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textAlign: 'left' }}>
-                                    Régénérer un fond IA
-                                  </button>
-                                </div>
-                              )}
-                            </div>
                           </div>
                         )}
                       </div>
@@ -1715,6 +1685,105 @@ export default function PosterStudio({ event, onClose, club }) {
                       </AnimatePresence>
                       {bgErr && <div style={{ padding: '7px 12px', borderRadius: 9, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#ef4444' }}>Image inaccessible — vérifiez le lien ou uploadez un fichier.</div>}
                     </div>
+
+                    {/* ── Fonds IA ── */}
+                    {(() => {
+                      const dnaForBg = clubDNA.daProfile || { style: 'classic', mood: [], colors: { accent: accentColor } };
+                      return (
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8, marginTop: 2 }}>
+                          <div style={{ width: 2, height: 13, borderRadius: 2, background: accentColor, flexShrink: 0 }} />
+                          <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: accentColor }}>Fonds IA</span>
+                          <div style={{ flex: 1, height: 1, background: 'var(--sl-border)' }} />
+                          <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(139,92,246,0.15)', color: '#a78bfa', fontWeight: 700 }}>Flux · IA</span>
+                        </div>
+
+                        {/* Generate button */}
+                        <button
+                          disabled={aiBgLoading}
+                          onClick={async () => {
+                            setAiBgLoading(true);
+                            setAiBgResult(null);
+                            const res = await generateAIBackground(dnaForBg, event?.sport, supabase);
+                            setAiBgResult(res);
+                            setAiBgLoading(false);
+                            if (res.imageUrl) {
+                              dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'image', bgErr: false } });
+                            }
+                          }}
+                          style={{
+                            width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                            cursor: aiBgLoading ? 'wait' : 'pointer',
+                            border: '1px dashed rgba(139,92,246,0.4)', background: 'rgba(139,92,246,0.07)', color: '#a78bfa',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                            opacity: aiBgLoading ? 0.7 : 1, marginBottom: 8,
+                          }}>
+                          {aiBgLoading
+                            ? <><span style={{ fontSize: 14 }}>⏳</span> Génération en cours…</>
+                            : <><span style={{ fontSize: 14 }}>🎨</span> Générer un fond IA</>}
+                        </button>
+
+                        {/* Generated result */}
+                        {aiBgResult && (
+                          <div style={{ marginBottom: 8 }}>
+                            {aiBgResult.imageUrl ? (
+                              <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: `1.5px solid rgba(139,92,246,0.4)` }}>
+                                <img src={aiBgResult.imageUrl} alt="Fond IA" style={{ width: '100%', height: 90, objectFit: 'cover', display: 'block' }} />
+                                <div style={{ position: 'absolute', top: 5, left: 5, fontSize: 8, fontWeight: 800, padding: '2px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
+                                  {aiBgResult.provider === 'fal' ? 'Fal.ai' : 'Pollinations IA'}
+                                </div>
+                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0, transition: 'opacity 0.15s', background: 'rgba(0,0,0,0.45)' }}
+                                  onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                                  onMouseLeave={e => e.currentTarget.style.opacity = 0}>
+                                  <button
+                                    onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: aiBgResult.imageUrl, bgMode: 'image', bgErr: false } })}
+                                    style={{ padding: '5px 10px', borderRadius: 7, fontSize: 10, fontWeight: 700, background: '#fff', color: '#111', border: 'none', cursor: 'pointer' }}>
+                                    Appliquer
+                                  </button>
+                                  <button
+                                    onClick={() => addSavedBg({ imageUrl: aiBgResult.imageUrl, prompt: aiBgResult.prompt, provider: aiBgResult.provider })}
+                                    style={{ padding: '5px 10px', borderRadius: 7, fontSize: 10, fontWeight: 700, background: accentColor, color: '#fff', border: 'none', cursor: 'pointer' }}>
+                                    Enregistrer
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{ padding: '8px 10px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 10, color: '#ef4444' }}>
+                                Génération impossible — réessayez ou configurez FAL_API_KEY.
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Saved backgrounds grid */}
+                        {savedAiBgs.length > 0 && (
+                          <div>
+                            <div style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', marginBottom: 6 }}>
+                              Fonds enregistrés ({savedAiBgs.length})
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+                              {savedAiBgs.map(bg => (
+                                <div key={bg.id} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: `1.5px solid ${bgSrc === bg.imageUrl ? accentColor : 'var(--sl-border-s)'}`, cursor: 'pointer' }}
+                                  onClick={() => dispatch({ type: 'PATCH', payload: { bgSrc: bg.imageUrl, bgMode: 'image', bgErr: false } })}>
+                                  <img src={bg.imageUrl} alt="" style={{ width: '100%', height: 56, objectFit: 'cover', display: 'block' }} />
+                                  {bgSrc === bg.imageUrl && (
+                                    <div style={{ position: 'absolute', top: 3, left: 3, width: 14, height: 14, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <span style={{ fontSize: 8, color: '#fff', fontWeight: 900 }}>✓</span>
+                                    </div>
+                                  )}
+                                  <button
+                                    onClick={e => { e.stopPropagation(); removeSavedBg(bg.id); }}
+                                    style={{ position: 'absolute', top: 3, right: 3, width: 16, height: 16, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.85)', color: '#fff', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      );
+                    })()}
 
                     {/* Logo partenaire */}
                     <div>
