@@ -262,6 +262,9 @@ export function useClubDNA(clubId) {
 
   async function syncToSupabase(cId, profile) {
     if (!cId) return;
+    // club_id is a FK uuid — skip sync if not a valid UUID (avoids 400 FK violation)
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(cId)) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     await supabase.from('club_brand_kits').upsert(
