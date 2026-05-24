@@ -395,7 +395,7 @@ function PlayerLayer({ layer, accentColor }) {
   );
 }
 
-const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', effects = {}, overlayElements = [], playerLayers = [] }) {
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', effects = {}, overlayElements = [], aiOverlayElements = [], playerLayers = [] }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
@@ -408,6 +408,8 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
 
   const belowEls = overlayElements.filter(e => !e.above);
   const aboveEls = overlayElements.filter(e => e.above);
+  const belowAiEls = aiOverlayElements.filter(e => !e.above);
+  const aboveAiEls = aiOverlayElements.filter(e => e.above);
   const belowPlayers = playerLayers.filter(p => !p.zAbove);
   const abovePlayers = playerLayers.filter(p => p.zAbove !== false);
 
@@ -463,6 +465,13 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
           );
         })}
 
+        {/* AI overlay elements — below content (z=6, screen blend) */}
+        {belowAiEls.map(el => (
+          <div key={el.uid} style={{ position: 'absolute', inset: 0, zIndex: 6, pointerEvents: 'none', opacity: el.opacity ?? 0.85, mixBlendMode: el.blendMode || 'screen' }}>
+            <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          </div>
+        ))}
+
         {/* Player layers — below content (z=7) */}
         {belowPlayers.map(pl => (
           <div key={pl.uid} style={{ position: 'absolute', inset: 0, zIndex: 7, pointerEvents: 'none' }}>
@@ -474,6 +483,13 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
         {abovePlayers.map(pl => (
           <div key={pl.uid} style={{ position: 'absolute', inset: 0, zIndex: 12, pointerEvents: 'none' }}>
             <PlayerLayer layer={pl} accentColor={data?.accentColor} />
+          </div>
+        ))}
+
+        {/* AI overlay elements — above content (z=16, screen blend) */}
+        {aboveAiEls.map(el => (
+          <div key={el.uid} style={{ position: 'absolute', inset: 0, zIndex: 16, pointerEvents: 'none', opacity: el.opacity ?? 0.85, mixBlendMode: el.blendMode || 'screen' }}>
+            <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         ))}
 

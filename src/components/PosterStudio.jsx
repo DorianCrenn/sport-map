@@ -16,7 +16,7 @@ import {
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
-import { generateVariants, generateAIBackground, generateCustomBackground, BG_PROMPT_SUGGESTIONS } from '../lib/posterVariants.js';
+import { generateVariants, generateAIBackground, generateCustomBackground, generateCustomElement, BG_PROMPT_SUGGESTIONS, ELEMENT_PROMPT_SUGGESTIONS } from '../lib/posterVariants.js';
 import { supabase } from '../lib/supabase.js';
 import { sanitizeFilename } from '../lib/sanitize.js';
 
@@ -243,6 +243,7 @@ export default function PosterStudio({ event, onClose, club }) {
     bgPreset: '',
     bgTint: '', bgTintOp: 0,
     overlayElements: [],
+    aiOverlayElements: [],
     playerLayers: [],
     homeName: initialFields.homeName, awayName: initialFields.awayName,
     homeLogo: initialFields.homeLogo, awayLogo: initialFields.awayLogo,
@@ -254,7 +255,7 @@ export default function PosterStudio({ event, onClose, club }) {
     format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode, bgPreset,
     bgTint, bgTintOp,
     homeName, awayName, homeLogo, awayLogo, championship, tagline,
-    sponsorSrc, transforms, overlayElements, playerLayers,
+    sponsorSrc, transforms, overlayElements, aiOverlayElements, playerLayers,
   } = poster;
   const set = (key, value) => dispatch({ type: key, value });
 
@@ -281,6 +282,8 @@ export default function PosterStudio({ event, onClose, club }) {
   const [aiBgLoading,   setAiBgLoading]   = useState(false);
   const [aiBgResult,    setAiBgResult]    = useState(null);
   const [customPrompt,  setCustomPrompt]  = useState('');
+  const [elementPrompt, setElementPrompt] = useState('');
+  const [aiElLoading,   setAiElLoading]   = useState(false);
   const [savedAiBgs,    setSavedAiBgs]    = useState(() => loadSavedBgs(club?.id));
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
@@ -336,6 +339,17 @@ export default function PosterStudio({ event, onClose, club }) {
     const newBgs = savedAiBgs.filter(b => b.id !== bgId);
     setSavedAiBgs(newBgs);
     persistSavedBgs(club?.id, newBgs);
+  }
+
+  // ── AI overlay element helpers ──
+  function addAiOverlay(el) {
+    dispatch({ type: 'PATCH', payload: { aiOverlayElements: [...(aiOverlayElements || []), { uid: `ai-${Date.now()}`, above: false, opacity: 0.85, blendMode: 'screen', ...el }] } });
+  }
+  function removeAiOverlay(uid) {
+    dispatch({ type: 'PATCH', payload: { aiOverlayElements: (aiOverlayElements || []).filter(e => e.uid !== uid) } });
+  }
+  function updateAiOverlay(uid, patch) {
+    dispatch({ type: 'PATCH', payload: { aiOverlayElements: (aiOverlayElements || []).map(e => e.uid === uid ? { ...e, ...patch } : e) } });
   }
 
   // ── Sport & club color palettes ──
@@ -561,7 +575,7 @@ export default function PosterStudio({ event, onClose, club }) {
       >
         {/* Hidden HD renderer for export */}
         <div style={{ position: 'fixed', left: -9999, top: 0, width: w, height: h, pointerEvents: 'none', zIndex: -1 }}>
-          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} playerLayers={playerLayers || []} />
+          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
         </div>
 
         {/* Fullscreen preview */}
@@ -569,7 +583,7 @@ export default function PosterStudio({ event, onClose, club }) {
           {previewFull && (
             <motion.div key="full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, borderRadius: 'inherit' }}>
-              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} playerLayers={playerLayers || []} />
+              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
               <button onClick={() => setPreviewFull(false)}
                 style={{ padding: '9px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Fermer
@@ -772,7 +786,7 @@ export default function PosterStudio({ event, onClose, club }) {
                 templateId={templateId} data={posterData} format={format}
                 previewWidth={PREVIEW_W} innerRef={posterRef} transforms={transforms}
                 bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []}
-                playerLayers={playerLayers || []}
+                aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []}
               />
             </div>
 
@@ -1608,6 +1622,116 @@ export default function PosterStudio({ event, onClose, club }) {
                         </div>
                       </div>
                     )}
+
+                    {/* ── Éléments IA ── */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8, marginTop: 2 }}>
+                        <div style={{ width: 2, height: 13, borderRadius: 2, background: accentColor, flexShrink: 0 }} />
+                        <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: accentColor }}>Éléments IA</span>
+                        <div style={{ flex: 1, height: 1, background: 'var(--sl-border)' }} />
+                        <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(139,92,246,0.15)', color: '#a78bfa', fontWeight: 700 }}>Screen blend</span>
+                      </div>
+
+                      {/* Suggestions */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
+                        {ELEMENT_PROMPT_SUGGESTIONS.map(s => (
+                          <button key={s} onClick={() => setElementPrompt(s)}
+                            style={{
+                              padding: '4px 9px', borderRadius: 20, fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                              border: `1px solid ${elementPrompt === s ? accentColor : 'var(--sl-border-s)'}`,
+                              background: elementPrompt === s ? `${accentColor}18` : 'var(--sl-surface)',
+                              color: elementPrompt === s ? accentColor : 'var(--sl-t2)',
+                              transition: 'all 0.12s',
+                            }}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Input + generate */}
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                        <input
+                          value={elementPrompt}
+                          onChange={e => setElementPrompt(e.target.value)}
+                          placeholder="Décris l'effet décoratif…"
+                          disabled={aiElLoading}
+                          style={{
+                            flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 11, fontWeight: 500,
+                            border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)',
+                            color: 'var(--sl-t1)', outline: 'none',
+                          }}
+                        />
+                        <button
+                          disabled={aiElLoading || !elementPrompt.trim()}
+                          onClick={async () => {
+                            setAiElLoading(true);
+                            const res = await generateCustomElement(elementPrompt.trim(), accentColor);
+                            setAiElLoading(false);
+                            if (res.imageUrl) addAiOverlay({ imageUrl: res.imageUrl, prompt: res.prompt });
+                          }}
+                          style={{
+                            padding: '9px 13px', borderRadius: 10, fontSize: 12, fontWeight: 800, flexShrink: 0,
+                            cursor: (aiElLoading || !elementPrompt.trim()) ? 'not-allowed' : 'pointer',
+                            background: `linear-gradient(135deg, #a855f7, #6366f1)`,
+                            color: '#fff', border: 'none',
+                            opacity: (aiElLoading || !elementPrompt.trim()) ? 0.5 : 1,
+                          }}>
+                          {aiElLoading ? '⏳' : '✨'}
+                        </button>
+                      </div>
+                      {aiElLoading && (
+                        <div style={{ fontSize: 10, color: '#a78bfa', textAlign: 'center', marginBottom: 6, fontWeight: 600 }}>
+                          Génération en cours… (30-60s)
+                        </div>
+                      )}
+
+                      {/* Active AI elements */}
+                      {(aiOverlayElements || []).length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)' }}>
+                              Actifs ({(aiOverlayElements || []).length})
+                            </span>
+                            <button onClick={() => dispatch({ type: 'PATCH', payload: { aiOverlayElements: [] } })}
+                              style={{ fontSize: 9.5, color: 'var(--sl-t3)', border: 'none', background: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+                              Tout effacer
+                            </button>
+                          </div>
+                          {(aiOverlayElements || []).map(el => (
+                            <div key={el.uid} style={{ borderRadius: 10, border: '1px solid var(--sl-border)', overflow: 'hidden', background: 'var(--sl-surface)' }}>
+                              <div style={{ position: 'relative', height: 52 }}>
+                                <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', mixBlendMode: 'normal' }} />
+                                <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 4 }}>
+                                  <button onClick={() => removeAiOverlay(el.uid)}
+                                    style={{ width: 18, height: 18, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.9)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>✕</button>
+                                </div>
+                              </div>
+                              <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                {/* Z position */}
+                                <div style={{ display: 'flex', borderRadius: 7, overflow: 'hidden', border: '1px solid var(--sl-border)', alignSelf: 'flex-start' }}>
+                                  {[['Fond', false], ['Dessus', true]].map(([lbl, val]) => (
+                                    <button key={lbl} onClick={() => updateAiOverlay(el.uid, { above: val })}
+                                      style={{ padding: '3px 10px', border: 'none', cursor: 'pointer', fontSize: 9, fontWeight: 800,
+                                        backgroundColor: el.above === val ? accentColor : 'var(--sl-surface)',
+                                        color: el.above === val ? '#fff' : 'var(--sl-t3)', transition: 'all 0.12s' }}>
+                                      {lbl}
+                                    </button>
+                                  ))}
+                                </div>
+                                {/* Opacity */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                  <span style={{ fontSize: 9.5, color: 'var(--sl-t3)', fontWeight: 600, whiteSpace: 'nowrap' }}>Opacité</span>
+                                  <input type="range" min={0.1} max={1} step={0.05} value={el.opacity}
+                                    onChange={e => updateAiOverlay(el.uid, { opacity: parseFloat(e.target.value) })}
+                                    style={{ flex: 1, accentColor, cursor: 'pointer' }} />
+                                  <span style={{ fontSize: 9.5, color: 'var(--sl-t3)', fontWeight: 700, width: 28, textAlign: 'right' }}>{Math.round(el.opacity * 100)}%</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
                     {/* Teinte d'ambiance */}
                     <div>

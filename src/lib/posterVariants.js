@@ -146,6 +146,27 @@ export async function generateCustomBackground(userPrompt) {
   return { imageUrl: url, prompt: fullPrompt, provider: 'pollinations' };
 }
 
+// ── PS-VAR-008 — Custom element prompt → Pollinations.ai (screen blend) ──────
+
+export const ELEMENT_PROMPT_SUGGESTIONS = [
+  'Confettis colorés',
+  'Éclairs électriques',
+  'Fumée dramatique',
+  'Pluie de lumières',
+  'Feu d\'artifice',
+  'Particules dorées',
+  'Étincelles',
+  'Néons flottants',
+];
+
+export async function generateCustomElement(userPrompt, accentColor = '#ffffff') {
+  const fullPrompt = `${userPrompt}, isolated effect on pure black background, dramatic, vibrant, high contrast, no people, no text, no logos, photorealistic`;
+  const seed = Math.floor(Math.random() * 99999);
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=768&height=1024&model=flux&nologo=true&seed=${seed}`;
+  await preloadImage(url);
+  return { imageUrl: url, prompt: fullPrompt };
+}
+
 // ── PS-VAR-004/005 — AI background generation via Fal.ai Flux ────────────────
 
 /**
