@@ -50,12 +50,21 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
       if (!el) return;
       const elRect = el.getBoundingClientRect();
 
-      // Walk all text nodes + SVG/img to get the true visual bounding box
+      // Walk text nodes + SVG/img, but stop at nested data-block boundaries
+      const inNestedBlock = (node) => {
+        let cur = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+        while (cur && cur !== el) {
+          if (cur.hasAttribute('data-block')) return true;
+          cur = cur.parentElement;
+        }
+        return false;
+      };
+
       let minL = Infinity, minT = Infinity, maxR = -Infinity, maxB = -Infinity;
       const textWalker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
       let node;
       while ((node = textWalker.nextNode())) {
-        if (!node.textContent.trim()) continue;
+        if (!node.textContent.trim() || inNestedBlock(node)) continue;
         try {
           const r = document.createRange();
           r.selectNodeContents(node);
@@ -67,6 +76,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
         } catch (_) {}
       }
       el.querySelectorAll('svg, img').forEach(child => {
+        if (inNestedBlock(child)) return;
         const cr = child.getBoundingClientRect();
         if (cr.width > 0 && cr.height > 0) {
           minL = Math.min(minL, cr.left); minT = Math.min(minT, cr.top);
