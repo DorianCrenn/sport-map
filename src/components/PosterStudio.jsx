@@ -1741,41 +1741,44 @@ export default function PosterStudio({ event, onClose, club }) {
                             </button>
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-                            {(aiOverlayElements || []).map(el => (
-                              <div key={el.uid} style={{ borderRadius: 10, border: '1px solid var(--sl-border)', overflow: 'hidden', background: '#000' }}>
-                                {/* Portrait thumbnail */}
-                                <div style={{ position: 'relative', aspectRatio: '9/16' }}>
-                                  <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                                  {/* Top-right action buttons */}
-                                  <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                    <button onClick={() => setAiElEditorUid(el.uid)}
-                                      style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(139,92,246,0.9)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Éditer">
-                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                    </button>
-                                    <button onClick={() => addSavedEl({ imageUrl: el.imageUrl, prompt: el.prompt })}
-                                      style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', cursor: 'pointer', background: savedAiEls.some(s => s.imageUrl === el.imageUrl) ? 'rgba(239,68,68,0.9)' : 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Enregistrer en favori">
-                                      ♥
-                                    </button>
-                                    <button onClick={() => removeAiOverlay(el.uid)}
-                                      style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.85)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>✕</button>
-                                  </div>
-                                  {/* Bottom: above/below badge */}
-                                  <div style={{ position: 'absolute', bottom: 4, left: 4 }}>
+                            {(aiOverlayElements || []).map(el => {
+                              const isSaved = savedAiEls.some(s => s.imageUrl === el.imageUrl);
+                              return (
+                                <div key={el.uid} style={{ borderRadius: 10, border: '1px solid var(--sl-border)', overflow: 'hidden', background: 'var(--sl-surface)' }}>
+                                  {/* Compact portrait thumbnail — fixed 90px */}
+                                  <div style={{ position: 'relative', height: 90, background: '#000' }}>
+                                    <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                                    {/* Above/below pill bottom-left */}
                                     <button onClick={() => updateAiOverlay(el.uid, { above: !el.above })}
-                                      style={{ padding: '2px 7px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 8, fontWeight: 800, background: el.above ? accentColor : 'rgba(0,0,0,0.6)', color: el.above ? '#000' : '#fff' }}>
+                                      style={{ position: 'absolute', bottom: 4, left: 4, padding: '2px 7px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 8, fontWeight: 800, background: el.above ? accentColor : 'rgba(0,0,0,0.65)', color: el.above ? '#000' : '#fff' }}>
                                       {el.above ? 'Dessus' : 'Fond'}
                                     </button>
                                   </div>
+                                  {/* Action row — big tap targets */}
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderTop: '1px solid var(--sl-border)' }}>
+                                    <button onClick={() => setAiElEditorUid(el.uid)}
+                                      style={{ padding: '9px 0', border: 'none', borderRight: '1px solid var(--sl-border)', cursor: 'pointer', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a78bfa' }} title="Éditer">
+                                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                    </button>
+                                    <button onClick={() => addSavedEl({ imageUrl: el.imageUrl, prompt: el.prompt })}
+                                      style={{ padding: '9px 0', border: 'none', borderRight: '1px solid var(--sl-border)', cursor: 'pointer', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: isSaved ? '#ef4444' : 'var(--sl-t3)' }} title="Enregistrer">
+                                      ♥
+                                    </button>
+                                    <button onClick={() => removeAiOverlay(el.uid)}
+                                      style={{ padding: '9px 0', border: 'none', cursor: 'pointer', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#ef4444' }}>
+                                      ✕
+                                    </button>
+                                  </div>
+                                  {/* Opacity slider */}
+                                  <div style={{ padding: '5px 8px 7px', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <input type="range" min={0.1} max={1} step={0.05} value={el.opacity ?? 0.85}
+                                      onChange={e => updateAiOverlay(el.uid, { opacity: parseFloat(e.target.value) })}
+                                      style={{ flex: 1, accentColor, cursor: 'pointer' }} />
+                                    <span style={{ fontSize: 9, color: 'var(--sl-t3)', fontWeight: 700, width: 24, textAlign: 'right', flexShrink: 0 }}>{Math.round((el.opacity ?? 0.85) * 100)}%</span>
+                                  </div>
                                 </div>
-                                {/* Opacity slider */}
-                                <div style={{ padding: '6px 8px', display: 'flex', alignItems: 'center', gap: 5, background: 'var(--sl-surface)' }}>
-                                  <input type="range" min={0.1} max={1} step={0.05} value={el.opacity ?? 0.85}
-                                    onChange={e => updateAiOverlay(el.uid, { opacity: parseFloat(e.target.value) })}
-                                    style={{ flex: 1, accentColor, cursor: 'pointer' }} />
-                                  <span style={{ fontSize: 9, color: 'var(--sl-t3)', fontWeight: 700, width: 24, textAlign: 'right', flexShrink: 0 }}>{Math.round((el.opacity ?? 0.85) * 100)}%</span>
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -1790,17 +1793,14 @@ export default function PosterStudio({ event, onClose, club }) {
                             {savedAiEls.map(el => (
                               <div key={el.id}
                                 onClick={() => addAiOverlay({ imageUrl: el.imageUrl, prompt: el.prompt })}
-                                style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1.5px solid var(--sl-border-s)', cursor: 'pointer', background: '#000', aspectRatio: '9/16' }}>
+                                style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1.5px solid var(--sl-border-s)', cursor: 'pointer', background: '#000', height: 72 }}>
                                 <img src={el.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                                {/* Apply hint */}
-                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.15s' }}
-                                  onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                                  onMouseLeave={e => e.currentTarget.style.opacity = '0'}>
-                                  <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'rgba(0,0,0,0.7)', padding: '3px 7px', borderRadius: 6 }}>+ Ajouter</span>
+                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.35)' }}>
+                                  <span style={{ fontSize: 9, fontWeight: 800, color: '#fff' }}>+ Ajouter</span>
                                 </div>
                                 <button
                                   onClick={e => { e.stopPropagation(); removeSavedEl(el.id); }}
-                                  style={{ position: 'absolute', top: 3, right: 3, width: 16, height: 16, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.85)', color: '#fff', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+                                  style={{ position: 'absolute', top: 3, right: 3, width: 18, height: 18, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.85)', color: '#fff', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
                                   ✕
                                 </button>
                               </div>
