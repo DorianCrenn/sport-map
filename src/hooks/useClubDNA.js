@@ -152,25 +152,17 @@ function classifyStyle(palette) {
 // ── Claude Vision via Edge Function (PS-DNA-001) ─────────────────────────────
 
 async function analyzeWithAPI(file, clubId) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async ev => {
-      try {
-        const dataUrl = ev.target.result;
-        const { data, error } = await supabase.functions.invoke('analyze-poster-dna', {
-          body: { imageBase64: dataUrl, clubId: clubId || null },
-        });
-        if (error || data?.mockFallback || data?.error) {
-          throw new Error(data?.error ?? error?.message ?? 'API unavailable');
-        }
-        resolve({ ...data, mockMode: false });
-      } catch (err) {
-        reject(err);
-      }
-    };
-    reader.onerror = () => reject(new Error('Lecture fichier impossible'));
-    reader.readAsDataURL(file);
+  // Compress to max 800px before sending — Anthropic rejects images > ~5MB base64
+  const { compressImage } = await import('../lib/imageUtils.js');
+  const { dataUrl } = await compressImage(file, { maxWidth: 800, quality: 0.82 });
+
+  const { data, error } = await supabase.functions.invoke('analyze-poster-dna', {
+    body: { imageBase64: dataUrl, clubId: clubId || null },
   });
+  if (error || data?.mockFallback || data?.error) {
+    throw new Error(data?.error ?? error?.message ?? 'API unavailable');
+  }
+  return { ...data, mockMode: false };
 }
 
 // ── Main analysis ─────────────────────────────────────────────────────────────
