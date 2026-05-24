@@ -106,7 +106,7 @@ export default function TplFluo({ event, homeTeam, awayTeam, championship, tagli
 
         {tagline && (
           <div data-block="tagline" style={{ borderTop: `1px solid ${DARK}18`, paddingTop: 8, ...tr('tagline') }}>
-            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.3em', color: `${DARK}55`, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.3em', color: `${DARK}55`, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
       </div>

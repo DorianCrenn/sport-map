@@ -1,4 +1,4 @@
-import { getSportMeta, InfoRow, Grain, fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
+import { getSportMeta, InfoRow, Grain, fmtDate, truncate, blockStyle, venueFs, scaledTitle } from './tourUtils.jsx';
 
 const H = { story: 640, post: 450 };
 
@@ -96,13 +96,14 @@ export default function TplTrMinimal({ event, homeTeam, championship, tagline, a
           {/* Tournament name — HUGE on dark bg */}
           <div data-block="title" style={{ marginBottom: isStory ? 16 : 11, ...tr('title') }}>
             <div style={{
-              fontSize: isStory ? 62 : 46,
+              fontSize: scaledTitle(tName, isStory ? 62 : 46, isStory ? 24 : 18),
               fontWeight: 900,
               color: cream,
               lineHeight: 0.9,
               letterSpacing: '-0.04em',
+              overflowWrap: 'break-word',
             }}>
-              {truncate(tName, 20)}
+              {tName}
             </div>
           </div>
 

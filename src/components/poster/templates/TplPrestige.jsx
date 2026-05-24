@@ -125,7 +125,7 @@ export default function TplPrestige({ event, homeTeam, awayTeam, championship, t
 
         {tagline && (
           <div data-block="tagline" style={{ textAlign: 'center', marginTop: 10, ...tr('tagline') }}>
-            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.3em', color: `${a}55`, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.3em', color: `${a}55`, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
 

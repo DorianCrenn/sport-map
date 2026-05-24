@@ -120,7 +120,7 @@ export default function TplPulse({ event, homeTeam, awayTeam, championship, tagl
 
         {tagline && (
           <div data-block="tagline" style={{ textAlign: 'center', marginBottom: 10, ...tr('tagline') }}>
-            <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.28em', color: a, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.28em', color: a, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
 

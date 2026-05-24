@@ -1,4 +1,4 @@
-import { getSportMeta, InfoRow, Grain, LightOrb, fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
+import { getSportMeta, InfoRow, Grain, LightOrb, fmtDate, truncate, blockStyle, venueFs, scaledTitle } from './tourUtils.jsx';
 
 const H = { story: 640, post: 450 };
 
@@ -97,14 +97,15 @@ export default function TplTrCinema({ event, homeTeam, championship, tagline, ac
             {event?.tournamentType || 'GRAND TOURNOI'}
           </div>
           <div style={{
-            fontSize: isStory ? 52 : 38,
+            fontSize: scaledTitle(tName, isStory ? 52 : 38, isStory ? 22 : 16),
             fontWeight: 900,
             color: '#fff',
             lineHeight: 0.93,
             letterSpacing: '-0.03em',
             textShadow: `0 0 40px ${amber}45`,
+            overflowWrap: 'break-word',
           }}>
-            {truncate(tName, 24)}
+            {tName}
           </div>
         </div>
 

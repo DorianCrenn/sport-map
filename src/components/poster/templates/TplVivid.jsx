@@ -101,7 +101,7 @@ export default function TplVivid({ event, homeTeam, awayTeam, championship, tagl
 
         {tagline && (
           <div data-block="tagline" style={{ marginBottom: 10, ...tr('tagline') }}>
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: a, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: a, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
 

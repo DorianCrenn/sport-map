@@ -44,6 +44,15 @@ export function venueFs(text = '', base = 11) {
   return base;
 }
 
+export function scaledTitle(str = '', base = 54, min = 22) {
+  const len = (str || '').length;
+  if (len <= 10) return base;
+  if (len <= 16) return Math.max(min, Math.round(base * 0.82));
+  if (len <= 22) return Math.max(min, Math.round(base * 0.68));
+  if (len <= 30) return Math.max(min, Math.round(base * 0.56));
+  return Math.max(min, Math.round(base * 0.46));
+}
+
 export function blockStyle(transforms, id) {
   const t = transforms?.[id];
   if (!t) return {};

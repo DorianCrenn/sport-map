@@ -1,4 +1,4 @@
-import { getSportMeta, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
+import { getSportMeta, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs, scaledTitle } from './tourUtils.jsx';
 
 const H = { story: 640, post: 450 };
 
@@ -94,16 +94,17 @@ export default function TplTrStreet({ event, homeTeam, championship, tagline, ac
         <div data-block="title" style={{ marginBottom: isStory ? 20 : 14, ...tr('title') }}>
           {event?.sport && <div style={{ fontSize: 8, fontWeight: 700, color: `${a}80`, letterSpacing: '0.32em', textTransform: 'uppercase', marginBottom: 8 }}>{event.sport}</div>}
           <div style={{
-            fontSize: isStory ? 76 : 56,
+            fontSize: scaledTitle(tName, isStory ? 76 : 56, isStory ? 28 : 22),
             fontWeight: 900,
             lineHeight: 0.85,
             letterSpacing: '-0.05em',
             textTransform: 'uppercase',
             textShadow: `2px 2px 0 ${a}30, 0 0 40px ${a}25`,
+            color: '#fff',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
           }}>
-            {truncate(tName, 14).split(' ').map((word, i) => (
-              <div key={i} style={{ color: i % 3 === 1 ? a : i % 3 === 2 ? 'rgba(255,255,255,0.6)' : '#fff' }}>{word}</div>
-            ))}
+            {tName}
           </div>
         </div>
 

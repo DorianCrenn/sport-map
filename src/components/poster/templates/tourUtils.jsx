@@ -1,5 +1,5 @@
-import { fmtDate, truncate, blockStyle, venueFs } from '../posterUtils.js';
-export { fmtDate, truncate, blockStyle, venueFs };
+import { fmtDate, truncate, blockStyle, venueFs, scaledTitle } from '../posterUtils.js';
+export { fmtDate, truncate, blockStyle, venueFs, scaledTitle };
 
 // ── Sport meta ──────────────────────────────────────────────────────────────
 export function getSportMeta(sport = '') {

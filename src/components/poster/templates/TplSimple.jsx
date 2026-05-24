@@ -100,7 +100,7 @@ export default function TplSimple({ event, homeTeam, awayTeam, championship, tag
 
         {tagline && (
           <div data-block="tagline" style={{ marginTop: 10, ...tr('tagline') }}>
-            <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.22em', color: `${a}80`, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.22em', color: `${a}80`, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
       </div>

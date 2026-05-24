@@ -1,4 +1,4 @@
-import { getSportMeta, InfoRow, Grain, LightOrb, fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
+import { getSportMeta, InfoRow, Grain, LightOrb, fmtDate, truncate, blockStyle, venueFs, scaledTitle } from './tourUtils.jsx';
 
 const H = { story: 640, post: 450 };
 
@@ -81,14 +81,15 @@ export default function TplTrSummer({ event, homeTeam, championship, tagline, ac
           {/* MASSIVE tournament name */}
           <div data-block="title" style={{ marginBottom: isStory ? 18 : 13, ...tr('title') }}>
             <div style={{
-              fontSize: isStory ? 68 : 50,
+              fontSize: scaledTitle(tName, isStory ? 68 : 50, isStory ? 26 : 20),
               fontWeight: 900,
               color: '#fff',
               lineHeight: 0.88,
               letterSpacing: '-0.045em',
               textShadow: `0 2px 30px rgba(0,0,0,0.4), 0 0 60px ${a}30`,
+              overflowWrap: 'break-word',
             }}>
-              {truncate(tName, 16)}
+              {tName}
             </div>
           </div>
 

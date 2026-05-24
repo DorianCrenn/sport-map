@@ -1,4 +1,4 @@
-import { getSportMeta, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
+import { getSportMeta, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs, scaledTitle } from './tourUtils.jsx';
 
 const H = { story: 640, post: 450 };
 
@@ -121,7 +121,7 @@ export default function TplTrGlass({ event, homeTeam, championship, tagline, acc
         {/* Title */}
         <div data-block="title" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', ...tr('title') }}>
           <div style={{
-            fontSize: isStory ? 52 : 38,
+            fontSize: scaledTitle(tName, isStory ? 52 : 38, isStory ? 22 : 16),
             fontWeight: 900,
             lineHeight: 0.95,
             letterSpacing: '-0.035em',
@@ -131,8 +131,9 @@ export default function TplTrGlass({ event, homeTeam, championship, tagline, acc
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
             filter: `drop-shadow(0 0 25px ${indigo}35)`,
+            overflowWrap: 'break-word',
           }}>
-            {truncate(tName, 26)}
+            {tName}
           </div>
 
           {/* Categories */}

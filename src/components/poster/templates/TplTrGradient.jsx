@@ -1,4 +1,4 @@
-import { getSportMeta, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
+import { getSportMeta, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs, scaledTitle } from './tourUtils.jsx';
 
 const H = { story: 640, post: 450 };
 
@@ -123,14 +123,15 @@ export default function TplTrGradient({ event, homeTeam, championship, tagline, 
         {/* Title — massive left-aligned */}
         <div data-block="title" style={{ marginBottom: isStory ? 20 : 14, maxWidth: '72%', ...tr('title') }}>
           <div style={{
-            fontSize: isStory ? 64 : 48,
+            fontSize: scaledTitle(tName, isStory ? 64 : 48, isStory ? 26 : 20),
             fontWeight: 900,
             lineHeight: 0.9,
             letterSpacing: '-0.04em',
             color: '#fff',
             textShadow: `0 0 40px ${a}40, 0 2px 0 rgba(0,0,0,0.4)`,
+            overflowWrap: 'break-word',
           }}>
-            {truncate(tName, 18)}
+            {tName}
           </div>
         </div>
 

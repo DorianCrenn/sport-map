@@ -118,7 +118,7 @@ export default function TplCinema({ event, homeTeam, awayTeam, championship, tag
 
           {tagline && (
             <div data-block="tagline" style={{ ...tr('tagline') }}>
-              <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.32em', color: `${a}65`, textTransform: 'uppercase' }}>{tagline}</span>
+              <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.32em', color: `${a}65`, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
             </div>
           )}
         </div>

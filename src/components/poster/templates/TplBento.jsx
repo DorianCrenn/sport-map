@@ -96,7 +96,7 @@ export default function TplBento({ event, homeTeam, awayTeam, championship, tagl
         {/* Footer */}
         {tagline ? (
           <div data-block="tagline" style={{ ...card({ padding: '9px 14px', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }), ...tr('tagline') }}>
-            <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.22em', color: a, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.22em', color: a, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
             <span style={{ fontSize: 8, fontWeight: 600, color: `${DARK}35`, letterSpacing: '0.14em' }}>FINISTÈRE</span>
           </div>
         ) : (

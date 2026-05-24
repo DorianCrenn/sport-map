@@ -127,7 +127,7 @@ export default function TplEditorial({ event, homeTeam, awayTeam, championship, 
 
         {tagline && (
           <div data-block="tagline" style={{ textAlign: 'center', marginBottom: 11, ...tr('tagline') }}>
-            <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.3em', color: a, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.3em', color: a, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
 

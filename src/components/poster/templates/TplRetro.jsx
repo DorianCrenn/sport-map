@@ -98,7 +98,7 @@ export default function TplRetro({ event, homeTeam, awayTeam, championship, tagl
 
         {tagline && (
           <div data-block="tagline" style={{ textAlign: 'center', marginTop: 10, ...tr('tagline') }}>
-            <span style={{ fontSize: 7.5, fontWeight: 700, letterSpacing: '0.38em', color: `${a}50`, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 7.5, fontWeight: 700, letterSpacing: '0.38em', color: `${a}50`, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
       </div>

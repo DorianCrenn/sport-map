@@ -128,7 +128,7 @@ export default function TplLuxe({ event, homeTeam, awayTeam, championship, tagli
 
         {tagline && (
           <div data-block="tagline" style={{ textAlign: 'center', marginBottom: 11, ...tr('tagline') }}>
-            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.38em', color: `${a}65`, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.38em', color: `${a}65`, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
 

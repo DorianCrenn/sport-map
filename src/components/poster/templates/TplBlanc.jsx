@@ -114,7 +114,7 @@ export default function TplBlanc({ event, homeTeam, awayTeam, championship, tagl
 
         {tagline && (
           <div data-block="tagline" style={{ marginTop: 10, ...tr('tagline') }}>
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.28em', color: a, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.28em', color: a, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
       </div>

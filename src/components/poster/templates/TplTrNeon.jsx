@@ -1,4 +1,4 @@
-import { getSportMeta, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
+import { getSportMeta, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs, scaledTitle } from './tourUtils.jsx';
 
 const H = { story: 640, post: 450 };
 
@@ -77,17 +77,18 @@ export default function TplTrNeon({ event, homeTeam, championship, tagline, acce
         {/* MASSIVE stacked title — left aligned */}
         <div data-block="title" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', ...tr('title') }}>
           <div style={{
-            fontSize: isStory ? 74 : 54,
+            fontSize: scaledTitle(tName, isStory ? 58 : 44, isStory ? 24 : 18),
             fontWeight: 900,
             lineHeight: 0.86,
             letterSpacing: '-0.05em',
             textTransform: 'uppercase',
             textShadow: `0 0 40px ${orange}70, 0 0 80px ${orange}30`,
             marginBottom: isStory ? 22 : 16,
+            color: '#fff',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
           }}>
-            {truncate(tName, 14).split(' ').map((word, i) => (
-              <div key={i} style={{ color: i % 2 === 0 ? '#fff' : orange }}>{word}</div>
-            ))}
+            {tName}
           </div>
 
           {/* Tournament type */}

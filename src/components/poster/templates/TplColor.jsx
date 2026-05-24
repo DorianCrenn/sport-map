@@ -101,7 +101,7 @@ export default function TplColor({ event, homeTeam, awayTeam, championship, tagl
 
           {tagline && (
             <div data-block="tagline" style={{ marginTop: 8, ...tr('tagline') }}>
-              <span style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.22em', color: `${a}80`, textTransform: 'uppercase' }}>{tagline}</span>
+              <span style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.22em', color: `${a}80`, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
             </div>
           )}
         </div>

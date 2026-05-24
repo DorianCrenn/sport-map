@@ -120,7 +120,7 @@ export default function TplElegant({ event, homeTeam, awayTeam, championship, ta
 
         {tagline && (
           <div data-block="tagline" style={{ marginBottom: 12, ...tr('tagline') }}>
-            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.3em', color: `${DARK}38`, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.3em', color: `${DARK}38`, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
 

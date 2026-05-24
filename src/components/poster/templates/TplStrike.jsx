@@ -137,7 +137,7 @@ export default function TplStrike({ event, homeTeam, awayTeam, championship, tag
 
         {tagline && (
           <div data-block="tagline" style={{ marginTop: 10, textAlign: 'center', ...tr('tagline') }}>
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.28em', color: `${a}70`, textTransform: 'uppercase' }}>{tagline}</span>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.28em', color: `${a}70`, textTransform: 'uppercase', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
       </div>

@@ -140,7 +140,7 @@ export default function TplNeon({ event, homeTeam, awayTeam, championship, tagli
 
         {tagline && (
           <div data-block="tagline" style={{ textAlign: 'center', marginBottom: 10, ...tr('tagline') }}>
-            <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.28em', color: a, textTransform: 'uppercase', textShadow: `0 0 10px ${a}55` }}>{tagline}</span>
+            <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.28em', color: a, textTransform: 'uppercase', textShadow: `0 0 10px ${a}55`, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tagline}</span>
           </div>
         )}
 
