@@ -259,6 +259,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                     pointerEvents: 'auto',
                     backgroundColor: isActive ? `${ACCENT}08` : 'transparent',
                     transition: 'border-color 0.12s, background-color 0.12s',
+                    touchAction: 'none',
                   }}
                 >
                   {/* Label chip */}
@@ -293,6 +294,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
         backgroundColor: 'rgba(255,255,255,0.03)',
         backdropFilter: 'blur(16px)',
         minHeight: 120,
+        paddingBottom: 'env(safe-area-inset-bottom)',
       }}>
         {activeBlock ? (
           <div style={{ padding: '14px 20px' }}>
@@ -313,7 +315,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                     onClick={() => alignBlock(dir)}
                     title={title}
                     style={{
-                      width: 28, height: 28, borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 40, height: 40, borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'none', border: '1px solid rgba(255,255,255,0.13)', color: 'rgba(255,255,255,0.5)',
                     }}
                   >
@@ -324,7 +326,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                 <button
                   onClick={() => onChange(activeBlock, {})}
                   style={{
-                    fontSize: 10, fontWeight: 600, padding: '5px 11px', borderRadius: 7, cursor: 'pointer',
+                    fontSize: 10, fontWeight: 600, padding: '9px 13px', borderRadius: 7, cursor: 'pointer', minHeight: 40,
                     background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.55)',
                   }}
                 >
@@ -333,7 +335,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                 <button
                   onClick={() => onChange(activeBlock, { ...(transforms[activeBlock] || {}), hidden: !(transforms[activeBlock]?.hidden) })}
                   style={{
-                    fontSize: 10, fontWeight: 600, padding: '5px 11px', borderRadius: 7, cursor: 'pointer',
+                    fontSize: 10, fontWeight: 600, padding: '9px 13px', borderRadius: 7, cursor: 'pointer', minHeight: 40,
                     background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.55)',
                   }}
                 >
@@ -358,7 +360,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                   value={t.fontSize ?? 32}
                   disabled={t.fontSize == null}
                   onChange={e => onChange(activeBlock, { ...(transforms[activeBlock] || {}), fontSize: parseInt(e.target.value, 10) })}
-                  style={{ width: '100%', accentColor: ACCENT, cursor: t.fontSize == null ? 'default' : 'pointer', opacity: t.fontSize == null ? 0.3 : 1 }}
+                  style={{ width: '100%', accentColor: ACCENT, cursor: t.fontSize == null ? 'default' : 'pointer', opacity: t.fontSize == null ? 0.3 : 1, touchAction: 'none' }}
                 />
                 <button
                   onClick={() => {
@@ -418,7 +420,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                       const val = parseFloat(e.target.value);
                       onChange(activeBlock, { ...(transforms[activeBlock] || {}), [key]: val });
                     }}
-                    style={{ width: '100%', accentColor: ACCENT, cursor: 'pointer' }}
+                    style={{ width: '100%', accentColor: ACCENT, cursor: 'pointer', touchAction: 'none' }}
                   />
                 </div>
               ))}

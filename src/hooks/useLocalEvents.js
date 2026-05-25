@@ -25,6 +25,7 @@ function mapFromDB(row) {
     adversaire:            row.adversaire              ?? '',
     standings:             row.standings               ?? null,
     score:                 row.score                   ?? null,
+    manOfMatch:            row.man_of_match            ?? '',
     clubId:                row.club_id                 ?? null,
     userId:                row.user_id,
     seriesId:              row.series_id               ?? null,
@@ -59,6 +60,7 @@ function mapToDB(data, userId) {
     adversaire:             sanitizeText(data.adversaire            ?? ''),
     standings:              data.standings                         ?? null,
     score:                  data.score                             ?? null,
+    man_of_match:           sanitizeText(data.manOfMatch           ?? '') || null,
     club_id:                data.clubId                            ?? null,
     series_id:              data.seriesId                          ?? null,
     user_id:                userId,
@@ -80,6 +82,8 @@ export function useLocalEvents() {
   const { currentUser } = useAuth();
   const [events, setEvents]   = useState([]);
   const [loading, setLoading] = useState(true);
+  const eventsRef = useRef([]);
+  useEffect(() => { eventsRef.current = events; }, [events]);
 
   // Track temp IDs being inserted so Realtime INSERT doesn't double-add them
   const pendingInserts = useRef(new Set());
@@ -91,6 +95,7 @@ export function useLocalEvents() {
       .from('events')
       .select('*')
       .order('date', { ascending: true })
+      .limit(500)
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) console.error('[Events] fetch failed:', error.message);
@@ -157,15 +162,8 @@ export function useLocalEvents() {
   }, [currentUser?.id]);
 
   const updateEvent = useCallback(async (id, data) => {
-    setEvents(evs => {
-      const prev = evs.find(e => e.id === id);
-      return evs.map(e => e.id === id ? { ...e, ...data } : e);
-    });
-
-    // Capture prev for rollback inside the functional updater's closure is not possible,
-    // so we use a separate read here (snapshot before setState completes is fine for rollback).
-    const snapshot = events.find(e => e.id === id);
-
+    setEvents(evs => evs.map(e => e.id === id ? { ...e, ...data } : e));
+    const snapshot = eventsRef.current.find(e => e.id === id);
     try {
       const merged = snapshot ? { ...snapshot, ...data } : data;
       const { error } = await supabase
@@ -178,10 +176,10 @@ export function useLocalEvents() {
       if (snapshot) setEvents(evs => evs.map(e => e.id === id ? snapshot : e));
       throw err;
     }
-  }, [currentUser?.id, events]);
+  }, [currentUser?.id]);
 
   const deleteEvent = useCallback(async (id) => {
-    const snapshot = events.find(e => e.id === id);
+    const snapshot = eventsRef.current.find(e => e.id === id);
     setEvents(evs => evs.filter(e => e.id !== id));
     try {
       const { error } = await supabase.from('events').delete().eq('id', id);
@@ -193,7 +191,7 @@ export function useLocalEvents() {
       }
       throw err;
     }
-  }, [events]);
+  }, []);
 
   const addEventsBatch = useCallback(async (eventsData) => {
     const userId = currentUser?.id;

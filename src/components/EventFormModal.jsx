@@ -121,6 +121,8 @@ const EMPTY_FORM = {
   // Tournament-specific fields
   tournamentName: '', tournamentType: '', numTeams: '',
   tournamentFormat: '', tournamentCategories: '', prize: '', organizer: '',
+  // Post-match fields
+  manOfMatch: '',
 };
 
 function generateRecurring(base, freq, untilStr) {
@@ -166,6 +168,7 @@ function toFormValues(event, defaults = {}) {
       tournamentName: event.tournamentName ?? '', tournamentType: event.tournamentType ?? '',
       numTeams: event.numTeams ? String(event.numTeams) : '', tournamentFormat: event.tournamentFormat ?? '',
       tournamentCategories: event.tournamentCategories ?? '', prize: event.prize ?? '', organizer: event.organizer ?? '',
+      manOfMatch: '',
     };
   }
   const d = new Date(event.date);
@@ -182,6 +185,7 @@ function toFormValues(event, defaults = {}) {
     tournamentName: event.tournamentName ?? '', tournamentType: event.tournamentType ?? '',
     numTeams: event.numTeams ? String(event.numTeams) : '', tournamentFormat: event.tournamentFormat ?? '',
     tournamentCategories: event.tournamentCategories ?? '', prize: event.prize ?? '', organizer: event.organizer ?? '',
+    manOfMatch: event.manOfMatch ?? '',
   };
 }
 
@@ -230,6 +234,7 @@ function buildEvent(form, currentUser, myClub, useSmartMode) {
       prize: form.prize || undefined,
       organizer: form.organizer || undefined,
     } : {}),
+    manOfMatch: form.manOfMatch || undefined,
     clubId: currentUser?.clubId ?? null,
     creatorId: currentUser?.id ?? null,
     departmentId: 'finistere', regionId: 'brittany',
@@ -358,7 +363,7 @@ function AdversaireField({ value, onChange, sameSportClubs, myClubId, inputStyle
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               {c.logo_url ? (
-                <img src={c.logo_url} alt="" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'contain', flexShrink: 0 }} />
+                <img src={c.logo_url} alt="" loading="lazy" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'contain', flexShrink: 0 }} />
               ) : (
                 <div style={{ width: 22, height: 22, borderRadius: 4, backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)' }}>
                   {c.name[0]}
@@ -512,7 +517,7 @@ function EventTypeRadio({ value, onChange }) {
   );
 }
 
-export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
+export default function EventFormModal({ event, onSave, onClose, onBulkSave, onOpenPoster }) {
   const { currentUser, isClubAdmin } = useAuth();
   const { allSports } = useSports();
   const { userClubs } = useClubs();
@@ -558,6 +563,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
   const [form, setForm]         = useState(() => toFormValues(event, buildDefaults(event)));
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [createdEvent, setCreatedEvent] = useState(null);
 
   useEffect(() => {
     setForm(toFormValues(event, buildDefaults(event)));
@@ -600,7 +606,10 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
         const recurring = generateRecurring(base, form.recurrenceFreq, form.recurrenceUntil);
         if (recurring.length > 0) { await onBulkSave(recurring); return; }
       }
-      await onSave(base);
+      const saved = await onSave(base);
+      if (!isEdit && onOpenPoster) {
+        setCreatedEvent(saved ?? base);
+      }
     } catch (err) {
       setSubmitError(err.message ?? 'Erreur lors de la création');
     } finally {
@@ -646,6 +655,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
             width: '100%', maxWidth: 540, display: 'flex', flexDirection: 'column',
             borderRadius: '24px 24px 0 0', backgroundColor: 'var(--sl-card)',
             border: '1px solid var(--sl-border)', height: '92dvh', maxHeight: '92dvh',
+            position: 'relative',
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -911,6 +921,17 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
             <Field label="Description">
               <textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Informations complémentaires…" rows={3} style={{ ...inputStyle, resize: 'none' }} />
             </Field>
+
+            {form.eventType !== 'tournament' && (
+              <Field label="Joueur du match" hint="Optionnel — affiché sur l'affiche résultat">
+                <input
+                  type="text" value={form.manOfMatch}
+                  onChange={e => set('manOfMatch', e.target.value)}
+                  placeholder="ex. Kevin Dupont"
+                  style={inputStyle}
+                />
+              </Field>
+            )}
           </form>
 
           {/* Footer */}
@@ -929,6 +950,65 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave }) {
               </button>
             </div>
           </div>
+
+          {/* ── Écran succès post-création (FLOW-001a) ─────────────────────── */}
+          {createdEvent && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              style={{
+                position: 'absolute', inset: 0, zIndex: 20,
+                borderRadius: 'inherit',
+                backgroundColor: 'var(--sl-card)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: 22, padding: '32px 28px', textAlign: 'center',
+              }}
+            >
+              <div style={{ width: 68, height: 68, borderRadius: '50%', backgroundColor: 'rgba(34,217,106,0.12)', border: '1.5px solid rgba(34,217,106,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--sl-t1)', marginBottom: 6, letterSpacing: '-0.02em' }}>
+                  Événement créé !
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--sl-t3)', lineHeight: 1.5, maxWidth: 290 }}>
+                  {createdEvent.title || 'Votre événement est en ligne.'}
+                </div>
+              </div>
+              {onOpenPoster && (
+                <button
+                  onClick={() => { onOpenPoster(createdEvent); onClose(); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    padding: '14px 28px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    color: 'white', fontSize: 15, fontWeight: 800,
+                    boxShadow: '0 8px 24px rgba(99,102,241,0.32)',
+                    width: '100%', maxWidth: 310,
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  Générer l'affiche
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '11px 28px', borderRadius: 12, cursor: 'pointer',
+                  border: '1px solid var(--sl-border)', backgroundColor: 'transparent',
+                  color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600,
+                }}
+              >
+                Fermer
+              </button>
+            </motion.div>
+          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>

@@ -11,11 +11,14 @@ export function useAttendees() {
   const { currentUser } = useAuth();
   const userId = currentUser?.id ?? null;
   const prevUserId = useRef(null);
+  const attendingRef = useRef(new Set());
 
   const [attending, setAttending] = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem(lsKey(null)) ?? '[]')); }
     catch { return new Set(); }
   });
+
+  useEffect(() => { attendingRef.current = attending; }, [attending]);
 
   useEffect(() => {
     if (userId === prevUserId.current) return;
@@ -49,7 +52,7 @@ export function useAttendees() {
 
   const toggle = useCallback(async (id) => {
     const strId = String(id);
-    const isCurrent = attending.has(strId);
+    const isCurrent = attendingRef.current.has(strId);
 
     setAttending(prev => {
       const next = new Set(prev);
@@ -78,7 +81,7 @@ export function useAttendees() {
         return rolled;
       });
     }
-  }, [userId, attending]);
+  }, [userId]);
 
   const isAttending = useCallback((id) => attending.has(String(id)), [attending]);
 

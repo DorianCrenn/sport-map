@@ -201,6 +201,13 @@ export default function MapPage({
     if (selectedEventId === id) setSelectedEventId(null);
   }, [onDeleteEvent, selectedEventId]);
 
+  const handleOpenNewEvent   = useCallback(() => setModalEvent({ _isNew: true }), []);
+  const handleEditEvent      = useCallback((event) => setModalEvent(event), []);
+  const handleDuplicateEvent = useCallback(
+    (event) => setModalEvent({ ...event, _isNew: true, _isDuplicate: true, id: undefined, date: '', score: null }),
+    []
+  );
+
   return (
     <div className="flex flex-col h-full relative">
       <SportFilterBar
@@ -302,10 +309,10 @@ export default function MapPage({
             geoLoading={geoLoading}
             canAddEvent={canAddEvent}
             pendingScores={pendingScores}
-            onAddEvent={() => setModalEvent({ _isNew: true })}
-            onEditEvent={(event) => setModalEvent(event)}
+            onAddEvent={handleOpenNewEvent}
+            onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
-            onDuplicateEvent={(event) => setModalEvent({ ...event, _isNew: true, _isDuplicate: true, id: undefined, date: '', score: null })}
+            onDuplicateEvent={handleDuplicateEvent}
             onUpdateEvent={onUpdateEvent}
             clubs={allClubs}
           />

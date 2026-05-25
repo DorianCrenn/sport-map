@@ -224,14 +224,15 @@ function persistSavedEls(clubId, els) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function PosterStudio({ event, onClose, club }) {
+export default function PosterStudio({ event, onClose, club, quickMode = false, resultMode = null }) {
   const { allSports } = useSports();
   const { currentUser } = useAuth();
   const hasPremium = currentUser?.role === 'admin' || currentUser?.role === 'superadmin'
     || currentUser?.role === 'club_admin' || currentUser?.isPremium;
 
-  const posterRef   = useRef(null);
-  const exportRef   = useRef(null);
+  const posterRef        = useRef(null);
+  const exportRef        = useRef(null);
+  const exportWrapperRef = useRef(null);
   const sponsorRef  = useRef(null);
   const bgFileRef   = useRef(null);
   const homeLogoRef = useRef(null);
@@ -251,8 +252,10 @@ export default function PosterStudio({ event, onClose, club }) {
   const clubDNA    = useClubDNA(club?.id);
 
   const [poster, dispatch] = useReducer(posterReducer, {
-    format: 'story', templateId: isTournamentEvent ? 'tr-premium' : 'simple',
+    format: 'story', templateId: isTournamentEvent ? 'tr-premium' : (resultMode ? 'impact' : 'simple'),
     accentColor: initialAccent,
+    scoreHome: resultMode?.home !== undefined ? resultMode.home : undefined,
+    scoreAway: resultMode?.away !== undefined ? resultMode.away : undefined,
     bgSrc: '', bgUrl: '', bgErr: false, bgMode: 'color',
     bgPreset: '',
     bgTint: '', bgTintOp: 0,
@@ -270,11 +273,14 @@ export default function PosterStudio({ event, onClose, club }) {
     bgTint, bgTintOp,
     homeName, awayName, homeLogo, awayLogo, championship, tagline,
     sponsorSrc, transforms, overlayElements, aiOverlayElements, playerLayers,
+    scoreHome, scoreAway,
   } = poster;
   const set = (key, value) => dispatch({ type: key, value });
 
   const [activeTab,     setActiveTab]     = useState('template');
   const [exportOpen,    setExportOpen]    = useState(false);
+  const [quickBannerDismissed, setQuickBannerDismissed] = useState(false);
+  const [watermarkVisible, setWatermarkVisible] = useState(true);
   const [editorOpen,    setEditorOpen]    = useState(false);
   const [previewFull,   setPreviewFull]   = useState(false);
   const [downloading,   setDownloading]   = useState(false);
@@ -339,6 +345,12 @@ export default function PosterStudio({ event, onClose, club }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!quickMode && !resultMode) return;
+    const t = setTimeout(() => setExportOpen(true), 900);
+    return () => clearTimeout(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const draftState = useMemo(() => {
     const { bgUrl: _, bgErr: __, ...rest } = poster;
@@ -503,9 +515,15 @@ export default function PosterStudio({ event, onClose, club }) {
 
   // ── Export helpers ──
   async function getBlob() {
-    const node = exportRef.current;
+    const node = exportWrapperRef.current;
     if (!node) return null;
-    return toBlob(node, { pixelRatio: 3, cacheBust: true });
+    let blob = await toBlob(node, { pixelRatio: 3, cacheBust: true });
+    // Safari iOS peut retourner un blob vide — retry après délai
+    if (!blob || blob.size < 10_000) {
+      await new Promise(r => setTimeout(r, 350));
+      blob = await toBlob(node, { pixelRatio: 3, cacheBust: true });
+    }
+    return blob;
   }
 
   async function handleDownload() {
@@ -610,8 +628,30 @@ export default function PosterStudio({ event, onClose, club }) {
         onClick={e => e.stopPropagation()}
       >
         {/* Hidden HD renderer for export */}
-        <div style={{ position: 'fixed', left: -9999, top: 0, width: w, height: h, pointerEvents: 'none', zIndex: -1 }}>
-          <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+        <div style={{ position: 'fixed', left: -9999, top: 0, pointerEvents: 'none', zIndex: -1 }}>
+          <div ref={exportWrapperRef} style={{ position: 'relative', width: w, height: h, overflow: 'hidden' }}>
+            <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+            {scoreHome !== undefined && scoreAway !== undefined && (
+              <div style={{
+                position: 'absolute', bottom: 72, left: '50%', transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap', zIndex: 10,
+                backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 16, padding: '12px 28px',
+                display: 'flex', alignItems: 'center', gap: 16,
+                border: '1px solid rgba(255,255,255,0.15)',
+              }}>
+                <span style={{ fontSize: 52, fontWeight: 900, color: 'white', lineHeight: 1, fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif', fontVariantNumeric: 'tabular-nums' }}>{scoreHome}</span>
+                <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.35)', fontWeight: 300 }}>—</span>
+                <span style={{ fontSize: 52, fontWeight: 900, color: 'white', lineHeight: 1, fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif', fontVariantNumeric: 'tabular-nums' }}>{scoreAway}</span>
+              </div>
+            )}
+            {watermarkVisible && (
+              <div style={{ position: 'absolute', bottom: 10, right: 12, padding: '3px 9px', borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.38)' }}>
+                <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.09em', color: 'rgba(255,255,255,0.72)', textTransform: 'uppercase', fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif' }}>
+                  {club?.name ? `${club.name} · SportLink` : 'Créé avec SportLink'}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Fullscreen preview */}
@@ -674,6 +714,22 @@ export default function PosterStudio({ event, onClose, club }) {
                 borderRadius: 20, boxShadow: '0 12px 40px rgba(0,0,0,0.3)', padding: 8,
               }}
             >
+              {/* Watermark toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px 4px' }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: hasPremium ? 'var(--sl-t1)' : 'var(--sl-t3)' }}>Masquer le watermark</div>
+                  {!hasPremium && <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Plan Club Pro requis</div>}
+                </div>
+                {hasPremium ? (
+                  <MiniToggle value={!watermarkVisible} onChange={(v) => setWatermarkVisible(!v)} accent={accentColor} />
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                )}
+              </div>
+              <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
+
               {/* PNG */}
               <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleDownload(); setExportOpen(false); }} disabled={downloading}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: `${accentColor}10` }}>
@@ -765,6 +821,15 @@ export default function PosterStudio({ event, onClose, club }) {
                 </motion.span>
               )}
             </AnimatePresence>
+            <button
+              onClick={() => { setActiveTab(null); setExportOpen(prev => !prev); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 10, border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}12`, cursor: 'pointer', color: accentColor, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              Partager
+            </button>
             <button onClick={onClose}
               style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -773,6 +838,30 @@ export default function PosterStudio({ event, onClose, club }) {
             </button>
           </div>
         </div>
+
+        {/* ── QUICK MODE BANNER ───────────────────────────────────────────────── */}
+        {quickMode && !quickBannerDismissed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+            style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', backgroundColor: 'rgba(34,217,106,0.07)', borderBottom: '1px solid rgba(34,217,106,0.18)' }}
+          >
+            <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--sl-green)', flexShrink: 0 }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)', flex: 1, lineHeight: 1.4 }}>
+              {resultMode
+                ? `Score ${resultMode.home}–${resultMode.away} · Affiche résultat prête !`
+                : 'Affiche prête — personnalisez ou partagez directement'
+              }
+            </span>
+            <button onClick={() => { setExportOpen(true); setQuickBannerDismissed(true); }}
+              style={{ padding: '5px 12px', borderRadius: 8, border: 'none', backgroundColor: 'var(--sl-green)', color: '#000', fontSize: 11, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>
+              Partager
+            </button>
+            <button onClick={() => setQuickBannerDismissed(true)}
+              style={{ width: 22, height: 22, borderRadius: 6, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </motion.div>
+        )}
 
         {/* ── FORMAT + ACTIVE TEMPLATE ─────────────────────────────────────────── */}
         <div style={{
@@ -831,7 +920,7 @@ export default function PosterStudio({ event, onClose, club }) {
           <div style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 10 }}>
             <div style={{
               width: PREVIEW_W, height: previewH,
-              borderRadius: 12, overflow: 'hidden', flexShrink: 0,
+              borderRadius: 12, overflow: 'hidden', flexShrink: 0, position: 'relative',
               boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.18)',
               border: '1px solid rgba(255,255,255,0.06)',
             }}>
@@ -841,6 +930,42 @@ export default function PosterStudio({ event, onClose, club }) {
                 bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []}
                 aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []}
               />
+              {watermarkVisible && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const url = club?.id
+                      ? `${window.location.origin}${window.location.pathname}#club/${club.id}`
+                      : window.location.origin;
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                  }}
+                  style={{
+                    position: 'absolute', bottom: Math.round(10 * previewH / h), right: Math.round(12 * previewH / h),
+                    padding: `${Math.round(3 * previewH / h)}px ${Math.round(9 * previewH / h)}px`,
+                    borderRadius: Math.round(6 * previewH / h),
+                    backgroundColor: 'rgba(0,0,0,0.38)', border: 'none', cursor: 'pointer', zIndex: 6,
+                  }}
+                  title={club?.id ? `Voir la page ${club.name}` : 'Créé avec SportLink'}
+                >
+                  <span style={{ fontSize: Math.round(8 * previewH / h), fontWeight: 700, letterSpacing: '0.09em', color: 'rgba(255,255,255,0.72)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                    {club?.name ? `${club.name} · SportLink` : 'Créé avec SportLink'}
+                  </span>
+                </button>
+              )}
+              {scoreHome !== undefined && scoreAway !== undefined && (
+                <div style={{
+                  position: 'absolute', bottom: Math.round(72 * previewH / h), left: '50%', transform: 'translateX(-50%)',
+                  whiteSpace: 'nowrap', zIndex: 5,
+                  backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: Math.round(16 * previewH / h),
+                  padding: `${Math.round(12 * previewH / h)}px ${Math.round(28 * previewH / h)}px`,
+                  display: 'flex', alignItems: 'center', gap: Math.round(16 * previewH / h),
+                  border: '1px solid rgba(255,255,255,0.15)',
+                }}>
+                  <span style={{ fontSize: Math.round(52 * previewH / h), fontWeight: 900, color: 'white', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{scoreHome}</span>
+                  <span style={{ fontSize: Math.round(20 * previewH / h), color: 'rgba(255,255,255,0.35)', fontWeight: 300 }}>—</span>
+                  <span style={{ fontSize: Math.round(52 * previewH / h), fontWeight: 900, color: 'white', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{scoreAway}</span>
+                </div>
+              )}
             </div>
 
             {/* Floating action buttons */}
@@ -1176,7 +1301,7 @@ export default function PosterStudio({ event, onClose, club }) {
                               <input
                                 type="range" min={0.1} max={1} step={0.05} value={opacity}
                                 onChange={e => setLayerProp(block.id, 'opacity', parseFloat(e.target.value))}
-                                style={{ width: 46, accentColor, cursor: 'pointer', flexShrink: 0 }}
+                                style={{ width: 70, accentColor, cursor: 'pointer', flexShrink: 0, touchAction: 'none' }}
                               />
                               <span style={{ fontSize: 9, color: 'var(--sl-t3)', width: 22, textAlign: 'right', flexShrink: 0 }}>{Math.round(opacity * 100)}%</span>
                               {/* Visibility toggle */}

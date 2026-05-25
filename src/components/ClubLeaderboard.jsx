@@ -41,7 +41,7 @@ function LeaderboardRow({ entry, rank, index }) {
         fontSize: 10, fontWeight: 700, color: 'var(--sl-t2)',
       }}>
         {entry.logo_url
-          ? <img src={entry.logo_url} alt={entry.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
+          ? <img src={entry.logo_url} alt={entry.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
           : initials}
       </div>
 

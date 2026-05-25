@@ -220,7 +220,7 @@ function NavBtn({ event }) {
   );
 }
 
-function QuickScoreEdit({ event, onUpdateEvent }) {
+function QuickScoreEdit({ event, onUpdateEvent, onPosterResult }) {
   const [home, setHome] = useState(String(event.score?.home ?? ''));
   const [away, setAway] = useState(String(event.score?.away ?? ''));
   const [saved, setSaved] = useState(false);
@@ -237,7 +237,7 @@ function QuickScoreEdit({ event, onUpdateEvent }) {
     if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
     onUpdateEvent(event.id, { score: { home: h, away: a } });
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => setSaved(false), 5000);
   }
 
   return (
@@ -274,6 +274,25 @@ function QuickScoreEdit({ event, onUpdateEvent }) {
           {saved ? '✓ Enregistré' : 'Enregistrer'}
         </button>
       </div>
+      <AnimatePresence>
+        {saved && onPosterResult && (
+          <motion.button
+            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+            onClick={(e) => { e.stopPropagation(); onPosterResult({ home: parseInt(home, 10), away: parseInt(away, 10) }); }}
+            style={{
+              width: '100%', marginTop: 8, padding: '9px 0', borderRadius: 9, border: 'none',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              color: 'white', fontSize: 12, fontWeight: 800,
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            </svg>
+            Créer l'affiche résultat
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -481,6 +500,7 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const attendeeCount = useAttendeeCount(event.id);
   const [showPoster, setShowPoster] = useState(false);
+  const [resultScore, setResultScore] = useState(null);
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
   const dateObj = new Date(event.date);
@@ -552,7 +572,16 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
             {isUserEvent && <span style={{ fontSize: 10, color: '#4da6ff', fontWeight: 600, flexShrink: 0 }}>✦ Club</span>}
             {event.clubId && !isUserEvent && <FollowClubPill event={event} />}
             {canEditThis && (
-              <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, flexShrink: 0 }}>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, flexShrink: 0, alignItems: 'center' }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowPoster(true); }}
+                  aria-label="Créer l'affiche"
+                  title="Créer l'affiche"
+                  style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 7, border: 'none', cursor: 'pointer', backgroundColor: `${accentColor}15`, color: accentColor, fontSize: 10, fontWeight: 700, flexShrink: 0 }}
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  Affiche
+                </button>
                 {onDuplicate && (
                   <button onClick={(e) => { e.stopPropagation(); onDuplicate(event); }} aria-label="Dupliquer l'événement" title="Dupliquer" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#a78bfa', backgroundColor: 'transparent' }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -640,15 +669,16 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
                     onClick={(e) => { e.stopPropagation(); setShowPoster(true); }}
                     aria-label="Créer une affiche"
                     title="Créer une affiche"
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 11px', borderRadius: 9, cursor: 'pointer', color: accentColor, border: `1px solid ${accentColor}30`, backgroundColor: `${accentColor}10`, fontSize: 11, fontWeight: 700, flexShrink: 0 }}
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    Créer l'affiche
                   </button>
                   <PosterShareBtn event={event} />
                 </div>
 
                 {canEditThis && isPast && onUpdateEvent && (
-                  <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />
+                  <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} onPosterResult={score => setResultScore(score)} />
                 )}
 
                 {hasStandings && (
@@ -694,7 +724,15 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
       </button>
     </motion.div>
 
-    {showPoster && <PosterStudio event={event} club={club} onClose={() => setShowPoster(false)} />}
+    {(showPoster || resultScore) && (
+      <PosterStudio
+        event={event}
+        club={club}
+        onClose={() => { setShowPoster(false); setResultScore(null); }}
+        resultMode={resultScore}
+        quickMode={!!resultScore}
+      />
+    )}
   </>
   );
 });

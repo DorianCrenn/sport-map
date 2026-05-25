@@ -318,7 +318,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                         {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`}
                       </span>
                       {lClub.logo_url
-                        ? <img src={lClub.logo_url} alt={lClub.name} style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
+                        ? <img src={lClub.logo_url} alt={lClub.name} loading="lazy" style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
                         : <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: 'var(--sl-surface)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚽</div>
                       }
                       <div style={{ flex: 1, minWidth: 0 }}>

@@ -30,7 +30,7 @@ function UserRow({ user, rank, index }) {
         overflow: 'hidden', fontSize: 11, fontWeight: 700, color: 'var(--sl-t2)',
       }}>
         {user.avatar_url
-          ? <img src={user.avatar_url} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
+          ? <img src={user.avatar_url} alt={user.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
           : initials}
       </div>
 

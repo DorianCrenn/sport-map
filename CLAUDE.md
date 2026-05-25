@@ -158,13 +158,16 @@ src/
 ```sql
 profiles            -- utilisateurs (id, role, clubId, xp, favoriteSports, onboardingDone)
 clubs               -- clubs sportifs (id, name, sport, city, logo_url, user_id)
-events              -- événements (id, club_id, user_id, sport, date, homeTeam, awayTeam, score, type, status)
+events              -- événements (id, club_id, user_id, sport, date, homeTeam, awayTeam,
+                   --             score, type, status, man_of_match TEXT)
 favorites           -- favoris utilisateur (user_id, event_id)
 attendees           -- "J'y serai" (user_id, event_id)
 club_follows        -- abonnements clubs (user_id, club_id, teams, notif)
 club_pages          -- pages clubs JSONB (club_id, blocks[], theme)
 club_trainings      -- créneaux entraînement (club_id, day, time, location)
-club_managers       -- gestionnaires de clubs (club_id, user_id, role)
+club_managers       -- gestionnaires de clubs (club_id, email TEXT, role)
+                   --   ⚠️ identifie les managers par email, PAS par user_id
+                   --   Ne peut pas être jointé à auth.uid() directement
 club_announcements  -- annonces clubs (club_id, title, message, type, target_teams)
 announcement_reads  -- lectures annonces (user_id, announcement_id)
 event_comments      -- commentaires (event_id, user_id, content)
@@ -190,16 +193,30 @@ club_page_views     -- analytics pages clubs
 ### Realtime
 Désactivé globalement dans `supabase.js`. Activé manuellement par hook via `.channel()` uniquement pour : commentaires, réactions, annonces, covoiturage, compteurs présence.
 
+### RLS — points d'attention
+- `events` INSERT : validé par `profiles.role IN ('admin','superadmin','club_admin')` + `clubs.user_id = auth.uid()` (si club_id renseigné). La table `club_managers` **ne peut pas** être utilisée dans les RLS car elle n'a pas de colonne `user_id`.
+
 ---
 
 ## 6. PosterStudio — Système d'affiches (MAJEUR)
+
+### Props
+```js
+<PosterStudio
+  event={event}           // objet événement
+  club={club}             // objet club (logo, name, id) — requis pour logo + watermark
+  onClose={fn}
+  quickMode={false}       // true → ouvre l'export panel automatiquement après 900ms
+  resultMode={null}       // objet {home, away} → active l'overlay score + template 'impact'
+/>
+```
 
 ### Architecture state (useReducer)
 ```js
 // Actions : PATCH | RESET | LOAD
 {
-  format: 'story' | 'post',          // story=9:16 (360×640), post=4:5 (360×450)
-  templateId: string,
+  format: 'story' | 'square' | 'landscape', // 9:16 | 1:1 | 16:9
+  templateId: string,                // 'impact' si resultMode, 'tr-premium' si tournoi, sinon 'simple'
   accentColor: string,               // couleur principale
   homeLogo: string | null,           // URL ou base64
   awayLogo: string | null,
@@ -217,25 +234,41 @@ Désactivé globalement dans `supabase.js`. Activé manuellement par hook via `.
   playerLayers: [],                  // photos joueurs détourés
   transforms: {},                    // overrides visuels par bloc
   effects: {},
+  scoreHome: number | undefined,     // défini si resultMode
+  scoreAway: number | undefined,     // défini si resultMode
 }
 ```
 
 ### Templates
 ```js
 // PosterRenderer.jsx — POSTER_TEMPLATES array
-// BASE_DIMS = { story: {w:360,h:640}, post: {w:360,h:450} }
+// BASE_DIMS : dimensions de base par format (360px de large)
 
-// 24 templates matchs : TplSimple, TplLight, TplColor, TplEditorial,
-//   TplNeon, TplFluo, TplCinema, TplRetro, TplVivid, TplPulse,
-//   TplPrestige, TplLuxe, TplBento, TplBlanc, TplStrike, TplElegant,
-//   TplMagazine, TplImpact, TplSplit, TplDark, TplGlass, TplFlag,
-//   TplInk, TplAurora
+// Templates matchs (id en minuscules) :
+//   simple, light, color, editorial, impact, luxe, blanc, elegant,
+//   magazine, neon, fluo, cinema, retro, vivid, bento, prestige,
+//   pulse, strike, glass, flag, ink, aurora
 
-// 10 templates tournois (isTournament: true) :
+// Templates tournois (isTournament: true) :
 //   TplTrCoupe, TplTrNeon, TplTrPremium, TplTrMinimal, TplTrGradient,
 //   TplTrGlass, TplTrStreet, TplTrSummer, TplTrCinema, TplTrEsport
 //   + 3 spéciaux : TplTrChampion, TplTrField, TplTrDynamic
 ```
+
+### Flux AUTO-001 — Affiche résultat post-match
+1. `QuickScoreEdit` dans `EventCard` : après save du score, CTA "Créer l'affiche résultat" apparaît
+2. Clic → `setResultScore({home, away})` dans `EventCard`
+3. `PosterStudio` s'ouvre avec `resultMode={score}` + `quickMode={true}`
+4. templateId initialisé à `'impact'`, `scoreHome`/`scoreAway` injectés dans le state
+5. Score overlay affiché en absolu (bas de l'affiche) dans le wrapper export ET le preview (scaled)
+6. Export panel s'ouvre automatiquement après 900ms
+
+### Watermark
+- Affiché dans l'export wrapper ET le preview (bouton cliquable → deeplink `#club/:id`)
+- Texte : `"{club.name} · SportLink"` si club connu, sinon `"Créé avec SportLink"`
+- Contrôlé par `watermarkVisible` state (défaut `true`)
+- Toggle dans le panneau export : réservé aux plans **Club Pro** (`hasPremium`)
+- Sans plan Pro : icône cadenas affiché à la place du toggle
 
 ### Système de blocs draggables (PosterEditor)
 Chaque template marque ses zones avec `data-block="id"` :
@@ -286,11 +319,11 @@ Générés via **Pollinations.ai Flux** (`576×1024` px = ratio 9:16 exact).
 
 | Hook | Ce qu'il fait |
 |------|--------------|
-| `useLocalEvents()` | CRUD événements Supabase + Realtime |
+| `useLocalEvents()` | CRUD événements Supabase + Realtime — utilise `eventsRef` (anti-stale closure) |
 | `useClubs()` | CRUD clubs Supabase |
 | `useClubMatches()` | Résultats matchs du club connecté |
 | `useFavorites()` | Favoris (Supabase + localStorage) |
-| `useAttendees()` | "J'y serai" (Supabase + localStorage) |
+| `useAttendees()` | "J'y serai" (Supabase + localStorage) — utilise `attendingRef` (anti-stale closure) |
 | `useRides()` | Covoiturage CRUD + gestion demandes |
 | `useRideNotifications()` | Notifs covoiturage temps réel |
 | `useMyAnnouncements()` | Annonces clubs suivis + unread count |
@@ -339,6 +372,14 @@ Générés via **Pollinations.ai Flux** (`576×1024` px = ratio 9:16 exact).
 - Lazy loading sur les pages lourdes (AdminPage, PosterStudio variants)
 - Realtime Supabase activé uniquement par hook (pas global)
 - `useMemo` sur `allEvents`, `allClubs`, `currentUser`
+- **Ref pattern anti-stale closure** : les hooks `useLocalEvents` et `useAttendees` utilisent un `useRef` synchronisé par `useEffect` pour que les `useCallback` lisent l'état courant sans l'avoir en dépendance :
+  ```js
+  const eventsRef = useRef([]);
+  useEffect(() => { eventsRef.current = events; }, [events]);
+  // Dans useCallback : eventsRef.current.find(...) au lieu de events.find(...)
+  ```
+- **Fetch limité** : `.limit(500)` sur le fetch initial des événements (cold start)
+- **Handlers stables dans MapPage** : les fonctions passées à `EventSidebar` (openNewEvent, editEvent, duplicateEvent) sont wrappées en `useCallback` pour éviter que `EventSidebar` + tous les `EventCard` re-rendent à chaque changement de bounds/selectedEvent
 
 ---
 
@@ -354,10 +395,12 @@ Voir `docs/BACKLOG.md` pour le détail complet. Points clés non implémentés :
 - `PS-AUDIT-001→004` — Audits UX/perf mobile
 
 **App générale :**
-- Photos d'événements (upload + galerie)
-- Auto post-match (résultat + affiche auto)
+- `DISTRIB-001` — Distribution : SEO, partage réseaux sociaux, Open Graph
+- `ROLES-001` — Rôles avancés : club_manager via email (table club_managers)
+- `PUSH-PROD-001` — Notifications push : code déployé mais nécessite 3 étapes manuelles prod
+- `VIRAL-002/003` — Viral : lien profil public, challenge inter-clubs
+- `MEDIA-001` — Photos d'événements (upload + galerie)
 - Offline handling complet (PWA cache Supabase)
-- Notifications push : déployées en code mais nécessitent 3 étapes manuelles prod (VAPID keys + migration SQL + Edge Function deploy)
 - IA & automatisation (suggestions, génération texte annonces)
 
 **Déploiement prod push notifications :**

@@ -34,6 +34,7 @@ const CSVImportModal     = lazy(() => import('./components/CSVImportModal.jsx'))
 const BadgeUnlockModal   = lazy(() => import('./components/BadgeUnlockModal.jsx'));
 const MyRidesPage        = lazy(() => import('./pages/MyRidesPage.jsx'));
 const AnnouncementsCenter = lazy(() => import('./components/AnnouncementsCenter.jsx'));
+const PosterStudio        = lazy(() => import('./components/PosterStudio.jsx'));
 import OfflineBanner from './components/OfflineBanner.jsx';
 import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
@@ -57,6 +58,15 @@ function AppInner() {
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [clubOverlayOpen, setClubOverlayOpen] = useState(false);
 
+  const allClubsRef = useRef([]);
+
+  const handleOpenPoster = useCallback((eventData) => {
+    setShowNewEventForm(false);
+    const club = allClubsRef.current.find(c => String(c.id) === String(eventData?.club_id || eventData?.clubId)) ?? null;
+    setStudioEvent(eventData);
+    setStudioClub(club);
+  }, []);
+
   const addEventWithToast = useCallback(async (data) => {
     try {
       const result = await addEvent(data);
@@ -77,6 +87,8 @@ function AppInner() {
   const { attending } = useAttendanceContext();
   const [showNewEventForm, setShowNewEventForm] = useState(false);
   const [showCSVImport, setShowCSVImport] = useState(false);
+  const [studioEvent, setStudioEvent] = useState(null);
+  const [studioClub,  setStudioClub]  = useState(null);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasShownBadge = useRef(false);
   const clubMatchEvents = useClubMatches();
@@ -93,6 +105,7 @@ function AppInner() {
   );
 
   const allClubs = useMemo(() => [...userClubs, ...STATIC_CLUBS], [userClubs]);
+  allClubsRef.current = allClubs;
 
   const { earned: earnedBadges, newBadges, markSeen } = useBadges({ attending, allEvents });
 
@@ -340,12 +353,13 @@ function AppInner() {
               event={{ _isNew: true }}
               onSave={async (data) => {
                 const created = await addEventWithToast(data);
-                setShowNewEventForm(false);
                 setActiveTab('map');
                 if (created?.id) setFocusEventId(created.id);
+                return created;
               }}
               onBulkSave={async (events) => { await bulkAddEvents(events); setShowNewEventForm(false); setActiveTab('map'); }}
               onClose={() => setShowNewEventForm(false)}
+              onOpenPoster={handleOpenPoster}
             />
           )}
           {showCSVImport && (
@@ -380,6 +394,15 @@ function AppInner() {
             <AnnouncementsCenter
               key="announcements"
               onClose={() => setShowAnnouncements(false)}
+            />
+          )}
+          {studioEvent && (
+            <PosterStudio
+              key="global-poster-studio"
+              event={studioEvent}
+              club={studioClub}
+              quickMode
+              onClose={() => { setStudioEvent(null); setStudioClub(null); }}
             />
           )}
         </AnimatePresence>

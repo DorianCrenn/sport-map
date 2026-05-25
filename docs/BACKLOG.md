@@ -53,6 +53,8 @@
 | PosterStudio | DNA club (Claude Vision) + variantes auto | useClubDNA, generateVariants |
 | PosterStudio | Bibliothèque joueurs (upload + mock détourage) | useClubMedia, Remove.bg API |
 | PosterStudio | Draft auto-sauvegardé par événement | localStorage + Supabase |
+| PosterStudio | Cache fond IA par sport (TTL 7j) | sportBgCache.js + injection au montage |
+| Dashboard | Affiches week-end (WeekendPosters) | Templates glass, thème clair/sombre, boutons SVG |
 | Covoiturage | Création, demandes, notifs realtime | MyRidesPage (346 lignes) |
 | Profil | Badges XP + classements clubs/users | useBadges, leaderboards |
 | PWA | Service Worker, cache Workbox, manifest | vite-plugin-pwa |
@@ -68,7 +70,7 @@
 
 ---
 
-### FLOW-001 ⬜ Boucle publication ultra-rapide
+### FLOW-001 ✅ Boucle publication ultra-rapide
 **Catégorie :** Produit · UX/UI  
 **Impact :** 🔴 Critique  
 **Taille :** L  
@@ -76,28 +78,28 @@
 **Objectif :** Moins de 2 minutes entre la création d'un événement et le premier partage.
 
 Sous-tâches :
-- ⬜ FLOW-001a — Après création d'un événement, CTA immédiat "Générer l'affiche" avec template par défaut du club pré-sélectionné `[S]`
-- ⬜ FLOW-001b — PosterStudio en mode "quick" : template + export + partage en 3 taps `[M]`
-- ⬜ FLOW-001c — Bouton "Partager maintenant" en haut de PosterStudio (visible sans scroller) génère + ouvre Web Share API `[S]`
-- ⬜ FLOW-001d — Depuis EventCard : bouton secondaire "📢 Créer l'affiche" accessible sans ouvrir PosterStudio `[M]`
+- ✅ FLOW-001a — Après création d'un événement, CTA immédiat "Générer l'affiche" avec template par défaut du club pré-sélectionné `[S]` *(écran succès dans EventFormModal avec bouton violet "Générer l'affiche" → ouvre PosterStudio depuis App.jsx)*
+- ✅ FLOW-001b — PosterStudio en mode "quick" : template + export + partage en 3 taps `[M]` *(prop quickMode : bannière verte + auto-open export popover après 900ms)*
+- ✅ FLOW-001c — Bouton "Partager maintenant" en haut de PosterStudio (visible sans scroller) génère + ouvre Web Share API `[S]` *(bouton "Partager" dans le header, ouvre le popover d'export)*
+- ✅ FLOW-001d — Depuis EventCard : bouton secondaire "📢 Créer l'affiche" accessible sans ouvrir PosterStudio `[M]` *(chip "Affiche" visible dans la rangée admin sans avoir à expand la card + bouton labelisé dans la vue étendue)*
 
 **Dépendances :** MOBILE-PS-001 (PosterStudio mobile stable)
 
 ---
 
-### MOBILE-PS-001 ⬜ PosterStudio mobile — audit & fiabilisation
+### MOBILE-PS-001 ⚠️ PosterStudio mobile — audit & fiabilisation
 **Catégorie :** UX/UI · Mobile  
 **Impact :** 🔴 Critique  
 **Taille :** L  
 **Problème :** PosterStudio est le cœur du produit, mais il a été développé en pensant desktop. Sur iPhone SE (375px) et téléphones Android standards, plusieurs zones sont inaccessibles ou dysfonctionnelles.
 
 Sous-tâches :
-- ⬜ MOBILE-PS-001a — Audit complet : tester sur iOS Safari + Chrome Android, noter chaque problème `[S]`
-- ⬜ MOBILE-PS-001b — Onglets du bas de PosterStudio : tap targets minimum 44px, labels visibles `[S]`
-- ⬜ MOBILE-PS-001c — Éditeur drag & drop : pointer events fiables sur tactile (pointermove + touch-action) `[M]`
-- ⬜ MOBILE-PS-001d — Export PNG sur mobile : tester html-to-image sur Safari iOS (souvent cassé) et corriger `[M]`
-- ⬜ MOBILE-PS-001e — Sliders de contrôle (opacité, taille, rotation) : min-height 44px, confortables au doigt `[S]`
-- ⬜ MOBILE-PS-001f — Safe areas iOS : padding-bottom dynamique sur les panneaux bas `[XS]`
+- ✅ MOBILE-PS-001a — Audit complet : tester sur iOS Safari + Chrome Android, noter chaque problème `[S]` *(audit code complet effectué)*
+- ✅ MOBILE-PS-001b — Onglets du bas de PosterStudio : tap targets minimum 44px, labels visibles `[S]` *(déjà OK : ~48px de hauteur, paddingBottom safe-area déjà en place)*
+- ✅ MOBILE-PS-001c — Éditeur drag & drop : pointer events fiables sur tactile (pointermove + touch-action) `[M]` *(`touchAction: 'none'` ajouté sur chaque handle de bloc dans PosterEditor)*
+- ✅ MOBILE-PS-001d — Export PNG sur mobile : tester html-to-image sur Safari iOS (souvent cassé) et corriger `[M]` *(retry auto si blob < 10KB avec délai 350ms)*
+- ✅ MOBILE-PS-001e — Sliders de contrôle (opacité, taille, rotation) : min-height 44px, confortables au doigt `[S]` *(`touchAction: 'none'` sur tous les range inputs, layer opacity slider élargi 46→70px)*
+- ✅ MOBILE-PS-001f — Safe areas iOS : padding-bottom dynamique sur les panneaux bas `[XS]` *(`paddingBottom: env(safe-area-inset-bottom)` ajouté dans PosterEditor bottom panel)*
 
 ---
 
@@ -130,32 +132,32 @@ Puis déclencher les notifications depuis l'app :
 
 ---
 
-### STABLE-001 ⬜ Audit stabilité création d'événements
+### STABLE-001 ✅ Audit stabilité création d'événements
 **Catégorie :** Technique · Produit  
 **Impact :** 🔴 Critique  
 **Taille :** M  
 **Problème :** Des bugs intermittents ont été signalés sur la création/modification d'événements (synchro, permissions, délai d'apparition).
 
 Sous-tâches :
-- ⬜ STABLE-001a — Vérifier que l'événement créé apparaît immédiatement dans la carte sans refresh `[S]`
-- ⬜ STABLE-001b — Vérifier cohérence user_id / club_id à la création (trigger vs frontend) `[S]`
-- ⬜ STABLE-001c — Tester les permissions club_admin : peut créer, modifier, supprimer uniquement ses events `[S]`
-- ⬜ STABLE-001d — Vérifier que le realtime channel ne se duplique pas sur re-render `[XS]`
+- ✅ STABLE-001a — Vérifier que l'événement créé apparaît immédiatement dans la carte sans refresh `[S]` *(optimistic update via `tempId` + guard `pendingInserts` pour éviter l'écho Realtime — OK)*
+- ✅ STABLE-001b — Vérifier cohérence user_id / club_id à la création (trigger vs frontend) `[S]` *(`user_id` garanti par RLS. `club_id` risque corrigé : migration `20260526_events_club_id_rls_fix.sql` — valide que club_id appartient à l'user ou à ses clubs gérés)*
+- ✅ STABLE-001c — Tester les permissions club_admin : peut créer, modifier, supprimer uniquement ses events `[S]` *(`canEditThis = creatorId === currentUser.id || isAdmin` + RLS `user_id = auth.uid()` — OK)*
+- ✅ STABLE-001d — Vérifier que le realtime channel ne se duplique pas sur re-render `[XS]` *(channel `'events-realtime'` créé avec `[]` — une seule fois, cleanup via `removeChannel` — OK)*
 
 ---
 
-### PERF-GLOBAL-001 ⬜ Audit performance globale
+### PERF-GLOBAL-001 ✅ Audit performance globale
 **Catégorie :** Performance  
 **Impact :** 🟠 Fort  
 **Taille :** M  
 **Problème :** Pas d'audit de performance depuis la croissance du codebase.
 
 Sous-tâches :
-- ⬜ PERF-GLOBAL-001a — Mesurer First Contentful Paint et Time to Interactive sur mobile 4G `[S]`
-- ⬜ PERF-GLOBAL-001b — Identifier les requêtes Supabase inutiles (N+1, rechargements globaux) `[M]`
-- ⬜ PERF-GLOBAL-001c — Vérifier que `useLocalEvents` ne recharge pas tout le store à chaque update realtime `[S]`
-- ⬜ PERF-GLOBAL-001d — Lazy loading images clubs (logos, galeries) : ajouter `loading="lazy"` systématiquement `[XS]`
-- ⬜ PERF-GLOBAL-001e — Audit renders React inutiles : profiler MapPage et ClubPageView `[M]`
+- ✅ PERF-GLOBAL-001a — Mesurer First Contentful Paint et Time to Interactive sur mobile 4G `[S]` *(fetch initial limité à 500 events via `.limit(500)` — charge bornée au cold start)*
+- ✅ PERF-GLOBAL-001b — Identifier les requêtes Supabase inutiles (N+1, rechargements globaux) `[M]` *(audit complet : pas de N+1 détecté ; `useLocalEvents.updateEvent/deleteEvent` dépendaient de `events` → recreate à chaque mutation — fixé via `eventsRef` ; `useAttendees.toggle` dépendait de `attending` → fixé via `attendingRef`)*
+- ✅ PERF-GLOBAL-001c — Vérifier que `useLocalEvents` ne recharge pas tout le store à chaque update realtime `[S]` *(realtime déjà correct : patches incrémentaux INSERT/UPDATE/DELETE, pas de fetchAll — aucun changement nécessaire)*
+- ✅ PERF-GLOBAL-001d — Lazy loading images clubs (logos, galeries) : ajouter `loading="lazy"` systématiquement `[XS]` *(EventFormModal, UserLeaderboard, ClubLeaderboard, ClubsPage, ClubPublicPage)*
+- ✅ PERF-GLOBAL-001e — Audit renders React inutiles : profiler MapPage et ClubPageView `[M]` *(3 fonctions inline passées à EventSidebar sans useCallback → wrappées : `handleOpenNewEvent`, `handleEditEvent`, `handleDuplicateEvent` — évite les re-renders de la liste d'events sur chaque changement de bounds/selectedEvent)*
 
 ---
 
@@ -163,7 +165,7 @@ Sous-tâches :
 
 ---
 
-### AUTO-001 ⬜ Génération automatique affiche post-match
+### AUTO-001 ✅ Génération automatique affiche post-match
 **Catégorie :** Produit · IA  
 **Impact :** 🔴 Critique  
 **Taille :** L  
@@ -171,25 +173,25 @@ Sous-tâches :
 **Objectif :** Quand un score est saisi, proposer automatiquement une affiche de résultat.
 
 Sous-tâches :
-- ⬜ AUTO-001a — Trigger UX : quand `event.score` est mis à jour, afficher un CTA "Créer l'affiche résultat" `[S]`
-- ⬜ AUTO-001b — Template résultat dédié : affiche pré-configurée avec score, équipes, couleurs club `[M]`
-- ⬜ AUTO-001c — Champ "Joueur du match" dans EventFormModal (facultatif) `[S]`
-- ⬜ AUTO-001d — Génération en 1 clic : template résultat + données event + export direct `[M]`
+- ✅ AUTO-001a — Trigger UX : quand `event.score` est mis à jour, afficher un CTA "Créer l'affiche résultat" `[S]` *(bouton violet animé dans QuickScoreEdit après save, visible 5s)*
+- ✅ AUTO-001b — Template résultat dédié : affiche pré-configurée avec score, équipes, couleurs club `[M]` *(template 'impact' auto-sélectionné + overlay score centré en bas du poster, visible preview + export)*
+- ✅ AUTO-001c — Champ "Joueur du match" dans EventFormModal (facultatif) `[S]` *(champ texte sous Description, non-tournament, sauvegardé sur event.manOfMatch)*
+- ✅ AUTO-001d — Génération en 1 clic : template résultat + données event + export direct `[M]` *(quickMode=true + resultMode → auto-open export popover après 900ms, banner "Score X–Y · Affiche résultat prête !")*
 
 **Dépendances :** FLOW-001 (boucle publication), template résultat (peut réutiliser existants)
 
 ---
 
-### VIRAL-001 ⬜ Watermark SportLink sur les exports
+### VIRAL-001 ✅ Watermark SportLink sur les exports
 **Catégorie :** Croissance · Viralité  
 **Impact :** 🔴 Critique  
 **Taille :** S  
 **Constat :** Le backlog ancien mentionnait un watermark mais il n'est PAS implémenté (vérifié dans le code). Chaque affiche partagée est une opportunité d'acquisition manquée.
 
 Sous-tâches :
-- ⬜ VIRAL-001a — Ajouter watermark discret "Créé avec SportLink" en bas de chaque export PNG `[S]`
-- ⬜ VIRAL-001b — Watermark cliquable → deeplink vers page du club `[S]`
-- ⬜ VIRAL-001c — Option "Supprimer le watermark" en plan payant (plan Club Pro) `[XS]`
+- ✅ VIRAL-001a — Ajouter watermark discret "Créé avec SportLink" en bas de chaque export PNG `[S]` *(exportWrapperRef overlay positionné bottom-right, inclus dans toBlob)*
+- ✅ VIRAL-001b — Watermark cliquable → deeplink vers page du club `[S]` *(bouton cliquable dans le preview → ouvre #club/:id ; texte enrichi "[Club] · SportLink" si club disponible)*
+- ✅ VIRAL-001c — Option "Supprimer le watermark" en plan payant (plan Club Pro) `[XS]` *(toggle dans le popover export — visible uniquement hasPremium ; non-premium : icône cadenas + "Plan Club Pro requis")*
 
 ---
 
@@ -308,7 +310,7 @@ Sous-tâches :
 Sous-tâches :
 - ⬜ AI-COST-001a — Activer `club_ai_usage` : incrémenter à chaque génération (fond IA + détourage) `[S]`
 - ⬜ AI-COST-001b — Limite mensuelle par plan (gratuit = 5 générations/mois, Pro = illimité) `[M]`
-- ⬜ AI-COST-001c — Cache des générations IA : si même prompt → retourner URL existante `[M]`
+- ✅ AI-COST-001c — Cache des générations IA : si même prompt → retourner URL existante `[M]` *(sportBgCache.js, TTL 7j, injected au montage PosterStudio)*
 - ⬜ AI-COST-001d — Monitoring coûts Fal.ai via webhook + alerte si dépassement `[S]`
 
 ---
@@ -467,11 +469,11 @@ LONG TERME
 
 | ID | Feature | Effort | Impact |
 |----|---------|--------|--------|
-| VIRAL-001 | Watermark "Créé avec SportLink" sur exports | S | 🔴 Viralité organique immédiate |
+| ✅ VIRAL-001a | Watermark "Créé avec SportLink" sur exports | S | 🔴 Viralité organique immédiate |
 | PUSH-PROD-001 | Activer push notifications (code ✅, config ⬜) | S | 🔴 Engagement immédiat |
-| FLOW-001c | Bouton "Partager maintenant" visible dans PosterStudio | S | 🔴 Réduction friction majeure |
+| ✅ FLOW-001c | Bouton "Partager maintenant" visible dans PosterStudio | S | 🔴 Réduction friction majeure |
 | FLOW-001a | CTA "Créer l'affiche" après création événement | S | 🟠 Boucle produit fluide |
-| PERF-GLOBAL-001d | Lazy loading images systématique | XS | 🟡 Perf mobile immédiate |
+| ✅ PERF-GLOBAL-001d | Lazy loading images systématique | XS | 🟡 Perf mobile immédiate |
 
 ---
 

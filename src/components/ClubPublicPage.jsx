@@ -89,7 +89,7 @@ export default function ClubPublicPage() {
       {/* Header */}
       <div style={styles.header}>
         {club.logo_url ? (
-          <img src={club.logo_url} alt={club.name} style={styles.logo} />
+          <img src={club.logo_url} alt={club.name} loading="lazy" style={styles.logo} />
         ) : (
           <div style={styles.logoPlaceholder}>⚽</div>
         )}
