@@ -49,7 +49,7 @@ export default function TplStrike({ event, homeTeam, awayTeam, championship, tag
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isStory ? 24 : 16 }}>
-          <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.3em', color: a, textTransform: 'uppercase' }}>SPORTLINK</span>
+          <span style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase' }}>SPORTLINK</span>
           <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase' }}>{champ}</span>
         </div>
 

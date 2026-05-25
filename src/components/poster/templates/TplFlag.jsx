@@ -39,7 +39,7 @@ export default function TplFlag({ event, homeTeam, awayTeam, championship, tagli
 
       {/* Header */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: isStory ? 52 : 42, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 22px', zIndex: 20 }}>
-        <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.3em', color: a, textTransform: 'uppercase' }}>SPORTLINK</span>
+        <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.22)', textTransform: 'uppercase' }}>SPORTLINK</span>
         <span style={{ fontSize: 7.5, fontWeight: 600, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>{truncate(champ, 22)}</span>
       </div>
 

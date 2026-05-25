@@ -54,7 +54,7 @@ export default function TplBlanc({ event, homeTeam, awayTeam, championship, tagl
           <div style={{ width: 18, height: 18, borderRadius: 4, backgroundColor: `${a}30`, border: `1px solid ${a}50`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill={a} stroke="none"/></svg>
           </div>
-          <span style={{ fontSize: 9, fontWeight: 800, color: a, letterSpacing: '0.22em' }}>SPORTLINK</span>
+          <span style={{ fontSize: 9, fontWeight: 800, color: 'rgba(0,0,0,0.18)', letterSpacing: '0.22em' }}>SPORTLINK</span>
         </div>
         <span style={{ fontSize: 7, fontWeight: 600, letterSpacing: '0.25em', color: 'rgba(255,255,255,0.4)' }}>FINISTÈRE</span>
       </div>

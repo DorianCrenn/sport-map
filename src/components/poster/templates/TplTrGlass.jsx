@@ -102,7 +102,7 @@ export default function TplTrGlass({ event, homeTeam, championship, tagline, acc
               </div>
             )}
             <div>
-              <div style={{ fontSize: 8, fontWeight: 800, color: `${indigo}CC`, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{organizer || 'SPORTLINK'}</div>
+              <div style={{ fontSize: 8, fontWeight: 800, color: `${indigo}40`, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{organizer || 'SPORTLINK'}</div>
               {event?.tournamentType && <div style={{ fontSize: 6.5, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.18em', marginTop: 1 }}>{event.tournamentType.toUpperCase()}</div>}
             </div>
           </div>

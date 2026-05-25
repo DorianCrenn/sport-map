@@ -28,7 +28,7 @@ export default function TplLight({ event, homeTeam, awayTeam, championship, tagl
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-          <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.3em', color: a, textTransform: 'uppercase' }}>SPORTLINK</span>
+          <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.3em', color: 'rgba(0,0,0,0.18)', textTransform: 'uppercase' }}>SPORTLINK</span>
           <span style={{ fontSize: 7.5, fontWeight: 600, letterSpacing: '0.18em', color: `${DARK}45`, textTransform: 'uppercase' }}>FINISTÈRE</span>
         </div>
 

@@ -47,16 +47,9 @@ const SPORT_BG_PRESET: Record<string, string> = {
   badminton:  'ignite',
 };
 
-/** Template assigné par défaut selon le sport. Peut être overridé via club brand kit. */
+/** Template pour les affiches week-end — glass s'adapte parfaitement à n'importe quel fond photo */
 const SPORT_DEFAULT_TEMPLATE: Record<string, string> = {
-  football: 'simple',
-  basket:   'neon',
-  handball: 'color',
-  volley:   'pulse',
-  tennis:   'elegant',
-  rugby:    'impact',
-  padel:    'glass',
-  default:  'simple',
+  default: 'glass',
 };
 
 // ── Utilitaires ───────────────────────────────────────────────────────────────
@@ -69,12 +62,8 @@ function getAccent(sport: string): string {
   return '#3b82f6';
 }
 
-function getTemplate(sport: string): string {
-  const key = sport.toLowerCase();
-  for (const [k, v] of Object.entries(SPORT_DEFAULT_TEMPLATE)) {
-    if (key.includes(k)) return v;
-  }
-  return SPORT_DEFAULT_TEMPLATE.default;
+function getTemplate(_sport: string): string {
+  return 'glass';
 }
 
 function getBgPreset(sport: string): string {
@@ -260,7 +249,7 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       sat, 15, 0,
       'Stade Ar Vrug, Plouvorn',
       'District Brest Iroise · D3',
-      'football', 'simple', '#16a34a',
+      'football', 'glass', '#16a34a',
       'Venez nombreux nous soutenir ! 💪',
       'ignite'
     ),
@@ -270,7 +259,7 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       sat, 11, 0,
       'Stade du Vallon, Saint-Renan',
       'Ligue Bretagne · U18 Régional 2',
-      'football', 'neon', '#00F5FF',
+      'football', 'glass', '#00C2FF',
       'Allez les jeunes ! 🔥',
       'golden-hour'
     ),
@@ -280,7 +269,7 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       sun, 10, 30,
       'Terrain du Bourg, Lannilis',
       'District Brest Iroise · D5',
-      'football', 'cinema', '#D4AF37',
+      'football', 'glass', '#D4AF37',
       'Cap sur la victoire ! 🏆',
       'raw-power'
     ),
@@ -290,7 +279,7 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       sat, 14, 0,
       'Gymnase Kerichen, Brest',
       'Ligue Bretagne · U15 F Régional',
-      'basket', 'color', '#EA580C',
+      'basket', 'glass', '#EA580C',
       'En route pour la victoire ! 🏀',
       'concrete-jungle'
     ),

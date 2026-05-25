@@ -166,7 +166,7 @@ function PosterCard({ match, bgImage, isExporting, onDownload, onShare, onEdit }
           format="story"
           previewWidth={PREVIEW_WIDTH}
           bgPresetId={bgImage ? '' : (match.bgPresetId ?? '')}
-          bgImageOverlay={0.28}
+          bgImageGradient={!!bgImage}
         />
 
         {/* Badge catégorie */}
@@ -585,7 +585,7 @@ export default function WeekendPosters({
               format="story"
               previewWidth={360}
               bgPresetId={bgImages[exportingMatch.id] ? '' : (exportingMatch.bgPresetId ?? '')}
-              bgImageOverlay={0.28}
+              bgImageGradient={!!bgImages[exportingMatch.id]}
             />
           </div>
         </div>

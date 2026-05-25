@@ -101,7 +101,7 @@ export default function TplImpact({ event, homeTeam, awayTeam, championship, tag
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <span style={{ fontSize: 11, fontWeight: 900, color: a, letterSpacing: '0.22em' }}>SPORTLINK</span>
+          <span style={{ fontSize: 11, fontWeight: 900, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.22em' }}>SPORTLINK</span>
           <span style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.14em' }}>FINISTÈRE</span>
         </div>
       </div>

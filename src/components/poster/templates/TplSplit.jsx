@@ -100,7 +100,7 @@ export default function TplSplit({ event, homeTeam, awayTeam, championship, tagl
         )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 10, fontWeight: 900, color: a, letterSpacing: '0.22em' }}>SPORTLINK</span>
+          <span style={{ fontSize: 10, fontWeight: 900, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.22em' }}>SPORTLINK</span>
           <span style={{ fontSize: 7.5, fontWeight: 600, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.14em' }}>FINISTÈRE</span>
         </div>
       </div>

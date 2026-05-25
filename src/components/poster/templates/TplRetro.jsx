@@ -33,7 +33,7 @@ export default function TplRetro({ event, homeTeam, awayTeam, championship, tagl
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%', padding: '28px 28px 22px' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-          <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.4em', color: a, textTransform: 'uppercase' }}>SPORTLINK</span>
+          <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.4em', color: 'rgba(255,255,255,0.22)', textTransform: 'uppercase' }}>SPORTLINK</span>
           <div style={{ flex: 1, height: '0.5px', backgroundColor: `${a}28`, margin: '0 12px' }} />
           <span style={{ fontSize: 7, fontWeight: 600, letterSpacing: '0.25em', color: `${CREAM}30`, textTransform: 'uppercase' }}>FINISTÈRE</span>
         </div>

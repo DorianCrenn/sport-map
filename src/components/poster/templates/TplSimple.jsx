@@ -26,7 +26,7 @@ export default function TplSimple({ event, homeTeam, awayTeam, championship, tag
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.3em', color: a, textTransform: 'uppercase' }}>SPORTLINK</span>
+          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.22)', textTransform: 'uppercase' }}>SPORTLINK</span>
           <span style={{ fontSize: 7.5, fontWeight: 600, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase' }}>FINISTÈRE</span>
         </div>
 

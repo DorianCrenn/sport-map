@@ -40,7 +40,7 @@ export default function TplAurora({ event, homeTeam, awayTeam, championship, tag
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isStory ? 26 : 18 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: a, boxShadow: `0 0 8px ${a}` }} />
-            <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>SPORTLINK</span>
+            <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.22)', textTransform: 'uppercase' }}>SPORTLINK</span>
           </div>
           <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '0.1em', color: `${a}CC`, textTransform: 'uppercase' }}>{truncate(champ, 20)}</span>
         </div>

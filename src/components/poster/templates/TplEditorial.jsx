@@ -136,7 +136,7 @@ export default function TplEditorial({ event, homeTeam, awayTeam, championship, 
             <div style={{ width: 20, height: 20, borderRadius: 5, backgroundColor: `${a}16`, border: `1px solid ${a}38`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={a} strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill={a} stroke="none"/></svg>
             </div>
-            <span style={{ fontSize: 10, fontWeight: 800, color: a, letterSpacing: '0.18em' }}>SPORTLINK</span>
+            <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.18em' }}>SPORTLINK</span>
           </div>
           <span style={{ fontSize: 7.5, fontWeight: 500, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.18em' }}>FINISTÈRE</span>
         </div>

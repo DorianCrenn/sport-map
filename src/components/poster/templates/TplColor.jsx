@@ -30,7 +30,7 @@ export default function TplColor({ event, homeTeam, awayTeam, championship, tagl
         {/* Top colored section */}
         <div style={{ padding: '20px 22px 0', height: topH, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isStory ? 16 : 10 }}>
-            <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.3em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase' }}>SPORTLINK</span>
+            <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: '0.3em', color: 'rgba(0,0,0,0.18)', textTransform: 'uppercase' }}>SPORTLINK</span>
             <div data-block="champ" style={{ ...tr('champ') }}>
               <span style={{ fontSize: 7.5, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(0,0,0,0.45)', textTransform: 'uppercase' }}>{truncate(champ, 18)}</span>
             </div>

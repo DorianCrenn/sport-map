@@ -28,7 +28,7 @@ export default function TplMagazine({ event, homeTeam, awayTeam, championship, t
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22 }}>
           <div>
-            <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.5em', color: a, textTransform: 'uppercase', marginBottom: 3 }}>SPORTLINK</div>
+            <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.5em', color: 'rgba(255,255,255,0.22)', textTransform: 'uppercase', marginBottom: 3 }}>SPORTLINK</div>
             <div style={{ fontSize: 7, fontWeight: 500, letterSpacing: '0.2em', color: `${CREAM}35`, textTransform: 'uppercase' }}>FINISTÈRE · ÉDITION SPÉCIALE</div>
           </div>
           <div style={{ textAlign: 'right' }}>

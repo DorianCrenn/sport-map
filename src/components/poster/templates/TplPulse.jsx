@@ -57,7 +57,7 @@ export default function TplPulse({ event, homeTeam, awayTeam, championship, tagl
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.32em', color: a }}>SPORTLINK</span>
+          <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.32em', color: 'rgba(255,255,255,0.22)' }}>SPORTLINK</span>
           <div data-block="champ" style={{ ...tr('champ') }}>
             <span style={{ fontSize: 7.5, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>{truncate(champ, 18)}</span>
           </div>

@@ -26,7 +26,7 @@ export default function TplFluo({ event, homeTeam, awayTeam, championship, tagli
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%', padding: '22px 24px 20px' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.35em', color: DARK, textTransform: 'uppercase' }}>SPORTLINK</span>
+          <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.35em', color: 'rgba(0,0,0,0.18)', textTransform: 'uppercase' }}>SPORTLINK</span>
           <span style={{ fontSize: 7.5, fontWeight: 700, letterSpacing: '0.2em', color: `${DARK}60`, textTransform: 'uppercase' }}>FINISTÈRE</span>
         </div>
 

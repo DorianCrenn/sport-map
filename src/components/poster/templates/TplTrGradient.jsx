@@ -105,7 +105,7 @@ export default function TplTrGradient({ event, homeTeam, championship, tagline, 
             </div>
           )}
           <div>
-            <div style={{ fontSize: 8, fontWeight: 800, color: `${a}DD`, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{organizer || 'SPORTLINK'}</div>
+            <div style={{ fontSize: 8, fontWeight: 800, color: `${a}40`, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{organizer || 'SPORTLINK'}</div>
             {event?.tournamentType && <div style={{ fontSize: 6.5, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em', marginTop: 1 }}>{event.tournamentType.toUpperCase()}</div>}
           </div>
         </div>

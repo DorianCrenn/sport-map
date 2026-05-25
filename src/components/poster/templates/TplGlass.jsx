@@ -41,7 +41,7 @@ export default function TplGlass({ event, homeTeam, awayTeam, championship, tagl
         {/* Top glass pill */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isStory ? 22 : 14 }}>
           <div style={{ ...glass, borderRadius: 20, padding: '4px 12px' }}>
-            <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.28em', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' }}>SPORTLINK</span>
+            <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '0.28em', color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase' }}>SPORTLINK</span>
           </div>
           <div style={{ ...glass, borderRadius: 20, padding: '4px 12px' }}>
             <span style={{ fontSize: 7.5, fontWeight: 600, letterSpacing: '0.1em', color: a, textTransform: 'uppercase' }}>{truncate(champ, 20)}</span>
