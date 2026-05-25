@@ -31,6 +31,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
 
   useEffect(() => {
     onClubOverlayChange?.(!!selectedClub);
+    return () => onClubOverlayChange?.(false);
   }, [selectedClub, onClubOverlayChange]);
 
   const allClubs = [...userClubs, ...STATIC_CLUBS];
