@@ -97,43 +97,29 @@ function SkeletonCard() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ActionBtn — bouton d'action rapide
+// Icônes SVG — style harmonisé PosterStudio
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface ActionBtnProps {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  loading?: boolean;
-  disabled?: boolean;
-  accent?: string;
-}
-
-function ActionBtn({ icon, label, onClick, loading, disabled, accent }: ActionBtnProps) {
-  return (
-    <motion.button
-      type="button"
-      whileTap={disabled ? undefined : { scale: 0.84 }}
-      onClick={disabled || loading ? undefined : onClick}
-      className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 select-none"
-      style={{
-        color: disabled
-          ? 'rgba(255,255,255,0.15)'
-          : accent || 'rgba(255,255,255,0.55)',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-      }}
-    >
-      <span className="text-base leading-none">
-        {loading ? (
-          <span className="inline-block w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" />
-        ) : icon}
-      </span>
-      <span className="text-[9px] font-semibold leading-none tracking-wide">
-        {label}
-      </span>
-    </motion.button>
-  );
-}
+const IcoDownload = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+);
+const IcoEdit = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+const IcoShare = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+  </svg>
+);
+const IcoCalendar = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PosterCard — une carte match
@@ -152,25 +138,48 @@ interface PosterCardProps {
 }
 
 function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, onEdit }: PosterCardProps) {
-  const previewHeight = Math.round((PREVIEW_WIDTH / 360) * 640); // ratio story 9:16
+  const previewHeight = Math.round((PREVIEW_WIDTH / 360) * 640);
+  const accent = (match.posterData as any).accentColor || '#22d96a';
 
   // Palette carte UI selon le thème
-  const cardBg      = isDark ? '#0d0d14'               : '#ffffff';
-  const cardBorder  = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.09)';
-  const txtPrimary  = isDark ? 'rgba(255,255,255,0.92)' : '#0d0d14';
-  const txtVs       = isDark ? 'rgba(255,255,255,0.30)' : 'rgba(0,0,0,0.30)';
-  const txtMeta     = isDark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.42)';
-  const txtComp     = isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.28)';
-  const divider     = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
-  const btnColor    = isDark ? 'rgba(255,255,255,0.52)' : 'rgba(0,0,0,0.45)';
-  const btnDisabled = isDark ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.15)';
-  const shadow      = isDark ? '0 8px 32px rgba(0,0,0,0.55)' : '0 4px 20px rgba(0,0,0,0.10)';
+  const cardBg     = isDark ? '#0d0d14'                : '#ffffff';
+  const cardBorder = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.09)';
+  const txtPrimary = isDark ? 'rgba(255,255,255,0.92)' : '#111111';
+  const txtVs      = isDark ? 'rgba(255,255,255,0.32)' : 'rgba(0,0,0,0.38)';
+  const txtMeta    = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.65)';
+  const txtComp    = isDark ? 'rgba(255,255,255,0.30)' : 'rgba(0,0,0,0.50)';
+  const divider    = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const btnActive  = isDark ? 'rgba(255,255,255,0.68)' : 'rgba(0,0,0,0.58)';
+  const btnOff     = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)';
+  const shadow     = isDark ? '0 8px 32px rgba(0,0,0,0.55)' : '0 4px 20px rgba(0,0,0,0.10)';
+
+  // Jour de l'événement — ex: "SAM. 30 MAI · 15h00"
+  const dayStr = match.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
+
+  const actions = [
+    { key: 'dl',    Icon: IcoDownload, label: 'Télécharger', onClick: () => onDownload(match), loading: isExporting },
+    { key: 'edit',  Icon: IcoEdit,     label: 'Modifier',    onClick: () => onEdit(match) },
+    { key: 'share', Icon: IcoShare,    label: 'Partager',    onClick: () => onShare(match), loading: isExporting },
+    { key: 'cal',   Icon: IcoCalendar, label: 'Planifier',   onClick: () => {}, disabled: true },
+  ];
 
   return (
     <div
       className="flex-shrink-0 flex flex-col rounded-2xl overflow-hidden"
       style={{ width: PREVIEW_WIDTH, backgroundColor: cardBg, border: `1px solid ${cardBorder}`, boxShadow: shadow }}
     >
+      {/* ── Jour de l'événement ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px 6px', borderBottom: `1px solid ${divider}` }}>
+        <span style={{ fontSize: 9.5, fontWeight: 800, color: accent, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          {dayStr}
+        </span>
+        {match.time && (
+          <span style={{ fontSize: 9.5, fontWeight: 700, color: txtMeta, letterSpacing: '0.04em' }}>
+            {fmtTime(match.time)}
+          </span>
+        )}
+      </div>
+
       {/* ── Aperçu de l'affiche ── */}
       <div className="relative" style={{ height: previewHeight }}>
         <PosterRenderer
@@ -189,13 +198,10 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
           </span>
         </div>
 
-        {/* Overlay de chargement pendant l'export */}
         <AnimatePresence>
           {isExporting && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
               className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm gap-2"
             >
@@ -207,53 +213,48 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
       </div>
 
       {/* ── Infos du match ── */}
-      <div style={{ padding: '10px 12px 8px', flex: 1 }}>
+      <div style={{ padding: '9px 12px 7px', flex: 1 }}>
         <p style={{ fontSize: 11, fontWeight: 700, color: txtPrimary, lineHeight: 1.35, margin: 0 }}>
           {match.homeTeam.name}
-          <span style={{ color: txtVs, fontWeight: 400, margin: '0 4px' }}>vs</span>
+          <span style={{ color: txtVs, fontWeight: 400, margin: '0 3px' }}>vs</span>
           {match.awayTeam.name}
         </p>
-        {(match.time || match.venue) && (
+        {match.venue && (
           <p style={{ fontSize: 10, color: txtMeta, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {match.time && <span>{fmtTime(match.time)}</span>}
-            {match.time && match.venue && <span style={{ margin: '0 4px', opacity: 0.5 }}>·</span>}
-            {match.venue && <span>{match.venue}</span>}
+            {match.venue}
           </p>
         )}
         {match.competition && (
-          <p style={{ fontSize: 9, color: txtComp, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.competition}</p>
+          <p style={{ fontSize: 9, color: txtComp, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {match.competition}
+          </p>
         )}
       </div>
 
-      {/* ── Actions rapides ── */}
+      {/* ── Actions — style harmonisé PosterStudio ── */}
       <div style={{ display: 'flex', borderTop: `1px solid ${divider}` }}>
-        {[
-          { icon: '↓', label: 'Télécharger', onClick: () => onDownload(match), loading: isExporting },
-          { icon: '✏', label: 'Modifier',    onClick: () => onEdit(match) },
-          { icon: '↗', label: 'Partager',    onClick: () => onShare(match), loading: isExporting },
-          { icon: '📅', label: 'Planifier',  onClick: () => {}, disabled: true },
-        ].map((btn, i, arr) => (
-          <div key={btn.label} style={{ display: 'contents' }}>
+        {actions.map(({ key, Icon, label, onClick, loading, disabled }, i) => (
+          <div key={key} style={{ display: 'contents' }}>
             <motion.button
               type="button"
-              whileTap={btn.disabled ? undefined : { scale: 0.84 }}
-              onClick={btn.disabled || btn.loading ? undefined : btn.onClick}
+              whileTap={disabled ? undefined : { scale: 0.85 }}
+              onClick={disabled || loading ? undefined : onClick}
               style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', gap: 2, padding: '10px 0',
-                color: btn.disabled ? btnDisabled : btnColor,
-                cursor: btn.disabled ? 'not-allowed' : 'pointer',
+                justifyContent: 'center', gap: 3, padding: '9px 4px 7px',
+                color: disabled ? btnOff : btnActive,
+                cursor: disabled ? 'not-allowed' : 'pointer',
                 background: 'none', border: 'none',
+                borderTop: `2px solid transparent`,
+                transition: 'color 0.15s',
               }}
             >
-              <span style={{ fontSize: 14, lineHeight: 1 }}>
-                {btn.loading
-                  ? <span style={{ display: 'inline-block', width: 13, height: 13, border: `1.5px solid currentColor`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                  : btn.icon}
-              </span>
-              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.02em' }}>{btn.label}</span>
+              {loading
+                ? <span style={{ display: 'inline-block', width: 14, height: 14, border: `2px solid currentColor`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                : <Icon />}
+              <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.02em', lineHeight: 1 }}>{label}</span>
             </motion.button>
-            {i < arr.length - 1 && (
+            {i < actions.length - 1 && (
               <div style={{ width: 1, backgroundColor: divider, margin: '6px 0', alignSelf: 'stretch' }} />
             )}
           </div>
