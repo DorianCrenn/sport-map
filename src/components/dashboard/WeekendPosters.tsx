@@ -144,13 +144,14 @@ const PREVIEW_WIDTH = 200; // px, correspond à la largeur de la carte
 interface PosterCardProps {
   match: WeekendMatch;
   bgImage?: string;
+  isDark: boolean;
   isExporting: boolean;
   onDownload: (m: WeekendMatch) => void;
   onShare:    (m: WeekendMatch) => void;
   onEdit:     (m: WeekendMatch) => void;
 }
 
-function PosterCard({ match, bgImage, isExporting, onDownload, onShare, onEdit }: PosterCardProps) {
+function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, onEdit }: PosterCardProps) {
   const previewHeight = Math.round((PREVIEW_WIDTH / 360) * 640); // ratio story 9:16
 
   return (
@@ -561,6 +562,7 @@ export default function WeekendPosters({
                 <PosterCard
                   match={match}
                   bgImage={bgImages[match.id]}
+                  isDark={isDark}
                   isExporting={loadingMatchId === match.id}
                   onDownload={m => triggerExport(m, 'download')}
                   onShare={m => triggerExport(m, 'share')}
