@@ -162,7 +162,7 @@ function PosterCard({ match, bgImage, isExporting, onDownload, onShare, onEdit }
       <div className="relative" style={{ height: previewHeight }}>
         <PosterRenderer
           templateId={match.templateId}
-          data={bgImage ? { ...match.posterData, bgImage } : match.posterData}
+          data={bgImage ? { ...match.posterData, bgImage, darkMode: isDark } : { ...match.posterData, darkMode: isDark }}
           format="story"
           previewWidth={PREVIEW_WIDTH}
           bgPresetId={bgImage ? '' : (match.bgPresetId ?? '')}
@@ -300,6 +300,18 @@ export default function WeekendPosters({
   // Données live (hook) ou mockées (prop)
   const liveMatches = useWeekendPosters();
   const matches = matchesProp ?? liveMatches;
+
+  // Détection thème clair/sombre — réactif aux changements
+  const [isDark, setIsDark] = useState<boolean>(() =>
+    document.documentElement.getAttribute('data-theme') !== 'light'
+  );
+  useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setIsDark(document.documentElement.getAttribute('data-theme') !== 'light')
+    );
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
+  }, []);
 
   // Fonds IA — keyed par match.id (plusieurs matchs du même sport partagent la même image)
   const [bgImages, setBgImages] = useState<Record<string, string>>(() => {
@@ -580,8 +592,8 @@ export default function WeekendPosters({
             <PosterRenderer
               templateId={exportingMatch.templateId}
               data={bgImages[exportingMatch.id]
-                ? { ...exportingMatch.posterData, bgImage: bgImages[exportingMatch.id] }
-                : exportingMatch.posterData}
+                ? { ...exportingMatch.posterData, bgImage: bgImages[exportingMatch.id], darkMode: isDark }
+                : { ...exportingMatch.posterData, darkMode: isDark }}
               format="story"
               previewWidth={360}
               bgPresetId={bgImages[exportingMatch.id] ? '' : (exportingMatch.bgPresetId ?? '')}
