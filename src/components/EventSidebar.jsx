@@ -55,9 +55,16 @@ export default function EventSidebar({
   }, [events]);
 
   useEffect(() => {
-    if (selectedEventId !== null && cardRefs.current[selectedEventId]) {
-      cardRefs.current[selectedEventId].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+    if (selectedEventId === null) return;
+    const el = cardRefs.current[selectedEventId];
+    if (!el) return;
+    // Scroll to top of card immediately
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // After layout animation completes, re-check to expose full expanded content
+    const t = setTimeout(() => {
+      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 260);
+    return () => clearTimeout(t);
   }, [selectedEventId]);
 
   return (
@@ -136,7 +143,7 @@ export default function EventSidebar({
       </div>
 
       {/* Event list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px', overscrollBehavior: 'contain' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px 24px', overscrollBehavior: 'contain' }}>
         {loading ? (
           <>{[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}</>
         ) : events.length === 0 ? (

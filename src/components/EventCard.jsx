@@ -436,11 +436,10 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
       <AnimatePresence>
         {isSelected && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            style={{ overflow: 'hidden' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16 }}
           >
             {/* Description */}
             {event.description && (
@@ -648,11 +647,10 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
           <AnimatePresence>
             {isSelected && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                style={{ overflow: 'hidden' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.16 }}
               >
                 {event.description && (
                   <p style={{ fontSize: 12, marginTop: 10, lineHeight: 1.6, borderTop: '1px solid var(--sl-border)', paddingTop: 10, color: 'var(--sl-t2)' }}>
