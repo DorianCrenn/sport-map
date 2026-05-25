@@ -89,6 +89,8 @@ export interface WeekendMatch {
   sport: string;
   /** ID du template à utiliser (ex: "simple", "neon", "cinema") */
   templateId: string;
+  /** ID du fond animé (BG_PRESETS) à superposer sur le template */
+  bgPresetId?: string;
   /** Prêt à être spreaded dans PosterRenderer data={...} */
   posterData: PosterData;
 }

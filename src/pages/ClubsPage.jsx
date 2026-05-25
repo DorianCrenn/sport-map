@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
@@ -13,7 +13,7 @@ import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { SkeletonClubCard } from '../components/Skeleton.jsx';
 import { STATIC_CLUBS } from '../data/clubs.js';
 
-export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent }) {
+export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent, onClubOverlayChange }) {
   const { allSports: SPORTS } = useSports();
   const { userClubs, loading: clubsLoading, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
@@ -28,6 +28,10 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
   const [formClub, setFormClub]           = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
+
+  useEffect(() => {
+    onClubOverlayChange?.(!!selectedClub);
+  }, [selectedClub, onClubOverlayChange]);
 
   const allClubs = [...userClubs, ...STATIC_CLUBS];
   const favoriteSports = currentUser?.favoriteSports || [];

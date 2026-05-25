@@ -160,6 +160,7 @@ function PosterCard({ match, isExporting, onDownload, onShare, onEdit }: PosterC
           data={match.posterData}
           format="story"
           previewWidth={PREVIEW_WIDTH}
+          bgPresetId={match.bgPresetId ?? ''}
         />
 
         {/* Badge catégorie */}
@@ -511,6 +512,7 @@ export default function WeekendPosters({
               data={exportingMatch.posterData}
               format="story"
               previewWidth={360}
+              bgPresetId={exportingMatch.bgPresetId ?? ''}
             />
           </div>
         </div>

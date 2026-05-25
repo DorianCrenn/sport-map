@@ -29,6 +29,24 @@ const SPORT_ACCENT: Record<string, string> = {
   badminton:'#10B981',
 };
 
+/** Fond animé (BG_PRESETS, gratuit) mappé par sport — choisi pour être coloré et accrocheur */
+const SPORT_BG_PRESET: Record<string, string> = {
+  football:   'ignite',
+  foot:       'ignite',
+  soccer:     'ignite',
+  basket:     'concrete-jungle',
+  basketball: 'concrete-jungle',
+  handball:   'abstract-force',
+  hand:       'abstract-force',
+  volleyball: 'golden-hour',
+  volley:     'golden-hour',
+  tennis:     'golden-hour',
+  rugby:      'raw-power',
+  padel:      'abstract-force',
+  squash:     'abstract-force',
+  badminton:  'ignite',
+};
+
 /** Template assigné par défaut selon le sport. Peut être overridé via club brand kit. */
 const SPORT_DEFAULT_TEMPLATE: Record<string, string> = {
   football: 'simple',
@@ -57,6 +75,14 @@ function getTemplate(sport: string): string {
     if (key.includes(k)) return v;
   }
   return SPORT_DEFAULT_TEMPLATE.default;
+}
+
+function getBgPreset(sport: string): string {
+  const key = sport.toLowerCase();
+  for (const [k, v] of Object.entries(SPORT_BG_PRESET)) {
+    if (key.includes(k)) return v;
+  }
+  return 'golden-hour';
 }
 
 /**
@@ -125,6 +151,7 @@ export function useWeekendPosters(): WeekendMatch[] {
 
           const sport = club.sport || 'football';
           const accentColor = getAccent(sport);
+          const bgPresetId = getBgPreset(sport);
           const logoUrl = club.logo_url || club.logoUrl || '';
 
           const posterData: PosterData = {
@@ -154,6 +181,7 @@ export function useWeekendPosters(): WeekendMatch[] {
             competition: m.competition ?? '',
             sport,
             templateId: getTemplate(sport),
+            bgPresetId,
             posterData,
           });
         }
@@ -196,7 +224,8 @@ export function getMockWeekendMatches(): WeekendMatch[] {
     sport: string,
     templateId: string,
     accentColor: string,
-    tagline: string
+    tagline: string,
+    bgPresetId?: string
   ): WeekendMatch => {
     const date = new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, mn);
     const time = `${String(h).padStart(2, '0')}:${String(mn).padStart(2, '0')}`;
@@ -212,6 +241,7 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       competition,
       sport,
       templateId,
+      bgPresetId: bgPresetId ?? getBgPreset(sport),
       posterData: {
         event: { date: isoAt(base, h, mn), sport, venue, city: venue.split(',').pop()?.trim(), homeOrAway: 'home' },
         homeTeam: home,
@@ -231,7 +261,8 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       'Stade Ar Vrug, Plouvorn',
       'District Brest Iroise · D3',
       'football', 'simple', '#16a34a',
-      'Venez nombreux nous soutenir ! 💪'
+      'Venez nombreux nous soutenir ! 💪',
+      'ignite'
     ),
     makeMatch(
       'saint-renan-u18', 'U18',
@@ -240,7 +271,8 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       'Stade du Vallon, Saint-Renan',
       'Ligue Bretagne · U18 Régional 2',
       'football', 'neon', '#00F5FF',
-      'Allez les jeunes ! 🔥'
+      'Allez les jeunes ! 🔥',
+      'golden-hour'
     ),
     makeMatch(
       'lannilis-senior-b', 'Senior B',
@@ -249,7 +281,8 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       'Terrain du Bourg, Lannilis',
       'District Brest Iroise · D5',
       'football', 'cinema', '#D4AF37',
-      'Cap sur la victoire ! 🏆'
+      'Cap sur la victoire ! 🏆',
+      'raw-power'
     ),
     makeMatch(
       'brest-basket-u15', 'U15 Féminines',
@@ -258,7 +291,8 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       'Gymnase Kerichen, Brest',
       'Ligue Bretagne · U15 F Régional',
       'basket', 'color', '#EA580C',
-      'En route pour la victoire ! 🏀'
+      'En route pour la victoire ! 🏀',
+      'concrete-jungle'
     ),
   ];
 }

@@ -55,6 +55,7 @@ function AppInner() {
   const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
   const [showMyRides, setShowMyRides] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
+  const [clubOverlayOpen, setClubOverlayOpen] = useState(false);
 
   const addEventWithToast = useCallback(async (data) => {
     try {
@@ -291,7 +292,7 @@ function AppInner() {
             {activeTab === 'news' && <ErrorBoundary name="Actualités"><NewsPage followedClubIds={followedClubs} /></ErrorBoundary>}
             {activeTab === 'clubs' && (
               <ErrorBoundary name="Clubs">
-                <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} />
+                <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} onClubOverlayChange={setClubOverlayOpen} />
               </ErrorBoundary>
             )}
             {activeTab === 'profil' && (
@@ -316,7 +317,7 @@ function AppInner() {
         )}
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements || clubOverlayOpen} />
 
       <Suspense fallback={null}>
         <AnimatePresence>
