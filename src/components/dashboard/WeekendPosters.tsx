@@ -154,16 +154,28 @@ interface PosterCardProps {
 function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, onEdit }: PosterCardProps) {
   const previewHeight = Math.round((PREVIEW_WIDTH / 360) * 640); // ratio story 9:16
 
+  // Palette carte UI selon le thème
+  const cardBg      = isDark ? '#0d0d14'               : '#ffffff';
+  const cardBorder  = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.09)';
+  const txtPrimary  = isDark ? 'rgba(255,255,255,0.92)' : '#0d0d14';
+  const txtVs       = isDark ? 'rgba(255,255,255,0.30)' : 'rgba(0,0,0,0.30)';
+  const txtMeta     = isDark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.42)';
+  const txtComp     = isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.28)';
+  const divider     = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const btnColor    = isDark ? 'rgba(255,255,255,0.52)' : 'rgba(0,0,0,0.45)';
+  const btnDisabled = isDark ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.15)';
+  const shadow      = isDark ? '0 8px 32px rgba(0,0,0,0.55)' : '0 4px 20px rgba(0,0,0,0.10)';
+
   return (
     <div
-      className="flex-shrink-0 flex flex-col rounded-2xl overflow-hidden border border-white/10 bg-[#0d0d14] shadow-xl shadow-black/50"
-      style={{ width: PREVIEW_WIDTH }}
+      className="flex-shrink-0 flex flex-col rounded-2xl overflow-hidden"
+      style={{ width: PREVIEW_WIDTH, backgroundColor: cardBg, border: `1px solid ${cardBorder}`, boxShadow: shadow }}
     >
       {/* ── Aperçu de l'affiche ── */}
       <div className="relative" style={{ height: previewHeight }}>
         <PosterRenderer
           templateId={match.templateId}
-          data={bgImage ? { ...match.posterData, bgImage, darkMode: isDark } : { ...match.posterData, darkMode: isDark }}
+          data={bgImage ? { ...match.posterData, bgImage } : match.posterData}
           format="story"
           previewWidth={PREVIEW_WIDTH}
           bgPresetId={bgImage ? '' : (match.bgPresetId ?? '')}
@@ -195,52 +207,57 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
       </div>
 
       {/* ── Infos du match ── */}
-      <div className="px-3 pt-2.5 pb-1.5 flex-1">
-        <p className="text-[11px] font-bold text-white leading-snug">
+      <div style={{ padding: '10px 12px 8px', flex: 1 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: txtPrimary, lineHeight: 1.35, margin: 0 }}>
           {match.homeTeam.name}
-          <span className="text-white/35 font-normal mx-1">vs</span>
+          <span style={{ color: txtVs, fontWeight: 400, margin: '0 4px' }}>vs</span>
           {match.awayTeam.name}
         </p>
         {(match.time || match.venue) && (
-          <p className="text-[10px] text-white/40 mt-0.5 truncate">
+          <p style={{ fontSize: 10, color: txtMeta, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {match.time && <span>{fmtTime(match.time)}</span>}
-            {match.time && match.venue && <span className="mx-1 text-white/20">·</span>}
+            {match.time && match.venue && <span style={{ margin: '0 4px', opacity: 0.5 }}>·</span>}
             {match.venue && <span>{match.venue}</span>}
           </p>
         )}
         {match.competition && (
-          <p className="text-[9px] text-white/25 mt-0.5 truncate">{match.competition}</p>
+          <p style={{ fontSize: 9, color: txtComp, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.competition}</p>
         )}
       </div>
 
       {/* ── Actions rapides ── */}
-      <div className="flex border-t border-white/8">
-        <ActionBtn
-          icon="↓"
-          label="Télécharger"
-          onClick={() => onDownload(match)}
-          loading={isExporting}
-        />
-        <div className="w-px bg-white/8 self-stretch my-1.5" />
-        <ActionBtn
-          icon="✏"
-          label="Modifier"
-          onClick={() => onEdit(match)}
-        />
-        <div className="w-px bg-white/8 self-stretch my-1.5" />
-        <ActionBtn
-          icon="↗"
-          label="Partager"
-          onClick={() => onShare(match)}
-          loading={isExporting}
-        />
-        <div className="w-px bg-white/8 self-stretch my-1.5" />
-        <ActionBtn
-          icon="📅"
-          label="Planifier"
-          onClick={() => {}}
-          disabled
-        />
+      <div style={{ display: 'flex', borderTop: `1px solid ${divider}` }}>
+        {[
+          { icon: '↓', label: 'Télécharger', onClick: () => onDownload(match), loading: isExporting },
+          { icon: '✏', label: 'Modifier',    onClick: () => onEdit(match) },
+          { icon: '↗', label: 'Partager',    onClick: () => onShare(match), loading: isExporting },
+          { icon: '📅', label: 'Planifier',  onClick: () => {}, disabled: true },
+        ].map((btn, i, arr) => (
+          <div key={btn.label} style={{ display: 'contents' }}>
+            <motion.button
+              type="button"
+              whileTap={btn.disabled ? undefined : { scale: 0.84 }}
+              onClick={btn.disabled || btn.loading ? undefined : btn.onClick}
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', gap: 2, padding: '10px 0',
+                color: btn.disabled ? btnDisabled : btnColor,
+                cursor: btn.disabled ? 'not-allowed' : 'pointer',
+                background: 'none', border: 'none',
+              }}
+            >
+              <span style={{ fontSize: 14, lineHeight: 1 }}>
+                {btn.loading
+                  ? <span style={{ display: 'inline-block', width: 13, height: 13, border: `1.5px solid currentColor`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                  : btn.icon}
+              </span>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.02em' }}>{btn.label}</span>
+            </motion.button>
+            {i < arr.length - 1 && (
+              <div style={{ width: 1, backgroundColor: divider, margin: '6px 0', alignSelf: 'stretch' }} />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
