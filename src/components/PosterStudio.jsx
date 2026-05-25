@@ -18,6 +18,7 @@ import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
 import { generateVariants, generateAIBackground, generateCustomBackground, generateCustomElement, BG_PROMPT_SUGGESTIONS, ELEMENT_PROMPT_SUGGESTIONS } from '../lib/posterVariants.js';
+import { getBgCache, normalizeSport } from '../lib/sportBgCache.js';
 import { supabase } from '../lib/supabase.js';
 import { sanitizeFilename } from '../lib/sanitize.js';
 
@@ -308,16 +309,25 @@ export default function PosterStudio({ event, onClose, club }) {
   useEffect(() => {
     favTplHook.loadFromDB();
     const draft = draftHook.loadDraft();
+    const sportKey = normalizeSport(event?.sport || '');
+    const cachedSportBg = getBgCache(sportKey);
     if (draft?.state) {
       const merged = { ...draft.state };
       if (!merged.homeLogo && initialFields.homeLogo) merged.homeLogo = initialFields.homeLogo;
       if (!merged.awayLogo && initialFields.awayLogo) merged.awayLogo = initialFields.awayLogo;
+      if (!merged.bgSrc && !merged.bgPreset && cachedSportBg) {
+        merged.bgSrc = cachedSportBg;
+        merged.bgMode = 'url';
+      }
       dispatch({ type: 'PATCH', payload: merged });
       setRestoredDraft(true);
       setTimeout(() => setRestoredDraft(false), 3000);
     } else {
       const defaultTpl = defTplHook.get();
       if (defaultTpl) set('templateId', defaultTpl);
+      if (cachedSportBg) {
+        dispatch({ type: 'PATCH', payload: { bgSrc: cachedSportBg, bgMode: 'url', bgErr: false } });
+      }
     }
     setTimeout(() => { skipAutoSave.current = false; }, 150);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

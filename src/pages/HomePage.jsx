@@ -804,6 +804,14 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
         <div style={{ backgroundColor:'var(--sl-hero-section-bg)', position:'relative', zIndex:1 }}>
           <div className="max-w-5xl mx-auto">
 
+            {/* Affiches du week-end — desktop */}
+            <div className="pt-8">
+              <WeekendPosters
+                matches={getMockWeekendMatches()}
+                onOpenInStudio={handleOpenInStudio}
+              />
+            </div>
+
             {/* Recent results + upcoming — desktop */}
             <div className="px-12 pt-10">
               <RecentResultsFeed allEvents={allEvents} onNavigate={onNavigate} />
