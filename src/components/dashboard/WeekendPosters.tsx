@@ -11,8 +11,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 // @ts-expect-error — JS non typé
 import PosterRenderer from '../poster/PosterRenderer.jsx';
+// @ts-expect-error — JS non typé
+import { generateCustomBackground } from '../../lib/posterVariants.js';
 import { useWeekendPosters } from '../../hooks/useWeekendPosters.js';
 import type { WeekendMatch, ExportAction } from '../../types/sportlink.js';
+
+// ── Prompts Pollinations.ai par sport ─────────────────────────────────────────
+// Phrases courtes, colorées, sans personnes ni logos — Flux les rend bien en format portrait
+const SPORT_BG_PROMPTS: Record<string, string> = {
+  football:   'vibrant green football grass close-up, stadium floodlights bokeh, electric match atmosphere, lush field texture',
+  foot:       'vibrant green football grass close-up, stadium floodlights bokeh, electric match atmosphere',
+  soccer:     'vibrant green football grass close-up, stadium floodlights bokeh, electric match atmosphere',
+  basket:     'basketball court hardwood parquet texture, arena neon spotlights, orange energy, dynamic vibrant colors',
+  basketball: 'basketball court hardwood parquet texture, arena neon spotlights, orange energy, dynamic vibrant colors',
+  handball:   'handball parquet court blue lines detail, sports hall dramatic lighting, vibrant blue and orange',
+  hand:       'handball parquet court blue lines detail, sports hall dramatic lighting, vibrant blue and orange',
+  volleyball: 'beach volleyball golden sand court, sunset orange sky, ocean blues, summer vibrant energy',
+  volley:     'beach volleyball golden sand court, sunset orange sky, ocean blues, summer vibrant energy',
+  tennis:     'clay tennis court deep orange-red texture, Roland Garros atmosphere, vibrant court lines detail',
+  rugby:      'green rugby field grass close-up, dramatic storm sky, vibrant stadium floodlights, intense atmosphere',
+  padel:      'padel court glass walls blue artificial turf, modern neon arena lighting, vibrant colors',
+  squash:     'squash court orange walls glass detail, dramatic arena lighting, vibrant colors',
+  badminton:  'badminton court colorful lines, sports hall bright lighting, vibrant energy shuttlecock',
+  default:    'sports arena dramatic colorful lighting, vibrant energy, athletic stadium atmosphere at night',
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
@@ -139,13 +161,14 @@ const PREVIEW_WIDTH = 200; // px, correspond à la largeur de la carte
 
 interface PosterCardProps {
   match: WeekendMatch;
+  bgImage?: string;
   isExporting: boolean;
   onDownload: (m: WeekendMatch) => void;
   onShare:    (m: WeekendMatch) => void;
   onEdit:     (m: WeekendMatch) => void;
 }
 
-function PosterCard({ match, isExporting, onDownload, onShare, onEdit }: PosterCardProps) {
+function PosterCard({ match, bgImage, isExporting, onDownload, onShare, onEdit }: PosterCardProps) {
   const previewHeight = Math.round((PREVIEW_WIDTH / 360) * 640); // ratio story 9:16
 
   return (
@@ -157,10 +180,11 @@ function PosterCard({ match, isExporting, onDownload, onShare, onEdit }: PosterC
       <div className="relative" style={{ height: previewHeight }}>
         <PosterRenderer
           templateId={match.templateId}
-          data={match.posterData}
+          data={bgImage ? { ...match.posterData, bgImage } : match.posterData}
           format="story"
           previewWidth={PREVIEW_WIDTH}
-          bgPresetId={match.bgPresetId ?? ''}
+          bgPresetId={bgImage ? '' : (match.bgPresetId ?? '')}
+          bgImageOverlay={0.28}
         />
 
         {/* Badge catégorie */}
@@ -294,6 +318,39 @@ export default function WeekendPosters({
   // Données live (hook) ou mockées (prop)
   const liveMatches = useWeekendPosters();
   const matches = matchesProp ?? liveMatches;
+
+  // Fonds IA générés par Pollinations.ai — keyed par match.id
+  const [bgImages, setBgImages] = useState<Record<string, string>>({});
+
+  // Génération séquentielle au montage (évite de saturer l'API)
+  useEffect(() => {
+    if (!matches.length) return;
+    let cancelled = false;
+    const ids = matches.map(m => m.id).join(',');
+
+    const run = async () => {
+      for (const match of matches) {
+        if (cancelled) break;
+        const sport = match.sport.toLowerCase();
+        const prompt =
+          Object.entries(SPORT_BG_PROMPTS).find(([k]) => sport.includes(k))?.[1]
+          ?? SPORT_BG_PROMPTS.default;
+        try {
+          const { imageUrl } = await generateCustomBackground(prompt);
+          if (!cancelled && imageUrl) {
+            setBgImages(prev => ({ ...prev, [match.id]: imageUrl }));
+          }
+        } catch {
+          // Silencieux — l'affiche garde son fond statique
+        }
+      }
+    };
+
+    run();
+    return () => { cancelled = true; };
+  // ids suffit à détecter un changement de liste sans dépendre de l'objet matches
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matches.map(m => m.id).join(',')]);
 
   // Ref sur l'affiche HD cachée, rendue hors-écran pour l'export
   const exportRef = useRef<HTMLDivElement | null>(null);
@@ -479,6 +536,7 @@ export default function WeekendPosters({
               >
                 <PosterCard
                   match={match}
+                  bgImage={bgImages[match.id]}
                   isExporting={loadingMatchId === match.id}
                   onDownload={m => triggerExport(m, 'download')}
                   onShare={m => triggerExport(m, 'share')}
@@ -509,10 +567,13 @@ export default function WeekendPosters({
           <div ref={exportRef}>
             <PosterRenderer
               templateId={exportingMatch.templateId}
-              data={exportingMatch.posterData}
+              data={bgImages[exportingMatch.id]
+                ? { ...exportingMatch.posterData, bgImage: bgImages[exportingMatch.id] }
+                : exportingMatch.posterData}
               format="story"
               previewWidth={360}
-              bgPresetId={exportingMatch.bgPresetId ?? ''}
+              bgPresetId={bgImages[exportingMatch.id] ? '' : (exportingMatch.bgPresetId ?? '')}
+              bgImageOverlay={0.28}
             />
           </div>
         </div>

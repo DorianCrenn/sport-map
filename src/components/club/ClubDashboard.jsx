@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Z } from '../../constants/zIndex.js';
 import { useClubDashboard } from '../../hooks/useClubDashboard.js';
 
 function StatCard({ label, value, sub, color = 'var(--sl-t1)' }) {
@@ -48,7 +49,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose }
       exit={{ x: '100%' }}
       transition={{ type: 'spring', stiffness: 340, damping: 36 }}
       style={{
-        position: 'absolute', inset: 0, zIndex: 30,
+        position: 'absolute', inset: 0, zIndex: Z.formModal,
         backgroundColor: 'var(--sl-bg)',
         display: 'flex', flexDirection: 'column',
       }}

@@ -975,9 +975,9 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
       className="fixed inset-0 flex flex-col z-20"
       style={{ backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}
@@ -1345,7 +1345,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               {/* ── Vues ── */}
               <div className="flex items-center gap-1.5">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                <span className="text-[10px] font-semibold" style={{ color: 'var(--sl-t3)' }}>{pageViews} vue{pageViews !== 1 ? 's' : ''} sur cette page</span>
+                <span className="text-[10px] font-semibold" style={{ color: 'var(--sl-t3)' }}>{pageViews ?? 0} vue{(pageViews ?? 0) !== 1 ? 's' : ''} sur cette page</span>
               </div>
 
             </div>

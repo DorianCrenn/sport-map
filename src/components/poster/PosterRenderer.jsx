@@ -395,7 +395,7 @@ function PlayerLayer({ layer, accentColor }) {
   );
 }
 
-const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', effects = {}, overlayElements = [], aiOverlayElements = [], playerLayers = [] }) {
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', bgImageOverlay = 0.52, effects = {}, overlayElements = [], aiOverlayElements = [], playerLayers = [] }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
@@ -431,7 +431,7 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
         {data.bgImage && (
           <>
             <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', backgroundImage: `url(${data.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-            <div style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none', backgroundColor: 'rgba(0,0,0,0.52)' }} />
+            <div style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none', backgroundColor: `rgba(0,0,0,${bgImageOverlay})` }} />
           </>
         )}
 
