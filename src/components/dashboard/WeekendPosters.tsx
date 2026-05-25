@@ -36,6 +36,40 @@ const SPORT_BG_PROMPTS: Record<string, string> = {
   default:    'sports arena dramatic colorful lighting, vibrant energy, athletic stadium atmosphere at night',
 };
 
+// ── Cache localStorage — clé par sport, TTL 7 jours ──────────────────────────
+
+const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+
+function normalizeSport(sport: string): string {
+  const s = sport.toLowerCase();
+  if (s.includes('foot') || s.includes('soccer')) return 'football';
+  if (s.includes('basket'))    return 'basket';
+  if (s.includes('hand'))      return 'handball';
+  if (s.includes('volley'))    return 'volleyball';
+  if (s.includes('tennis'))    return 'tennis';
+  if (s.includes('rugby'))     return 'rugby';
+  if (s.includes('padel'))     return 'padel';
+  if (s.includes('squash'))    return 'squash';
+  if (s.includes('badminton')) return 'badminton';
+  return 'default';
+}
+
+function getBgCache(sport: string): string | null {
+  try {
+    const raw = localStorage.getItem(`sl-sport-bg-${sport}`);
+    if (!raw) return null;
+    const { imageUrl, ts } = JSON.parse(raw) as { imageUrl: string; ts: number };
+    if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(`sl-sport-bg-${sport}`); return null; }
+    return imageUrl;
+  } catch { return null; }
+}
+
+function setBgCache(sport: string, imageUrl: string): void {
+  try {
+    localStorage.setItem(`sl-sport-bg-${sport}`, JSON.stringify({ imageUrl, ts: Date.now() }));
+  } catch { /* localStorage plein — silencieux */ }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
 // ─────────────────────────────────────────────────────────────────────────────
@@ -319,36 +353,66 @@ export default function WeekendPosters({
   const liveMatches = useWeekendPosters();
   const matches = matchesProp ?? liveMatches;
 
-  // Fonds IA générés par Pollinations.ai — keyed par match.id
-  const [bgImages, setBgImages] = useState<Record<string, string>>({});
+  // Fonds IA — keyed par match.id (plusieurs matchs du même sport partagent la même image)
+  const [bgImages, setBgImages] = useState<Record<string, string>>(() => {
+    // Hydratation initiale depuis le cache localStorage
+    if (!matchesProp && typeof window === 'undefined') return {};
+    const init: Record<string, string> = {};
+    const src = matchesProp ?? [];
+    for (const m of src) {
+      const url = getBgCache(normalizeSport(m.sport));
+      if (url) init[m.id] = url;
+    }
+    return init;
+  });
 
-  // Génération séquentielle au montage (évite de saturer l'API)
+  // Génération séquentielle — une image par sport unique, cache localStorage 7 j
   useEffect(() => {
     if (!matches.length) return;
     let cancelled = false;
-    const ids = matches.map(m => m.id).join(',');
 
+    // Hydrate d'abord depuis le cache pour les matchs live (pas injectés en prop)
+    setBgImages(prev => {
+      const next = { ...prev };
+      for (const m of matches) {
+        if (next[m.id]) continue;
+        const url = getBgCache(normalizeSport(m.sport));
+        if (url) next[m.id] = url;
+      }
+      return next;
+    });
+
+    // Ne génère que les sports sans cache
     const run = async () => {
+      const done = new Set<string>();
       for (const match of matches) {
         if (cancelled) break;
-        const sport = match.sport.toLowerCase();
-        const prompt =
-          Object.entries(SPORT_BG_PROMPTS).find(([k]) => sport.includes(k))?.[1]
-          ?? SPORT_BG_PROMPTS.default;
+        const key = normalizeSport(match.sport);
+        if (done.has(key)) continue;
+        done.add(key);
+        if (getBgCache(key)) continue; // déjà en cache
+        const prompt = SPORT_BG_PROMPTS[key] ?? SPORT_BG_PROMPTS.default;
         try {
           const { imageUrl } = await generateCustomBackground(prompt);
           if (!cancelled && imageUrl) {
-            setBgImages(prev => ({ ...prev, [match.id]: imageUrl }));
+            setBgCache(key, imageUrl);
+            // Applique à tous les matchs du même sport
+            setBgImages(prev => {
+              const next = { ...prev };
+              for (const m of matches) {
+                if (normalizeSport(m.sport) === key) next[m.id] = imageUrl;
+              }
+              return next;
+            });
           }
         } catch {
-          // Silencieux — l'affiche garde son fond statique
+          // Silencieux — fond statique bgPreset en fallback
         }
       }
     };
 
     run();
     return () => { cancelled = true; };
-  // ids suffit à détecter un changement de liste sans dépendre de l'objet matches
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matches.map(m => m.id).join(',')]);
 
