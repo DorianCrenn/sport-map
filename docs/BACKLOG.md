@@ -1,6 +1,6 @@
 # SportLink — Backlog Technique & Produit
 > Document vivant — mis à jour au fil des sprints  
-> Dernière mise à jour : 2026-05-23 — PS Phase 4 implémentée (APIs réelles : Remove.bg + Claude Vision + Fal.ai Flux)
+> Dernière mise à jour : 2026-05-25 — PS Phase 5 implémentée (Éditeur visuel premium : AiElementEditor, contrôles typo, handles précis, alignement)
 
 ---
 
@@ -579,6 +579,30 @@ fetch('/functions/v1/send-push', {
 
 ---
 
+### EPIC-PS-5 ✅ Éditeur Visuel Premium — 2026-05-25
+
+- **Objectif** : Rendre l'éditeur visuel professionnel — handles précis, typographie libre, alignement assisté, éléments IA entièrement manipulables.
+- **Complexité** : L (total sprint)
+- **Statut** : Entièrement implémenté ✅
+
+| ID | Description | Taille | Statut |
+|----|-------------|--------|--------|
+| PS-VED-001 | `AiElementEditor.jsx` — éditeur plein écran pour repositionner/ajuster les éléments décoratifs IA (drag, opacité, échelle, rotation, au-dessus/en-dessous, supprimer) | M | ✅ |
+| PS-VED-002 | Thumbnails éléments IA en portrait natif (576×1024) + système de favoris localStorage max 12 par club | M | ✅ |
+| PS-VED-003 | Réduction taille thumbnails (trop hauts sur mobile, boutons trop petits) | S | ✅ |
+| PS-VED-004 | Touche Entrée déclenche la génération IA (fonds personnalisés + éléments) | XS | ✅ |
+| PS-VED-005 | Fix images IA aplaties : `objectFit: contain` + dimensions `576×1024` Pollinations (ratio 9:16 exact) | S | ✅ |
+| PS-VED-006 | Tous les blocs info tournoi, équipes, date/lieu (`data-block="info"`, `"teams"`, `"meta"`) déplaçables dans l'éditeur visuel | M | ✅ |
+| PS-VED-007 | Fix phrases coupées : `-webkit-line-clamp: 2` sur taglines, suppression `overflowWrap/wordBreak: break-word` sur 10 templates tournoi | M | ✅ |
+| PS-VED-008 | Contrôle taille de police par bloc dans PosterEditor (slider 8–120px, mode Auto/Personnalisé, reset Auto) | M | ✅ |
+| PS-VED-009 | Contrôle famille de police par bloc (dropdown 8 familles Google Fonts : Oswald, Bebas Neue, Montserrat, Barlow Condensed, Playfair Display, Anton…) | S | ✅ |
+| PS-VED-010 | Fix InfoRow : texte complet affiché — suppression `truncate()` 12/14 chars + suppression `whiteSpace: nowrap` | XS | ✅ |
+| PS-VED-011 | Handles blocs précis : text-node `TreeWalker` pour bounding box réelle du contenu (plus de handles pleine largeur) | M | ✅ |
+| PS-VED-012 | Boutons alignement Gauche / Centre / Droite par bloc dans PosterEditor (calcul `dx` depuis position naturelle) | S | ✅ |
+| PS-VED-013 | Exclure les `data-block` imbriqués du calcul handle (évite que meta englobe tagline dans TplTrSummer) | S | ✅ |
+
+---
+
 ### EPIC-PS-4 🟢 Polish, bibliothèque avancée & préparation vidéo
 
 - **Objectif** : Finitions UX premium + préparer l'architecture pour motion posters et reels futurs.
@@ -755,6 +779,21 @@ POSTER STUDIO PREMIUM — Phase 3 (Variantes)
 ├── PS-UX-016   Click variante → charge state poster        [S]  ✅
 ├── PS-UX-017   Bouton Régénérer                            [S]  ✅
 └── PS-UX-018   Labels variantes (template + swatch)        [XS] ✅
+
+POSTER STUDIO PREMIUM — Phase 5 (Éditeur Visuel Premium) ✅ 2026-05-25
+├── PS-VED-001  AiElementEditor drag + sliders éléments IA    [M]  ✅
+├── PS-VED-002  Thumbnails portrait + favoris éléments IA     [M]  ✅
+├── PS-VED-003  Réduction taille thumbnails mobile             [S]  ✅
+├── PS-VED-004  Entrée = génération IA (fonds + éléments)     [XS] ✅
+├── PS-VED-005  Fix images aplaties (contain + 576×1024)      [S]  ✅
+├── PS-VED-006  Blocs info/équipes/date déplaçables           [M]  ✅
+├── PS-VED-007  Fix phrases coupées (line-clamp + overflowWrap)[M]  ✅
+├── PS-VED-008  Contrôle taille de police par bloc             [M]  ✅
+├── PS-VED-009  Contrôle famille de police par bloc            [S]  ✅
+├── PS-VED-010  Fix InfoRow texte complet (suppression truncate)[XS] ✅
+├── PS-VED-011  Handles précis (text-node TreeWalker)          [M]  ✅
+├── PS-VED-012  Boutons alignement G/C/D par bloc              [S]  ✅
+└── PS-VED-013  Exclure data-block imbriqués du calcul handle  [S]  ✅
 
 POSTER STUDIO PREMIUM — Phase 4 (API réelle + Polish)
 ├── PS-API-001  Remove.bg API dans Edge Function            [M]  ✅
