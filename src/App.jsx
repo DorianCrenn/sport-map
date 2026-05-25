@@ -245,7 +245,10 @@ function AppInner() {
         />
       )}
 
-      <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+      {/* zIndex:1 crée un stacking context explicite au-dessus du BottomNav (z:auto),
+          garantissant que les overlays fixed (ClubPageView, PosterStudio…) ne passent
+          pas derrière la nav bottom quand ils sont ouverts depuis une page enfant. */}
+      <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', zIndex: 1 }}>
         <AnimatePresence initial={false}>
           <motion.div
             key={activeTab}

@@ -1,8 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
+import WeekendPosters from '../components/dashboard/WeekendPosters.tsx';
+import { getMockWeekendMatches } from '../hooks/useWeekendPosters.js';
+
+const PosterStudio = lazy(() => import('../components/PosterStudio.jsx'));
 
 // ── Social proof strip ────────────────────────────────────────────────────────
 function SocialProofStrip({ clubs = [], thisWeek = 0 }) {
@@ -602,7 +606,31 @@ function FeaturesSection({ stats = {}, onNavigate }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage({ onNavigate, stats, clubs = [], allEvents = [] }) {
+  // ── PosterStudio depuis les affiches du week-end ───────────────────────────
+  const [studioEvent, setStudioEvent] = useState(null);
+  const [studioClub,  setStudioClub]  = useState(null);
+
+  const handleOpenInStudio = useCallback((match) => {
+    // Construit les objets event et club attendus par PosterStudio
+    setStudioEvent({
+      id:          match.id,
+      title:       `${match.homeTeam.name} vs ${match.awayTeam.name}`,
+      date:        match.posterData.event.date,
+      sport:       match.sport,
+      venue:       match.venue ?? '',
+      city:        match.posterData.event.city ?? '',
+      homeOrAway:  'home',
+    });
+    setStudioClub({
+      id:       match.clubId,
+      name:     match.homeTeam.name,
+      logo_url: match.homeTeam.logo ?? '',
+      sport:    match.sport,
+    });
+  }, []);
+
   return (
+    <>
     <div className="h-full overflow-y-auto" style={{ background: 'var(--sl-hero-bg)' }}>
 
       {/* ── MOBILE layout (< md) ── */}
@@ -670,6 +698,13 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
 
         {/* Themed section */}
         <div style={{ backgroundColor:'var(--sl-hero-section-bg)', borderRadius:'24px 24px 0 0', marginTop:'-8px', position:'relative', zIndex:1 }}>
+          {/* Affiches du week-end — mock data pour test, retirer matches={...} en prod */}
+          <div className="pt-5">
+            <WeekendPosters
+              matches={getMockWeekendMatches()}
+              onOpenInStudio={handleOpenInStudio}
+            />
+          </div>
           <div className="px-5 pt-5">
             <RecentResultsFeed allEvents={allEvents} onNavigate={onNavigate} />
           </div>
@@ -869,5 +904,17 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
         </div>
       </div>
     </div>
+
+    {/* PosterStudio — ouvert depuis "Modifier" dans WeekendPosters */}
+    {studioEvent && (
+      <Suspense fallback={null}>
+        <PosterStudio
+          event={studioEvent}
+          club={studioClub}
+          onClose={() => { setStudioEvent(null); setStudioClub(null); }}
+        />
+      </Suspense>
+    )}
+    </>
   );
 }
