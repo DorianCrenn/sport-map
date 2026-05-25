@@ -43,8 +43,8 @@ export default function TplGlass({ event, homeTeam, awayTeam, championship, tagl
           <div style={{ ...glass, borderRadius: 20, padding: '4px 12px' }}>
             <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '0.28em', color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase' }}>SPORTLINK</span>
           </div>
-          <div style={{ ...glass, borderRadius: 20, padding: '4px 12px' }}>
-            <span style={{ fontSize: 7.5, fontWeight: 600, letterSpacing: '0.1em', color: a, textTransform: 'uppercase' }}>{truncate(champ, 20)}</span>
+          <div style={{ ...glass, borderRadius: 20, padding: '4px 12px', maxWidth: 170, overflow: 'hidden' }}>
+            <span style={{ fontSize: 7.5, fontWeight: 600, letterSpacing: '0.08em', color: a, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{champ}</span>
           </div>
         </div>
 
@@ -61,7 +61,7 @@ export default function TplGlass({ event, homeTeam, awayTeam, championship, tagl
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.1em', color: a, textTransform: 'uppercase', marginBottom: 3 }}>Domicile</div>
               <div style={{ fontSize: scaledFs(homeName, 16, 14, 11), fontWeight: 800, color: 'white', letterSpacing: '-0.02em', lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {truncate(homeName, 18)}
+                {truncate(homeName, 22)}
               </div>
             </div>
           </div>
@@ -86,24 +86,31 @@ export default function TplGlass({ event, homeTeam, awayTeam, championship, tagl
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', marginBottom: 3 }}>Extérieur</div>
               <div style={{ fontSize: scaledFs(awayName, 16, 14, 11), fontWeight: 800, color: 'rgba(255,255,255,0.75)', letterSpacing: '-0.02em', lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {truncate(awayName, 18)}
+                {truncate(awayName, 22)}
               </div>
             </div>
           </div>
         </div>
 
         {/* Meta info glass card */}
-        <div data-block="meta" style={{ ...glass, borderRadius: 16, padding: '12px 14px', marginTop: isStory ? 18 : 12, display: 'flex', justifyContent: 'space-around', ...tr('meta') }}>
-          {[
-            { label: 'Date', value: `${dt.day} ${dt.month}`, color: a },
-            { label: 'Heure', value: dt.time, color: 'white' },
-            { label: 'Lieu', value: truncate(event?.venue || event?.city || '—', 14), color: 'rgba(255,255,255,0.8)' },
-          ].map(({ label, value, color }, i) => (
-            <div key={i} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color }}>{value}</div>
-              <div style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: 2 }}>{label}</div>
+        <div data-block="meta" style={{ ...glass, borderRadius: 16, padding: '10px 14px', marginTop: isStory ? 18 : 12, display: 'flex', alignItems: 'center', gap: 0, ...tr('meta') }}>
+          {/* Date */}
+          <div style={{ flex: 1, textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.08)', paddingRight: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: a, whiteSpace: 'nowrap' }}>{dt.day} {dt.month}</div>
+            <div style={{ fontSize: 7.5, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: 2 }}>Date</div>
+          </div>
+          {/* Heure */}
+          <div style={{ flex: 1, textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.08)', padding: '0 10px' }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'white', whiteSpace: 'nowrap' }}>{dt.time}</div>
+            <div style={{ fontSize: 7.5, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: 2 }}>Heure</div>
+          </div>
+          {/* Lieu — 2 lignes, pas de troncature dure */}
+          <div style={{ flex: 1.8, textAlign: 'right', paddingLeft: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.85)', lineHeight: 1.25, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {event?.venue || event?.city || '—'}
             </div>
-          ))}
+            <div style={{ fontSize: 7.5, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: 2 }}>Lieu</div>
+          </div>
         </div>
 
         {tagline && (
