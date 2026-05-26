@@ -346,7 +346,7 @@ function ClubBanner({ onNavigate }) {
         </p>
         <button onClick={() => onNavigate('clubs')}
           className="flex items-center gap-1.5 font-semibold font-poppins text-white"
-          style={{ backgroundColor: '#22d96a', borderRadius: 12, padding: '9px 16px', fontSize: 13 }}>
+          style={{ backgroundColor: '#22d96a', borderRadius: 12, padding: '12px 16px', fontSize: 13 }}>
           Voir les clubs
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>

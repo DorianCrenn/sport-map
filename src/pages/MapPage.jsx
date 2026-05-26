@@ -277,7 +277,7 @@ export default function MapPage({
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <span style={{ flex: 1, fontSize: 12, color: '#f59e0b' }}>Géolocalisation non disponible — activez-la dans les paramètres.</span>
-              <button onClick={() => setGeoError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f59e0b', opacity: 0.7, padding: 4 }}>
+              <button onClick={() => setGeoError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f59e0b', opacity: 0.7, padding: '10px 8px' }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -323,7 +323,7 @@ export default function MapPage({
           {/* Favoris */}
           <button
             onClick={onGoToFavoris}
-            style={{ pointerEvents: 'auto', position: 'relative', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '8px 12px', borderRadius: 12, cursor: 'pointer', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', color: '#ef4444', border: '1px solid var(--sl-border)' }}
+            style={{ pointerEvents: 'auto', position: 'relative', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '10px 12px', borderRadius: 12, cursor: 'pointer', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', color: '#ef4444', border: '1px solid var(--sl-border)' }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             Favoris
@@ -365,7 +365,7 @@ export default function MapPage({
             {canAddEvent && (
               <button
                 onClick={() => setModalEvent({ _isNew: true })}
-                style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, padding: '10px 16px', borderRadius: 12, cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', border: 'none', boxShadow: '0 4px 16px rgba(34,217,106,0.35)' }}
+                style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, padding: '12px 16px', borderRadius: 12, cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', border: 'none', boxShadow: '0 4px 16px rgba(34,217,106,0.35)' }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Ajouter
