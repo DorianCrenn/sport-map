@@ -774,7 +774,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           {platformPreview && (
             <motion.div key="platform-preview"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{ position: 'absolute', inset: 0, zIndex: 42, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', borderRadius: 'inherit', overflow: 'hidden' }}>
+              style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 42, backgroundColor: 'var(--sl-card)', display: 'flex', flexDirection: 'column', borderRadius: '22px 22px 0 0', overflow: 'hidden' }}>
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Aperçu plateformes</span>
