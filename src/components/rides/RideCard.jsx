@@ -126,12 +126,12 @@ export default function RideCard({
               </div>
               <button
                 onClick={() => onAccept(req.id, req.passengerId, req.passengerName)}
-                style={{ width: 34, height: 34, borderRadius: 9, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, flexShrink: 0 }}
+                style={{ width: 36, height: 36, borderRadius: 9, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, flexShrink: 0 }}
                 aria-label="Accepter"
               >✓</button>
               <button
                 onClick={() => onRefuse(req.id, req.passengerId)}
-                style={{ width: 34, height: 34, borderRadius: 9, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444', fontSize: 14, fontWeight: 700, flexShrink: 0 }}
+                style={{ width: 36, height: 36, borderRadius: 9, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444', fontSize: 14, fontWeight: 700, flexShrink: 0 }}
                 aria-label="Refuser"
               >✕</button>
             </div>

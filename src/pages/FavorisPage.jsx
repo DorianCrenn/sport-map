@@ -182,7 +182,7 @@ function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }) 
           </button>
           <ShareBtn event={event} />
           <button onClick={() => downloadICS(event)} title="Ajouter au calendrier"
-            style={{ width: 34, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CalSvg size={12} />
           </button>
         </div>

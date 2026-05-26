@@ -85,7 +85,7 @@ export default function PosterShareBtn({ event }) {
         title="Partager l'affiche"
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          width: 28, height: 28, borderRadius: 8,
+          width: 36, height: 36, borderRadius: 8,
           cursor: busy ? 'wait' : 'pointer',
           color: busy ? 'var(--sl-green)' : 'var(--sl-t3)',
           border: `1px solid ${busy ? 'var(--sl-green)' : 'var(--sl-border-s)'}`,
