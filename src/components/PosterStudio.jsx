@@ -230,9 +230,10 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const hasPremium = currentUser?.role === 'admin' || currentUser?.role === 'superadmin'
     || currentUser?.role === 'club_admin' || currentUser?.isPremium;
 
-  const posterRef        = useRef(null);
-  const exportRef        = useRef(null);
-  const exportWrapperRef = useRef(null);
+  const posterRef           = useRef(null);
+  const exportRef           = useRef(null);
+  const exportWrapperRef    = useRef(null);
+  const altExportWrapperRef = useRef(null);
   const sponsorRef  = useRef(null);
   const bgFileRef   = useRef(null);
   const homeLogoRef = useRef(null);
@@ -276,6 +277,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     scoreHome, scoreAway,
   } = poster;
   const set = (key, value) => dispatch({ type: key, value });
+  const altFormat = format === 'story' ? 'post' : 'story';
+  const { w: altW, h: altH } = BASE_DIMS[altFormat];
 
   const [activeTab,     setActiveTab]     = useState('template');
   const [exportOpen,    setExportOpen]    = useState(false);
@@ -306,6 +309,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const [aiElLoading,   setAiElLoading]   = useState(false);
   const [aiPosterLoading, setAiPosterLoading] = useState(false);
   const [aiPosterHint,    setAiPosterHint]    = useState('');
+  const [exportingAll,    setExportingAll]    = useState(false);
+  const [linkCopied,      setLinkCopied]      = useState(false);
+  const [platformPreview, setPlatformPreview] = useState(null);
   const [aiElEditorUid, setAiElEditorUid] = useState(null);
   const [savedAiBgs,    setSavedAiBgs]    = useState(() => loadSavedBgs(club?.id));
   const [savedAiEls,    setSavedAiEls]    = useState(() => loadSavedEls(club?.id));
@@ -610,6 +616,47 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(eventUrl)}`, '_blank', 'noopener,noreferrer,width=600,height=400');
   }
 
+  async function handleDownloadAll() {
+    setExportingAll(true);
+    try {
+      const blob1 = await getBlob();
+      if (blob1) {
+        const url1 = URL.createObjectURL(blob1);
+        const a1 = document.createElement('a');
+        a1.href = url1;
+        a1.download = `affiche-${sanitizeFilename(event?.title ?? 'match')}-${format}.png`;
+        a1.click();
+        URL.revokeObjectURL(url1);
+      }
+      await new Promise(r => setTimeout(r, 400));
+      const altNode = altExportWrapperRef.current;
+      if (altNode) {
+        let blob2 = await toBlob(altNode, { pixelRatio: 3, cacheBust: true });
+        if (!blob2 || blob2.size < 10_000) {
+          await new Promise(r => setTimeout(r, 350));
+          blob2 = await toBlob(altNode, { pixelRatio: 3, cacheBust: true });
+        }
+        if (blob2) {
+          const url2 = URL.createObjectURL(blob2);
+          const a2 = document.createElement('a');
+          a2.href = url2;
+          a2.download = `affiche-${sanitizeFilename(event?.title ?? 'match')}-${altFormat}.png`;
+          a2.click();
+          URL.revokeObjectURL(url2);
+        }
+      }
+    } finally { setTimeout(() => setExportingAll(false), 900); }
+  }
+
+  function handleCopyLink() {
+    const url = event?.id
+      ? `${window.location.origin}${window.location.pathname}#event/${event.id}`
+      : window.location.origin;
+    navigator.clipboard.writeText(url).catch(() => {});
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  }
+
   function readFile(e, setter) {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -681,6 +728,33 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           </div>
         </div>
 
+        {/* Hidden HD renderer — alt format */}
+        <div style={{ position: 'fixed', left: -9999, top: 0, pointerEvents: 'none', zIndex: -1 }}>
+          <div ref={altExportWrapperRef} style={{ position: 'relative', width: altW, height: altH, overflow: 'hidden' }}>
+            <PosterRenderer templateId={templateId} data={posterData} format={altFormat} previewWidth={altW} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+            {scoreHome !== undefined && scoreAway !== undefined && (
+              <div style={{
+                position: 'absolute', bottom: 72, left: '50%', transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap', zIndex: 10,
+                backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 16, padding: '12px 28px',
+                display: 'flex', alignItems: 'center', gap: 16,
+                border: '1px solid rgba(255,255,255,0.15)',
+              }}>
+                <span style={{ fontSize: 52, fontWeight: 900, color: 'white', lineHeight: 1, fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif', fontVariantNumeric: 'tabular-nums' }}>{scoreHome}</span>
+                <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.35)', fontWeight: 300 }}>—</span>
+                <span style={{ fontSize: 52, fontWeight: 900, color: 'white', lineHeight: 1, fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif', fontVariantNumeric: 'tabular-nums' }}>{scoreAway}</span>
+              </div>
+            )}
+            {watermarkVisible && (
+              <div style={{ position: 'absolute', bottom: 10, right: 12, padding: '3px 9px', borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.38)' }}>
+                <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.09em', color: 'rgba(255,255,255,0.72)', textTransform: 'uppercase', fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif' }}>
+                  {club?.name ? `${club.name} · SportLink` : 'Créé avec SportLink'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Fullscreen preview */}
         <AnimatePresence>
           {previewFull && (
@@ -691,6 +765,104 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                 style={{ padding: '9px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Fermer
               </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Platform preview overlay — DISTRIB-001c */}
+        <AnimatePresence>
+          {platformPreview && (
+            <motion.div key="platform-preview"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: 'absolute', inset: 0, zIndex: 42, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', borderRadius: 'inherit', overflow: 'hidden' }}>
+              <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Aperçu plateformes</span>
+                <button onClick={() => setPlatformPreview(null)}
+                  style={{ width: 32, height: 32, borderRadius: 9, border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: 6, padding: '10px 16px 0', flexShrink: 0 }}>
+                {[
+                  { id: 'ig-story',  label: 'Story IG',  color: '#E1306C' },
+                  { id: 'ig-post',   label: 'Post IG',   color: '#E1306C' },
+                  { id: 'whatsapp',  label: 'WhatsApp',  color: '#25D366' },
+                ].map(p => (
+                  <button key={p.id} onClick={() => setPlatformPreview(p.id)}
+                    style={{ padding: '6px 12px', borderRadius: 10, border: `1.5px solid ${platformPreview === p.id ? p.color : 'var(--sl-border)'}`, backgroundColor: platformPreview === p.id ? `${p.color}16` : 'transparent', fontSize: 11, fontWeight: 700, color: platformPreview === p.id ? p.color : 'var(--sl-t2)', cursor: 'pointer' }}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, width: '100%', overflow: 'auto' }}>
+                {platformPreview === 'ig-story' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 10, color: '#E1306C', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Instagram Story · 9:16</span>
+                    <div style={{ width: 160, height: 284, borderRadius: 18, overflow: 'hidden', position: 'relative', boxShadow: '0 0 0 3px #E1306C55, 0 24px 60px rgba(0,0,0,0.55)', backgroundColor: '#000' }}>
+                      <PosterRenderer templateId={templateId} data={posterData} format="story" previewWidth={160} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 38, background: 'linear-gradient(to bottom, rgba(0,0,0,0.65), transparent)', zIndex: 10, display: 'flex', alignItems: 'flex-start', padding: '8px 9px 0', gap: 5 }}>
+                        <div style={{ flex: 1, height: 2, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginTop: 5 }} />
+                        <div style={{ width: 22, height: 22, borderRadius: '50%', border: '1.5px solid white', backgroundColor: 'rgba(255,255,255,0.15)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {club?.logo ? <img src={club.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 8, fontWeight: 900, color: 'white' }}>{(club?.name || 'C')[0]}</span>}
+                        </div>
+                        <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.9)', fontWeight: 700, lineHeight: '22px', maxWidth: 52, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club?.name || 'Votre club'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {platformPreview === 'ig-post' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 10, color: '#E1306C', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Instagram Post · 4:5</span>
+                    <div style={{ width: 220, backgroundColor: 'var(--sl-card)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)', border: '1px solid var(--sl-border)' }}>
+                      <div style={{ padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid transparent' }}>
+                          {club?.logo ? <img src={club.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 10, fontWeight: 900, color: 'white' }}>{(club?.name || 'C')[0]}</span>}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t1)' }}>{club?.name || 'Votre club'}</div>
+                          <div style={{ fontSize: 8, color: 'var(--sl-t3)' }}>Bretagne · SportLink</div>
+                        </div>
+                      </div>
+                      <div style={{ overflow: 'hidden' }}>
+                        <PosterRenderer templateId={templateId} data={posterData} format="post" previewWidth={220} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+                      </div>
+                      <div style={{ padding: '7px 10px 8px', display: 'flex', gap: 12, alignItems: 'center' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {platformPreview === 'whatsapp' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 10, color: '#25D366', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>WhatsApp</span>
+                    <div style={{ width: 240, backgroundColor: '#111b21', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}>
+                      <div style={{ padding: '10px 12px', backgroundColor: '#202c33', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+                        <div style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: '#2a3942', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {club?.logo ? <img src={club.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 9, fontWeight: 900, color: '#aebac1' }}>{(club?.name || 'C')[0]}</span>}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: '#e9edef', fontWeight: 700, lineHeight: 1.2 }}>{club?.name || 'Votre club'}</div>
+                          <div style={{ fontSize: 9, color: '#8696a0' }}>en ligne</div>
+                        </div>
+                      </div>
+                      <div style={{ padding: '10px 8px 10px', backgroundColor: '#0b141a' }}>
+                        <div style={{ maxWidth: '88%', marginLeft: 'auto', backgroundColor: '#005c4b', borderRadius: '8px 2px 8px 8px', overflow: 'hidden', boxShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
+                          <div style={{ overflow: 'hidden' }}>
+                            <PosterRenderer templateId={templateId} data={posterData} format="post" previewWidth={190} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+                          </div>
+                          <div style={{ padding: '3px 8px 5px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3 }}>
+                            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.45)' }}>maintenant</span>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#53bdeb" strokeWidth="2.5" strokeLinecap="round"><polyline points="1 12 5 16 11 8"/><polyline points="7 12 11 16 17 8"/></svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -771,6 +943,23 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                 </div>
               </motion.button>
 
+              {/* Tout télécharger — DISTRIB-001a */}
+              <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleDownloadAll(); setExportOpen(false); }} disabled={exportingAll}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: `${accentColor}10` }}>
+                <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: `${accentColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <div style={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, borderRadius: '50%', backgroundColor: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 7, fontWeight: 900, color: '#fff', lineHeight: 1 }}>2</span>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>{exportingAll ? 'Téléchargement…' : 'Tout télécharger'}</div>
+                  <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Story 9:16 + Post 4:5 · HD 3×</div>
+                </div>
+              </motion.button>
+
               <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
 
               {/* WhatsApp */}
@@ -812,6 +1001,24 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                 <div style={{ textAlign: 'left' }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Partager sur Facebook</div>
                   <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Partage du lien de l'événement</div>
+                </div>
+              </motion.button>
+
+              <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
+
+              {/* Copier le lien — DISTRIB-001b */}
+              <motion.button whileTap={{ scale: 0.97 }} onClick={handleCopyLink}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}>
+                <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: linkCopied ? 'rgba(34,217,106,0.14)' : 'rgba(148,163,184,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.2s' }}>
+                  {linkCopied ? (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#22D96A" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  ) : (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  )}
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: linkCopied ? 'var(--sl-green)' : 'var(--sl-t1)', transition: 'color 0.2s' }}>{linkCopied ? 'Lien copié !' : 'Copier le lien'}</div>
+                  <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Lien vers l'événement SportLink</div>
                 </div>
               </motion.button>
             </motion.div>
@@ -1001,6 +1208,12 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                 style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t2)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+              </button>
+              <button onClick={() => setPlatformPreview('ig-story')} title="Aperçu plateformes"
+                style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t2)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
                 </svg>
               </button>
               <button onClick={() => setEditorOpen(true)} title="Éditeur visuel"
