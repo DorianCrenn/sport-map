@@ -306,6 +306,7 @@ a:focus:not(:focus-visible) {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left:   env(safe-area-inset-left, 0px);
   --safe-right:  env(safe-area-inset-right, 0px);
+  --sl-nav-height: 82px;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -359,16 +360,6 @@ button, [role="button"] {
 
 .leaflet-popup-tip-container {
   display: none;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   SAFE AREA — iOS notch / Dynamic Island / Android nav bar
-   ═══════════════════════════════════════════════════════════ */
-:root {
-  --safe-top:    env(safe-area-inset-top,    0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left:   env(safe-area-inset-left,   0px);
-  --safe-right:  env(safe-area-inset-right,  0px);
 }
 
 /* ═══════════════════════════════════════════════════════════

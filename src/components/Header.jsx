@@ -188,14 +188,20 @@ export default function Header({
             />
             {query && (
               <button onClick={() => { setQuery(''); setSearchOpen(false); inputRef.current?.focus(); }} aria-label="Effacer la recherche" style={{
-                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                width: 20, height: 20, borderRadius: '50%',
-                backgroundColor: 'rgba(255,255,255,0.14)', border: 'none', cursor: 'pointer',
+                position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
+                width: 44, height: 44, borderRadius: '50%',
+                backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(222,238,255,0.8)" strokeWidth="3" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
+                <div style={{
+                  width: 20, height: 20, borderRadius: '50%',
+                  backgroundColor: 'rgba(255,255,255,0.14)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(222,238,255,0.8)" strokeWidth="3" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </div>
               </button>
             )}
           </div>
@@ -368,7 +374,7 @@ export default function Header({
           aria-label="Annonces clubs"
           style={{
             flexShrink: 0, position: 'relative',
-            width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
+            width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer',
             backgroundColor: announcementsUnreadCount > 0 ? 'rgba(34,217,106,0.15)' : 'rgba(255,255,255,0.08)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: announcementsUnreadCount > 0 ? '#22d96a' : 'rgba(222,238,255,0.55)',
@@ -402,7 +408,7 @@ export default function Header({
             aria-label={`Menu profil — ${currentUser.name}`}
             aria-expanded={profileOpen}
             style={{
-              width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
+              width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer',
               backgroundColor: 'var(--sl-green)', color: '#fff',
               fontWeight: 800, fontSize: 13, fontFamily: 'Inter, sans-serif',
               display: 'flex', alignItems: 'center', justifyContent: 'center',

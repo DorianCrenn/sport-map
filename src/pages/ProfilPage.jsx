@@ -279,7 +279,7 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
         </div>
       </div>
 
-      <div style={{ padding: '14px 14px 32px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ padding: '14px 14px calc(90px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {/* Stats */}
         <div style={{
           borderRadius: 16, padding: '14px 10px',

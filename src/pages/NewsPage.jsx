@@ -213,7 +213,7 @@ export default function NewsPage({ followedClubIds = [] }) {
         </p>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 80px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
         {loading && (
           <div style={{ textAlign: 'center', padding: 40, color: 'var(--sl-t3)', fontSize: 13 }}>
             Chargement…

@@ -154,7 +154,7 @@ function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }) 
           <button
             onClick={() => onToggleAttend?.(event.id)}
             style={{
-              flex: 1, padding: '7px 4px', borderRadius: 10, cursor: 'pointer',
+              flex: 1, padding: '10px 4px', borderRadius: 10, cursor: 'pointer',
               fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               backgroundColor: attending ? 'var(--sl-green-dim)' : 'var(--sl-surface)',
               color: attending ? 'var(--sl-green)' : 'var(--sl-t2)',
@@ -171,7 +171,7 @@ function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }) 
           <button
             onClick={handleNav}
             style={{
-              flex: 1, padding: '7px 4px', borderRadius: 10, cursor: 'pointer',
+              flex: 1, padding: '10px 4px', borderRadius: 10, cursor: 'pointer',
               fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
               border: '1px solid var(--sl-border-s)',
@@ -286,7 +286,7 @@ function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite, isAtte
   const hasUpcoming = groups.today.length + groups.tomorrow.length + groups.thisWeek.length + groups.later.length > 0;
   const hasAny = hasUpcoming || groups.past.length > 0;
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px 24px' }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px calc(90px + env(safe-area-inset-bottom, 0px))' }}>
       <NotifBanner favoriteEvents={upcomingFavorites} />
       {upcomingFavorites.length > 0 && (
         <div style={{ padding: '10px 0 2px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -386,7 +386,7 @@ function ClubsTab({ allEvents, allClubs, follows, onFollowClub, onUnfollowClub, 
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 24px' }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px calc(90px + env(safe-area-inset-bottom, 0px))' }}>
       {followedWithData.map(({ follow, club, upcomingEvents }) => {
         const sportColor = SPORTS[club.sport]?.color ?? '#22d96a';
         const isExpanded = expandedClubId === club.id;
@@ -427,14 +427,14 @@ function ClubsTab({ allEvents, allClubs, follows, onFollowClub, onUnfollowClub, 
                   <button
                     onClick={e => { e.stopPropagation(); setEditingClubId(club.id); }}
                     title="Modifier le suivi"
-                    style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)' }}
+                    style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
                   </button>
                   <button
                     onClick={e => { e.stopPropagation(); onUnfollowClub(club.id); }}
                     title="Ne plus suivre"
-                    style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}
+                    style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
@@ -471,7 +471,7 @@ function ClubsTab({ allEvents, allClubs, follows, onFollowClub, onUnfollowClub, 
                                 <div style={{ fontSize: 10, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.venue || ev.city}</div>
                               </div>
                               <button onClick={() => downloadICS(ev)} title="Ajouter au calendrier"
-                                style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <CalSvg size={12} />
                               </button>
                             </div>
@@ -564,17 +564,17 @@ function CalendarTab({ allEvents, favorites }) {
   const dayEvents = selectedDay ? (eventsByDay.get(selectedDay) ?? []) : [];
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px calc(90px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Month navigation */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <button onClick={prevMonth} style={{ width: 34, height: 34, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+        <button onClick={prevMonth} style={{ width: 44, height: 44, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--sl-t1)' }}>{MONTHS_FR[viewMonth.getMonth()]}</div>
           <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{viewMonth.getFullYear()} · {calEvents.length} favori{calEvents.length !== 1 ? 's' : ''}</div>
         </div>
-        <button onClick={nextMonth} style={{ width: 34, height: 34, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+        <button onClick={nextMonth} style={{ width: 44, height: 44, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
@@ -660,7 +660,7 @@ function CalendarTab({ allEvents, favorites }) {
                       </div>
                     </div>
                     <button onClick={() => downloadICS(ev)} title="Ajouter au calendrier"
-                      style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <CalSvg size={13} />
                     </button>
                   </div>
@@ -726,7 +726,7 @@ export default function FavorisPage({ allEvents, allClubs = [] }) {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  flex: 1, padding: '8px 6px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                  flex: 1, padding: '11px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
                   fontSize: 11, fontWeight: isActive ? 700 : 500,
                   backgroundColor: isActive ? 'var(--sl-t1)' : 'var(--sl-surface)',
                   color: isActive ? 'var(--sl-bg)' : 'var(--sl-t3)',

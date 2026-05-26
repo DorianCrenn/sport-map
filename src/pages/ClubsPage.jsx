@@ -214,7 +214,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               <button
                 onClick={() => { setShowAllSports(false); setSportFilter(null); }}
                 style={{
-                  padding: '4px 10px', borderRadius: 999, border: '1px solid var(--sl-green)',
+                  padding: '8px 10px', borderRadius: 999, border: '1px solid var(--sl-green)',
                   fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
                   backgroundColor: 'var(--sl-green-dim)', color: 'var(--sl-green)', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 4,
@@ -229,7 +229,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             <button
               onClick={() => setSportFilter(null)}
               style={{
-                padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+                padding: '8px 12px', borderRadius: 999, fontSize: 11, fontWeight: 600,
                 whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
                 backgroundColor: sportFilter === null ? 'var(--sl-green)' : 'transparent',
                 color: sportFilter === null ? '#fff' : 'var(--sl-t2)',
@@ -243,7 +243,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                 key={sport.id}
                 onClick={() => setSportFilter(sportFilter === sport.id ? null : sport.id)}
                 style={{
-                  padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+                  padding: '8px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600,
                   whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 4,
                   backgroundColor: sportFilter === sport.id ? sport.color : 'transparent',
@@ -259,7 +259,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               <button
                 onClick={() => { setShowAllSports(true); setSportFilter(null); }}
                 style={{
-                  padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+                  padding: '8px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600,
                   whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 4,
                   backgroundColor: 'var(--sl-green-dim)', color: 'var(--sl-green)',
@@ -277,7 +277,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
       </div>
 
       {/* List */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px 24px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px calc(90px + env(safe-area-inset-bottom, 0px))' }}>
 
         {/* Classement clubs actifs ce mois */}
         {leaderboard.length > 0 && (
@@ -573,7 +573,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                       onClick={() => setFormClub(club)}
                       style={{
                         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        gap: 5, padding: '9px 0', fontSize: 12, fontWeight: 600,
+                        gap: 5, padding: '12px 0', fontSize: 12, fontWeight: 600,
                         color: 'var(--sl-t2)', backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
                       }}
                     >
@@ -588,7 +588,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                       onClick={() => setSelectedClub(club)}
                       style={{
                         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        gap: 5, padding: '9px 0', fontSize: 12, fontWeight: 700,
+                        gap: 5, padding: '12px 0', fontSize: 12, fontWeight: 700,
                         color: 'var(--sl-green)', backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
                       }}
                     >
@@ -603,7 +603,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                       aria-label={`Supprimer ${club.name}`}
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        padding: '9px 12px', color: '#ef4444',
+                        padding: '12px', color: '#ef4444',
                         backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
                       }}
                     >
@@ -623,7 +623,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                             aria-label={following ? 'Ne plus suivre ce club' : 'Suivre ce club'}
                             style={{
                               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              gap: 5, padding: '9px 0', fontSize: 12, fontWeight: 700,
+                              gap: 5, padding: '12px 0', fontSize: 12, fontWeight: 700,
                               color: following ? 'var(--sl-green)' : 'var(--sl-t2)',
                               backgroundColor: following ? 'var(--sl-green-dim)' : 'transparent',
                               border: 'none', cursor: 'pointer',
@@ -646,7 +646,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                           href={`mailto:${club.contact}`}
                           style={{
                             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            gap: 5, padding: '9px 0', fontSize: 12, fontWeight: 600,
+                            gap: 5, padding: '12px 0', fontSize: 12, fontWeight: 600,
                             color: 'var(--sl-t2)', textDecoration: 'none',
                           }}
                         >
@@ -663,7 +663,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                       onClick={() => setSelectedClub(club)}
                       style={{
                         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        gap: 5, padding: '9px 0', fontSize: 12, fontWeight: 700,
+                        gap: 5, padding: '12px 0', fontSize: 12, fontWeight: 700,
                         color: sportColor, backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
                       }}
                     >
