@@ -55,7 +55,7 @@ export default function AnnouncementsCenter({ onClose }) {
             </p>
           </div>
           {unreadCount > 0 && (
-            <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', background: 'none', border: '1px solid rgba(59,130,246,0.3)', padding: '6px 12px', borderRadius: 8, cursor: 'pointer' }}>
+            <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', background: 'none', border: '1px solid rgba(59,130,246,0.3)', padding: '10px 12px', borderRadius: 8, cursor: 'pointer' }}>
               Tout lire
             </button>
           )}
@@ -63,7 +63,7 @@ export default function AnnouncementsCenter({ onClose }) {
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 32px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px calc(32px + env(safe-area-inset-bottom, 0px))' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--sl-t3)', fontSize: 13 }}>Chargement…</div>
         ) : announcements.length === 0 ? (

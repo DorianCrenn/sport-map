@@ -218,13 +218,14 @@ export default function BadgeUnlockModal({ badges, onDone }) {
               onClick={onDone}
               style={{
                 display: 'block',
-                margin: '14px auto 0',
+                margin: '8px auto 0',
                 background: 'none',
                 border: 'none',
                 color: 'rgba(255,255,255,0.28)',
                 fontSize: 12,
                 cursor: 'pointer',
                 fontFamily: 'Inter, sans-serif',
+                padding: '10px 16px',
               }}
             >
               Passer tout

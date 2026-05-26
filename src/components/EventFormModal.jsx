@@ -935,7 +935,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
           </form>
 
           {/* Footer */}
-          <div style={{ flexShrink: 0, padding: '14px 20px', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+          <div style={{ flexShrink: 0, padding: '14px 20px calc(14px + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
             {submitError && (
               <div style={{ marginBottom: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', fontSize: 12, color: '#ef4444', fontWeight: 600 }}>
                 {submitError}

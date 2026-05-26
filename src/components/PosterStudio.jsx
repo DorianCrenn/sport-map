@@ -762,7 +762,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, borderRadius: 'inherit' }}>
               <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
               <button onClick={() => setPreviewFull(false)}
-                style={{ padding: '9px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                style={{ padding: '12px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Fermer
               </button>
             </motion.div>
@@ -832,7 +832,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             </AnimatePresence>
             <button
               onClick={() => { setActiveTab(null); setExportOpen(prev => !prev); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 10, border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}12`, cursor: 'pointer', color: accentColor, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '10px 12px', borderRadius: 10, border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}12`, cursor: 'pointer', color: accentColor, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
@@ -840,7 +840,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               Partager
             </button>
             <button onClick={onClose}
-              style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+              style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
@@ -991,7 +991,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               exit={{ opacity: 0, y: 10, scale: 0.97 }}
               transition={{ duration: 0.16, ease: 'easeOut' }}
               style={{
-                position: 'absolute', bottom: 72, right: 12, left: 12, zIndex: 30,
+                position: 'absolute', bottom: 'calc(62px + env(safe-area-inset-bottom, 0px))', right: 12, left: 12, zIndex: 30,
                 backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
                 borderRadius: 20, boxShadow: '0 12px 40px rgba(0,0,0,0.3)', padding: 8,
               }}
@@ -2488,7 +2488,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                                   )}
                                   <button
                                     onClick={e => { e.stopPropagation(); removeSavedBg(bg.id); }}
-                                    style={{ position: 'absolute', top: 3, right: 3, width: 16, height: 16, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.85)', color: '#fff', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+                                    style={{ position: 'absolute', top: 2, right: 2, width: 22, height: 22, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.85)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
                                     ✕
                                   </button>
                                 </div>
@@ -2543,7 +2543,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               <button key={id} onClick={() => handleTabClick(id)}
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  gap: 3, padding: '9px 4px 7px',
+                  gap: 3, padding: '11px 4px 9px',
                   border: 'none', borderTop: `2px solid ${isActive ? accentColor : 'transparent'}`,
                   cursor: 'pointer', background: 'transparent',
                   color, transition: 'color 0.15s', position: 'relative',
@@ -2565,7 +2565,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                 onClick={() => { setActiveTab(null); setExportOpen(prev => !prev); }}
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  gap: 3, padding: '9px 4px 7px',
+                  gap: 3, padding: '11px 4px 9px',
                   border: 'none', borderTop: `2px solid ${exportOpen ? accentColor : 'transparent'}`,
                   cursor: 'pointer', background: 'transparent',
                   color, transition: 'color 0.15s',
