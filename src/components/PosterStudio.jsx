@@ -17,7 +17,7 @@ import {
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
-import { generateVariants, generateAIBackground, generateCustomBackground, generateCustomElement, BG_PROMPT_SUGGESTIONS, ELEMENT_PROMPT_SUGGESTIONS } from '../lib/posterVariants.js';
+import { generateVariants, generateAIBackground, generateCustomBackground, generateCustomElement, generateMatchPoster, BG_PROMPT_SUGGESTIONS, ELEMENT_PROMPT_SUGGESTIONS, POSTER_STYLE_SUGGESTIONS } from '../lib/posterVariants.js';
 import { getBgCache, normalizeSport } from '../lib/sportBgCache.js';
 import { supabase } from '../lib/supabase.js';
 import { sanitizeFilename } from '../lib/sanitize.js';
@@ -304,6 +304,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const [customPrompt,  setCustomPrompt]  = useState('');
   const [elementPrompt, setElementPrompt] = useState('');
   const [aiElLoading,   setAiElLoading]   = useState(false);
+  const [aiPosterLoading, setAiPosterLoading] = useState(false);
+  const [aiPosterHint,    setAiPosterHint]    = useState('');
   const [aiElEditorUid, setAiElEditorUid] = useState(null);
   const [savedAiBgs,    setSavedAiBgs]    = useState(() => loadSavedBgs(club?.id));
   const [savedAiEls,    setSavedAiEls]    = useState(() => loadSavedEls(club?.id));
@@ -424,8 +426,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   // ── Templates ──
   const displayTemplates = useMemo(() => {
     const byType = isTournamentEvent
-      ? POSTER_TEMPLATES.filter(t => t.isTournament)
-      : POSTER_TEMPLATES.filter(t => !t.isTournament);
+      ? POSTER_TEMPLATES.filter(t => t.isTournament && !t.isAiTemplate)
+      : POSTER_TEMPLATES.filter(t => !t.isTournament && !t.isAiTemplate);
     if (libFilter === 'all') return byType;
     return byType.filter(t => favTplHook.isFav(t.id));
   }, [libFilter, favVersion, isTournamentEvent]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -495,6 +497,31 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     const file = e.dataTransfer.files?.[0];
     if (file?.type.startsWith('image/')) handlePlayerFile(file);
   }, [playerName, clubMedia]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── AI full poster ──
+  async function handleGenerateAIPoster() {
+    setAiPosterLoading(true);
+    try {
+      const res = await generateMatchPoster({
+        sport:         event?.sport,
+        homeTeam:      homeName,
+        awayTeam:      awayName,
+        championship,
+        date:          event?.date,
+        time:          event?.time,
+        venue:         event?.venue || event?.city,
+        isTournament:  isTournamentEvent,
+        title:         event?.title,
+      }, aiPosterHint.trim());
+      if (res.imageUrl) {
+        dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '', templateId: 'ai-full' } });
+      }
+    } catch {
+      // silencieux — l'utilisateur voit que rien n'a changé
+    } finally {
+      setAiPosterLoading(false);
+    }
+  }
 
   // ── Poster data ──
   const posterData = {
@@ -1173,6 +1200,80 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                         )}
                       </div>
                     )}
+
+                    {/* ── Affiche IA — PS-AI-POSTER-001 ── */}
+                    <div>
+                      <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '2px 0 12px' }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                        <div style={{ width: 2, height: 13, borderRadius: 2, background: '#6366f1', flexShrink: 0 }} />
+                        <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#818cf8' }}>Affiche IA</span>
+                        <div style={{ flex: 1, height: 1, background: 'var(--sl-border)' }} />
+                        <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontWeight: 700 }}>Flux · IA</span>
+                      </div>
+
+                      {/* Context auto-summary */}
+                      <div style={{ padding: '8px 11px', borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', marginBottom: 10, fontSize: 10.5, lineHeight: 1.5 }}>
+                        <span style={{ fontWeight: 700, color: 'var(--sl-t1)' }}>
+                          {homeName && awayName ? `${homeName} vs ${awayName}` : event?.title || 'Événement'}
+                        </span>
+                        {(championship || event?.sport) && (
+                          <span style={{ color: 'var(--sl-t3)' }}>{' · '}{championship || event?.sport}</span>
+                        )}
+                        {event?.date && (
+                          <span style={{ color: 'var(--sl-t3)' }}>{' · '}{new Date(event.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                        )}
+                      </div>
+
+                      {/* Style suggestions */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
+                        {POSTER_STYLE_SUGGESTIONS.map(s => (
+                          <button key={s} onClick={() => setAiPosterHint(aiPosterHint === s ? '' : s)}
+                            style={{
+                              padding: '4px 9px', borderRadius: 20, fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                              border: `1px solid ${aiPosterHint === s ? '#818cf8' : 'var(--sl-border-s)'}`,
+                              background: aiPosterHint === s ? 'rgba(99,102,241,0.12)' : 'var(--sl-surface)',
+                              color: aiPosterHint === s ? '#818cf8' : 'var(--sl-t2)',
+                              transition: 'all 0.12s',
+                            }}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Input + generate */}
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                        <input
+                          value={aiPosterHint}
+                          onChange={e => setAiPosterHint(e.target.value)}
+                          placeholder="Ajouter des indications (optionnel)…"
+                          disabled={aiPosterLoading}
+                          onKeyDown={e => { if (e.key === 'Enter' && !aiPosterLoading) handleGenerateAIPoster(); }}
+                          style={{
+                            flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 11, fontWeight: 500,
+                            border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)',
+                            color: 'var(--sl-t1)', outline: 'none',
+                          }}
+                        />
+                        <button
+                          disabled={aiPosterLoading}
+                          onClick={handleGenerateAIPoster}
+                          style={{
+                            padding: '9px 13px', borderRadius: 10, fontSize: 14, fontWeight: 800,
+                            cursor: aiPosterLoading ? 'wait' : 'pointer',
+                            background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+                            color: '#fff', border: 'none', opacity: aiPosterLoading ? 0.6 : 1,
+                            flexShrink: 0,
+                          }}>
+                          {aiPosterLoading ? '⏳' : '✨'}
+                        </button>
+                      </div>
+
+                      {aiPosterLoading && (
+                        <div style={{ fontSize: 10, color: '#818cf8', textAlign: 'center', fontWeight: 600 }}>
+                          Génération… 15-60 sec · Infos du match transmises automatiquement
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 

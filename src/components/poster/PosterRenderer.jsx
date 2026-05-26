@@ -36,6 +36,7 @@ import TplTrGradient from './templates/TplTrGradient.jsx';
 import TplTrChampion from './templates/TplTrChampion.jsx';
 import TplTrField from './templates/TplTrField.jsx';
 import TplTrDynamic from './templates/TplTrDynamic.jsx';
+import TplAiFull from './templates/TplAiFull.jsx';
 
 export const POSTER_TEMPLATES = [
   {
@@ -232,6 +233,15 @@ export const POSTER_TEMPLATES = [
     color: '#10B981',
     isPremium: true,
     Component: TplAurora,
+  },
+  {
+    id: 'ai-full',
+    label: 'IA Poster',
+    desc: 'Affiche IA · Plein écran · Auto',
+    icon: '✨',
+    color: '#6366f1',
+    isAiTemplate: true,
+    Component: TplAiFull,
   },
   // ── Tournoi ──────────────────────────────────────────────────────────────────
   {

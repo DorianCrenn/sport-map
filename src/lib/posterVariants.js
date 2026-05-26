@@ -146,6 +146,50 @@ export async function generateCustomBackground(userPrompt) {
   return { imageUrl: url, prompt: fullPrompt, provider: 'pollinations' };
 }
 
+// ── PS-VAR-009 — Full match poster from match data + style hint ───────────────
+
+export const POSTER_STYLE_SUGGESTIONS = [
+  'Sombre et dramatique',
+  'Chaud et festif',
+  'Minimaliste épuré',
+  'Cinématique intense',
+  'Style vintage',
+  'Néon futuriste',
+  'Photo sportive',
+  'Abstrait coloré',
+];
+
+export async function generateMatchPoster({ sport, homeTeam, awayTeam, championship, date, time, venue, isTournament, title }, userHint) {
+  const sportLabel = sport || 'sport';
+  const home = homeTeam || '';
+  const away = awayTeam || '';
+
+  const matchPart = isTournament
+    ? `${title || championship || sportLabel} tournament event`
+    : `${sportLabel} match${home && away ? ` ${home} vs ${away}` : home ? ` with ${home}` : ''}`;
+
+  const contextParts = [
+    championship && !isTournament ? `competition: ${championship}` : null,
+    venue ? `venue: ${venue}` : null,
+  ].filter(Boolean).join(', ');
+
+  const style = userHint?.trim() || 'dramatic sports atmosphere, dynamic, professional';
+
+  const prompt = [
+    `Professional sports poster for a ${matchPart}.`,
+    contextParts ? `Context: ${contextParts}.` : '',
+    `Visual style: ${style}.`,
+    `Photographic quality, dramatic lighting, cinematic composition.`,
+    `No text, no letters, no numbers, no words anywhere in the image.`,
+    `Vertical 9:16 portrait format, full bleed.`,
+  ].filter(Boolean).join(' ');
+
+  const seed = Math.floor(Math.random() * 99999);
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=576&height=1024&model=flux&nologo=true&seed=${seed}`;
+  await preloadImage(url);
+  return { imageUrl: url, prompt };
+}
+
 // ── PS-VAR-008 — Custom element prompt → Pollinations.ai (screen blend) ──────
 
 export const ELEMENT_PROMPT_SUGGESTIONS = [
