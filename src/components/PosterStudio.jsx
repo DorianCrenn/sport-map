@@ -769,12 +769,118 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           )}
         </AnimatePresence>
 
+        {/* AI Element editor — full-screen overlay */}
+        {aiElEditorUid !== null && (aiOverlayElements || []).length > 0 && (
+          <AiElementEditor
+            elements={aiOverlayElements || []}
+            initialUid={aiElEditorUid}
+            posterData={posterData}
+            templateId={templateId}
+            format={format}
+            bgPresetId={bgPreset}
+            effects={posterEffects}
+            overlayElements={overlayElements || []}
+            onChange={(uid, patch) => updateAiOverlay(uid, patch)}
+            onRemove={(uid) => { removeAiOverlay(uid); if ((aiOverlayElements || []).length <= 1) setAiElEditorUid(null); }}
+            onClose={() => setAiElEditorUid(null)}
+          />
+        )}
+
+        {/* Visual editor overlay */}
+        <AnimatePresence>
+          {editorOpen && (
+            <motion.div key="editor" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: 'absolute', inset: 0, zIndex: 50, borderRadius: 'inherit' }}>
+              <PosterEditor
+                templateId={templateId} data={posterData} format={format} transforms={transforms}
+                onChange={(blockId, patch) => dispatch({ type: 'transforms', value: { ...transforms, [blockId]: patch } })}
+                onClose={() => setEditorOpen(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── HEADER ─────────────────────────────────────────────────────────── */}
+        <div style={{
+          flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '13px 16px 11px', borderBottom: '1px solid var(--sl-border)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: `${accentColor}1E`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--sl-t1)', letterSpacing: '-0.01em', lineHeight: 1.2 }}>Creative Studio</div>
+              <div style={{ fontSize: 10, color: 'var(--sl-t3)', maxWidth: 190, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event?.title}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AnimatePresence>
+              {restoredDraft && (
+                <motion.span key="restored" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  style={{ fontSize: 10, color: '#3b82f6', fontWeight: 700 }}>Brouillon restauré</motion.span>
+              )}
+              {!restoredDraft && lastSavedAt && (
+                <motion.span key="saved" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  style={{ fontSize: 10, color: 'var(--sl-green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Sauvegardé
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <button
+              onClick={() => { setActiveTab(null); setExportOpen(prev => !prev); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 10, border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}12`, cursor: 'pointer', color: accentColor, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              Partager
+            </button>
+            <button onClick={onClose}
+              style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* ── QUICK MODE BANNER ───────────────────────────────────────────────── */}
+        {quickMode && !quickBannerDismissed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+            style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', backgroundColor: 'rgba(34,217,106,0.07)', borderBottom: '1px solid rgba(34,217,106,0.18)' }}
+          >
+            <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--sl-green)', flexShrink: 0 }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)', flex: 1, lineHeight: 1.4 }}>
+              {resultMode
+                ? `Score ${resultMode.home}–${resultMode.away} · Affiche résultat prête !`
+                : 'Affiche prête — personnalisez ou partagez directement'
+              }
+            </span>
+            <button onClick={() => { setExportOpen(true); setQuickBannerDismissed(true); }}
+              style={{ padding: '5px 12px', borderRadius: 8, border: 'none', backgroundColor: 'var(--sl-green)', color: '#000', fontSize: 11, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>
+              Partager
+            </button>
+            <button onClick={() => setQuickBannerDismissed(true)}
+              style={{ width: 22, height: 22, borderRadius: 6, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </motion.div>
+        )}
+
+        {/* ── Static content wrapper — overlays contained here, no Framer Motion transform ── */}
+        <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+
         {/* Platform preview overlay — DISTRIB-001c */}
         <AnimatePresence>
           {platformPreview && (
             <motion.div key="platform-preview"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 42, backgroundColor: 'var(--sl-card)', display: 'flex', flexDirection: 'column', borderRadius: '22px 22px 0 0', overflow: 'hidden' }}>
+              style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 42, backgroundColor: 'var(--sl-card)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Aperçu plateformes</span>
@@ -871,37 +977,6 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                   </div>
                 )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* AI Element editor — full-screen overlay */}
-        {aiElEditorUid !== null && (aiOverlayElements || []).length > 0 && (
-          <AiElementEditor
-            elements={aiOverlayElements || []}
-            initialUid={aiElEditorUid}
-            posterData={posterData}
-            templateId={templateId}
-            format={format}
-            bgPresetId={bgPreset}
-            effects={posterEffects}
-            overlayElements={overlayElements || []}
-            onChange={(uid, patch) => updateAiOverlay(uid, patch)}
-            onRemove={(uid) => { removeAiOverlay(uid); if ((aiOverlayElements || []).length <= 1) setAiElEditorUid(null); }}
-            onClose={() => setAiElEditorUid(null)}
-          />
-        )}
-
-        {/* Visual editor overlay */}
-        <AnimatePresence>
-          {editorOpen && (
-            <motion.div key="editor" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{ position: 'absolute', inset: 0, zIndex: 50, borderRadius: 'inherit' }}>
-              <PosterEditor
-                templateId={templateId} data={posterData} format={format} transforms={transforms}
-                onChange={(blockId, patch) => dispatch({ type: 'transforms', value: { ...transforms, [blockId]: patch } })}
-                onClose={() => setEditorOpen(false)}
-              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -1032,78 +1107,6 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-        <div style={{
-          flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '13px 16px 11px', borderBottom: '1px solid var(--sl-border)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: `${accentColor}1E`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round">
-                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-              </svg>
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--sl-t1)', letterSpacing: '-0.01em', lineHeight: 1.2 }}>Creative Studio</div>
-              <div style={{ fontSize: 10, color: 'var(--sl-t3)', maxWidth: 190, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event?.title}</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <AnimatePresence>
-              {restoredDraft && (
-                <motion.span key="restored" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  style={{ fontSize: 10, color: '#3b82f6', fontWeight: 700 }}>Brouillon restauré</motion.span>
-              )}
-              {!restoredDraft && lastSavedAt && (
-                <motion.span key="saved" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  style={{ fontSize: 10, color: 'var(--sl-green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  Sauvegardé
-                </motion.span>
-              )}
-            </AnimatePresence>
-            <button
-              onClick={() => { setActiveTab(null); setExportOpen(prev => !prev); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 10, border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}12`, cursor: 'pointer', color: accentColor, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-              </svg>
-              Partager
-            </button>
-            <button onClick={onClose}
-              style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* ── QUICK MODE BANNER ───────────────────────────────────────────────── */}
-        {quickMode && !quickBannerDismissed && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-            style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', backgroundColor: 'rgba(34,217,106,0.07)', borderBottom: '1px solid rgba(34,217,106,0.18)' }}
-          >
-            <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--sl-green)', flexShrink: 0 }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)', flex: 1, lineHeight: 1.4 }}>
-              {resultMode
-                ? `Score ${resultMode.home}–${resultMode.away} · Affiche résultat prête !`
-                : 'Affiche prête — personnalisez ou partagez directement'
-              }
-            </span>
-            <button onClick={() => { setExportOpen(true); setQuickBannerDismissed(true); }}
-              style={{ padding: '5px 12px', borderRadius: 8, border: 'none', backgroundColor: 'var(--sl-green)', color: '#000', fontSize: 11, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>
-              Partager
-            </button>
-            <button onClick={() => setQuickBannerDismissed(true)}
-              style={{ width: 22, height: 22, borderRadius: 6, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </motion.div>
-        )}
 
         {/* ── FORMAT + ACTIVE TEMPLATE ─────────────────────────────────────────── */}
         <div style={{
@@ -2572,6 +2575,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               </button>
             );
           })()}
+        </div>
         </div>
 
       </motion.div>
