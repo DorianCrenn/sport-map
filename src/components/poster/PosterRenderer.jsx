@@ -424,21 +424,8 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
           position: 'absolute', top: 0, left: 0,
         }}
       >
-        {/* Template renders without bgImage — PosterRenderer owns that layer */}
-        <Component {...data} bgImage={undefined} format={format} transforms={transforms} />
-
-        {/* Custom bg image at z=1 — above template's own solid bg, below content at z=10 */}
-        {data.bgImage && (
-          <>
-            <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', backgroundImage: `url(${data.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
-              background: bgImageGradient
-                ? 'linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.32) 35%, rgba(0,0,0,0.28) 65%, rgba(0,0,0,0.88) 100%)'
-                : `rgba(0,0,0,${bgImageOverlay})`,
-            }} />
-          </>
-        )}
+        {/* Each template owns its bgImage layer with its own overlay (dark templates use dark overlays, light templates use light overlays) */}
+        <Component {...data} format={format} transforms={transforms} />
 
         {/* Ambient tint overlay — sits above template bg, below content (z=10) */}
         {effects.tint && effects.tintOp > 0 && (

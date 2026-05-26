@@ -23,6 +23,10 @@ export default function TplFluo({ event, homeTeam, awayTeam, championship, tagli
       display: 'flex', flexDirection: 'column',
       backgroundColor: bg, boxSizing: 'border-box',
     }}>
+      {bgImage && <>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: `${bg}E0` }} />
+      </>}
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%', padding: '22px 24px 20px' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
