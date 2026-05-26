@@ -372,6 +372,7 @@ export default function Header({
           whileTap={{ scale: 0.92 }}
           onClick={onShowAnnouncements}
           aria-label="Annonces clubs"
+          aria-haspopup="dialog"
           style={{
             flexShrink: 0, position: 'relative',
             width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer',

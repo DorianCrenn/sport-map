@@ -113,61 +113,69 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
 
   if (!currentUser) {
     return (
-      <div className="h-full flex flex-col overflow-y-auto" style={{ backgroundColor: 'var(--sl-bg)' }}>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'auto', backgroundColor: 'var(--sl-bg)' }}>
         {/* Hero */}
-        <div
-          className="flex-shrink-0 px-5 py-4 text-white relative overflow-hidden"
-          style={{ background: 'linear-gradient(160deg, #050807 0%, #0f1a10 100%)' }}
-        >
-          <div className="absolute top-0 right-0 w-56 h-56 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
-          <div className="flex items-center gap-3 relative">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border"
-              style={{ backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' }}
-            >
+        <div style={{
+          flexShrink: 0, padding: '16px 20px',
+          background: 'linear-gradient(160deg, #050807 0%, #0f1a10 100%)',
+          color: 'white', position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute', top: 0, right: 0, width: 224, height: 224,
+            borderRadius: '50%', pointerEvents: 'none',
+            background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)',
+            transform: 'translate(30%,-30%)',
+          }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+            }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
             </div>
             <div>
-              <h2 className="text-base font-bold font-poppins leading-tight">Mon profil</h2>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Connectez-vous pour accéder à votre espace</p>
+              <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: 'Poppins, sans-serif', lineHeight: 1.3, margin: 0 }}>Mon profil</h2>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: '2px 0 0' }}>Connectez-vous pour accéder à votre espace</p>
             </div>
           </div>
         </div>
 
-        <div className="px-4 pt-3 space-y-3 pb-8">
-          <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'var(--sl-green-dim)' }}>
+        <div style={{ padding: '12px 16px calc(90px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ borderRadius: 20, padding: '24px', textAlign: 'center', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', backgroundColor: 'var(--sl-green-dim)' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
             </div>
-            <h3 className="font-bold text-base font-poppins mb-2" style={{ color: 'var(--sl-t1)' }}>Rejoignez SportLink</h3>
-            <p className="text-xs mb-5 leading-relaxed" style={{ color: 'var(--sl-t2)' }}>
+            <h3 style={{ fontWeight: 700, fontSize: 15, fontFamily: 'Poppins, sans-serif', marginBottom: 8, color: 'var(--sl-t1)' }}>Rejoignez SportLink</h3>
+            <p style={{ fontSize: 12, marginBottom: 20, lineHeight: 1.5, color: 'var(--sl-t2)' }}>
               Suivez vos clubs favoris, sauvegardez des événements et gérez votre page club.
             </p>
             <button
               onClick={onShowAuth}
-              className="w-full py-3.5 rounded-2xl font-bold font-poppins text-sm text-white transition-all"
-              style={{ backgroundColor: 'var(--sl-green)', boxShadow: 'var(--sl-green-glow)' }}
+              style={{
+                width: '100%', padding: '14px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                fontWeight: 700, fontFamily: 'Poppins, sans-serif', fontSize: 14,
+                color: '#fff', backgroundColor: 'var(--sl-green)', boxShadow: 'var(--sl-green-glow)',
+              }}
             >
               Se connecter / S'inscrire
             </button>
           </div>
 
-          {/* Theme toggle */}
           <ThemeToggle />
 
-          <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
-            <div className="flex justify-center mb-3">
+          <div style={{ borderRadius: 20, padding: 16, backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
               <SportLinkLogo size={110} variant="full" />
             </div>
-            <p className="text-xs leading-relaxed text-center" style={{ color: 'var(--sl-t2)' }}>
+            <p style={{ fontSize: 12, lineHeight: 1.5, textAlign: 'center', color: 'var(--sl-t2)', margin: 0 }}>
               Application communautaire pour trouver les clubs et événements sportifs du Finistère.
             </p>
-            <p className="text-xs mt-2 text-center" style={{ color: 'var(--sl-t3)' }}>Version 1.0.0 · Finistère (29)</p>
+            <p style={{ fontSize: 12, marginTop: 8, textAlign: 'center', color: 'var(--sl-t3)' }}>Version 1.0.0 · Finistère (29)</p>
           </div>
         </div>
       </div>
