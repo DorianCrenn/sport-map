@@ -172,9 +172,11 @@ function toFormValues(event, defaults = {}) {
     };
   }
   const d = new Date(event.date);
+  const pad2 = n => String(n).padStart(2, '0');
+  const localDate = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   return {
     title: event.title ?? '', sport: event.sport ?? 'Football',
-    date: d.toISOString().slice(0, 10), time: d.toTimeString().slice(0, 5),
+    date: localDate, time: d.toTimeString().slice(0, 5),
     cityName: event.city ?? BREST.name, cityLat: event.lat ?? BREST.lat, cityLng: event.lng ?? BREST.lng,
     venue: event.venue ?? '', description: event.description ?? '',
     eventType: event.eventType ?? 'championship',
@@ -211,10 +213,14 @@ function buildEvent(form, currentUser, myClub, useSmartMode) {
 
   const sport = useSmartMode && myClub ? myClub.sport : form.sport;
 
-  // Build an ISO datetime that preserves local intent — NOT bare UTC.
-  // We take the local wall-clock string and let Supabase store it as-is (TIMESTAMPTZ).
-  // Displaying it back with toLocaleString will round-trip correctly.
-  const localDatetime = `${form.date}T${form.time}:00`;
+  // Append the local timezone offset so Supabase stores the correct UTC equivalent.
+  // Without this, "14:30" is interpreted as 14:30 UTC and displayed as 16:30 in Paris.
+  const _pad = n => String(n).padStart(2, '0');
+  const _tzOff = -new Date().getTimezoneOffset(); // positive for UTC+X
+  const _sign = _tzOff >= 0 ? '+' : '-';
+  const _tzH = _pad(Math.floor(Math.abs(_tzOff) / 60));
+  const _tzM = _pad(Math.abs(_tzOff) % 60);
+  const localDatetime = `${form.date}T${form.time}:00${_sign}${_tzH}:${_tzM}`;
 
   return {
     title, sport, sportGroup: sport,
