@@ -339,7 +339,7 @@ function AppInner() {
         )}
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements || clubOverlayOpen} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements} />
 
       <Suspense fallback={null}>
         <AnimatePresence>

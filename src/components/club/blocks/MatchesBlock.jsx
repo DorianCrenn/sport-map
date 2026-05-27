@@ -290,8 +290,13 @@ export default function MatchesBlock({ data, onUpdate, isEditing, club, filterTe
     if (!allEvents?.length || !club) return [];
     return allEvents
       .filter(e => String(e.clubId) === String(club.id))
-      .map(e => eventToMatch(e, club));
-  }, [allEvents, club]);
+      .map(e => {
+        const match = eventToMatch(e, club);
+        const matched = allTeams.find(t => t.name === e.teamName);
+        if (matched) { match.teamId = matched.id; match.teamName = matched.name; }
+        return match;
+      });
+  }, [allEvents, club, allTeams]);
 
   // Manual matches take priority — skip map events on same date+teamName
   const manualKeys = new Set(manualMatches.map(m => `${m.date}_${m.teamName}`));
@@ -327,15 +332,15 @@ export default function MatchesBlock({ data, onUpdate, isEditing, club, filterTe
   function handleSave(f) {
     const cleaned = { ...f, scoreHome: f.scoreHome === '' ? null : Number(f.scoreHome), scoreAway: f.scoreAway === '' ? null : Number(f.scoreAway) };
     if (editingId) {
-      onUpdate({ matches: allMatches.map(m => m.id === editingId ? cleaned : m) });
+      onUpdate({ matches: manualMatches.map(m => m.id === editingId ? cleaned : m) });
     } else {
-      onUpdate({ matches: [...allMatches, cleaned] });
+      onUpdate({ matches: [...manualMatches, cleaned] });
     }
     setShowForm(false);
   }
 
   function remove(id) {
-    onUpdate({ matches: allMatches.filter(m => m.id !== id) });
+    onUpdate({ matches: manualMatches.filter(m => m.id !== id) });
   }
 
   const upcoming = matches.filter(isUpcoming).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
