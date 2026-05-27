@@ -1,25 +1,8 @@
-/**
- * Edge Function : match-reminders
- *
- * Sends "Match in 2h" push notifications to followers of clubs with upcoming events.
- * Run via pg_cron every 30 minutes (see migration below) or call manually for testing.
- *
- * What it does:
- *   1. Finds events starting in the next 2h ± 15min window that haven't been notified yet
- *   2. For each event, fetches followers of the club with notif=true
- *   3. Sends push notifications
- *   4. Marks the event as reminder-sent (via event_reminder_sent_at column)
- *
- * pg_cron setup (run once in SQL Editor):
- *   SELECT cron.schedule(
- *     'match-reminders', '*/30 * * * *',
- *     $$SELECT net.http_post(
- *       url := current_setting('app.supabase_url') || '/functions/v1/match-reminders',
- *       headers := jsonb_build_object('Authorization','Bearer ' || current_setting('app.service_role_key')),
- *       body := '{}'::jsonb
- *     )$$
- *   );
- */
+// Edge Function : match-reminders
+// Sends "Match in 2h" push notifications to followers of clubs with upcoming events.
+// Run via pg_cron every 30 min or call manually for testing.
+//
+// pg_cron: SELECT cron.schedule('match-reminders', '0,30 * * * *', $$...$$);
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
