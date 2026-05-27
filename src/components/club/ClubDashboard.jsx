@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 import { useClubDashboard } from '../../hooks/useClubDashboard.js';
 import { useClubBrandKit } from '../../hooks/useClubBrandKit.js';
+import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import { FeaturedSection } from './PromoteFeedModal.jsx';
+import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 
 function StatCard({ label, value, sub, color = 'var(--sl-t1)' }) {
   return (
@@ -104,6 +106,147 @@ function CalendrierEditorial({ upcomingEvents, scheduledAnnouncements }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+const ANN_ICON = { urgent: '🚨', result: '⚽', event: '🎉', info: 'ℹ️' };
+
+function AnnouncementsSection({ club }) {
+  const { announcements, loading, sendAnnouncement, deleteAnnouncement } = useClubAnnouncements(club.id);
+  const [showModal, setShowModal]       = useState(false);
+  const [deletingId, setDeletingId]     = useState(null);
+  const [confirmId, setConfirmId]       = useState(null);
+  const [success, setSuccess]           = useState(false);
+
+  const published = announcements.filter(a => !a.scheduledFor || new Date(a.scheduledFor) <= new Date());
+
+  async function handleSend({ type, title, message, targetTeams, scheduledFor }) {
+    await sendAnnouncement({ type, title, message, targetTeams, clubName: club.name, scheduledFor });
+    setShowModal(false);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 3000);
+  }
+
+  async function handleDelete(id) {
+    setDeletingId(id);
+    await deleteAnnouncement(id);
+    setDeletingId(null);
+    setConfirmId(null);
+  }
+
+  function fmtAgo(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const h = Math.floor(diff / 3600000);
+    if (h < 1) return 'à l\'instant';
+    if (h < 24) return `il y a ${h}h`;
+    const d = Math.floor(h / 24);
+    if (d < 7) return `il y a ${d}j`;
+    return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  }
+
+  return (
+    <div style={{ borderRadius: 14, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}>
+            📢 Flash Info
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--sl-t2)', marginTop: 2 }}>
+            {loading ? 'Chargement…' : published.length === 0 ? 'Aucune annonce publiée' : `${published.length} publiée${published.length > 1 ? 's' : ''}`}
+          </div>
+        </div>
+        <button
+          onClick={() => setShowModal(true)}
+          style={{
+            padding: '7px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+            backgroundColor: '#3b82f6', color: 'white', fontSize: 12, fontWeight: 700,
+          }}
+        >
+          + Nouvelle
+        </button>
+      </div>
+
+      {/* List */}
+      {!loading && published.length > 0 && (
+        <div style={{ borderTop: '1px solid var(--sl-border)' }}>
+          {published.slice(0, 8).map((ann, idx) => {
+            const color = ANN_TYPE_COLOR[ann.type] ?? '#f59e0b';
+            const isConfirming = confirmId === ann.id;
+            return (
+              <div key={ann.id} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 16px',
+                borderBottom: idx < Math.min(published.length, 8) - 1 ? '1px solid var(--sl-border)' : 'none',
+              }}>
+                <div style={{
+                  width: 6, height: 6, borderRadius: '50%',
+                  backgroundColor: color, flexShrink: 0, marginTop: 5,
+                  boxShadow: `0 0 5px ${color}80`,
+                }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 8, backgroundColor: `${color}18`, color }}>
+                      {ANN_ICON[ann.type]} {ANN_TYPE_LABEL[ann.type] ?? ann.type}
+                    </span>
+                    <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>{fmtAgo(ann.createdAt)}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {ann.message}
+                  </div>
+                </div>
+                {isConfirming ? (
+                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                    <button
+                      onClick={() => setConfirmId(null)}
+                      style={{ padding: '4px 8px', borderRadius: 7, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 10, cursor: 'pointer' }}
+                    >
+                      Non
+                    </button>
+                    <button
+                      onClick={() => handleDelete(ann.id)}
+                      disabled={deletingId === ann.id}
+                      style={{ padding: '4px 8px', borderRadius: 7, border: 'none', backgroundColor: '#ef4444', color: 'white', fontSize: 10, fontWeight: 700, cursor: deletingId === ann.id ? 'wait' : 'pointer' }}
+                    >
+                      {deletingId === ann.id ? '…' : 'Supprimer'}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmId(ann.id)}
+                    style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 11, cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Succès */}
+      <AnimatePresence>
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            style={{ padding: '10px 16px', backgroundColor: 'rgba(59,130,246,0.08)', borderTop: '1px solid var(--sl-border)' }}
+          >
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#3b82f6' }}>
+              ✓ Annonce publiée — visible dans le fil d'actualité.
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal création */}
+      {showModal && (
+        <SendAnnouncementModal
+          club={club}
+          onSend={handleSend}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 }
@@ -365,6 +508,8 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
               club={club}
               upcomingEvents={clubUpcomingEvents}
             />
+
+            <AnnouncementsSection club={club} />
 
             <CalendrierEditorial
               upcomingEvents={clubUpcomingEvents}
