@@ -45,7 +45,7 @@ function PlanCard({ plan, selected, onSelect }) {
     <button
       onClick={() => onSelect(plan.id)}
       style={{
-        flex: 1, minWidth: 0, borderRadius: 14, padding: '12px 10px',
+        flex: 1, minWidth: 80, borderRadius: 14, padding: '12px 10px',
         border: `2px solid ${selected ? cfg.accent : 'var(--sl-border)'}`,
         backgroundColor: selected ? `${cfg.accent}10` : 'var(--sl-card)',
         cursor: 'pointer', textAlign: 'center',
@@ -228,7 +228,7 @@ export function FeaturedSection({ club, upcomingEvents = [] }) {
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t2)', marginBottom: 6 }}>
                   Choisir un plan de mise en avant
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {PLANS.map(plan => (
                     <PlanCard
                       key={plan.id}
