@@ -45,13 +45,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Anton&family=Inter:wght@300;400;500;600&family=Bebas+Neue&family=Montserrat:wght@400;700;900&family=Roboto+Condensed:wght@400;700&family=Playfair+Display:wght@400;700;900&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet" />
 
     <!-- Service Worker registration -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
-        });
-      }
-    </script>
+    <script src="/register-sw.js"></script>
   </head>
   <body>
     <div id="root"></div>
