@@ -21,11 +21,6 @@ CREATE TABLE IF NOT EXISTS featured_events (
   created_at  timestamptz  NOT NULL DEFAULT now()
 );
 
--- Contrainte : un événement ne peut être en avant qu'une seule fois simultanément
-CREATE UNIQUE INDEX IF NOT EXISTS uq_featured_event_active
-  ON featured_events (event_id)
-  WHERE (now() BETWEEN starts_at AND ends_at);
-
 -- Index pour la requête du feed (filtre sur la fenêtre d'activation)
 CREATE INDEX IF NOT EXISTS idx_featured_active
   ON featured_events (ends_at DESC, starts_at ASC);
