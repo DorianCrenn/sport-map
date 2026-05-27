@@ -130,8 +130,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     customPrompt, setCustomPrompt, generateBg,
     aiElLoading, elementPrompt, setElementPrompt, generateElement,
   } = usePosterAI({ aiGenerateBlocked, onTrack: trackAIGeneration });
-  const [aiPosterLoading, setAiPosterLoading] = useState(false);
-  const [aiPosterHint,    setAiPosterHint]    = useState('');
+  const [aiPosterLoading,  setAiPosterLoading]  = useState(false);
+  const [aiPosterHint,     setAiPosterHint]     = useState('');
+  const [aiPosterVariants, setAiPosterVariants] = useState([]);
   const [exportingAll,    setExportingAll]    = useState(false);
   const [linkCopied,      setLinkCopied]      = useState(false);
   const [platformPreview, setPlatformPreview] = useState(null);
@@ -337,26 +338,33 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     if (file?.type.startsWith('image/')) handlePlayerFile(file);
   }, [playerName, clubMedia]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── AI full poster ──
+  // ── AI full poster — génère 4 variantes en parallèle ──
   async function handleGenerateAIPoster() {
     setAiPosterLoading(true);
+    setAiPosterVariants([]);
+    const baseStyles = ['Sombre et dramatique', 'Chaud et festif', 'Cinématique intense', 'Néon futuriste'];
+    const hint = aiPosterHint.trim();
+    const styles = hint
+      ? [hint, ...baseStyles.filter(s => s !== hint).slice(0, 3)]
+      : baseStyles;
+    const eventData = {
+      sport: event?.sport, homeTeam: homeName, awayTeam: awayName, championship,
+      date: event?.date, time: event?.time, venue: event?.venue || event?.city,
+      isTournament: isTournamentEvent, title: event?.title,
+    };
     try {
-      const res = await generateMatchPoster({
-        sport:         event?.sport,
-        homeTeam:      homeName,
-        awayTeam:      awayName,
-        championship,
-        date:          event?.date,
-        time:          event?.time,
-        venue:         event?.venue || event?.city,
-        isTournament:  isTournamentEvent,
-        title:         event?.title,
-      }, aiPosterHint.trim());
-      if (res.imageUrl) {
-        dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '', templateId: 'ai-full' } });
+      const results = await Promise.allSettled(styles.map(s => generateMatchPoster(eventData, s)));
+      const variants = results
+        .map((r, i) => r.status === 'fulfilled' && r.value?.imageUrl
+          ? { imageUrl: r.value.imageUrl, style: styles[i] }
+          : null)
+        .filter(Boolean);
+      setAiPosterVariants(variants);
+      if (variants.length > 0) {
+        dispatch({ type: 'PATCH', payload: { bgSrc: variants[0].imageUrl, bgMode: 'url', bgErr: false, bgPreset: '', templateId: 'ai-full' } });
       }
     } catch {
-      // silencieux — l'utilisateur voit que rien n'a changé
+      // silencieux
     } finally {
       setAiPosterLoading(false);
     }
@@ -1359,7 +1367,48 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
 
                       {aiPosterLoading && (
                         <div style={{ fontSize: 10, color: '#818cf8', textAlign: 'center', fontWeight: 600 }}>
-                          Génération… 15-60 sec · Infos du match transmises automatiquement
+                          Génération de 4 affiches… 20-60 sec
+                        </div>
+                      )}
+
+                      {/* Grille de variantes IA */}
+                      {aiPosterVariants.length > 0 && !aiPosterLoading && (
+                        <div>
+                          <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 7, marginTop: 4 }}>
+                            Choisissez un design
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                            {aiPosterVariants.map((v, i) => {
+                              const isSelected = bgSrc === v.imageUrl;
+                              return (
+                                <button key={i} onClick={() =>
+                                  dispatch({ type: 'PATCH', payload: { bgSrc: v.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '', templateId: 'ai-full' } })
+                                } style={{
+                                  position: 'relative', borderRadius: 8, overflow: 'hidden', padding: 0,
+                                  border: `2px solid ${isSelected ? '#6366f1' : 'transparent'}`,
+                                  cursor: 'pointer', aspectRatio: '9 / 16', background: '#111',
+                                  boxShadow: isSelected ? '0 0 0 1px #6366f1' : 'none',
+                                  transition: 'border-color 0.12s',
+                                }}>
+                                  <img src={v.imageUrl} alt={v.style} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                                  <div style={{
+                                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                                    padding: '10px 4px 4px',
+                                    background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))',
+                                    fontSize: 7.5, color: 'rgba(255,255,255,0.85)', textAlign: 'center', fontWeight: 700, lineHeight: 1.2,
+                                  }}>
+                                    {v.style.split(' ').slice(0, 2).join(' ')}
+                                  </div>
+                                  {isSelected && (
+                                    <div style={{
+                                      position: 'absolute', top: 4, right: 4, width: 16, height: 16, borderRadius: '50%',
+                                      background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#fff',
+                                    }}>✓</div>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>
