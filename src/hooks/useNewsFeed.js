@@ -14,6 +14,7 @@ export function useNewsFeed({ followedClubIds = [] }) {
   const [announcements, setAnnouncements] = useState([]);
   const [results, setResults]             = useState([]);
   const [upcoming, setUpcoming]           = useState([]);
+  const [rides, setRides]                 = useState([]);
   const [loading, setLoading]             = useState(true);
 
   const hasClubs = followedClubIds.length > 0;
@@ -55,10 +56,29 @@ export function useNewsFeed({ followedClubIds = [] }) {
         .order('date', { ascending: true })
         .limit(10);
 
+      // Covoiturages actifs pour les prochains matchs suivis
+      let ridesData = [];
+      const upcomingIds = (ups ?? []).map(e => String(e.id));
+      if (upcomingIds.length > 0) {
+        const { data: rds } = await supabase
+          .from('rides')
+          .select(`
+            id, event_id, driver_name, departure_location,
+            departure_time, available_seats, status, created_at,
+            ride_requests ( status )
+          `)
+          .in('event_id', upcomingIds)
+          .in('status', ['active', 'full'])
+          .order('departure_time', { ascending: true })
+          .limit(15);
+        ridesData = rds ?? [];
+      }
+
       if (cancelled) return;
       setAnnouncements(ann ?? []);
       setResults(res ?? []);
       setUpcoming(ups ?? []);
+      setRides(ridesData);
       setLoading(false);
     }
 
@@ -108,6 +128,28 @@ export function useNewsFeed({ followedClubIds = [] }) {
           setUpcoming(prev => [row, ...prev].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 10));
         }
       })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'rides',
+      }, (payload) => {
+        const row = payload.new;
+        // On ajoute le ride si son event est dans nos events suivis
+        setUpcoming(prev => {
+          const eventIds = new Set(prev.map(e => String(e.id)));
+          if (!eventIds.has(String(row.event_id))) return prev;
+          setRides(current => [...current, { ...row, ride_requests: [] }].slice(0, 15));
+          return prev;
+        });
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'rides',
+      }, (payload) => {
+        const row = payload.new;
+        setRides(prev => prev.map(r => r.id === row.id ? { ...r, ...row } : r));
+      })
       .subscribe();
 
     return () => {
@@ -117,5 +159,5 @@ export function useNewsFeed({ followedClubIds = [] }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [followedClubIds.join(',')]);
 
-  return { announcements, results, upcoming, loading, hasClubs };
+  return { announcements, results, upcoming, rides, loading, hasClubs };
 }
