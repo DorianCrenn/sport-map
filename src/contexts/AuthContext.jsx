@@ -119,48 +119,53 @@ export function AuthProvider({ children }) {
 
           // MANAGER-001: Activate pending manager invitation on login
           if (session.user.email) {
-            const { data: pendingManager } = await supabase
-              .from('club_managers')
-              .select('club_id, role')
-              .eq('email', session.user.email.toLowerCase())
-              .eq('status', 'pending')
-              .maybeSingle();
-
-            if (pendingManager) {
-              // Mark manager as active
-              await supabase
+            try {
+              const { data: pendingManager } = await supabase
                 .from('club_managers')
-                .update({ status: 'active' })
-                .eq('email', session.user.email.toLowerCase());
+                .select('club_id, role')
+                .eq('email', session.user.email.toLowerCase())
+                .eq('status', 'pending')
+                .maybeSingle();
 
-              // Assign club_id + role on profile if not already set
-              const currentProf = prof ?? (await fetchProfile(session.user));
-              if (currentProf && !currentProf.club_id) {
+              if (pendingManager) {
                 await supabase
-                  .from('profiles')
-                  .update({ club_id: pendingManager.club_id, role: 'club_admin' })
-                  .eq('id', session.user.id);
-                // Refresh profile after update
-                const updatedProf = await fetchProfile(session.user);
-                if (seq === fetchSeq && updatedProf) setProfile(updatedProf);
+                  .from('club_managers')
+                  .update({ status: 'active' })
+                  .eq('email', session.user.email.toLowerCase());
+
+                const currentProf = prof ?? (await fetchProfile(session.user));
+                if (currentProf && !currentProf.club_id) {
+                  await supabase
+                    .from('profiles')
+                    .update({ club_id: pendingManager.club_id, role: 'club_admin' })
+                    .eq('id', session.user.id);
+                  const updatedProf = await fetchProfile(session.user);
+                  if (seq === fetchSeq && updatedProf) setProfile(updatedProf);
+                }
               }
+            } catch (e) {
+              console.warn('[Auth] MANAGER-001 non-blocking error:', e.message);
             }
           }
 
           // ROSTER-001: Auto-assign user_id on club_players when email matches
           if (session.user.email) {
-            const { data: playerEntry } = await supabase
-              .from('club_players')
-              .select('id')
-              .eq('email', session.user.email.toLowerCase())
-              .is('user_id', null)
-              .maybeSingle();
-
-            if (playerEntry) {
-              await supabase
+            try {
+              const { data: playerEntry } = await supabase
                 .from('club_players')
-                .update({ user_id: session.user.id })
-                .eq('id', playerEntry.id);
+                .select('id')
+                .eq('email', session.user.email.toLowerCase())
+                .is('user_id', null)
+                .maybeSingle();
+
+              if (playerEntry) {
+                await supabase
+                  .from('club_players')
+                  .update({ user_id: session.user.id })
+                  .eq('id', playerEntry.id);
+              }
+            } catch (e) {
+              console.warn('[Auth] ROSTER-001 non-blocking error:', e.message);
             }
           }
         } else {
