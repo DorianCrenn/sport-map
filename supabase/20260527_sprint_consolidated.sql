@@ -213,6 +213,9 @@ CREATE INDEX IF NOT EXISTS poster_exports_club_month
 
 ALTER TABLE public.poster_exports ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "poster_exports_insert" ON public.poster_exports;
+DROP POLICY IF EXISTS "poster_exports_select" ON public.poster_exports;
+
 CREATE POLICY "poster_exports_insert" ON public.poster_exports
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
@@ -315,6 +318,10 @@ CREATE INDEX IF NOT EXISTS idx_event_photos_club  ON public.event_photos (club_i
 
 ALTER TABLE public.event_photos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "ep_select_public"    ON public.event_photos;
+DROP POLICY IF EXISTS "ep_insert_club_owner" ON public.event_photos;
+DROP POLICY IF EXISTS "ep_delete_own"        ON public.event_photos;
+
 CREATE POLICY "ep_select_public"
   ON public.event_photos FOR SELECT USING (true);
 
@@ -336,6 +343,7 @@ CREATE POLICY "ep_insert_club_owner"
 CREATE POLICY "ep_delete_own"
   ON public.event_photos FOR DELETE
   USING (user_id = auth.uid() OR public.sl_is_admin());
+
 
 -- Storage bucket (Dashboard → Storage → New bucket, ou via CLI) :
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('event-photos', 'event-photos', true)
