@@ -1,10 +1,14 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { useAttendees } from '../hooks/useAttendees.js';
 
 const AttendanceContext = createContext(null);
 
 export function AttendanceProvider({ children }) {
-  const value = useAttendees();
+  const { attending, toggle, isAttending } = useAttendees();
+  const value = useMemo(
+    () => ({ attending, toggle, isAttending }),
+    [attending, toggle, isAttending]
+  );
   return <AttendanceContext.Provider value={value}>{children}</AttendanceContext.Provider>;
 }
 

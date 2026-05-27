@@ -283,24 +283,34 @@ export function AuthProvider({ children }) {
     }, 400);
   }), []);
 
-  // Mock OAuth for Instagram (Supabase doesn't support it natively)
+  // Mock OAuth for demo purposes only — disabled in production
   const loginWithProvider = useCallback(async (email, provider) => {
-    const mockPwd = `mock_${btoa(email).slice(0, 16)}`;
+    if (import.meta.env.PROD) {
+      throw new Error('La simulation OAuth est désactivée en production. Utilisez Google ou email/mot de passe.');
+    }
 
-    // Try sign-in first
-    const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-      email, password: mockPwd,
-    });
-    if (!signInErr) return { user: signInData.user, needsConfirmation: false };
+    // Per-browser random password — not derivable from the email address
+    const lsKey = `sl-mock-${email.toLowerCase().replace(/\W/g, '')}`;
+    let pwd = localStorage.getItem(lsKey);
 
-    // Auto-register if not found
+    if (pwd) {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password: pwd });
+      if (!error) return { user: data.user, needsConfirmation: false };
+    }
+
+    // Generate a cryptographically random 32-char password for this device+email pair
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    pwd = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    localStorage.setItem(lsKey, pwd);
+
     const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-      email, password: mockPwd,
+    const { data, error } = await supabase.auth.signUp({
+      email, password: pwd,
       options: { data: { name, authProvider: provider } },
     });
-    if (signUpErr) throw new Error(signUpErr.message);
-    return { user: signUpData.user, needsConfirmation: !signUpData.session };
+    if (error) throw new Error(error.message);
+    return { user: data.user, needsConfirmation: !data.session };
   }, []);
 
   const requestPasswordReset = useCallback(async (email) => {

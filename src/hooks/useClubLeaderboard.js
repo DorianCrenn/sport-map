@@ -13,58 +13,27 @@ export function useClubLeaderboard({ limit = 10, sportFilter = null } = {}) {
   useEffect(() => {
     let cancelled = false;
 
-    async function fetch() {
+    async function load() {
       setLoading(true);
       setError(null);
 
       try {
-        const now           = new Date();
-        const startOfMonth  = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-
-        // 1. Compter les événements par club ce mois-ci
         let query = supabase
-          .from('events')
-          .select('club_id')
-          .gte('date', startOfMonth)
-          .not('club_id', 'is', null);
+          .from('club_monthly_leaderboard')
+          .select('club_id, name, sport, city, logo_url, event_count, rank')
+          .order('rank', { ascending: true })
+          .limit(limit);
 
         if (sportFilter) query = query.eq('sport', sportFilter);
 
-        const { data: events, error: evErr } = await query;
-        if (evErr) throw new Error(evErr.message);
-
-        const counts = {};
-        (events ?? []).forEach(e => {
-          const cid = String(e.club_id);
-          counts[cid] = (counts[cid] || 0) + 1;
-        });
-
-        const sorted = Object.entries(counts)
-          .sort(([, a], [, b]) => b - a)
-          .slice(0, limit);
-
-        if (cancelled) return;
-        if (sorted.length === 0) { setLeaderboard([]); return; }
-
-        // 2. Récupérer les détails des clubs (UUID uniquement — les IDs statiques comme "usc-29" ne sont pas en base)
-        const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        const topIds = sorted.map(([id]) => id);
-        const uuidIds = topIds.filter(id => UUID_RE.test(id));
-
-        const { data: clubs, error: clErr } = uuidIds.length > 0
-          ? await supabase.from('clubs').select('id, name, sport, city, logo_url').in('id', uuidIds)
-          : { data: [], error: null };
-
-        if (clErr) throw new Error(clErr.message);
+        const { data, error: err } = await query;
+        if (err) throw new Error(err.message);
         if (cancelled) return;
 
-        const clubMap = {};
-        (clubs ?? []).forEach(c => { clubMap[String(c.id)] = c; });
-
-        const ranked = sorted.map(([id, count], idx) => ({
-          rank:       idx + 1,
-          club:       clubMap[id] ?? { id, name: 'Club inconnu', sport: null, city: null, logo_url: null },
-          eventCount: count,
+        const ranked = (data ?? []).map(row => ({
+          rank:       row.rank,
+          club:       { id: row.club_id, name: row.name, sport: row.sport, city: row.city, logo_url: row.logo_url },
+          eventCount: row.event_count,
         }));
 
         setLeaderboard(ranked);
@@ -75,7 +44,7 @@ export function useClubLeaderboard({ limit = 10, sportFilter = null } = {}) {
       }
     }
 
-    fetch();
+    load();
     return () => { cancelled = true; };
   }, [limit, sportFilter]);
 

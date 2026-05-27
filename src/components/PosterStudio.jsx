@@ -16,11 +16,21 @@ import {
 } from '../hooks/usePosterDraft.js';
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
+import { useClubAIUsage } from '../hooks/useClubAIUsage.js';
+import { usePosterAI } from '../hooks/usePosterAI.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
 import { generateVariants, generateAIBackground, generateCustomBackground, generateCustomElement, generateMatchPoster, BG_PROMPT_SUGGESTIONS, ELEMENT_PROMPT_SUGGESTIONS, POSTER_STYLE_SUGGESTIONS } from '../lib/posterVariants.js';
 import { getBgCache, normalizeSport } from '../lib/sportBgCache.js';
 import { supabase } from '../lib/supabase.js';
 import { sanitizeFilename } from '../lib/sanitize.js';
+import {
+  SLabel, TextInput, ColorSwatch, MiniToggle,
+  IcoExporter,
+} from './poster/PosterAtoms.jsx';
+import {
+  COLOR_PRESETS, SPORT_PALETTE, TINT_PALETTE, LAYER_BLOCKS, PANEL_TABS,
+  loadSavedBgs, persistSavedBgs, loadSavedEls, persistSavedEls,
+} from './poster/posterConstants.js';
 
 // ── Reducer ────────────────────────────────────────────────────────────────────
 
@@ -29,202 +39,9 @@ function posterReducer(state, action) {
   return { ...state, [action.type]: action.value };
 }
 
-// ── Color system ───────────────────────────────────────────────────────────────
-
-const COLOR_PRESETS = [
-  { id: 'neon',     label: 'Neon',    color: '#00F5FF' },
-  { id: 'fire',     label: 'Feu',     color: '#FF4500' },
-  { id: 'gold',     label: 'Or',      color: '#D4AF37' },
-  { id: 'electric', label: 'Vert',    color: '#22D96A' },
-  { id: 'royal',    label: 'Mauve',   color: '#8b5cf6' },
-  { id: 'ice',      label: 'Bleu',    color: '#3b82f6' },
-  { id: 'crimson',  label: 'Rouge',   color: '#ef4444' },
-  { id: 'solar',    label: 'Orange',  color: '#f97316' },
-  { id: 'rose',     label: 'Rose',    color: '#ec4899' },
-  { id: 'silver',   label: 'Blanc',   color: '#ffffff' },
-  { id: 'lime',     label: 'Lime',    color: '#84cc16' },
-  { id: 'cyber',    label: 'Cyber',   color: '#a855f7' },
-];
-
-const SPORT_PALETTE = {
-  football: ['#22c55e', '#4ade80', '#16a34a'],
-  tennis:   ['#F5A87C', '#fbbf24', '#C0542A'],
-  basket:   ['#EA580C', '#FB923C', '#f97316'],
-  handball: ['#3b82f6', '#60A5FA', '#1d4ed8'],
-  volleyball: ['#8b5cf6', '#A78BFA', '#6d28d9'],
-  rugby:    ['#ef4444', '#F87171', '#dc2626'],
-  padel:    ['#0ea5e9', '#38BDF8', '#0369a1'],
-  squash:   ['#0ea5e9', '#38BDF8', '#0369a1'],
-  badminton:['#10b981', '#34D399', '#059669'],
-};
-
-const TINT_PALETTE = ['#FF4500', '#00F5FF', '#8b5cf6', '#D4AF37', '#22D96A', '#ef4444', '#f97316', '#ec4899'];
-
-// Blocks that templates expose via data-block="..." for layer control
-const LAYER_BLOCKS = [
-  { id: 'title',   label: 'Titre',       icon: '▬' },
-  { id: 'meta',    label: 'Date & lieu', icon: '📍' },
-  { id: 'champ',   label: 'Compétition', icon: '🏆' },
-  { id: 'vs',      label: 'VS / Score',  icon: '⚔' },
-  { id: 'tagline', label: 'Accroche',    icon: '◈' },
-  { id: 'teams',   label: 'Équipes',     icon: '◉' },
-];
-
-// ── Shared UI atoms ────────────────────────────────────────────────────────────
-
-function SLabel({ children, accent }) {
-  if (accent) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8, marginTop: 2 }}>
-        <div style={{ width: 2, height: 13, borderRadius: 2, background: accent, flexShrink: 0 }} />
-        <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: accent }}>{children}</span>
-        <div style={{ flex: 1, height: 1, background: 'var(--sl-border)' }} />
-      </div>
-    );
-  }
-  return (
-    <div style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', marginBottom: 8, marginTop: 2 }}>
-      {children}
-    </div>
-  );
-}
-
-function TextInput({ label, value, onChange, placeholder }) {
-  return (
-    <div style={{ marginBottom: 10 }}>
-      {label && <SLabel>{label}</SLabel>}
-      <input
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          width: '100%', padding: '9px 11px', borderRadius: 10, fontSize: 12, fontWeight: 500,
-          border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)',
-          color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box',
-        }}
-      />
-    </div>
-  );
-}
-
-function ColorSwatch({ color, active, onClick, size = 28 }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        width: size, height: size, borderRadius: 8, backgroundColor: color, border: 'none', cursor: 'pointer',
-        boxShadow: active ? `0 0 0 2px var(--sl-card), 0 0 0 4px ${color}` : '0 1px 3px rgba(0,0,0,0.25)',
-        transition: 'box-shadow 0.15s', flexShrink: 0,
-      }}
-    />
-  );
-}
-
-function MiniToggle({ value, onChange, accent }) {
-  return (
-    <div
-      onClick={() => onChange(!value)}
-      style={{
-        width: 28, height: 16, borderRadius: 8, cursor: 'pointer', position: 'relative',
-        background: value ? accent : 'rgba(255,255,255,0.1)', transition: 'background 0.15s', flexShrink: 0,
-      }}
-    >
-      <div style={{
-        position: 'absolute', top: 2, left: value ? 13 : 2, width: 12, height: 12,
-        borderRadius: '50%', background: 'white', transition: 'left 0.15s',
-      }} />
-    </div>
-  );
-}
-
-// ── Tab icons ──────────────────────────────────────────────────────────────────
-
-function IcoModeles({ c }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
-      <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
-    </svg>
-  );
-}
-function IcoEquipes({ c }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  );
-}
-function IcoStyle({ c }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-    </svg>
-  );
-}
-function IcoFond({ c }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="3"/>
-      <path d="M3 9h18M9 21V9"/>
-    </svg>
-  );
-}
-function IcoJoueurs({ c }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-      <circle cx="12" cy="7" r="4"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeOpacity="0.5"/>
-    </svg>
-  );
-}
-function IcoExporter({ c }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-      <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-    </svg>
-  );
-}
-
-const PANEL_TABS = [
-  { id: 'template', label: 'Modèles',  Icon: IcoModeles },
-  { id: 'teams',    label: 'Équipes',  Icon: IcoEquipes },
-  { id: 'style',    label: 'Style',    Icon: IcoStyle   },
-  { id: 'fond',     label: 'Fond',     Icon: IcoFond    },
-  { id: 'joueurs',  label: 'Joueurs',  Icon: IcoJoueurs },
-];
-
-// ── AI background favorites (localStorage) ────────────────────────────────────
-
-const aiBgLsKey = (clubId) => `sl-ai-bgs-${clubId || 'anon'}`;
-function loadSavedBgs(clubId) {
-  try { return JSON.parse(localStorage.getItem(aiBgLsKey(clubId)) || '[]'); }
-  catch { return []; }
-}
-function persistSavedBgs(clubId, bgs) {
-  try { localStorage.setItem(aiBgLsKey(clubId), JSON.stringify(bgs)); }
-  catch {}
-}
-
-// ── AI element favorites (localStorage) ───────────────────────────────────────
-
-const aiElLsKey = (clubId) => `sl-ai-els-${clubId || 'anon'}`;
-function loadSavedEls(clubId) {
-  try { return JSON.parse(localStorage.getItem(aiElLsKey(clubId)) || '[]'); }
-  catch { return []; }
-}
-function persistSavedEls(clubId, els) {
-  try { localStorage.setItem(aiElLsKey(clubId), JSON.stringify(els)); }
-  catch {}
-}
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function PosterStudio({ event, onClose, club, quickMode = false, resultMode = null }) {
+export default function PosterStudio({ event, onClose, club, quickMode = false, resultMode = null, initialBgSrc = null }) {
   const { allSports } = useSports();
   const { currentUser } = useAuth();
   const hasPremium = currentUser?.role === 'admin' || currentUser?.role === 'superadmin'
@@ -251,6 +68,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const defTplHook = useDefaultTemplate(club?.id);
   const clubMedia  = useClubMedia(club?.id);
   const clubDNA    = useClubDNA(club?.id);
+  const { usage: aiUsage, optimisticIncrement: aiIncrement } = useClubAIUsage(club?.id);
+  const aiGenerateBlocked = !hasPremium && aiUsage.generate_count >= aiUsage.monthly_limit;
+  const aiImportBlocked   = !hasPremium && aiUsage.import_count   >= aiUsage.monthly_limit;
 
   const [poster, dispatch] = useReducer(posterReducer, {
     format: 'story', templateId: isTournamentEvent ? 'tr-premium' : (resultMode ? 'impact' : 'simple'),
@@ -297,16 +117,19 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const [canvasH,       setCanvasH]       = useState(260);
   const [mediaSearch,   setMediaSearch]   = useState('');
   const [mediaFavOnly,  setMediaFavOnly]  = useState(false);
+  const [mediaFolder,   setMediaFolder]   = useState(null);
+  const [tagEditingId,  setTagEditingId]  = useState(null);
+  const [tagInput,      setTagInput]      = useState('');
   const [isDragOver,    setIsDragOver]    = useState(false);
   const [playerName,    setPlayerName]    = useState('');
   const [variants,      setVariants]      = useState([]);
   const [variantSeed,   setVariantSeed]   = useState(0);
   const [variantsOpen,  setVariantsOpen]  = useState(false);
-  const [aiBgLoading,   setAiBgLoading]   = useState(false);
-  const [aiBgResult,    setAiBgResult]    = useState(null);
-  const [customPrompt,  setCustomPrompt]  = useState('');
-  const [elementPrompt, setElementPrompt] = useState('');
-  const [aiElLoading,   setAiElLoading]   = useState(false);
+  const {
+    aiBgLoading, aiBgResult,
+    customPrompt, setCustomPrompt, generateBg,
+    aiElLoading, elementPrompt, setElementPrompt, generateElement,
+  } = usePosterAI({ aiGenerateBlocked, onTrack: trackAIGeneration });
   const [aiPosterLoading, setAiPosterLoading] = useState(false);
   const [aiPosterHint,    setAiPosterHint]    = useState('');
   const [exportingAll,    setExportingAll]    = useState(false);
@@ -318,6 +141,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
   const playerFileRef = useRef(null);
+  const replaceFileRef = useRef(null);
+  const replaceTargetId = useRef(null);
   const dnaFileRef    = useRef(null);
 
   useEffect(() => {
@@ -329,7 +154,12 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
       const merged = { ...draft.state };
       if (!merged.homeLogo && initialFields.homeLogo) merged.homeLogo = initialFields.homeLogo;
       if (!merged.awayLogo && initialFields.awayLogo) merged.awayLogo = initialFields.awayLogo;
-      if (!merged.bgSrc && !merged.bgPreset && cachedSportBg) {
+      if (initialBgSrc) {
+        merged.bgSrc = initialBgSrc;
+        merged.bgMode = 'url';
+        merged.bgErr = false;
+        merged.bgPreset = '';
+      } else if (!merged.bgSrc && !merged.bgPreset && cachedSportBg) {
         merged.bgSrc = cachedSportBg;
         merged.bgMode = 'url';
       }
@@ -339,7 +169,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     } else {
       const defaultTpl = defTplHook.get();
       if (defaultTpl) set('templateId', defaultTpl);
-      if (cachedSportBg) {
+      if (initialBgSrc) {
+        dispatch({ type: 'PATCH', payload: { bgSrc: initialBgSrc, bgMode: 'url', bgErr: false, bgPreset: '' } });
+      } else if (cachedSportBg) {
         dispatch({ type: 'PATCH', payload: { bgSrc: cachedSportBg, bgMode: 'url', bgErr: false } });
       }
     }
@@ -491,6 +323,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
       const asset = await clubMedia.uploadPlayer(file, playerName);
       setPlayerName('');
       addPlayerLayer(asset);
+      trackAIImport();
     } catch {}
   }
 
@@ -546,7 +379,30 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const PREVIEW_W  = Math.min(Math.floor(maxPosterH * (w / h)), 200);
   const previewH   = Math.round(h * (PREVIEW_W / w));
 
-  // ── Export helpers ──
+  // ── Export / AI tracking helpers ──
+  function trackExport(channel) {
+    if (!currentUser?.id || !club?.id) return;
+    supabase.from('poster_exports').insert({
+      club_id: String(club.id),
+      event_id: event?.id ? String(event.id) : null,
+      user_id: currentUser.id,
+      format,
+      channel,
+    }).then(() => {});
+  }
+
+  function trackAIGeneration() {
+    if (!club?.id) return;
+    aiIncrement('generate_count');
+    supabase.rpc('increment_ai_generate_count', { p_club_id: String(club.id) }).then(() => {});
+  }
+
+  function trackAIImport() {
+    if (!club?.id) return;
+    aiIncrement('import_count');
+    supabase.rpc('increment_ai_import_count', { p_club_id: String(club.id) }).then(() => {});
+  }
+
   async function getBlob() {
     const node = exportWrapperRef.current;
     if (!node) return null;
@@ -570,6 +426,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
       a.download = `affiche-${sanitizeFilename(event?.title ?? 'match')}-${format}.png`;
       a.click();
       URL.revokeObjectURL(url);
+      trackExport('download');
     } finally { setTimeout(() => setDownloading(false), 900); }
   }
 
@@ -587,6 +444,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
       } else {
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
       }
+      trackExport('whatsapp');
     } catch {} finally { setSharing(false); }
   }
 
@@ -606,6 +464,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         a.click();
         URL.revokeObjectURL(url);
       }
+      trackExport('instagram');
     } catch {} finally { setSharingIG(false); }
   }
 
@@ -614,6 +473,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
       ? `${window.location.origin}${window.location.pathname}#event/${event.id}`
       : window.location.origin;
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(eventUrl)}`, '_blank', 'noopener,noreferrer,width=600,height=400');
+    trackExport('facebook');
   }
 
   async function handleDownloadAll() {
@@ -645,6 +505,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           URL.revokeObjectURL(url2);
         }
       }
+      trackExport('download_all');
     } finally { setTimeout(() => setExportingAll(false), 900); }
   }
 
@@ -674,6 +535,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   function handleTabClick(id) {
     setExportOpen(false);
     setActiveTab(prev => prev === id ? null : id);
+    setTagEditingId(null);
+    setTagInput('');
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -794,6 +657,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               <PosterEditor
                 templateId={templateId} data={posterData} format={format} transforms={transforms}
                 onChange={(blockId, patch) => dispatch({ type: 'transforms', value: { ...transforms, [blockId]: patch } })}
+                playerLayers={playerLayers || []}
+                onPlayerLayerChange={updatePlayerLayer}
                 onClose={() => setEditorOpen(false)}
               />
             </motion.div>
@@ -1180,7 +1045,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                   onClick={(e) => {
                     e.stopPropagation();
                     const url = club?.id
-                      ? `${window.location.origin}${window.location.pathname}#club/${club.id}`
+                      ? `${window.location.origin}/clubs/${club.id}`
                       : window.location.origin;
                     window.open(url, '_blank', 'noopener,noreferrer');
                   }}
@@ -1808,9 +1673,15 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                 {activeTab === 'joueurs' && (() => {
                   const { uploadPhase, uploadError, lastUpload } = clubMedia;
                   const isUploading = uploadPhase && uploadPhase !== 'done' && uploadPhase !== 'error';
-                  const filteredAssets = mediaSearch
+                  const baseAssets = mediaSearch
                     ? clubMedia.searchAssets(mediaSearch)
-                    : mediaFavOnly ? clubMedia.filterByFavorites() : clubMedia.assets;
+                    : mediaFavOnly ? clubMedia.filterByFavorites()
+                    : mediaFolder ? clubMedia.filterByFolder(mediaFolder)
+                    : clubMedia.assets;
+                  const filteredAssets = baseAssets;
+                  const availableFolders = clubMedia.getAvailableFolders();
+                  const teamFolders = (club?.categories ?? []).flatMap(c => (c.teams ?? []).map(t => t.name)).filter(Boolean);
+                  const allFolders = [...new Set([...teamFolders, ...availableFolders])];
                   const PHASE_LABELS = {
                     compressing: 'Compression…',
                     processing:  'Détourage IA…',
@@ -1823,6 +1694,21 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                       <div style={{ padding: '7px 11px', borderRadius: 9, background: `${accentColor}10`, border: `1px solid ${accentColor}25`, fontSize: 10, color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', gap: 7 }}>
                         <span style={{ fontSize: 13 }}>🧪</span>
                         <span>Mode test — détourage local par couleur de fond. Intégration Remove.bg en Phase 4.</span>
+                      </div>
+
+                      {/* Import quota badge — MEDIA-001c */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderRadius: 9, backgroundColor: aiImportBlocked ? 'rgba(239,68,68,0.07)' : `${accentColor}0D`, border: `1px solid ${aiImportBlocked ? 'rgba(239,68,68,0.2)' : accentColor + '25'}` }}>
+                        <span style={{ fontSize: 10, color: aiImportBlocked ? '#ef4444' : 'var(--sl-t3)', fontWeight: 600 }}>
+                          {aiImportBlocked
+                            ? `Quota mensuel atteint (${aiUsage.monthly_limit} imports)`
+                            : hasPremium
+                              ? 'Imports illimités — Plan Club Pro'
+                              : `${Math.max(0, aiUsage.monthly_limit - aiUsage.import_count)}/${aiUsage.monthly_limit} imports restants ce mois`
+                          }
+                        </span>
+                        {aiImportBlocked && (
+                          <span style={{ fontSize: 9, fontWeight: 800, color: '#D4AF37', letterSpacing: '0.06em' }}>PRO</span>
+                        )}
                       </div>
 
                       {/* Upload zone */}
@@ -1857,6 +1743,12 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                           </div>
                           <input ref={playerFileRef} type="file" accept="image/*" style={{ display: 'none' }}
                             onChange={e => handlePlayerFile(e.target.files?.[0])} />
+                          <input ref={replaceFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                            onChange={e => {
+                              const file = e.target.files?.[0];
+                              if (file && replaceTargetId.current) clubMedia.replaceAsset(replaceTargetId.current, file);
+                              e.target.value = '';
+                            }} />
                           {uploadError && (
                             <div style={{ marginTop: 8, padding: '7px 11px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#ef4444' }}>
                               {uploadError}
@@ -1994,6 +1886,25 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                             {mediaFavOnly ? '❤ Favoris' : '♡ Favoris'}
                           </button>
                         </div>
+                        {/* Folder filter tabs */}
+                        {allFolders.length > 0 && (
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+                            <button
+                              onClick={() => setMediaFolder(null)}
+                              style={{ fontSize: 9.5, fontWeight: 700, padding: '3px 8px', borderRadius: 10, border: `1px solid ${!mediaFolder ? accentColor : 'var(--sl-border)'}`, backgroundColor: !mediaFolder ? `${accentColor}18` : 'transparent', color: !mediaFolder ? accentColor : 'var(--sl-t3)', cursor: 'pointer' }}
+                            >
+                              Tous
+                            </button>
+                            {allFolders.map(f => (
+                              <button key={f}
+                                onClick={() => setMediaFolder(mediaFolder === f ? null : f)}
+                                style={{ fontSize: 9.5, fontWeight: 700, padding: '3px 8px', borderRadius: 10, border: `1px solid ${mediaFolder === f ? accentColor : 'var(--sl-border)'}`, backgroundColor: mediaFolder === f ? `${accentColor}18` : 'transparent', color: mediaFolder === f ? accentColor : 'var(--sl-t3)', cursor: 'pointer' }}
+                              >
+                                {f}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         <input
                           value={mediaSearch} onChange={e => setMediaSearch(e.target.value)}
                           placeholder="Rechercher un joueur…"
@@ -2005,7 +1916,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                           </div>
                         ) : (
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                            {filteredAssets.map(asset => (
+                            {filteredAssets.map(asset => {
+                              const isTagging = tagEditingId === asset.id;
+                              return (
                               <div key={asset.id} style={{ position: 'relative' }}>
                                 <button
                                   onClick={() => addPlayerLayer(asset)}
@@ -2023,11 +1936,92 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                                   style={{ position: 'absolute', top: 4, left: 4, width: 18, height: 18, borderRadius: 5, border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.55)', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
                                   ✕
                                 </button>
-                                <div style={{ marginTop: 3, fontSize: 9, color: 'var(--sl-t3)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-                                  {asset.name}
+                                <button
+                                  onClick={() => { replaceTargetId.current = asset.id; replaceFileRef.current?.click(); }}
+                                  title="Remplacer l'image (conserve l'ID)"
+                                  style={{ position: 'absolute', bottom: 24, left: 4, width: 18, height: 18, borderRadius: 5, border: 'none', cursor: 'pointer', background: 'rgba(99,102,241,0.7)', color: '#fff', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                                  ↺
+                                </button>
+                                {(asset.versions ?? []).length > 0 && (
+                                  <span style={{ position: 'absolute', bottom: 24, right: 4, fontSize: 7.5, fontWeight: 700, padding: '1px 4px', borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.55)', color: '#fff' }}>
+                                    v{(asset.versions ?? []).length + 1}
+                                  </span>
+                                )}
+                                {/* Name + tag toggle + folder */}
+                                <div style={{ marginTop: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                                  <span style={{ fontSize: 9, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, textAlign: 'center' }}>
+                                    {asset.name}
+                                  </span>
+                                  <button
+                                    onClick={() => { setTagEditingId(isTagging ? null : asset.id); setTagInput(''); }}
+                                    title="Tags"
+                                    style={{ flexShrink: 0, fontSize: 9, lineHeight: 1, padding: '1px 3px', border: 'none', background: 'none', cursor: 'pointer', color: (asset.tags ?? []).length > 0 ? accentColor : 'var(--sl-t3)', opacity: 0.8 }}>
+                                    🏷
+                                  </button>
                                 </div>
+                                {/* Folder badge + quick-assign */}
+                                {allFolders.length > 0 && (
+                                  <div style={{ marginTop: 2 }}>
+                                    <select
+                                      value={asset.folder ?? ''}
+                                      onChange={e => clubMedia.setFolder(asset.id, e.target.value || null)}
+                                      title="Dossier virtuel"
+                                      style={{ width: '100%', fontSize: 8, padding: '1px 3px', borderRadius: 4, border: `1px solid ${asset.folder ? accentColor + '60' : 'var(--sl-border)'}`, backgroundColor: asset.folder ? `${accentColor}10` : 'transparent', color: asset.folder ? accentColor : 'var(--sl-t3)', outline: 'none', cursor: 'pointer' }}
+                                    >
+                                      <option value="">📁 Dossier…</option>
+                                      {allFolders.map(f => <option key={f} value={f}>{f}</option>)}
+                                    </select>
+                                  </div>
+                                )}
+                                {/* Tag chips (always visible when tags exist) */}
+                                {asset.tags.length > 0 && !isTagging && (
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 2 }}>
+                                    {asset.tags.map(tag => (
+                                      <span key={tag} style={{ fontSize: 8, padding: '1px 4px', borderRadius: 3, background: `${accentColor}18`, color: accentColor, fontWeight: 600, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                                {/* Tag editor (inline when tagEditingId matches) */}
+                                {isTagging && (
+                                  <div style={{ marginTop: 4 }}>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 4 }}>
+                                      {asset.tags.map(tag => (
+                                        <button
+                                          key={tag}
+                                          onClick={() => clubMedia.updateTags(asset.id, asset.tags.filter(t => t !== tag))}
+                                          title="Supprimer ce tag"
+                                          style={{ fontSize: 8, padding: '1px 4px', borderRadius: 3, background: `${accentColor}18`, color: accentColor, fontWeight: 600, border: `1px solid ${accentColor}40`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}>
+                                          {tag} <span style={{ opacity: 0.6 }}>✕</span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                    <input
+                                      autoFocus
+                                      value={tagInput}
+                                      onChange={e => setTagInput(e.target.value)}
+                                      placeholder="+ tag"
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter' || e.key === ',') {
+                                          e.preventDefault();
+                                          const val = tagInput.trim().replace(/,$/, '');
+                                          if (val && !asset.tags.includes(val)) {
+                                            clubMedia.updateTags(asset.id, [...asset.tags, val]);
+                                          }
+                                          setTagInput('');
+                                        } else if (e.key === 'Escape') {
+                                          setTagEditingId(null);
+                                          setTagInput('');
+                                        }
+                                      }}
+                                      style={{ width: '100%', fontSize: 9, padding: '3px 5px', borderRadius: 5, border: `1px solid ${accentColor}60`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
+                                    />
+                                  </div>
+                                )}
                               </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -2158,12 +2152,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                           onChange={e => setElementPrompt(e.target.value)}
                           placeholder="Décris l'effet décoratif…"
                           disabled={aiElLoading}
-                          onKeyDown={async e => {
-                            if (e.key !== 'Enter' || aiElLoading || !elementPrompt.trim()) return;
-                            setAiElLoading(true);
-                            const res = await generateCustomElement(elementPrompt.trim(), accentColor);
-                            setAiElLoading(false);
-                            if (res.imageUrl) addAiOverlay({ imageUrl: res.imageUrl, prompt: res.prompt });
+                          onKeyDown={e => {
+                            if (e.key !== 'Enter') return;
+                            generateElement({ accentColor, onSuccess: res => addAiOverlay({ imageUrl: res.imageUrl, prompt: res.prompt }) });
                           }}
                           style={{
                             flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 11, fontWeight: 500,
@@ -2172,19 +2163,15 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                           }}
                         />
                         <button
-                          disabled={aiElLoading || !elementPrompt.trim()}
-                          onClick={async () => {
-                            setAiElLoading(true);
-                            const res = await generateCustomElement(elementPrompt.trim(), accentColor);
-                            setAiElLoading(false);
-                            if (res.imageUrl) addAiOverlay({ imageUrl: res.imageUrl, prompt: res.prompt });
-                          }}
+                          disabled={aiElLoading || !elementPrompt.trim() || aiGenerateBlocked}
+                          title={aiGenerateBlocked ? `Quota mensuel atteint — Plan Club Pro requis` : undefined}
+                          onClick={() => generateElement({ accentColor, onSuccess: res => addAiOverlay({ imageUrl: res.imageUrl, prompt: res.prompt }) })}
                           style={{
                             padding: '9px 13px', borderRadius: 10, fontSize: 12, fontWeight: 800, flexShrink: 0,
-                            cursor: (aiElLoading || !elementPrompt.trim()) ? 'not-allowed' : 'pointer',
-                            background: `linear-gradient(135deg, #a855f7, #6366f1)`,
-                            color: '#fff', border: 'none',
-                            opacity: (aiElLoading || !elementPrompt.trim()) ? 0.5 : 1,
+                            cursor: (aiElLoading || !elementPrompt.trim() || aiGenerateBlocked) ? 'not-allowed' : 'pointer',
+                            background: aiGenerateBlocked ? 'rgba(148,163,184,0.2)' : `linear-gradient(135deg, #a855f7, #6366f1)`,
+                            color: aiGenerateBlocked ? 'var(--sl-t3)' : '#fff', border: 'none',
+                            opacity: (aiElLoading || !elementPrompt.trim() || aiGenerateBlocked) ? 0.5 : 1,
                           }}>
                           {aiElLoading ? '⏳' : '✨'}
                         </button>
@@ -2390,18 +2377,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                             onChange={e => setCustomPrompt(e.target.value)}
                             placeholder="Décris le fond que tu veux…"
                             disabled={aiBgLoading}
-                            onKeyDown={async e => {
-                              if (e.key !== 'Enter' || aiBgLoading) return;
-                              setAiBgLoading(true);
-                              setAiBgResult(null);
-                              const res = customPrompt.trim()
-                                ? await generateCustomBackground(customPrompt.trim())
-                                : await generateAIBackground(dnaForBg, event?.sport, supabase);
-                              setAiBgResult(res);
-                              setAiBgLoading(false);
-                              if (res.imageUrl) {
-                                dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } });
-                              }
+                            onKeyDown={e => {
+                              if (e.key !== 'Enter') return;
+                              generateBg({ dnaForBg, eventSport: event?.sport, onSuccess: imageUrl => dispatch({ type: 'PATCH', payload: { bgSrc: imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } }) });
                             }}
                             style={{
                               flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 11, fontWeight: 500,
@@ -2410,24 +2388,14 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                             }}
                           />
                           <button
-                            disabled={aiBgLoading}
-                            onClick={async () => {
-                              setAiBgLoading(true);
-                              setAiBgResult(null);
-                              const res = customPrompt.trim()
-                                ? await generateCustomBackground(customPrompt.trim())
-                                : await generateAIBackground(dnaForBg, event?.sport, supabase);
-                              setAiBgResult(res);
-                              setAiBgLoading(false);
-                              if (res.imageUrl) {
-                                dispatch({ type: 'PATCH', payload: { bgSrc: res.imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } });
-                              }
-                            }}
+                            disabled={aiBgLoading || aiGenerateBlocked}
+                            title={aiGenerateBlocked ? `Quota mensuel atteint (${aiUsage.monthly_limit} générations) — Plan Club Pro requis` : undefined}
+                            onClick={() => generateBg({ dnaForBg, eventSport: event?.sport, onSuccess: imageUrl => dispatch({ type: 'PATCH', payload: { bgSrc: imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } }) })}
                             style={{
                               padding: '9px 13px', borderRadius: 10, fontSize: 12, fontWeight: 800,
-                              cursor: aiBgLoading ? 'wait' : 'pointer',
-                              background: `linear-gradient(135deg, #a855f7, #6366f1)`,
-                              color: '#fff', border: 'none', opacity: aiBgLoading ? 0.6 : 1,
+                              cursor: (aiBgLoading || aiGenerateBlocked) ? 'not-allowed' : 'pointer',
+                              background: aiGenerateBlocked ? 'rgba(148,163,184,0.2)' : `linear-gradient(135deg, #a855f7, #6366f1)`,
+                              color: aiGenerateBlocked ? 'var(--sl-t3)' : '#fff', border: 'none', opacity: (aiBgLoading || aiGenerateBlocked) ? 0.6 : 1,
                               display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
                             }}>
                             {aiBgLoading ? '⏳' : '✨'}

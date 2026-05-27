@@ -251,22 +251,19 @@ export function useClubPage(club) {
     }, 1500);
   }, [clubIdStr]);
 
-  useEffect(() => {
-    latestRef.current.blocks = blocks;
-    if (loaded) scheduleSave();
-  }, [blocks, loaded, scheduleSave]);
-
+  // Keep ref in sync with latest state values (sync, no deps issues)
+  useEffect(() => { latestRef.current.blocks = blocks; }, [blocks]);
   useEffect(() => {
     latestRef.current.typography = typography;
     injectGoogleFont(typography.titleFont);
     injectGoogleFont(typography.bodyFont);
-    if (loaded) scheduleSave();
-  }, [typography, loaded, scheduleSave]);
+  }, [typography]);
+  useEffect(() => { latestRef.current.theme = theme; }, [theme]);
 
+  // Single save trigger — fires once per batch of changes, not three times
   useEffect(() => {
-    latestRef.current.theme = theme;
     if (loaded) scheduleSave();
-  }, [theme, loaded, scheduleSave]);
+  }, [blocks, typography, theme, loaded, scheduleSave]);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 

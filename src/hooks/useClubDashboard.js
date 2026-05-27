@@ -6,6 +6,9 @@ export function useClubDashboard(clubId, clubEventIds = []) {
     followers: 0,
     pageViews: { total: 0, weekly: 0, distinctViewers: 0, byWeek: [] },
     attendees: { total: 0, topEvents: [] },
+    posterExports: 0,
+    posterShares: 0,
+    scheduledAnnouncements: [],
     loading: true,
   });
 
@@ -15,9 +18,10 @@ export function useClubDashboard(clubId, clubEventIds = []) {
 
     async function load() {
       const idsStr  = clubEventIds.map(String);
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const weekAgo   = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
 
-      const [followerRes, pageViewRes, attendeeRes] = await Promise.all([
+      const [followerRes, pageViewRes, attendeeRes, exportRes, shareRes, scheduledAnnRes] = await Promise.all([
         supabase
           .from('club_follower_counts')
           .select('follower_count')
@@ -35,6 +39,28 @@ export function useClubDashboard(clubId, clubEventIds = []) {
               .select('event_id, count')
               .in('event_id', idsStr)
           : Promise.resolve({ data: [] }),
+
+        supabase
+          .from('poster_exports')
+          .select('id', { count: 'exact', head: true })
+          .eq('club_id', String(clubId))
+          .gte('created_at', monthStart),
+
+        supabase
+          .from('poster_exports')
+          .select('id', { count: 'exact', head: true })
+          .eq('club_id', String(clubId))
+          .gte('created_at', monthStart)
+          .in('channel', ['whatsapp', 'instagram', 'facebook', 'web_share', 'copy']),
+
+        supabase
+          .from('club_announcements')
+          .select('id, title, message, type, scheduled_for, created_at')
+          .eq('club_id', String(clubId))
+          .not('scheduled_for', 'is', null)
+          .gte('scheduled_for', new Date().toISOString())
+          .order('scheduled_for', { ascending: true })
+          .limit(20),
       ]);
 
       if (cancelled) return;
@@ -55,6 +81,9 @@ export function useClubDashboard(clubId, clubEventIds = []) {
         followers,
         pageViews: { total: totalViews, weekly: weeklyViews, distinctViewers, byWeek },
         attendees: { total: totalAttendees, topEvents },
+        posterExports: exportRes.count ?? 0,
+        posterShares: shareRes.count ?? 0,
+        scheduledAnnouncements: scheduledAnnRes.data ?? [],
         loading: false,
       });
     }

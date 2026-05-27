@@ -1,23 +1,38 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-const AttendeeCountContext = createContext({ getCount: () => 0 });
+const AttendeeCountContext = createContext({ getCount: () => 0, setKnownIds: () => {} });
 
 export function useAttendeeCount(eventId) {
   const { getCount } = useContext(AttendeeCountContext);
   return getCount(String(eventId));
 }
 
+export function useAttendeeCountActions() {
+  const { setKnownIds } = useContext(AttendeeCountContext);
+  return setKnownIds;
+}
+
 export function AttendeeCountProvider({ children }) {
-  const [counts, setCounts] = useState({});
+  const [counts, setCounts]   = useState({});
+  const [knownIds, setKnownIds] = useState(null); // null = load all; string[] = filter
+  const knownIdsRef = useRef(null);
+
+  useEffect(() => { knownIdsRef.current = knownIds; }, [knownIds]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      const { data, error } = await supabase
-        .from('event_attendee_counts')
-        .select('event_id, count');
+      let query = supabase.from('event_attendee_counts').select('event_id, count');
+      // Filter to known visible events when available (avoids full table scan)
+      if (knownIds && knownIds.length > 0) {
+        query = query.in('event_id', knownIds);
+      } else if (knownIds !== null) {
+        // knownIds = [] means events haven't loaded yet — skip fetch
+        return;
+      }
+      const { data, error } = await query;
       if (cancelled) return;
       if (error) { console.warn('[AttendeeCount] load failed:', error.message); return; }
       const map = {};
@@ -33,6 +48,8 @@ export function AttendeeCountProvider({ children }) {
         const row = payload.new?.event_id ? payload.new : payload.old;
         if (!row?.event_id) { load(); return; }
         const id = String(row.event_id);
+        // Ignore events outside the known set when filtering is active
+        if (knownIdsRef.current !== null && !knownIdsRef.current.includes(id)) return;
         setCounts(prev => {
           const curr = prev[id] ?? 0;
           if (payload.eventType === 'INSERT') return { ...prev, [id]: curr + 1 };
@@ -46,12 +63,12 @@ export function AttendeeCountProvider({ children }) {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [knownIds]);
 
   const getCount = useCallback((eventId) => counts[String(eventId)] ?? 0, [counts]);
 
   return (
-    <AttendeeCountContext.Provider value={{ getCount }}>
+    <AttendeeCountContext.Provider value={{ getCount, setKnownIds }}>
       {children}
     </AttendeeCountContext.Provider>
   );

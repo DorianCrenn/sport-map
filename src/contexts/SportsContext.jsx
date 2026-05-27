@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { SPORTS as DEFAULT_SPORTS } from '../data/events.js';
 
 const KEY = 'custom-sports';
@@ -64,27 +64,36 @@ export function SportsProvider({ children }) {
     });
   }, []);
 
-  const allSports = {
-    ...Object.fromEntries(
+  const allSports = useMemo(() => {
+    const base = Object.fromEntries(
       Object.entries(DEFAULT_SPORTS).filter(([id]) => !deletedIds.includes(id))
-    ),
-    ...Object.fromEntries(custom.filter(s => !deletedIds.includes(s.id)).map(s => [s.id, s])),
-  };
-  Object.keys(allSports).forEach(id => {
-    if (archivedIds.includes(id)) allSports[id] = { ...allSports[id], isArchived: true };
-  });
+    );
+    const result = {
+      ...base,
+      ...Object.fromEntries(custom.filter(s => !deletedIds.includes(s.id)).map(s => [s.id, s])),
+    };
+    archivedIds.forEach(id => {
+      if (result[id]) result[id] = { ...result[id], isArchived: true };
+    });
+    return result;
+  }, [custom, deletedIds, archivedIds]);
 
-  const value = {
+  const deletedDefaults = useMemo(
+    () => deletedIds.map(id => DEFAULT_SPORTS[id]).filter(Boolean),
+    [deletedIds]
+  );
+
+  const value = useMemo(() => ({
     allSports,
     customSports: custom,
-    deletedDefaults: deletedIds.map(id => DEFAULT_SPORTS[id]).filter(Boolean),
+    deletedDefaults,
     archivedIds,
     addSport,
     updateSport,
     deleteSport,
     restoreSport,
     toggleArchive,
-  };
+  }), [allSports, custom, deletedDefaults, archivedIds, addSport, updateSport, deleteSport, restoreSport, toggleArchive]);
 
   return <SportsContext.Provider value={value}>{children}</SportsContext.Provider>;
 }

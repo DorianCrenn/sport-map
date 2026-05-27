@@ -8,6 +8,7 @@ import { useToast } from '../contexts/ToastContext.jsx';
 import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
 import EventReactions from './EventReactions.jsx';
 import EventComments from './EventComments.jsx';
+import EventPhotoGallery from './EventPhotoGallery.jsx';
 import { useAttendanceContext } from '../contexts/AttendanceContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import { generateEventDescription, openWhatsAppShare, openFacebookShare, openInstagramShare } from '../lib/eventShare.js';
@@ -499,6 +500,7 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const attendeeCount = useAttendeeCount(event.id);
   const [showPoster, setShowPoster] = useState(false);
+  const [posterInitBg, setPosterInitBg] = useState(null);
   const [resultScore, setResultScore] = useState(null);
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
@@ -696,6 +698,13 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
                   </div>
                 )}
 
+                <EventPhotoGallery
+                  eventId={event.id}
+                  clubId={event.clubId}
+                  currentUserId={currentUser?.id}
+                  canUpload={canEditThis && isPast}
+                  onUseAsBg={url => { setPosterInitBg(url); setShowPoster(true); }}
+                />
                 <EventReactions eventId={String(event.id)} />
                 <EventComments eventId={String(event.id)} />
               </motion.div>
@@ -726,9 +735,10 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
       <PosterStudio
         event={event}
         club={club}
-        onClose={() => { setShowPoster(false); setResultScore(null); }}
+        onClose={() => { setShowPoster(false); setResultScore(null); setPosterInitBg(null); }}
         resultMode={resultScore}
         quickMode={!!resultScore}
+        initialBgSrc={posterInitBg}
       />
     )}
   </>

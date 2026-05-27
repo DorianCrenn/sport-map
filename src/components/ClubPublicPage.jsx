@@ -16,21 +16,52 @@ function setMeta(property, content) {
 }
 
 function injectClubMeta(club) {
-  const title = `${club.name} — SportLink`;
-  const desc  = club.description ?? `Club ${club.sport} à ${club.city}`;
-  const url   = window.location.href;
+  const title    = `${club.name} — SportLink`;
+  const desc     = club.description ?? `Club ${club.sport} à ${club.city}`;
+  // Canonical URL: /clubs/<id> — clean path, no ?id= query string
+  const canonical = `${window.location.origin}/clubs/${club.id}`;
 
   document.title = title;
-  setMeta('og:title',          title);
-  setMeta('og:description',    desc);
-  setMeta('og:url',            url);
-  setMeta('og:type',           'website');
-  setMeta('twitter:title',     title);
+  setMeta('og:title',            title);
+  setMeta('og:description',      desc);
+  setMeta('og:url',              canonical);
+  setMeta('og:type',             'website');
+  setMeta('twitter:title',       title);
   setMeta('twitter:description', desc);
   if (club.logo_url) {
-    setMeta('og:image',       club.logo_url);
-    setMeta('twitter:image',  club.logo_url);
+    setMeta('og:image',      club.logo_url);
+    setMeta('twitter:image', club.logo_url);
   }
+
+  // <link rel="canonical"> — VIRAL-003c
+  let canonicalEl = document.getElementById('canonical-link');
+  if (!canonicalEl) {
+    canonicalEl = document.createElement('link');
+    canonicalEl.id  = 'canonical-link';
+    canonicalEl.rel = 'canonical';
+    document.head.appendChild(canonicalEl);
+  }
+  canonicalEl.href = canonical;
+
+  // Schema.org SportsOrganization — VIRAL-003a
+  const existing = document.getElementById('schema-org-club');
+  if (existing) existing.remove();
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'SportsOrganization',
+    name: club.name,
+    sport: club.sport ?? undefined,
+    url: canonical,
+    description: desc,
+    ...(club.logo_url ? { logo: club.logo_url, image: club.logo_url } : {}),
+    ...(club.city ? { address: { '@type': 'PostalAddress', addressLocality: club.city, addressCountry: 'FR' } } : {}),
+    ...(club.website ? { sameAs: [club.website] } : {}),
+  };
+  const script = document.createElement('script');
+  script.id   = 'schema-org-club';
+  script.type = 'application/ld+json';
+  script.text = JSON.stringify(schema);
+  document.head.appendChild(script);
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────

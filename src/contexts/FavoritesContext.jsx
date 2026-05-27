@@ -1,10 +1,14 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { useFavorites } from '../hooks/useFavorites.js';
 
 const FavoritesContext = createContext(null);
 
 export function FavoritesProvider({ children }) {
-  const value = useFavorites();
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const value = useMemo(
+    () => ({ favorites, toggleFavorite, isFavorite }),
+    [favorites, toggleFavorite, isFavorite]
+  );
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;
 }
 

@@ -11,6 +11,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import SportIcon from './SportIcon.jsx';
 import PosterStudio from './PosterStudio.jsx';
 import RideSection from './rides/RideSection.jsx';
+import EventPhotoGallery from './EventPhotoGallery.jsx';
 
 const EVENT_TYPE_META = {
   championship: { label: 'Championnat', color: '#3b82f6' },
@@ -451,6 +452,13 @@ export default function MobileEventSheet({
               {canEditThis && isPast && onUpdateEvent && (
                 <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />
               )}
+
+              <EventPhotoGallery
+                eventId={event.id}
+                clubId={event.clubId}
+                currentUserId={currentUser?.id}
+                canUpload={canEditThis && isPast}
+              />
 
               {canEditThis && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>

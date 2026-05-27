@@ -126,6 +126,55 @@ export function useClubMedia(clubId) {
     setLastUpload(null);
   }
 
+  // ── Replace / versioning (POSTER-ARCH-001d/e) ────────────────────────────
+
+  async function replaceAsset(id, file) {
+    const existing = assets.find(a => a.id === id);
+    if (!existing) return;
+    setUploadPhase('compressing');
+    try {
+      const result = await processPlayerImage(file, { onPhase: phase => setUploadPhase(phase) });
+      setUploadPhase('done');
+      const prevVersion = {
+        id: `v-${Date.now()}`,
+        processedDataUrl: existing.processedDataUrl,
+        thumbDataUrl: existing.thumbDataUrl,
+        createdAt: existing.createdAt,
+      };
+      const updated = assets.map(a => a.id !== id ? a : {
+        ...a,
+        processedDataUrl: result.processedDataUrl,
+        thumbDataUrl: result.thumbDataUrl,
+        versions: [prevVersion, ...(a.versions ?? [])].slice(0, 5),
+        createdAt: new Date().toISOString(),
+      });
+      persist(updated);
+    } catch (err) {
+      setUploadPhase('error');
+      setUploadError(err.message || 'Erreur lors du remplacement');
+    }
+  }
+
+  function revertToVersion(id, versionId) {
+    const existing = assets.find(a => a.id === id);
+    if (!existing) return;
+    const version = (existing.versions ?? []).find(v => v.id === versionId);
+    if (!version) return;
+    const currentVersion = {
+      id: `v-${Date.now()}`,
+      processedDataUrl: existing.processedDataUrl,
+      thumbDataUrl: existing.thumbDataUrl,
+      createdAt: existing.createdAt,
+    };
+    const updated = assets.map(a => a.id !== id ? a : {
+      ...a,
+      processedDataUrl: version.processedDataUrl,
+      thumbDataUrl: version.thumbDataUrl,
+      versions: [currentVersion, ...(a.versions ?? []).filter(v => v.id !== versionId)].slice(0, 5),
+    });
+    persist(updated);
+  }
+
   // ── CRUD ────────────────────────────────────────────────────────────────────
 
   function deleteAsset(id) {
@@ -144,6 +193,10 @@ export function useClubMedia(clubId) {
     persist(assets.map(a => a.id === id ? { ...a, tags } : a));
   }
 
+  function setFolder(id, folder) {
+    persist(assets.map(a => a.id === id ? { ...a, folder: folder || null } : a));
+  }
+
   // ── Search / filter ─────────────────────────────────────────────────────────
 
   function searchAssets(query) {
@@ -151,12 +204,22 @@ export function useClubMedia(clubId) {
     const q = query.toLowerCase();
     return assets.filter(a =>
       a.name.toLowerCase().includes(q) ||
-      a.tags.some(t => t.toLowerCase().includes(q))
+      (a.tags ?? []).some(t => t.toLowerCase().includes(q))
     );
   }
 
   function filterByFavorites() {
     return assets.filter(a => a.isFavorite);
+  }
+
+  function filterByFolder(folder) {
+    if (!folder) return assets;
+    return assets.filter(a => a.folder === folder);
+  }
+
+  function getAvailableFolders() {
+    const set = new Set(assets.map(a => a.folder).filter(Boolean));
+    return [...set].sort();
   }
 
   return {
@@ -166,12 +229,17 @@ export function useClubMedia(clubId) {
     lastUpload,
 
     uploadPlayer,
+    replaceAsset,
+    revertToVersion,
     resetUpload,
     deleteAsset,
     toggleFavorite,
     renameAsset,
     updateTags,
+    setFolder,
     searchAssets,
     filterByFavorites,
+    filterByFolder,
+    getAvailableFolders,
   };
 }

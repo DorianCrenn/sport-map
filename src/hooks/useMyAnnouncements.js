@@ -13,6 +13,7 @@ function mapAnn(row) {
     message:     row.message,
     targetTeams: row.target_teams ?? [],
     createdAt:   row.created_at,
+    scheduledFor: row.scheduled_for ?? null,
   };
 }
 
@@ -28,7 +29,7 @@ export function useMyAnnouncements() {
       setAnnouncements([]); setReadIds(new Set()); setLoading(false); return;
     }
     setLoading(true);
-    const [annRes, readRes] = await Promise.all([
+    const [annRes, readRes] = await Promise.allSettled([
       supabase
         .from('club_announcements')
         .select('*')
@@ -40,11 +41,15 @@ export function useMyAnnouncements() {
         .select('announcement_id')
         .eq('user_id', currentUser.id),
     ]);
-    const allAnn = (annRes.data ?? []).map(mapAnn);
-    const reads  = new Set((readRes.data ?? []).map(r => r.announcement_id));
+    const annData  = annRes.status  === 'fulfilled' ? (annRes.value.data  ?? []) : [];
+    const readData = readRes.status === 'fulfilled' ? (readRes.value.data ?? []) : [];
+    const allAnn = annData.map(mapAnn);
+    const reads  = new Set(readData.map(r => r.announcement_id));
 
-    // Filter by team targeting
+    const now = new Date();
+    // Filter by team targeting + hide future-scheduled announcements
     const filtered = allAnn.filter(ann => {
+      if (ann.scheduledFor && new Date(ann.scheduledFor) > now) return false;
       if (ann.targetTeams.length === 0) return true;
       const follow = follows.find(f => String(f.clubId) === String(ann.clubId));
       if (!follow) return false;

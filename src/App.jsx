@@ -38,6 +38,7 @@ const PosterStudio        = lazy(() => import('./components/PosterStudio.jsx'));
 import OfflineBanner from './components/OfflineBanner.jsx';
 import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
+import { useAttendeeCountActions } from './contexts/AttendeeCountContext.jsx';
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs } = useAuth();
@@ -51,7 +52,7 @@ function AppInner() {
   const [pendingOnboarding, setPendingOnboarding] = useState(false);
 
   const { toast } = useToast();
-  const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent } = useLocalEvents();
+  const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent, archiveSeason } = useLocalEvents();
   const { unreadCount: rideNotifCount } = useRideNotifications();
   const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
   const [showMyRides, setShowMyRides] = useState(false);
@@ -103,6 +104,14 @@ function AppInner() {
     () => [...EVENTS, ...userEvents, ...clubMatchEvents],
     [userEvents, clubMatchEvents]
   );
+
+  // Push visible event IDs into AttendeeCountContext so it only fetches relevant counts
+  const setKnownAttendeeIds = useAttendeeCountActions();
+  useEffect(() => {
+    if (allEvents.length > 0) {
+      setKnownAttendeeIds(allEvents.map(e => String(e.id)));
+    }
+  }, [allEvents, setKnownAttendeeIds]);
 
   const allClubs = useMemo(() => [...userClubs, ...STATIC_CLUBS], [userClubs]);
   allClubsRef.current = allClubs;
@@ -305,7 +314,7 @@ function AppInner() {
             {activeTab === 'news' && <ErrorBoundary name="Actualités"><NewsPage followedClubIds={followedClubs} /></ErrorBoundary>}
             {activeTab === 'clubs' && (
               <ErrorBoundary name="Clubs">
-                <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} onClubOverlayChange={setClubOverlayOpen} />
+                <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} onClubOverlayChange={setClubOverlayOpen} onArchiveSeason={archiveSeason} />
               </ErrorBoundary>
             )}
             {activeTab === 'profil' && (
@@ -377,6 +386,7 @@ function AppInner() {
               onBack={() => setSelectedSearchClub(null)}
               onAddEvent={addEvent}
               canAddEvent={isAdmin || isClubAdmin}
+              onArchiveSeason={archiveSeason}
               onUpdateClub={async (data) => {
                 await updateClub(selectedSearchClub.id, data);
                 setSelectedSearchClub(prev => ({ ...prev, ...data }));

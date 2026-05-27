@@ -13,7 +13,7 @@ import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { SkeletonClubCard } from '../components/Skeleton.jsx';
 import { STATIC_CLUBS } from '../data/clubs.js';
 
-export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent, onClubOverlayChange }) {
+export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent, onClubOverlayChange, onArchiveSeason }) {
   const { allSports: SPORTS } = useSports();
   const { userClubs, loading: clubsLoading, addClub, updateClub, deleteClub } = useClubs();
   const { requests, submitRequest } = useClubRequests();
@@ -117,6 +117,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             onBack={() => setSelectedClub(null)}
             onAddEvent={onAddEvent}
             canAddEvent={canAddEvent}
+            onArchiveSeason={onArchiveSeason}
             onUpdateClub={async (data) => {
               await updateClub(selectedClub.id, data);
               setSelectedClub(prev => ({ ...prev, ...data }));

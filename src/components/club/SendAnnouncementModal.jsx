@@ -43,11 +43,17 @@ const inputStyle = {
 };
 
 export default function SendAnnouncementModal({ club, onSend, onClose }) {
-  const [type,    setType]    = useState('urgent');
-  const [message, setMessage] = useState('');
-  const [targets, setTargets] = useState([]); // empty = all
-  const [saving,  setSaving]  = useState(false);
-  const [error,   setError]   = useState('');
+  const [type,        setType]        = useState('urgent');
+  const [message,     setMessage]     = useState('');
+  const [targets,     setTargets]     = useState([]); // empty = all
+  const [saving,      setSaving]      = useState(false);
+  const [error,       setError]       = useState('');
+  const [scheduled,   setScheduled]   = useState(false);
+  const [scheduleAt,  setScheduleAt]  = useState(() => {
+    const d = new Date(Date.now() + 60 * 60 * 1000); // default: now + 1h
+    d.setSeconds(0, 0);
+    return d.toISOString().slice(0, 16); // 'YYYY-MM-DDTHH:mm'
+  });
 
   const selectedType = TYPE_OPTIONS.find(t => t.key === type);
   const allTeams = (club.categories ?? []).flatMap(cat =>
@@ -70,7 +76,8 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
     setSaving(true);
     setError('');
     try {
-      await onSend({ type, message: message.trim(), targetTeams: targets, clubName: club.name });
+      const scheduledFor = scheduled ? new Date(scheduleAt).toISOString() : null;
+      await onSend({ type, message: message.trim(), targetTeams: targets, clubName: club.name, scheduledFor });
       onClose();
     } catch (e) {
       setError(e.message ?? 'Erreur lors de l\'envoi');
@@ -181,6 +188,41 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
             </div>
           )}
 
+          {/* Programmer */}
+          <div style={{ borderRadius: 14, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+            <button
+              onClick={() => setScheduled(v => !v)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', border: 'none', cursor: 'pointer', backgroundColor: scheduled ? 'rgba(168,85,247,0.08)' : 'var(--sl-surface)', transition: 'background 0.15s' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 15 }}>🕐</span>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: scheduled ? '#a855f7' : 'var(--sl-t1)' }}>Programmer l'envoi</div>
+                  {scheduled && scheduleAt && (
+                    <div style={{ fontSize: 10, color: '#a855f7', marginTop: 1 }}>
+                      {new Date(scheduleAt).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div style={{ width: 28, height: 16, borderRadius: 8, background: scheduled ? '#a855f7' : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
+                <div style={{ position: 'absolute', top: 2, left: scheduled ? 13 : 2, width: 12, height: 12, borderRadius: '50%', background: 'white', transition: 'left 0.15s' }} />
+              </div>
+            </button>
+            {scheduled && (
+              <div style={{ padding: '0 14px 12px', borderTop: '1px solid var(--sl-border)' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--sl-t3)', margin: '10px 0 6px' }}>Date et heure d'envoi</div>
+                <input
+                  type="datetime-local"
+                  value={scheduleAt}
+                  min={new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)}
+                  onChange={e => setScheduleAt(e.target.value)}
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 10, fontSize: 13, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
+                />
+              </div>
+            )}
+          </div>
+
           {error && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, margin: 0 }}>{error}</p>}
         </div>
 
@@ -193,7 +235,7 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
             onClick={handleSend} disabled={saving || !message.trim()}
             style={{ flex: 2, padding: '13px 0', borderRadius: 14, border: 'none', fontSize: 14, fontWeight: 700, cursor: saving || !message.trim() ? 'default' : 'pointer', backgroundColor: saving || !message.trim() ? 'var(--sl-surface)' : (selectedType?.color ?? 'var(--sl-green)'), color: saving || !message.trim() ? 'var(--sl-t3)' : '#fff', boxShadow: saving || !message.trim() ? 'none' : `0 4px 14px ${selectedType?.color ?? '#22d96a'}55`, transition: 'all 0.15s' }}
           >
-            {saving ? 'Envoi…' : `${selectedType?.icon} Envoyer l'annonce`}
+            {saving ? 'Envoi…' : scheduled ? `🕐 Programmer l'annonce` : `${selectedType?.icon} Envoyer l'annonce`}
           </button>
         </div>
       </motion.div>

@@ -92,8 +92,8 @@ describe('UX — Safe-area-inset-bottom (iPhone home bar)', () => {
       expect(err).toBeNull();
     });
 
-    it('ConfirmDialog — padding bottom safe-area', () => {
-      const err = assertSafeArea('components/ConfirmDialog.jsx', 1);
+    it('ModalFrame — sheet variant a safe-area (utilisé par ConfirmDialog et autres modales)', () => {
+      const err = assertSafeArea('components/ModalFrame.jsx', 1);
       expect(err).toBeNull();
     });
   });

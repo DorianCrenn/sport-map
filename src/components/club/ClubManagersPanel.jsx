@@ -1,6 +1,31 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
+const ROLES = [
+  {
+    id: 'manager',
+    label: 'Manager',
+    desc: 'Accès complet (events, affiches, annonces, page)',
+    color: '#6366f1',
+  },
+  {
+    id: 'editor',
+    label: 'Éditeur',
+    desc: 'Events + affiches uniquement',
+    color: '#f59e0b',
+  },
+  {
+    id: 'communicant',
+    label: 'Communicant',
+    desc: 'Annonces clubs uniquement',
+    color: '#22d96a',
+  },
+];
+
+function roleMeta(id) {
+  return ROLES.find(r => r.id === id) ?? ROLES[0];
+}
+
 const ROW = {
   display: 'flex', alignItems: 'center', gap: 10,
   padding: '8px 10px', borderRadius: 12,
@@ -20,8 +45,9 @@ function Avatar({ name, color }) {
   );
 }
 
-export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onAdd, onRemove, onClose }) {
+export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onAdd, onRemove, onRoleChange, onClose }) {
   const [email, setEmail] = useState('');
+  const [role, setRole]   = useState('manager');
   const [error, setError]   = useState('');
   const [success, setSuccess] = useState('');
 
@@ -33,11 +59,11 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
       setError("C'est déjà le propriétaire du club");
       return;
     }
-    const ok = await onAdd(normalized);
+    const ok = await onAdd(normalized, role);
     if (!ok) { setError('Cet email est déjà gestionnaire'); return; }
     setEmail('');
     setError('');
-    setSuccess(`${normalized} ajouté`);
+    setSuccess(`${normalized} ajouté — rôle : ${roleMeta(role).label}`);
     setTimeout(() => setSuccess(''), 3000);
   }
 
@@ -62,6 +88,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
           backgroundColor: 'var(--sl-card)',
           borderRadius: 24, padding: 20,
           border: '1px solid var(--sl-border)',
+          maxHeight: '90vh', overflowY: 'auto',
         }}
       >
         {/* Header */}
@@ -69,7 +96,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)' }}>Gestionnaires</div>
             <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>
-              Peuvent modifier la page du club
+              Gérez les accès à votre club
             </div>
           </div>
           <button
@@ -85,6 +112,16 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
+        </div>
+
+        {/* Role legend */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+          {ROLES.map(r => (
+            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 8px', borderRadius: 20, backgroundColor: `${r.color}16`, color: r.color, fontWeight: 700, border: `1px solid ${r.color}30` }}>
+              <span>{r.label}</span>
+              <span style={{ opacity: 0.7, fontWeight: 400 }}>— {r.desc}</span>
+            </div>
+          ))}
         </div>
 
         {/* Owner */}
@@ -104,32 +141,56 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
         </div>
 
         {/* Manager list */}
-        {managers.map(m => (
-          <div key={m.email} style={{ ...ROW, marginBottom: 6 }}>
-            <Avatar name={m.name} color="#3b82f6" />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {m.name}
+        {managers.map(m => {
+          const rm = roleMeta(m.role);
+          return (
+            <div key={m.email} style={{ ...ROW, marginBottom: 6 }}>
+              <Avatar name={m.name} color={rm.color} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {m.name}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {m.email}
+                </div>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {m.email}
-              </div>
+              {/* Role selector */}
+              {onRoleChange ? (
+                <select
+                  value={m.role ?? 'manager'}
+                  onChange={e => onRoleChange(m.email, e.target.value)}
+                  style={{
+                    fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 8,
+                    backgroundColor: `${rm.color}16`, color: rm.color,
+                    border: `1px solid ${rm.color}40`, cursor: 'pointer', outline: 'none',
+                    flexShrink: 0,
+                  }}
+                >
+                  {ROLES.map(r => (
+                    <option key={r.id} value={r.id} style={{ background: 'var(--sl-card)' }}>{r.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: `${rm.color}16`, color: rm.color, flexShrink: 0 }}>
+                  {rm.label}
+                </span>
+              )}
+              <button
+                onClick={() => onRemove(m.email)}
+                aria-label={`Retirer ${m.name}`}
+                style={{
+                  width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', flexShrink: 0,
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
             </div>
-            <button
-              onClick={() => onRemove(m.email)}
-              aria-label={`Retirer ${m.name}`}
-              style={{
-                width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', flexShrink: 0,
-              }}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        ))}
+          );
+        })}
 
         {managers.length === 0 && (
           <p style={{ fontSize: 12, color: 'var(--sl-t3)', textAlign: 'center', padding: '12px 0', marginBottom: 4 }}>
@@ -144,6 +205,27 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
           Inviter un gestionnaire
         </div>
+
+        {/* Role picker for new invite */}
+        <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
+          {ROLES.map(r => (
+            <button key={r.id}
+              onClick={() => setRole(r.id)}
+              title={r.desc}
+              style={{
+                flex: 1, padding: '6px 4px', borderRadius: 8, border: `1.5px solid ${role === r.id ? r.color : 'var(--sl-border)'}`,
+                backgroundColor: role === r.id ? `${r.color}16` : 'transparent',
+                fontSize: 10, fontWeight: 700, color: role === r.id ? r.color : 'var(--sl-t3)',
+                cursor: 'pointer', transition: 'all 0.12s',
+              }}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+        <div style={{ fontSize: 10, color: roleMeta(role).color, marginBottom: 8, fontWeight: 600 }}>
+          {roleMeta(role).desc}
+        </div>
+
         <div style={{ display: 'flex', gap: 8 }}>
           <input
             type="email"

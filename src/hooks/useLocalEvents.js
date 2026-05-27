@@ -3,6 +3,22 @@ import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { sanitizeText } from '../lib/sanitize.js';
 
+async function pushClubFollowers(clubId, title, body, url, tag) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+    const base = import.meta.env.VITE_SUPABASE_URL ?? '';
+    await fetch(`${base}/functions/v1/notify-club-followers`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ club_id: String(clubId), title, body, url, tag }),
+    });
+  } catch { /* best-effort */ }
+}
+
 // ── DB ↔ App mapping ──────────────────────────────────────────────────────────
 
 function mapFromDB(row) {
@@ -94,6 +110,7 @@ export function useLocalEvents() {
     supabase
       .from('events')
       .select('*')
+      .eq('is_archived', false)
       .order('date', { ascending: true })
       .limit(500)
       .then(({ data, error }) => {
@@ -164,6 +181,10 @@ export function useLocalEvents() {
   const updateEvent = useCallback(async (id, data) => {
     setEvents(evs => evs.map(e => e.id === id ? { ...e, ...data } : e));
     const snapshot = eventsRef.current.find(e => e.id === id);
+    const scoreBeingPublished =
+      data.score != null &&
+      snapshot?.score == null &&
+      snapshot?.clubId;
     try {
       const merged = snapshot ? { ...snapshot, ...data } : data;
       const { error } = await supabase
@@ -171,6 +192,21 @@ export function useLocalEvents() {
         .update(mapToDB(merged, snapshot?.userId ?? currentUser?.id))
         .eq('id', id);
       if (error) throw error;
+      // Notify club followers when a score is published for the first time (PUSH-PROD-001b)
+      if (scoreBeingPublished) {
+        const home = data.score.home ?? '?';
+        const away = data.score.away ?? '?';
+        const teams = snapshot.homeTeam && snapshot.awayTeam
+          ? `${snapshot.homeTeam} ${home}–${away} ${snapshot.awayTeam}`
+          : `Score : ${home}–${away}`;
+        pushClubFollowers(
+          snapshot.clubId,
+          'Résultat publié',
+          teams,
+          '/',
+          `score-${id}`,
+        );
+      }
     } catch (err) {
       console.error('[Events] updateEvent failed, rolling back:', err.message);
       if (snapshot) setEvents(evs => evs.map(e => e.id === id ? snapshot : e));
@@ -212,5 +248,17 @@ export function useLocalEvents() {
     return realEvents;
   }, [currentUser?.id]);
 
-  return { events, loading, addEvent, addEventsBatch, updateEvent, deleteEvent };
+  const archiveSeason = useCallback(async (clubId) => {
+    const today = new Date().toISOString().split('T')[0];
+    const { error } = await supabase
+      .from('events')
+      .update({ is_archived: true })
+      .eq('club_id', String(clubId))
+      .lt('date', today)
+      .eq('is_archived', false);
+    if (error) throw error;
+    setEvents(evs => evs.filter(e => !(String(e.clubId) === String(clubId) && e.date < today)));
+  }, []);
+
+  return { events, loading, addEvent, addEventsBatch, updateEvent, deleteEvent, archiveSeason };
 }

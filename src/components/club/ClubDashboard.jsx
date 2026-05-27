@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 import { useClubDashboard } from '../../hooks/useClubDashboard.js';
+import { useClubBrandKit } from '../../hooks/useClubBrandKit.js';
 
 function StatCard({ label, value, sub, color = 'var(--sl-t1)' }) {
   return (
@@ -38,9 +40,204 @@ function BarChart({ data }) {
   );
 }
 
-export default function ClubDashboard({ club, clubEventIds, allEvents, onClose }) {
+const ANN_TYPE_COLOR = { urgent: '#ef4444', result: '#22C55E', event: '#3b82f6', info: '#f59e0b' };
+const ANN_TYPE_LABEL = { urgent: 'Urgent', result: 'Résultat', event: 'Événement', info: 'Info' };
+
+function CalendrierEditorial({ upcomingEvents, scheduledAnnouncements }) {
+  const now = new Date();
+  const future30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const evItems = (upcomingEvents ?? [])
+    .filter(ev => {
+      const d = new Date(ev.date + 'T' + (ev.time ?? '23:59'));
+      return d >= now && d <= future30;
+    })
+    .map(ev => ({
+      type: 'event',
+      dt: new Date(ev.date + 'T' + (ev.time ?? '12:00')),
+      label: ev.homeTeam && ev.awayTeam ? `${ev.homeTeam} vs ${ev.awayTeam}` : (ev.title ?? 'Match'),
+      sub: ev.venue ?? '',
+    }));
+
+  const annItems = (scheduledAnnouncements ?? []).map(a => ({
+    type: 'announcement',
+    dt: new Date(a.scheduled_for),
+    annType: a.type,
+    label: a.title || a.message?.slice(0, 50) || 'Annonce',
+    sub: '',
+  }));
+
+  const items = [...evItems, ...annItems].sort((a, b) => a.dt - b.dt);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 12 }}>
+        Calendrier éditorial — 30 jours
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {items.map((item, idx) => {
+          const day = item.dt.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+          const time = item.dt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+          const isEvent = item.type === 'event';
+          const dotColor = isEvent ? '#3b82f6' : (ANN_TYPE_COLOR[item.annType] ?? '#f59e0b');
+          return (
+            <div key={idx} style={{ display: 'flex', gap: 10, padding: '9px 0', borderBottom: idx < items.length - 1 ? '1px solid var(--sl-border)' : 'none' }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, marginTop: 4, flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 1 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                    {item.label}
+                  </span>
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 10, backgroundColor: `${dotColor}18`, color: dotColor, flexShrink: 0 }}>
+                    {isEvent ? 'Match' : (ANN_TYPE_LABEL[item.annType] ?? 'Annonce')}
+                  </span>
+                </div>
+                <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>
+                  {day} {isEvent ? `à ${time}` : `— envoi à ${time}`}
+                  {item.sub ? ` · ${item.sub}` : ''}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ArchiveSeasonSection({ club, allEvents, clubEventIds, onArchiveSeason }) {
+  const [confirming, setConfirming] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  if (!onArchiveSeason) return null;
+
+  const today = new Date().toISOString().split('T')[0];
+  const pastCount = (allEvents ?? []).filter(e =>
+    clubEventIds.some(id => String(id) === String(e.id)) && e.date < today
+  ).length;
+
+  if (pastCount === 0 && !done) return null;
+
+  async function handleArchive() {
+    setLoading(true);
+    try {
+      await onArchiveSeason(club.id);
+      setDone(true);
+      setConfirming(false);
+    } catch (err) {
+      console.error('[ArchiveSeason]', err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const year = new Date().getFullYear();
+
+  return (
+    <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 10 }}>
+        Saison {year - 1}–{year}
+      </div>
+      {done ? (
+        <div style={{ fontSize: 13, color: '#22D96A', fontWeight: 600 }}>
+          ✓ Saison archivée — {pastCount} match{pastCount > 1 ? 's' : ''} archivé{pastCount > 1 ? 's' : ''}
+        </div>
+      ) : confirming ? (
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--sl-t2)', marginBottom: 10, lineHeight: 1.5 }}>
+            {pastCount} match{pastCount > 1 ? 's' : ''} passé{pastCount > 1 ? 's' : ''} sera{pastCount > 1 ? 'ont' : ''} archivé{pastCount > 1 ? 's' : ''} et masqué{pastCount > 1 ? 's' : ''} du feed. Cette action est irréversible depuis l'app.
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => setConfirming(false)}
+              style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleArchive}
+              disabled={loading}
+              style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', backgroundColor: '#ef4444', color: 'white', fontSize: 12, fontWeight: 700, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? 'Archivage…' : 'Confirmer'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ fontSize: 12, color: 'var(--sl-t2)' }}>
+            {pastCount} match{pastCount > 1 ? 's' : ''} passé{pastCount > 1 ? 's' : ''} à archiver
+          </div>
+          <button
+            onClick={() => setConfirming(true)}
+            style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 10, border: '1px solid #ef4444', backgroundColor: 'transparent', color: '#ef4444', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+          >
+            🗂 Clôturer la saison
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const NOTIF_ITEMS = [
+  { key: 'match_j1',         label: 'J-1 — rappel veille de match',   desc: 'Créez l\'affiche avant le match' },
+  { key: 'match_today',      label: 'Jour J — rappel le matin',        desc: 'C\'est aujourd\'hui, partagez !' },
+  { key: 'post_match_score', label: 'Post-match — saisir le score',    desc: 'Publiez le résultat' },
+];
+
+function NotifPrefsSection({ clubId }) {
+  const { kit, saving, save } = useClubBrandKit(clubId);
+  const prefs = kit?.admin_notif_prefs ?? { match_j1: true, match_today: true, post_match_score: true };
+
+  function toggle(key) {
+    save({ admin_notif_prefs: { ...prefs, [key]: !prefs[key] } });
+  }
+
+  return (
+    <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 12 }}>
+        Rappels push — Préférences
+      </div>
+      {NOTIF_ITEMS.map(({ key, label, desc }, idx) => (
+        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: idx < NOTIF_ITEMS.length - 1 ? '1px solid var(--sl-border)' : 'none' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)' }}>{label}</div>
+            <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>{desc}</div>
+          </div>
+          <button
+            disabled={saving}
+            onClick={() => toggle(key)}
+            aria-label={prefs[key] ? 'Désactiver' : 'Activer'}
+            style={{
+              flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none',
+              cursor: saving ? 'wait' : 'pointer',
+              backgroundColor: prefs[key] ? '#22D96A' : 'var(--sl-border)',
+              position: 'relative', transition: 'background-color 0.2s',
+            }}
+          >
+            <div style={{
+              position: 'absolute', top: 2, left: prefs[key] ? 22 : 2,
+              width: 20, height: 20, borderRadius: '50%', backgroundColor: 'white',
+              transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+            }} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, onArchiveSeason }) {
   const data = useClubDashboard(club.id, clubEventIds);
-  const isEmpty = !data.loading && data.followers === 0 && data.pageViews.total === 0 && data.attendees.total === 0;
+  const isEmpty = !data.loading && data.followers === 0 && data.pageViews.total === 0 && data.attendees.total === 0 && data.posterExports === 0 && data.posterShares === 0;
+
+  const clubUpcomingEvents = (allEvents ?? []).filter(e =>
+    clubEventIds.some(id => String(id) === String(e.id))
+  );
 
   return (
     <motion.div
@@ -100,6 +297,20 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose }
                 color="#22d96a"
               />
             </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <StatCard
+                label="Affiches ce mois"
+                value={data.posterExports}
+                sub="exports & partages"
+                color="#a855f7"
+              />
+              <StatCard
+                label="Partages sociaux"
+                value={data.posterShares}
+                sub="WhatsApp, Insta, Facebook"
+                color="#06b6d4"
+              />
+            </div>
 
             {/* Page views chart */}
             <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
@@ -148,6 +359,20 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose }
                 })}
               </div>
             )}
+
+            <CalendrierEditorial
+              upcomingEvents={clubUpcomingEvents}
+              scheduledAnnouncements={data.scheduledAnnouncements}
+            />
+
+            <NotifPrefsSection clubId={club.id} />
+
+            <ArchiveSeasonSection
+              club={club}
+              allEvents={allEvents}
+              clubEventIds={clubEventIds}
+              onArchiveSeason={onArchiveSeason}
+            />
 
             {isEmpty && (
               <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--sl-t3)', fontSize: 13, lineHeight: 1.7 }}>

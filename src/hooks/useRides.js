@@ -59,10 +59,28 @@ export function useRides(eventId) {
     if (!eventId) { setLoading(false); return; }
     fetchRides();
     const key = Math.random().toString(36).slice(2, 6);
+    const evId = String(eventId);
     const ch = supabase
-      .channel(`rides-${String(eventId)}-${key}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rides' },         fetchRides)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_requests' }, fetchRides)
+      .channel(`rides-${evId}-${key}`)
+      // Server-side filter: only receive changes for this event's rides
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'rides', filter: `event_id=eq.${evId}` },
+        fetchRides
+      )
+      // ride_requests has no event_id column — filter client-side via payload
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'ride_requests' },
+        (payload) => {
+          const changedRideId = payload.new?.ride_id ?? payload.old?.ride_id;
+          if (!changedRideId) return fetchRides();
+          // Only refetch if the changed request belongs to one of our event's rides
+          setRides(current => {
+            const relevant = current.some(r => r.id === changedRideId);
+            if (relevant) fetchRides();
+            return current;
+          });
+        }
+      )
       .subscribe();
     return () => supabase.removeChannel(ch);
   }, [eventId, fetchRides]);

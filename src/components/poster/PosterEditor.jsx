@@ -27,16 +27,19 @@ const ACCENT = '#63FFB8';
 const SNAP_THRESHOLD = 8;
 const PREVIEW_W = 300;
 
-export default function PosterEditor({ templateId, data, format, transforms, onChange, onClose }) {
+const PLAYER_HANDLE_R = 14; // handle circle radius px
+
+export default function PosterEditor({ templateId, data, format, transforms, onChange, playerLayers = [], onPlayerLayerChange, onClose }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const previewH = Math.round(h * (PREVIEW_W / w));
   const scale = PREVIEW_W / w;
 
   const outerRef = useRef(null);
   const innerRef = useRef(null);
-  const dragRef = useRef(null);
+  const dragRef = useRef(null); // { mode: 'block'|'player', ... }
 
   const [activeBlock, setActiveBlock] = useState(null);
+  const [activePlayer, setActivePlayer] = useState(null);
   const [blockRects, setBlockRects] = useState({});
   const [snapGuides, setSnapGuides] = useState({ x: false, y: false });
 
@@ -120,8 +123,10 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
     e.preventDefault();
     e.stopPropagation();
     setActiveBlock(blockId);
+    setActivePlayer(null);
     const t = transforms[blockId] || {};
     dragRef.current = {
+      mode: 'block',
       blockId,
       startX: e.clientX,
       startY: e.clientY,
@@ -130,17 +135,43 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
     };
   }, [transforms]);
 
+  const handlePlayerPointerDown = useCallback((e, uid) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActivePlayer(uid);
+    setActiveBlock(null);
+    const layer = playerLayers.find(p => p.uid === uid) || {};
+    dragRef.current = {
+      mode: 'player',
+      uid,
+      startX: e.clientX,
+      startY: e.clientY,
+      startLayerX: layer.x ?? 50,
+      startLayerYBottom: layer.yBottom ?? 0,
+    };
+  }, [playerLayers]);
+
   const handlePointerMove = useCallback((e) => {
     if (!dragRef.current) return;
-    const { blockId, startX, startY, startDx, startDy } = dragRef.current;
-    let newDx = startDx + (e.clientX - startX) / scale;
-    let newDy = startDy + (e.clientY - startY) / scale;
-    const guides = { x: false, y: false };
-    if (Math.abs(newDx) < SNAP_THRESHOLD) { newDx = 0; guides.x = true; }
-    if (Math.abs(newDy) < SNAP_THRESHOLD) { newDy = 0; guides.y = true; }
-    setSnapGuides(guides);
-    onChange(blockId, { ...(transforms[blockId] || {}), dx: newDx, dy: newDy });
-  }, [scale, transforms, onChange]);
+    const d = dragRef.current;
+
+    if (d.mode === 'block') {
+      let newDx = d.startDx + (e.clientX - d.startX) / scale;
+      let newDy = d.startDy + (e.clientY - d.startY) / scale;
+      const guides = { x: false, y: false };
+      if (Math.abs(newDx) < SNAP_THRESHOLD) { newDx = 0; guides.x = true; }
+      if (Math.abs(newDy) < SNAP_THRESHOLD) { newDy = 0; guides.y = true; }
+      setSnapGuides(guides);
+      onChange(d.blockId, { ...(transforms[d.blockId] || {}), dx: newDx, dy: newDy });
+    } else if (d.mode === 'player') {
+      const dxPx = e.clientX - d.startX;
+      const dyPx = e.clientY - d.startY;
+      const newX = Math.max(5, Math.min(95, d.startLayerX + (dxPx / PREVIEW_W) * 100));
+      // yBottom increases upward, so negative dyPx means moving up = increasing yBottom
+      const newYBottom = Math.max(-10, Math.min(60, d.startLayerYBottom - (dyPx / previewH) * 100));
+      onPlayerLayerChange?.(d.uid, { x: newX, yBottom: newYBottom });
+    }
+  }, [scale, transforms, onChange, previewH, onPlayerLayerChange]);
 
   const handlePointerUp = useCallback(() => {
     dragRef.current = null;
@@ -283,6 +314,38 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                 </div>
               );
             })}
+
+            {/* Player layer handles */}
+            {playerLayers.map((layer) => {
+              const isActive = activePlayer === layer.uid;
+              const handleX = ((layer.x ?? 50) / 100) * PREVIEW_W;
+              const handleY = previewH - ((layer.yBottom ?? 0) / 100) * previewH;
+              return (
+                <div
+                  key={layer.uid}
+                  onPointerDown={(e) => handlePlayerPointerDown(e, layer.uid)}
+                  title={layer.name}
+                  style={{
+                    position: 'absolute',
+                    left: handleX - PLAYER_HANDLE_R,
+                    top: handleY - PLAYER_HANDLE_R,
+                    width: PLAYER_HANDLE_R * 2,
+                    height: PLAYER_HANDLE_R * 2,
+                    borderRadius: '50%',
+                    border: `2px solid ${isActive ? '#f59e0b' : 'rgba(245,158,11,0.55)'}`,
+                    background: isActive ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.1)',
+                    cursor: 'move',
+                    pointerEvents: 'auto',
+                    boxSizing: 'border-box',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    touchAction: 'none',
+                    transition: 'border-color 0.12s, background 0.12s',
+                  }}
+                >
+                  <span style={{ fontSize: 10, pointerEvents: 'none', lineHeight: 1 }}>🧍</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -296,7 +359,53 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
         minHeight: 120,
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}>
-        {activeBlock ? (
+        {activePlayer && (() => {
+          const pl = playerLayers.find(p => p.uid === activePlayer);
+          if (!pl) return null;
+          return (
+            <div style={{ padding: '14px 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.06em' }}>
+                  🧍 {pl.name || 'Joueur'}
+                </span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[
+                    { key: 'flip',   label: pl.flip   ? '↔ Retourner' : '↔ Miroir' },
+                    { key: 'shadow', label: pl.shadow  ? '🌑 Ombre ✓'  : '🌑 Ombre' },
+                    { key: 'glow',   label: pl.glow    ? '✨ Glow ✓'   : '✨ Glow' },
+                  ].map(({ key, label }) => (
+                    <button key={key}
+                      onClick={() => onPlayerLayerChange?.(pl.uid, { [key]: !pl[key] })}
+                      style={{ fontSize: 9.5, padding: '5px 9px', borderRadius: 7, cursor: 'pointer', minHeight: 32, background: pl[key] ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.05)', border: `1px solid ${pl[key] ? '#f59e0b80' : 'rgba(255,255,255,0.12)'}`, color: pl[key] ? '#f59e0b' : 'rgba(255,255,255,0.55)' }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px,1fr))', gap: '8px 16px' }}>
+                {[
+                  { label: 'Taille', key: 'scale', min: 0.3, max: 2, step: 0.01, def: 1, fmt: v => `${Math.round(v * 100)}%` },
+                  { label: 'Opacité', key: 'opacity', min: 0, max: 1, step: 0.01, def: 1, fmt: v => `${Math.round(v * 100)}%` },
+                  { label: 'Position X', key: 'x', min: 5, max: 95, step: 0.5, def: 50, fmt: v => `${Math.round(v)}%` },
+                  { label: 'Hauteur', key: 'yBottom', min: -10, max: 60, step: 0.5, def: 0, fmt: v => `${Math.round(v)}%` },
+                ].map(({ label, key, min, max, step, def, fmt }) => (
+                  <div key={key}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.45)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</span>
+                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.75)', fontWeight: 700 }}>{fmt(pl[key] ?? def)}</span>
+                    </div>
+                    <input type="range" min={min} max={max} step={step}
+                      value={pl[key] ?? def}
+                      onChange={e => onPlayerLayerChange?.(pl.uid, { [key]: parseFloat(e.target.value) })}
+                      style={{ width: '100%', accentColor: '#f59e0b', cursor: 'pointer', touchAction: 'none' }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+        {!activePlayer && (activeBlock ? (
           <div style={{ padding: '14px 20px' }}>
             {/* Panel header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -433,7 +542,11 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                 <path d="M5 9l4-4 4 4"/><path d="M5 15l4 4 4-4"/>
                 <path d="M15 5l4 4-4 4"/><path d="M19 9H9"/>
               </svg>
-              <span style={{ fontSize: 12, lineHeight: 1.5 }}>Sélectionnez un bloc sur l'affiche pour le modifier</span>
+              <span style={{ fontSize: 12, lineHeight: 1.5 }}>
+                {playerLayers.length > 0
+                  ? 'Sélectionnez un bloc (texte) ou un joueur 🧍 sur l\'affiche'
+                  : 'Sélectionnez un bloc sur l\'affiche pour le modifier'}
+              </span>
             </div>
             <button
               onClick={onClose}
@@ -451,7 +564,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
               Fermer l'éditeur
             </button>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );

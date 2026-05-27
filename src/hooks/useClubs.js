@@ -47,6 +47,7 @@ export function useClubs() {
       .from('clubs')
       .select('*')
       .order('created_at', { ascending: false })
+      .limit(500)
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) { console.error('[Clubs] fetch failed:', error.message); }

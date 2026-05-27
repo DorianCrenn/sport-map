@@ -11,6 +11,28 @@
  *   FAL_API_KEY — from https://fal.ai/dashboard/keys
  */
 
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+async function checkRateLimit(
+  client: SupabaseClient,
+  userId: string,
+  endpoint: string,
+  maxRequests: number,
+  windowSeconds: number,
+): Promise<boolean> {
+  const key       = `${endpoint}:${userId}`;
+  const windowAgo = new Date(Date.now() - windowSeconds * 1000).toISOString();
+  const { count, error } = await client
+    .from('api_rate_limits')
+    .select('id', { count: 'exact', head: true })
+    .eq('key', key)
+    .gte('created_at', windowAgo);
+  if (error) return false;
+  if ((count ?? 0) >= maxRequests) return true;
+  await client.from('api_rate_limits').insert({ key, endpoint });
+  return false;
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -41,6 +63,28 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    // ── Auth + rate limiting ──────────────────────────────────────────────────
+    const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '');
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+
+    let userId = 'anonymous';
+    if (token) {
+      const anonClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_ANON_KEY') ?? '');
+      const { data: { user } } = await anonClient.auth.getUser(token);
+      if (user) userId = user.id;
+    }
+
+    // 10 generations per hour per user
+    const limited = await checkRateLimit(serviceClient, userId, 'generate-variant-bg', 10, 3600);
+    if (limited) {
+      return new Response(JSON.stringify({ error: 'Trop de générations. Réessayez dans une heure.' }), {
+        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { style, mood, sport, accentColor } = await req.json();
     const FAL_KEY = Deno.env.get('FAL_API_KEY');
 
@@ -69,10 +113,24 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      // ── AI-COST-001d: Monthly cost monitoring ─────────────────────────────
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      // @ts-ignore — Deno global available at runtime in Edge Functions
+      const FAL_MONTHLY_LIMIT = parseInt(Deno.env.get('FAL_MONTHLY_LIMIT') ?? '200', 10);
+      const { count: monthlyCount } = await serviceClient
+        .from('api_rate_limits')
+        .select('id', { count: 'exact', head: true })
+        .eq('endpoint', 'generate-variant-bg')
+        .gte('created_at', monthStart);
+      const usagePct = ((monthlyCount ?? 0) / FAL_MONTHLY_LIMIT) * 100;
+      if (usagePct >= 80) {
+        console.warn(`[AI-COST-001d] Fal.ai usage at ${Math.round(usagePct)}% of monthly limit (${monthlyCount}/${FAL_MONTHLY_LIMIT})`);
+      }
+
       const result = await response.json();
       const imageUrl = result.images?.[0]?.url ?? null;
       return new Response(
-        JSON.stringify({ imageUrl, prompt, provider: 'fal' }),
+        JSON.stringify({ imageUrl, prompt, provider: 'fal', monthlyUsage: monthlyCount ?? 0, monthlyLimit: FAL_MONTHLY_LIMIT }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }

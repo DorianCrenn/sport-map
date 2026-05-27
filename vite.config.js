@@ -48,6 +48,30 @@ export default defineConfig({
         main: './index.html',
         club: './club-page.html',
       },
+      output: {
+        manualChunks(id) {
+          // Leaflet + cluster → separate chunk (map lazy-loads only on MapPage)
+          if (id.includes('leaflet') || id.includes('react-leaflet')) {
+            return 'vendor-leaflet';
+          }
+          // Framer Motion → separate chunk (not needed on first paint)
+          if (id.includes('framer-motion')) {
+            return 'vendor-framer';
+          }
+          // Supabase client → separate chunk
+          if (id.includes('@supabase')) {
+            return 'vendor-supabase';
+          }
+          // React core (react, react-dom, react/jsx-runtime, scheduler)
+          if (id.includes('node_modules/react') || id.includes('node_modules/scheduler')) {
+            return 'vendor-react';
+          }
+          // Everything else in node_modules → shared vendor chunk
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
+      },
     },
   },
 })

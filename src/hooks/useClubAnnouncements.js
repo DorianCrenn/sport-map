@@ -3,18 +3,35 @@ import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { sanitizeText } from '../lib/sanitize.js';
 
+async function pushClubFollowers(clubId, title, body, url, tag) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+    const base = import.meta.env.VITE_SUPABASE_URL ?? '';
+    await fetch(`${base}/functions/v1/notify-club-followers`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ club_id: String(clubId), title, body, url, tag }),
+    });
+  } catch { /* best-effort, don't block UI */ }
+}
+
 function mapAnn(row) {
   return {
-    id:          row.id,
-    clubId:      row.club_id,
-    clubName:    row.club_name,
-    authorId:    row.author_id,
-    authorName:  row.author_name,
-    type:        row.type,
-    title:       row.title ?? '',
-    message:     row.message,
-    targetTeams: row.target_teams ?? [],
-    createdAt:   row.created_at,
+    id:           row.id,
+    clubId:       row.club_id,
+    clubName:     row.club_name,
+    authorId:     row.author_id,
+    authorName:   row.author_name,
+    type:         row.type,
+    title:        row.title ?? '',
+    message:      row.message,
+    targetTeams:  row.target_teams ?? [],
+    createdAt:    row.created_at,
+    scheduledFor: row.scheduled_for ?? null,
   };
 }
 
@@ -52,24 +69,33 @@ export function useClubAnnouncements(clubId) {
     return () => supabase.removeChannel(ch);
   }, [clubId, fetch]);
 
-  const sendAnnouncement = useCallback(async ({ type, title, message, targetTeams, clubName }) => {
+  const sendAnnouncement = useCallback(async ({ type, title, message, targetTeams, clubName, scheduledFor }) => {
     if (!currentUser || !clubId) throw new Error('not authenticated');
     const { data, error } = await supabase
       .from('club_announcements')
       .insert({
-        club_id:      String(clubId),
-        club_name:    sanitizeText(clubName ?? ''),
-        author_id:    currentUser.id,
-        author_name:  sanitizeText(currentUser.name ?? ''),
+        club_id:       String(clubId),
+        club_name:     sanitizeText(clubName ?? ''),
+        author_id:     currentUser.id,
+        author_name:   sanitizeText(currentUser.name ?? ''),
         type,
-        title:        title ? sanitizeText(title) : null,
-        message:      sanitizeText(message),
-        target_teams: targetTeams ?? [],
+        title:         title ? sanitizeText(title) : null,
+        message:       sanitizeText(message),
+        target_teams:  targetTeams ?? [],
+        scheduled_for: scheduledFor ?? null,
       })
       .select()
       .single();
     if (error) throw error;
-    return mapAnn(data);
+    const ann = mapAnn(data);
+    // Notify followers immediately for non-scheduled announcements (PUSH-PROD-001c)
+    if (!scheduledFor) {
+      const notifTitle = clubName
+        ? `${sanitizeText(clubName)} — ${sanitizeText(title ?? 'Nouvelle annonce')}`
+        : sanitizeText(title ?? 'Nouvelle annonce');
+      pushClubFollowers(clubId, notifTitle, sanitizeText(message).slice(0, 120), '/', `announcement-${ann.id}`);
+    }
+    return ann;
   }, [currentUser, clubId]);
 
   const deleteAnnouncement = useCallback(async (id) => {

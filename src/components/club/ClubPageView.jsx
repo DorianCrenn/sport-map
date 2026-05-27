@@ -813,13 +813,13 @@ function PendingResultsBanner({ count, isEditing }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canAddEvent: canAddEventProp, onUpdateClub }) {
+export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canAddEvent: canAddEventProp, onUpdateClub, onArchiveSeason }) {
   const { allSports: SPORTS } = useSports();
   const { isAdmin, isClubAdmin, currentUser, isLoggedIn, follows, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow } = useAuth();
   const { share } = useShare();
   const canAddEvent = canAddEventProp ?? (isAdmin || isClubAdmin);
   const isOwner = isAdmin || (isClubAdmin && currentUser?.clubId === club.id);
-  const { managers, addManager, removeManager, isManager } = useClubManagers(club.id);
+  const { managers, addManager, removeManager, updateManagerRole, isManager } = useClubManagers(club.id);
   const canEdit = isOwner || isManager(currentUser?.email);
   const [showFollowModal, setShowFollowModal] = useState(false);
   const isFollowing = isFollowingClub(club.id);
@@ -860,7 +860,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [showEditInfo, setShowEditInfo]     = useState(false);
 
   async function handleShareClub() {
-    const url = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
+    const url = `${window.location.origin}/clubs/${club.id}`;
     const result = await share({
       title: club.name,
       text: `${club.name} — ${club.city}`,
@@ -893,7 +893,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   }, [club.id]);
 
   // OpenGraph / document title via hook centralisé
-  const clubUrl = `${window.location.origin}${window.location.pathname}#club/${club.id}`;
+  const clubUrl = `${window.location.origin}/clubs/${club.id}`;
   const clubDesc = club.description || `${club.name} — club de ${club.sport}${club.city ? ` à ${club.city}` : ''}`;
   useDynamicMeta({
     title:       club.name,
@@ -1552,6 +1552,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           ownerName={currentUser?.name}
           onAdd={addManager}
           onRemove={removeManager}
+          onRoleChange={updateManagerRole}
           onClose={() => setShowManagersPanel(false)}
         />
       )}
@@ -1594,6 +1595,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             club={club}
             clubEventIds={clubEventIds}
             allEvents={allEvents}
+            onArchiveSeason={onArchiveSeason}
             onClose={() => setShowDashboard(false)}
           />
         )}

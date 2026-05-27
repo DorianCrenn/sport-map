@@ -10,6 +10,7 @@
  *   VAPID_PUBLIC_KEY  = <clé publique Base64URL>
  *   VAPID_PRIVATE_KEY = <clé privée Base64URL>
  *   SUPABASE_SERVICE_ROLE_KEY (injecté automatiquement)
+ *   SUPABASE_ANON_KEY         (injecté automatiquement)
  *   SUPABASE_URL              (injecté automatiquement)
  *
  * Générer les clés : npx web-push generate-vapid-keys
@@ -29,10 +30,46 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ── Authentication guard ──────────────────────────────────────────────────
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Verify the JWT and get the caller's identity (uses anon key, validates against auth server)
+    const anonClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    );
+    const { data: { user: caller }, error: authErr } = await anonClient.auth.getUser(token);
+    if (authErr || !caller) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { user_id, title, body, url = '/', tag = 'sportlink-push' } = await req.json();
     if (!user_id || !title) {
       return new Response(JSON.stringify({ error: 'user_id and title are required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ── Authorization: caller must be the recipient or a platform admin ───────
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+    const { data: profile } = await serviceClient
+      .from('profiles').select('role').eq('id', caller.id).single();
+    const isAdmin = profile?.role === 'admin';
+
+    if (caller.id !== user_id && !isAdmin) {
+      return new Response(JSON.stringify({ error: 'Forbidden: cannot push to another user' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -44,12 +81,7 @@ Deno.serve(async (req) => {
     );
 
     // Récupérer les souscriptions de cet utilisateur (service role pour bypass RLS)
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    );
-
-    const { data: subs, error } = await supabase
+    const { data: subs, error } = await serviceClient
       .from('push_subscriptions')
       .select('endpoint, p256dh, auth')
       .eq('user_id', user_id);

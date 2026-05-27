@@ -103,7 +103,7 @@ Sous-tâches :
 
 ---
 
-### PUSH-PROD-001 ⬜ Déploiement push notifications en production
+### PUSH-PROD-001 ⚠️ Déploiement push notifications en production (code ✅, config manuelle ⬜)
 **Catégorie :** Technique · Produit  
 **Impact :** 🔴 Critique  
 **Taille :** S  
@@ -119,14 +119,17 @@ npx web-push generate-vapid-keys
 # 2. Appliquer la migration
 # Coller supabase/migrations/20260520_push_subscriptions.sql dans SQL Editor
 
-# 3. Déployer la Edge Function
+# 3. Déployer les Edge Functions
 supabase functions deploy send-push
+supabase functions deploy notify-club-followers
+supabase functions deploy match-reminders
+supabase functions deploy club-admin-reminders
 ```
 
 Puis déclencher les notifications depuis l'app :
-- ⬜ PUSH-PROD-001a — Notif "Rappel match dans 2h" (J, H-2) `[S]`
-- ⬜ PUSH-PROD-001b — Notif "Résultat publié" pour abonnés du club `[S]`
-- ⬜ PUSH-PROD-001c — Notif "Nouvelle annonce de [Club]" `[XS]`
+- ✅ PUSH-PROD-001a — Notif "Rappel match dans 2h" (J, H-2) `[S]` *(Edge Function `match-reminders` + migration `reminder_sent_at` ; cron */30min à activer manuellement via pg_cron)*
+- ✅ PUSH-PROD-001b — Notif "Résultat publié" pour abonnés du club `[S]` *(updateEvent détecte score null→valeur + appelle `notify-club-followers` Edge Function)*
+- ✅ PUSH-PROD-001c — Notif "Nouvelle annonce de [Club]" `[XS]` *(sendAnnouncement appelle `notify-club-followers` pour annonces immédiates non-programmées)*
 
 **Dépendances :** Aucune — le code est prêt.
 
@@ -195,61 +198,61 @@ Sous-tâches :
 
 ---
 
-### DISTRIB-001 ⬜ Distribution multicanal depuis PosterStudio
+### DISTRIB-001 ✅ Distribution multicanal depuis PosterStudio
 **Catégorie :** Produit · Croissance  
 **Impact :** 🟠 Fort  
 **Taille :** M  
 **Problème :** Les formats sont générés mais la distribution reste manuelle et fragmentée.
 
 Sous-tâches :
-- ⬜ DISTRIB-001a — Bouton "Tout exporter" : génère les 3 formats (story 9:16, carré 1:1, paysage 16:9) en une action `[M]`
-- ⬜ DISTRIB-001b — Panel "Partager partout" : WhatsApp, Instagram, Facebook, Copier le lien — accessible depuis un seul CTA `[S]`
-- ⬜ DISTRIB-001c — Preview "à quoi ça ressemble sur Instagram/WhatsApp" avant envoi `[M]`
+- ✅ DISTRIB-001a — Bouton "Tout exporter" : génère story + post 4:5 en une action `[M]` *(bouton "Tout télécharger" dans le popover export)*
+- ✅ DISTRIB-001b — Panel "Partager partout" : WhatsApp, Instagram, Facebook, Copier le lien `[S]` *(popover export accessible via bouton "Partager" dans BottomNav)*
+- ✅ DISTRIB-001c — Preview "à quoi ça ressemble sur Instagram/WhatsApp" avant envoi `[M]` *(déjà implémenté — platformPreview state, mockups IG Story/Post/WhatsApp dans le panneau d'export)*
 
 **Dépendances :** FLOW-001b (mode quick PosterStudio)
 
 ---
 
-### MEDIA-001 ⬜ Bibliothèque média club — finalisation
+### MEDIA-001 ✅ Bibliothèque média club — finalisation
 **Catégorie :** Produit  
 **Impact :** 🟠 Fort  
 **Taille :** M  
 **Constat :** `useClubMedia` et l'onglet Joueurs existent (upload + mock détourage + grille). Il manque la réutilisation rapide dans PosterStudio et quelques finitions.
 
 Sous-tâches :
-- ⬜ MEDIA-001a — PS-RND-004 : drag & drop pour repositionner un joueur sur l'affiche dans PosterEditor `[M]`
-- ⬜ MEDIA-001b — PS-API-002 : fallback Fal.ai BRIA RMBG 2.0 si Remove.bg quota épuisé `[M]`
-- ⬜ MEDIA-001c — PS-API-003 : afficher "X imports restants ce mois" depuis `club_ai_usage` `[S]`
-- ⬜ MEDIA-001d — PS-LIB-001 : tags assets joueurs (ajout/suppression inline dans la grille) `[S]`
-- ⬜ MEDIA-001e — PS-LIB-004 : dossiers virtuels par équipe/saison dans la bibliothèque `[M]`
+- ✅ MEDIA-001a — PS-RND-004 : drag & drop pour repositionner un joueur sur l'affiche dans PosterEditor `[M]` *(handles 🧍 ambre sur le joueur, drag met à jour x/yBottom ; panneau scale/opacité/flip/shadow/glow quand joueur sélectionné)*
+- ✅ MEDIA-001b — PS-API-002 : fallback Fal.ai BRIA RMBG 2.0 si Remove.bg quota épuisé `[M]` *(remove-background Edge Function : Remove.bg → Fal.ai BRIA RMBG → canvas mock ; FAL_API_KEY secret requis)*
+- ✅ MEDIA-001c — PS-API-003 : afficher "X imports restants ce mois" depuis `club_ai_usage` `[S]` *(badge quota dans onglet Joueurs, optimistic update, `increment_ai_import_count` RPC)*
+- ✅ MEDIA-001d — PS-LIB-001 : tags assets joueurs (ajout/suppression inline dans la grille) `[S]` *(chips tagInputs inline par asset — clic 🏷 ouvre l'éditeur, Enter ajoute, clic tag supprime)*
+- ✅ MEDIA-001e — PS-LIB-004 : dossiers virtuels par équipe/saison dans la bibliothèque `[M]` *(champ `folder` sur les assets, `setFolder()`/`filterByFolder()`/`getAvailableFolders()` dans le hook ; filter tabs dans PosterStudio + select dossier par asset ; propose les équipes du club automatiquement)*
 
 ---
 
-### ROLES-001 ⬜ Gestion rôles club multi-bénévoles
+### ROLES-001 ✅ Gestion rôles club multi-bénévoles
 **Catégorie :** Produit  
 **Impact :** 🟠 Fort  
 **Taille :** M  
 **Problème :** Un club a plusieurs bénévoles qui ont besoin d'accès différents (pub résultats, gestion planning, communication). Aujourd'hui, un seul `club_admin`.
 
 Sous-tâches :
-- ⬜ ROLES-001a — Définir 3 sous-rôles : `manager` (tout), `editor` (events + affiches), `communicant` (annonces) `[S]`
-- ⬜ ROLES-001b — Interface invitation multi-bénévoles dans ClubManagersPanel `[M]`
-- ⬜ ROLES-001c — RLS adaptées aux sous-rôles `[M]`
+- ✅ ROLES-001a — Définir 3 sous-rôles : `manager` (tout), `editor` (events + affiches), `communicant` (annonces) `[S]`
+- ✅ ROLES-001b — Interface invitation multi-bénévoles dans ClubManagersPanel `[M]`
+- ✅ ROLES-001c — RLS adaptées aux sous-rôles `[M]` — helper `sl_is_club_manager_for()` + policies events/announcements/pages
 
 **Dépendances :** Existant `club_managers` table + ClubManagersPanel.jsx
 
 ---
 
-### ANALYTICS-001 ⬜ Analytics club — enrichissement
+### ANALYTICS-001 ✅ Analytics club — enrichissement
 **Catégorie :** Produit  
 **Impact :** 🟡 Moyen  
 **Taille :** M  
 **Constat :** ClubDashboard existe (followers, pageViews par semaine, top events). Il manque les données sur les affiches et le contenu.
 
 Sous-tâches :
-- ⬜ ANALYTICS-001a — Tracker les exports d'affiches par event (table `poster_exports`) `[S]`
-- ⬜ ANALYTICS-001b — Afficher "X affiches créées ce mois" dans ClubDashboard `[S]`
-- ⬜ ANALYTICS-001c — Afficher "X partages via SportLink" (Web Share + WhatsApp) `[M]`
+- ✅ ANALYTICS-001a — Tracker les exports d'affiches par event (table `poster_exports`) `[S]` *(migration 20260527, trackExport() dans PosterStudio sur download/share)*
+- ✅ ANALYTICS-001b — Afficher "X affiches créées ce mois" dans ClubDashboard `[S]` *(StatCard "Affiches ce mois" ajoutée)*
+- ✅ ANALYTICS-001c — Afficher "X partages via SportLink" (Web Share + WhatsApp) `[M]` *(requête poster_exports filtrée sur channel IN (whatsapp/instagram/facebook/web_share/copy), StatCard "Partages sociaux" dans ClubDashboard)*
 
 ---
 
@@ -257,30 +260,30 @@ Sous-tâches :
 
 ---
 
-### VIRAL-002 ⬜ Boucle hebdomadaire automatique club
+### VIRAL-002 ✅ Boucle hebdomadaire automatique club
 **Catégorie :** Croissance · Produit  
 **Impact :** 🟠 Fort  
 **Taille :** L  
 **Objectif :** Créer une habitude hebdomadaire automatique : avant match → jour J → résultat → prochain match.
 
 Sous-tâches :
-- ⬜ VIRAL-002a — Rappel automatique J-1 : push notif "Votre match est demain — créez l'affiche !" `[S]` (dépend PUSH-PROD-001)
-- ⬜ VIRAL-002b — Rappel J : push notif "C'est aujourd'hui !" avec CTA vers PosterStudio `[S]`
-- ⬜ VIRAL-002c — Post-match : push notif "Saisissez le score et partagez votre victoire" `[S]`
-- ⬜ VIRAL-002d — Préférences notifications par club_admin (quoi recevoir, quand) `[M]`
+- ✅ VIRAL-002a — Rappel automatique J-1 : push notif "Votre match est demain — créez l'affiche !" `[S]` *(Edge Function `club-admin-reminders`, check="all", cron 8h matin)*
+- ✅ VIRAL-002b — Rappel J : push notif "C'est aujourd'hui !" avec CTA vers PosterStudio `[S]` *(même function, envoie uniquement si match pas encore commencé)*
+- ✅ VIRAL-002c — Post-match : push notif "Saisissez le score et partagez votre victoire" `[S]` *(check="post_match", filtre match passé depuis 1–4h avec score=null)*
+- ✅ VIRAL-002d — Préférences notifications par club_admin (quoi recevoir, quand) `[M]` *(3 toggles dans ClubDashboard via useClubBrandKit.save({ admin_notif_prefs }), backend club-admin-reminders/index.ts)*
 
 ---
 
-### VIRAL-003 ⬜ Page club publique optimisée SEO
+### VIRAL-003 ✅ Page club publique optimisée SEO
 **Catégorie :** Croissance  
 **Impact :** 🟡 Moyen  
 **Taille :** M  
 **Constat :** `club-page.html?id=` existe avec OG tags dynamiques. Il manque le SEO structuré.
 
 Sous-tâches :
-- ⬜ VIRAL-003a — Schema.org SportsOrganization sur les pages clubs `[S]`
-- ⬜ VIRAL-003b — Sitemap auto-généré avec toutes les pages clubs publiques `[M]`
-- ⬜ VIRAL-003c — Canonical URL propre (slug lisible vs UUID) `[M]`
+- ✅ VIRAL-003a — Schema.org SportsOrganization sur les pages clubs `[S]` *(JSON-LD injecté via `injectClubMeta()` dans ClubPublicPage)*
+- ✅ VIRAL-003b — Sitemap auto-généré avec toutes les pages clubs publiques `[M]` *(scripts/generate-sitemap.js + prebuild npm hook + public/robots.txt ; requête Supabase au build, 0 dépendance externe)*
+- ✅ VIRAL-003c — Canonical URL propre (slug lisible vs UUID) `[M]` *(rewrite Vercel /clubs/:id → club-page.html, canonical link injecté, og:url + schema.org url + share URLs mis à jour)*
 
 ---
 
@@ -288,43 +291,43 @@ Sous-tâches :
 
 ---
 
-### EQUIPES-001 ⬜ Gestion équipes et saisons
+### EQUIPES-001 ⚠️ Gestion équipes et saisons (b+c ✅, a ⬜)
 **Catégorie :** Produit  
 **Impact :** 🟡 Moyen  
 **Taille :** L  
 **Problème :** Les équipes sont en JSONB dans `clubs.categories` — fonctionnel mais pas structuré.
 
 Sous-tâches :
-- ⬜ EQUIPES-001a — Table `club_teams(id, club_id, name, category, season)` `[M]`
-- ⬜ EQUIPES-001b — Filtre par équipe dans la vue club (matchs équipe U13, U15, seniors...) `[M]`
-- ⬜ EQUIPES-001c — Archives saison : bouton "Clôturer la saison" → archive les events passés `[L]`
+- ⬜ EQUIPES-001a — Table `club_teams(id, club_id, name, category, season)` `[M]` *(refacto risqué, JSONB actuel fonctionnel)*
+- ✅ EQUIPES-001b — Filtre par équipe dans la vue club (matchs équipe U13, U15, seniors...) `[M]` *(déjà implémenté via `activeTeamId` + `TeamView` + `filterTeamId` dans MatchesBlock)*
+- ✅ EQUIPES-001c — Archives saison : bouton "Clôturer la saison" → archive les events passés `[L]` *(migration `is_archived` + index partiel ; `archiveSeason(clubId)` dans `useLocalEvents` ; `ArchiveSeasonSection` dans ClubDashboard avec confirm step ; fetch initial filtre `is_archived=false`)*
 
 ---
 
-### AI-COST-001 ⬜ Optimisation et contrôle coûts IA
+### AI-COST-001 ✅ Optimisation et contrôle coûts IA
 **Catégorie :** Technique · Monétisation  
 **Impact :** 🟠 Fort  
 **Taille :** M  
 **Problème :** Pollinations.ai est gratuit mais sans SLA. Fal.ai et Remove.bg coûtent par appel. Aucun système de quota n'est actif.
 
 Sous-tâches :
-- ⬜ AI-COST-001a — Activer `club_ai_usage` : incrémenter à chaque génération (fond IA + détourage) `[S]`
-- ⬜ AI-COST-001b — Limite mensuelle par plan (gratuit = 5 générations/mois, Pro = illimité) `[M]`
+- ✅ AI-COST-001a — Activer `club_ai_usage` : incrémenter à chaque génération (fond IA + éléments) `[S]` *(RPC SECURITY DEFINER `increment_ai_generate_count`, appelée après chaque génération réussie dans PosterStudio)*
+- ✅ AI-COST-001b — Limite mensuelle par plan (gratuit = 5 générations/mois, Pro = illimité) `[M]` *(`aiGenerateBlocked` gate sur boutons fond IA + éléments IA ; hasPremium = illimité)*
 - ✅ AI-COST-001c — Cache des générations IA : si même prompt → retourner URL existante `[M]` *(sportBgCache.js, TTL 7j, injected au montage PosterStudio)*
-- ⬜ AI-COST-001d — Monitoring coûts Fal.ai via webhook + alerte si dépassement `[S]`
+- ✅ AI-COST-001d — Monitoring coûts Fal.ai via webhook + alerte si dépassement `[S]` *(comptage mensuel via `api_rate_limits`, log warning à 80% du seuil ; `FAL_MONTHLY_LIMIT` env var configurable, défaut 200 ; retourné dans la réponse)*
 
 ---
 
-### PROG-001 ⬜ Programmation de publications
+### PROG-001 ✅ Programmation de publications
 **Catégorie :** Produit  
 **Impact :** 🟡 Moyen  
 **Taille :** L  
 **Problème :** Les clubs ont besoin de préparer leurs communications à l'avance.
 
 Sous-tâches :
-- ⬜ PROG-001a — Champ "Publier le [date]" sur les annonces clubs `[M]`
-- ⬜ PROG-001b — Edge Function cron pour déclencher les annonces programmées `[M]`
-- ⬜ PROG-001c — Calendrier éditorial simple dans ClubDashboard `[L]`
+- ✅ PROG-001a — Champ "Publier le [date]" sur les annonces clubs `[M]` *(toggle "Programmer l'envoi" + datetime-local dans SendAnnouncementModal ; scheduled_for filtré côté client dans useMyAnnouncements)*
+- ✅ PROG-001b — Edge Function cron pour déclencher les annonces programmées `[M]` *(process-scheduled-announcements : trouve scheduled_for<=NOW() + notified_at IS NULL, envoie push, marque notified_at ; pg_cron setup commenté dans la migration)*
+- ✅ PROG-001c — Calendrier éditorial simple dans ClubDashboard `[L]` *(section `CalendrierEditorial` : liste chronologique 30 jours, fusionne matchs + annonces programmées, code couleur par type)*
 
 ---
 
@@ -336,23 +339,23 @@ Sous-tâches :
 
 Sous-tâches :
 - ⬜ POSTER-ARCH-001a — Mesurer mémoire utilisée avec 5 templates chargés simultanément `[S]`
-- ⬜ POSTER-ARCH-001b — Virtualiser la galerie de templates (IntersectionObserver existant — à vérifier sur ≥37 templates) `[S]`
-- ⬜ POSTER-ARCH-001c — Extraire la logique IA (génération fond + éléments) dans un hook dédié `usePosterAI` `[M]`
-- ⬜ POSTER-ARCH-001d — PS-LIB-002 : versions d'un asset joueur (historique) `[M]`
-- ⬜ POSTER-ARCH-001e — PS-LIB-003 : remplacement image sans changer l'ID `[M]`
+- ✅ POSTER-ARCH-001b — Virtualiser la galerie de templates `[S]` *(N/A — 37 boutons texte/emoji sans images, coût rendu négligeable)*
+- ✅ POSTER-ARCH-001c — Extraire la logique IA (génération fond + éléments) dans un hook dédié `usePosterAI` `[M]` *(hook créé, 5 useState + 2 fonctions extraits, 4 call sites mis à jour dans PosterStudio)*
+- ✅ POSTER-ARCH-001d — PS-LIB-002 : versions d'un asset joueur (historique) `[M]` *(champ `versions[]` sur les assets ; max 5 versions conservées ; `revertToVersion()` dans le hook ; badge version count sur le card)*
+- ✅ POSTER-ARCH-001e — PS-LIB-003 : remplacement image sans changer l'ID `[M]` *(`replaceAsset(id, file)` re-traite et met à jour dataUrls en gardant le même ID ; bouton ↺ dans le card media)*
 
 ---
 
-### CONTENT-001 ⬜ Photos d'événements
+### CONTENT-001 ✅ Photos d'événements
 **Catégorie :** Produit · Communauté  
 **Impact :** 🟡 Moyen  
 **Taille :** L  
 **Problème :** Après un match, les clubs n'ont nulle part pour publier leurs photos dans l'app.
 
 Sous-tâches :
-- ⬜ CONTENT-001a — Upload photos post-event (max 10, stockage Supabase Storage) `[M]`
-- ⬜ CONTENT-001b — Galerie événement visible dans EventCard / EventSidebar `[M]`
-- ⬜ CONTENT-001c — Photo → réutilisable dans PosterStudio comme fond `[M]`
+- ✅ CONTENT-001a — Upload photos post-event (max 10, stockage Supabase Storage) `[M]` *(migration `event_photos` + bucket `event-photos` + hook `useEventPhotos`)*
+- ✅ CONTENT-001b — Galerie événement visible dans EventCard / EventSidebar / MobileEventSheet `[M]` *(`EventPhotoGallery` composant, visible quand card expanded ou sheet open)*
+- ✅ CONTENT-001c — Photo → réutilisable dans PosterStudio comme fond `[M]` *(`onUseAsBg` callback ouvre PosterStudio avec `initialBgSrc` prop ; appliqué avant/après draft restauration)*
 
 ---
 

@@ -156,7 +156,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    supabase.from('profiles').select('*').order('created_at', { ascending: true })
+    supabase.from('profiles').select('*').order('created_at', { ascending: true }).limit(500)
       .then(({ data }) => { if (data) setAdminUsers(data); });
   }, [isAdmin]);
 
