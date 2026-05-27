@@ -15,9 +15,9 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
-import type { FeedItem, FeedFilter, SponsorFeedItem } from './feed.types';
-import { MatchCard, CarpoolCard, FlashCard, SponsorCard } from './feed.cards';
-import { MOCK_FEED_ITEMS, MOCK_SPONSORS } from './feed.mock';
+import type { FeedItem, FeedFilter, SponsorFeedItem, FeaturedFeedItem } from './feed.types';
+import { MatchCard, CarpoolCard, FlashCard, SponsorCard, FeaturedCard } from './feed.cards';
+import { MOCK_FEED_ITEMS, MOCK_SPONSORS, MOCK_FEATURED } from './feed.mock';
 
 // ════════════════════════════════════════════════════════════════════════════
 // Props
@@ -29,9 +29,14 @@ interface ClubFeedProps {
   /** Données réelles (Supabase). Prioritaire sur mockItems si fourni. */
   items?: FeedItem[];
   loading?: boolean;
+  /** Événements "À la Une" promus — injectés en tête de feed. */
+  featuredItems?: FeaturedFeedItem[];
   /** Données mock — utilisées uniquement si items n'est pas fourni. */
   mockItems?: FeedItem[];
   mockSponsors?: SponsorFeedItem[];
+  mockFeatured?: FeaturedFeedItem[];
+  /** Appelé quand l'utilisateur clique "Voir l'événement" sur une FeaturedCard */
+  onNavigateEvent?: (eventId: string) => void;
   /** Callbacks métier */
   onAttend?: (eventId: string, attending: boolean) => Promise<void>;
   onBookRide?: (rideId: string) => void;
@@ -54,9 +59,43 @@ function injectSponsors(
   items.forEach((item, i) => {
     out.push(item);
     if ((i + 1) % interval === 0) {
-      // id unique pour éviter les collisions de clé React
       out.push({ ...sponsors[sIdx % sponsors.length], id: `__spo_${i}` });
       sIdx++;
+    }
+  });
+  return out;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Injection événements "À la Une"
+// ════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Insère les FeaturedFeedItem dans le feed :
+ *   - 1er item featured → position 0 (tout en haut)
+ *   - items suivants → toutes les FEATURED_INTERVAL cartes
+ * Les featured ignorent le filtre actif (toujours visibles).
+ */
+const FEATURED_INTERVAL = 6;
+
+function injectFeatured(
+  items: FeedItem[],
+  featured: FeaturedFeedItem[],
+): FeedItem[] {
+  if (!featured.length) return items;
+  const out: FeedItem[] = [];
+  let fIdx = 0;
+
+  // Premier featured en tête
+  out.push({ ...featured[fIdx], id: `__feat_0` });
+  fIdx++;
+
+  items.forEach((item, i) => {
+    out.push(item);
+    // Injecter les suivants toutes les FEATURED_INTERVAL positions
+    if (fIdx < featured.length && (i + 1) % FEATURED_INTERVAL === 0) {
+      out.push({ ...featured[fIdx], id: `__feat_${i}` });
+      fIdx++;
     }
   });
   return out;
@@ -143,8 +182,11 @@ export default function ClubFeed({
   clubName,
   items: realItems,
   loading: externalLoading,
-  mockItems = MOCK_FEED_ITEMS,
+  featuredItems: realFeatured,
+  mockItems    = MOCK_FEED_ITEMS,
   mockSponsors = MOCK_SPONSORS,
+  mockFeatured = MOCK_FEATURED,
+  onNavigateEvent,
   onAttend,
   onBookRide,
   onShareEvent,
@@ -152,16 +194,24 @@ export default function ClubFeed({
   const [filter, setFilter] = useState<FeedFilter>('all');
 
   // Priorité : données réelles → mock
-  const sourceItems = realItems ?? mockItems;
-  const loading = externalLoading ?? false;
+  const sourceItems    = realItems    ?? mockItems;
+  const sourceFeatured = realFeatured ?? mockFeatured;
+  const loading        = externalLoading ?? false;
 
-  // Filtre les items (les sponsors sont exclus du filtre — injectés séparément)
-  const filteredWithSponsors = useMemo<FeedItem[]>(() => {
+  // Filtre + injection sponsors + injection featured
+  const feedItems = useMemo<FeedItem[]>(() => {
+    // 1. Filtrer les items de contenu (sponsor + featured exclus du filtre)
     const base = filter === 'all'
-      ? sourceItems.filter(i => i.type !== 'sponsor')
+      ? sourceItems.filter(i => i.type !== 'sponsor' && i.type !== 'featured')
       : sourceItems.filter(i => i.type === filter);
-    return injectSponsors(base, mockSponsors);
-  }, [sourceItems, mockSponsors, filter]);
+
+    // 2. Injecter les sponsors (interval réduit en mode mock pour la démo)
+    const interval = realItems ? 5 : 3;
+    const withSponsors = injectSponsors(base, mockSponsors, interval);
+
+    // 3. Injecter les featured en tête + toutes les FEATURED_INTERVAL positions
+    return injectFeatured(withSponsors, sourceFeatured);
+  }, [sourceItems, mockSponsors, sourceFeatured, filter, realItems]);
 
   // Callbacks stables
   const handleAttend = useCallback(async (eventId: string, attending: boolean) => {
@@ -245,13 +295,16 @@ export default function ClubFeed({
           )}
 
           {/* ── État vide ── */}
-          {!loading && filteredWithSponsors.length === 0 && (
+          {!loading && feedItems.length === 0 && (
             <EmptyState filter={filter} />
           )}
 
           {/* ── Cartes du feed ── */}
-          {!loading && filteredWithSponsors.map(item => (
+          {!loading && feedItems.map(item => (
             <div key={item.id} role="listitem">
+              {item.type === 'featured' && (
+                <FeaturedCard item={item} onNavigate={onNavigateEvent} />
+              )}
               {item.type === 'match' && (
                 <MatchCard item={item} onAttend={handleAttend} onShare={handleShare} />
               )}
@@ -268,7 +321,7 @@ export default function ClubFeed({
           ))}
 
           {/* ── Marqueur de fin de feed ── */}
-          {!loading && filteredWithSponsors.length > 0 && <FeedEndMarker />}
+          {!loading && feedItems.length > 0 && <FeedEndMarker />}
         </div>
       </main>
     </div>

@@ -67,9 +67,77 @@ export interface SponsorFeedItem extends BaseFeedItem {
   cta_url?: string;
 }
 
+// ── Plan d'abonnement "À la Une" ──────────────────────────────────────────────
+export type FeaturedPlan = 'starter' | 'pro' | 'elite';
+
+/** Config visuelle + limites métier par plan */
+export const PLAN_CONFIG: Record<FeaturedPlan, {
+  label: string;
+  /** Nb max d'événements mis en avant simultanément par ce club */
+  maxFeatured: number;
+  /** Durée max d'une mise en avant en jours */
+  durationDays: number;
+  /** Couleur d'accent (badge, bouton, glow) */
+  accent: string;
+  /** Fond semi-transparent de la carte */
+  bg: string;
+  /** Couleur de bordure */
+  border: string;
+  /** Halo CSS */
+  glow: string;
+}> = {
+  starter: {
+    label:        'Starter',
+    maxFeatured:  1,
+    durationDays: 7,
+    accent:       '#94a3b8',
+    bg:           'rgba(148,163,184,0.06)',
+    border:       'rgba(148,163,184,0.2)',
+    glow:         'rgba(148,163,184,0.08)',
+  },
+  pro: {
+    label:        'Club Pro',
+    maxFeatured:  3,
+    durationDays: 30,
+    accent:       '#f59e0b',
+    bg:           'rgba(245,158,11,0.07)',
+    border:       'rgba(245,158,11,0.3)',
+    glow:         'rgba(245,158,11,0.12)',
+  },
+  elite: {
+    label:        'Élite',
+    maxFeatured:  5,
+    durationDays: 60,
+    accent:       '#a855f7',
+    bg:           'rgba(168,85,247,0.08)',
+    border:       'rgba(168,85,247,0.35)',
+    glow:         'rgba(168,85,247,0.18)',
+  },
+};
+
+// ── Événement "À la Une" ──────────────────────────────────────────────────────
+// Source : table featured_events (JOIN events + clubs)
+export interface FeaturedFeedItem extends BaseFeedItem {
+  type:        'featured';
+  featured_id: string;
+  event_id:    string;
+  club_name:   string;
+  plan:        FeaturedPlan;
+  title:       string;
+  date:        string;         // YYYY-MM-DD
+  time:        string;         // HH:MM
+  sport:       string;
+  venue?:      string;
+  city?:       string;
+  poster_url?: string;
+  home_team?:  string;
+  away_team?:  string;
+}
+
 // ── Union discriminante ───────────────────────────────────────────────────────
 export type FeedItem =
   | MatchFeedItem
   | CarpoolFeedItem
   | FlashFeedItem
-  | SponsorFeedItem;
+  | SponsorFeedItem
+  | FeaturedFeedItem;
