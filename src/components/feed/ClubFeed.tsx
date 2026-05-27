@@ -26,7 +26,10 @@ import { MOCK_FEED_ITEMS, MOCK_SPONSORS } from './feed.mock';
 interface ClubFeedProps {
   clubId: string;
   clubName: string;
-  /** Données mock — remplace le fetch Supabase. Défaut : MOCK_FEED_ITEMS. */
+  /** Données réelles (Supabase). Prioritaire sur mockItems si fourni. */
+  items?: FeedItem[];
+  loading?: boolean;
+  /** Données mock — utilisées uniquement si items n'est pas fourni. */
   mockItems?: FeedItem[];
   mockSponsors?: SponsorFeedItem[];
   /** Callbacks métier */
@@ -138,6 +141,8 @@ function FeedEndMarker() {
 export default function ClubFeed({
   clubId: _clubId,
   clubName,
+  items: realItems,
+  loading: externalLoading,
   mockItems = MOCK_FEED_ITEMS,
   mockSponsors = MOCK_SPONSORS,
   onAttend,
@@ -146,17 +151,17 @@ export default function ClubFeed({
 }: ClubFeedProps) {
   const [filter, setFilter] = useState<FeedFilter>('all');
 
-  // TODO(production) : remplacer par un hook Supabase
-  // const { items, loading } = useFeedItems(clubId);
-  const loading = false;
+  // Priorité : données réelles → mock
+  const sourceItems = realItems ?? mockItems;
+  const loading = externalLoading ?? false;
 
   // Filtre les items (les sponsors sont exclus du filtre — injectés séparément)
   const filteredWithSponsors = useMemo<FeedItem[]>(() => {
     const base = filter === 'all'
-      ? mockItems.filter(i => i.type !== 'sponsor')
-      : mockItems.filter(i => i.type === filter);
+      ? sourceItems.filter(i => i.type !== 'sponsor')
+      : sourceItems.filter(i => i.type === filter);
     return injectSponsors(base, mockSponsors);
-  }, [mockItems, mockSponsors, filter]);
+  }, [sourceItems, mockSponsors, filter]);
 
   // Callbacks stables
   const handleAttend = useCallback(async (eventId: string, attending: boolean) => {

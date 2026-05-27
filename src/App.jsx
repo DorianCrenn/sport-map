@@ -19,10 +19,9 @@ import Header from './components/Header.jsx';
 import ReminderBanner from './components/ReminderBanner.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import ClubPageView from './components/club/ClubPageView.jsx';
-import HomePage from './pages/HomePage.jsx';
+import HomeScreen from './pages/HomeScreen.tsx';
 import MapPage from './pages/MapPage.jsx';
 import FavorisPage from './pages/FavorisPage.jsx';
-import NewsPage from './pages/NewsPage.jsx';
 import ClubsPage from './pages/ClubsPage.jsx';
 import ProfilPage from './pages/ProfilPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
@@ -42,7 +41,11 @@ import { useAttendeeCountActions } from './contexts/AttendeeCountContext.jsx';
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs } = useAuth();
-  const [activeTab, _setActiveTab] = useState(() => sessionStorage.getItem('sl-tab') || 'home');
+  const [activeTab, _setActiveTab] = useState(() => {
+    const stored = sessionStorage.getItem('sl-tab') || 'home';
+    // 'news' was a dead tab — redirect to 'home' which now shows the feed
+    return stored === 'news' ? 'home' : stored;
+  });
   const setActiveTab = useCallback((tab) => {
     sessionStorage.setItem('sl-tab', tab);
     _setActiveTab(tab);
@@ -283,7 +286,13 @@ function AppInner() {
           >
             {activeTab === 'home' && (
               <ErrorBoundary name="Accueil">
-                <HomePage onNavigate={setActiveTab} stats={homeStats} clubs={allClubs} allEvents={allEvents} />
+                <HomeScreen
+                  followedClubIds={followedClubs}
+                  onNavigate={setActiveTab}
+                  stats={homeStats}
+                  clubs={allClubs}
+                  allEvents={allEvents}
+                />
               </ErrorBoundary>
             )}
             {activeTab === 'map' && (
@@ -311,8 +320,7 @@ function AppInner() {
                 <FavorisPage allEvents={allEvents} allClubs={allClubs} />
               </ErrorBoundary>
             )}
-            {activeTab === 'news' && <ErrorBoundary name="Actualités"><NewsPage followedClubIds={followedClubs} /></ErrorBoundary>}
-            {activeTab === 'clubs' && (
+{activeTab === 'clubs' && (
               <ErrorBoundary name="Clubs">
                 <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} onClubOverlayChange={setClubOverlayOpen} onArchiveSeason={archiveSeason} />
               </ErrorBoundary>

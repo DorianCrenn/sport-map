@@ -2,9 +2,19 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
-const HOME = {
+const HOME_VISITOR = {
   id: 'home', label: 'Accueil',
   icon: (a) => <svg width="22" height="22" viewBox="0 0 24 24" fill={a ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+};
+const HOME_FEED = {
+  id: 'home', label: 'Actus',
+  icon: (a) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2z"/>
+      <path d="M18 14h-8"/><path d="M15 18h-5"/>
+      <path fill={a ? 'currentColor' : 'none'} d="M10 6h8v4h-8z"/>
+    </svg>
+  ),
 };
 const MAP = {
   id: 'map', label: 'Carte',
@@ -23,8 +33,9 @@ const PROFIL = {
   icon: (a) => <svg width="22" height="22" viewBox="0 0 24 24" fill={a ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
 };
 export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV, overlayOpen = false }) {
-  const { isAdmin, isClubAdmin } = useAuth();
+  const { isAdmin, isClubAdmin, currentUser } = useAuth();
   const canFab = isAdmin || isClubAdmin;
+  const HOME = currentUser ? HOME_FEED : HOME_VISITOR;
   const [fabOpen, setFabOpen] = useState(false);
 
   useEffect(() => { if (overlayOpen) setFabOpen(false); }, [overlayOpen]);
