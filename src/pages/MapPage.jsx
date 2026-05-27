@@ -12,6 +12,7 @@ import EventFormModal from '../components/EventFormModal.jsx';
 import MobileEventSheet from '../components/MobileEventSheet.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import { useSports } from '../hooks/useSports.js';
+import EmptyMapGuide from '../components/EmptyMapGuide.jsx';
 
 export default function MapPage({
   allEvents, activeDepartment, canAddEvent,
@@ -73,6 +74,19 @@ export default function MapPage({
       setFlyTarget({ coords: userCoords, zoom: 12 });
     }
   }, [userCoords, geoHookError]);
+
+  // On first load, fly to city saved during onboarding if no geo yet
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const saved = localStorage.getItem(`sl_city_${currentUser.id}`);
+    if (!saved) return;
+    try {
+      const city = JSON.parse(saved);
+      if (city?.lat && city?.lng) {
+        setFlyTarget({ coords: { lat: city.lat, lng: city.lng }, zoom: 12 });
+      }
+    } catch {}
+  }, [currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleNearbyToggle() {
     if (!nearbyFilter) {
@@ -297,6 +311,20 @@ export default function MapPage({
           onBoundsChange={handleBoundsChange}
           selectedEvent={selectedEvent}
         />
+
+        {displayEvents.length === 0 && !eventsLoading && (
+          <EmptyMapGuide
+            canAddEvent={canAddEvent}
+            onAddEvent={handleOpenNewEvent}
+            onResetFilters={() => {
+              setSportFilter(null);
+              setDateRangeFilter(null);
+              setNearbyFilter(false);
+              setUpcomingOnly(true);
+              setShowAllSports(true);
+            }}
+          />
+        )}
 
         {/* Desktop sidebar */}
         <div className="hidden md:contents">

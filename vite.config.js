@@ -45,8 +45,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: './index.html',
-        club: './club-page.html',
+        main:  './index.html',
+        club:  './club-page.html',
+        event: './event-page.html',
       },
       output: {
         manualChunks(id) {

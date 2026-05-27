@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { supabase } from '../../lib/supabase.js';
 
 const ROLES = [
   {
@@ -45,11 +46,36 @@ function Avatar({ name, color }) {
   );
 }
 
-export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onAdd, onRemove, onRoleChange, onClose }) {
-  const [email, setEmail] = useState('');
-  const [role, setRole]   = useState('manager');
-  const [error, setError]   = useState('');
+export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clubId, clubName, onAdd, onRemove, onRoleChange, onClose }) {
+  const [email, setEmail]     = useState('');
+  const [role, setRole]       = useState('manager');
+  const [error, setError]     = useState('');
   const [success, setSuccess] = useState('');
+  const [sending, setSending] = useState(false);
+
+  async function sendInviteEmail(normalizedEmail) {
+    try {
+      await supabase.functions.invoke('invite-club-manager', {
+        body: {
+          email:      normalizedEmail,
+          clubId,
+          clubName,
+          role,
+          inviterName: ownerName,
+        },
+      });
+    } catch (e) {
+      console.warn('[Managers] invite email failed (non-blocking):', e);
+    }
+  }
+
+  async function resendInvite(m) {
+    setSending(m.email);
+    await sendInviteEmail(m.email);
+    setSending(false);
+    setSuccess(`Email renvoyé à ${m.email}`);
+    setTimeout(() => setSuccess(''), 3000);
+  }
 
   async function handleAdd() {
     const normalized = email.trim().toLowerCase();
@@ -63,8 +89,10 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
     if (!ok) { setError('Cet email est déjà gestionnaire'); return; }
     setEmail('');
     setError('');
-    setSuccess(`${normalized} ajouté — rôle : ${roleMeta(role).label}`);
-    setTimeout(() => setSuccess(''), 3000);
+    // Send invitation email (non-blocking)
+    sendInviteEmail(normalized);
+    setSuccess(`Invitation envoyée à ${normalized} — rôle : ${roleMeta(role).label}`);
+    setTimeout(() => setSuccess(''), 4000);
   }
 
   return (
@@ -143,19 +171,42 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
         {/* Manager list */}
         {managers.map(m => {
           const rm = roleMeta(m.role);
+          const isPending = m.status === 'pending';
           return (
-            <div key={m.email} style={{ ...ROW, marginBottom: 6 }}>
-              <Avatar name={m.name} color={rm.color} />
+            <div key={m.email} style={{ ...ROW, marginBottom: 6, opacity: isPending ? 0.85 : 1 }}>
+              <Avatar name={m.name} color={isPending ? '#94a3b8' : rm.color} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {m.name}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {m.name}
+                  </span>
+                  {isPending && (
+                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 20, backgroundColor: 'rgba(234,179,8,0.15)', color: '#b45309', flexShrink: 0 }}>
+                      En attente
+                    </span>
+                  )}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {m.email}
                 </div>
               </div>
+              {/* Resend invite button for pending managers */}
+              {isPending && (
+                <button
+                  onClick={() => resendInvite(m)}
+                  disabled={sending === m.email}
+                  title="Renvoyer l'invitation"
+                  style={{
+                    padding: '4px 8px', borderRadius: 8, border: '1px solid #e2e8f0',
+                    fontSize: 10, fontWeight: 600, color: '#64748b', cursor: 'pointer',
+                    backgroundColor: 'transparent', flexShrink: 0,
+                  }}
+                >
+                  {sending === m.email ? '…' : '📧 Renvoyer'}
+                </button>
+              )}
               {/* Role selector */}
-              {onRoleChange ? (
+              {!isPending && onRoleChange ? (
                 <select
                   value={m.role ?? 'manager'}
                   onChange={e => onRoleChange(m.email, e.target.value)}
@@ -170,11 +221,11 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, onA
                     <option key={r.id} value={r.id} style={{ background: 'var(--sl-card)' }}>{r.label}</option>
                   ))}
                 </select>
-              ) : (
+              ) : !isPending ? (
                 <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: `${rm.color}16`, color: rm.color, flexShrink: 0 }}>
                   {rm.label}
                 </span>
-              )}
+              ) : null}
               <button
                 onClick={() => onRemove(m.email)}
                 aria-label={`Retirer ${m.name}`}

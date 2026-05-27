@@ -1,4 +1,4 @@
-import { forwardRef, memo, useState, useEffect } from 'react';
+import { forwardRef, memo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { useAttendeeCount } from '../contexts/AttendeeCountContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
+import { useClubPlayers } from '../hooks/useClubPlayers.js';
 import EventReactions from './EventReactions.jsx';
 import EventComments from './EventComments.jsx';
 import EventPhotoGallery from './EventPhotoGallery.jsx';
@@ -97,7 +98,7 @@ function ShareBtn({ event }) {
   const { share } = useShare();
   const [copied, setCopied] = useState(false);
 
-  const eventUrl = `${window.location.origin}${window.location.pathname}#event/${event.id}`;
+  const eventUrl = `${window.location.origin}/event-page.html?id=${event.id}`;
   const description = generateEventDescription(event, { includeUrl: true, url: eventUrl });
 
   async function handleShare(e) {
@@ -222,35 +223,42 @@ function NavBtn({ event }) {
 }
 
 function QuickScoreEdit({ event, onUpdateEvent, onPosterResult }) {
-  const [home, setHome] = useState(String(event.score?.home ?? ''));
-  const [away, setAway] = useState(String(event.score?.away ?? ''));
+  const [home, setHome]   = useState(String(event.score?.home ?? ''));
+  const [away, setAway]   = useState(String(event.score?.away ?? ''));
+  const [motm, setMotm]   = useState(event.man_of_match ?? '');
   const [saved, setSaved] = useState(false);
+  const [motmOpen, setMotmOpen] = useState(false);
+  const { players } = useClubPlayers(event.clubId);
 
   useEffect(() => {
     setHome(String(event.score?.home ?? ''));
     setAway(String(event.score?.away ?? ''));
-  }, [event.score?.home, event.score?.away]);
+    setMotm(event.man_of_match ?? '');
+  }, [event.score?.home, event.score?.away, event.man_of_match]);
 
   function handleSave(e) {
     e.stopPropagation();
     const h = parseInt(home, 10);
     const a = parseInt(away, 10);
     if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
-    onUpdateEvent(event.id, { score: { home: h, away: a } });
+    onUpdateEvent(event.id, { score: { home: h, away: a }, man_of_match: motm.trim() || null });
     setSaved(true);
     setTimeout(() => setSaved(false), 5000);
   }
 
+  const filteredPlayers = players.filter(p =>
+    !motm || p.name.toLowerCase().includes(motm.toLowerCase())
+  );
+
   return (
-    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)' }}>
+    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)' }} onClick={e => e.stopPropagation()}>
       <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 7 }}>
         {event.score != null ? 'Modifier le score' : 'Saisir le score'}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         <input
           type="number" min="0" max="99" value={home}
           onChange={e => setHome(e.target.value)}
-          onClick={e => e.stopPropagation()}
           aria-label="Score domicile"
           style={{ width: 50, textAlign: 'center', fontWeight: 800, fontSize: 18, padding: '5px 0', borderRadius: 8, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}
         />
@@ -258,7 +266,6 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult }) {
         <input
           type="number" min="0" max="99" value={away}
           onChange={e => setAway(e.target.value)}
-          onClick={e => e.stopPropagation()}
           aria-label="Score extérieur"
           style={{ width: 50, textAlign: 'center', fontWeight: 800, fontSize: 18, padding: '5px 0', borderRadius: 8, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}
         />
@@ -275,6 +282,47 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult }) {
           {saved ? '✓ Enregistré' : 'Enregistrer'}
         </button>
       </div>
+
+      {/* Joueur du match */}
+      <div style={{ position: 'relative' }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
+          Joueur du match <span style={{ fontWeight: 400 }}>(optionnel)</span>
+        </div>
+        <input
+          type="text" value={motm}
+          onChange={e => { setMotm(e.target.value); setMotmOpen(true); }}
+          onFocus={() => setMotmOpen(true)}
+          onBlur={() => setTimeout(() => setMotmOpen(false), 150)}
+          placeholder={players.length ? 'Sélectionner dans le roster…' : 'ex. Kevin Dupont'}
+          autoComplete="off"
+          style={{ width: '100%', padding: '7px 12px', borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box' }}
+        />
+        {motmOpen && players.length > 0 && (
+          <div style={{
+            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+            backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+            borderRadius: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            maxHeight: 180, overflowY: 'auto', marginTop: 4,
+          }}>
+            {filteredPlayers.slice(0, 8).map(p => (
+              <button key={p.id} type="button"
+                onMouseDown={() => { setMotm(p.name); setMotmOpen(false); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', fontSize: 12, textAlign: 'left', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--sl-text)' }}
+                onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--sl-surface)'}
+                onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <span style={{ width: 24, textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)' }}>#{p.number ?? '—'}</span>
+                <span style={{ flex: 1, fontWeight: 600 }}>{p.name}</span>
+                {p.position && <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{p.position}</span>}
+              </button>
+            ))}
+            {!filteredPlayers.length && (
+              <p style={{ padding: '8px 12px', fontSize: 11, color: 'var(--sl-t3)', fontStyle: 'italic' }}>Aucun joueur correspondant</p>
+            )}
+          </div>
+        )}
+      </div>
+
       <AnimatePresence>
         {saved && onPosterResult && (
           <motion.button

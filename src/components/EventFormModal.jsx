@@ -8,6 +8,7 @@ import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
+import { useClubPlayers } from '../hooks/useClubPlayers.js';
 import CityAutocomplete from './CityAutocomplete.jsx';
 import VenueAutocomplete from './VenueAutocomplete.jsx';
 import SportIcon from './SportIcon.jsx';
@@ -528,6 +529,69 @@ function EventTypeRadio({ value, onChange }) {
   );
 }
 
+// ── Joueur du match : combobox avec joueurs du roster si disponibles ───────────
+function MotmField({ value, onChange, clubId, inputStyle }) {
+  const { players } = useClubPlayers(clubId);
+  const [open, setOpen] = useState(false);
+  const filtered = players.filter(p =>
+    !value || p.name.toLowerCase().includes(value.toLowerCase())
+  );
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)', marginBottom: 5 }}>
+        Joueur du match
+        <span style={{ fontWeight: 400, color: 'var(--sl-t3)', marginLeft: 6 }}>Optionnel — affiché sur l'affiche résultat</span>
+      </div>
+      <input
+        type="text"
+        value={value}
+        onChange={e => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder={players.length ? 'Sélectionner ou saisir un nom…' : 'ex. Kevin Dupont'}
+        style={inputStyle}
+        autoComplete="off"
+      />
+      {open && players.length > 0 && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+          backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+          borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+          maxHeight: 200, overflowY: 'auto', marginTop: 4,
+        }}>
+          {filtered.slice(0, 10).map(p => (
+            <button
+              key={p.id}
+              type="button"
+              onMouseDown={() => { onChange(p.name); setOpen(false); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                padding: '10px 14px', fontSize: 13, textAlign: 'left',
+                backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
+                color: 'var(--sl-text)',
+              }}
+              onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--sl-surface)'}
+              onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              <span style={{ width: 26, textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)' }}>
+                #{p.number ?? '—'}
+              </span>
+              <span style={{ flex: 1, fontWeight: 600 }}>{p.name}</span>
+              {p.position && <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{p.position}</span>}
+            </button>
+          ))}
+          {!filtered.length && (
+            <p style={{ padding: '10px 14px', fontSize: 12, color: 'var(--sl-t3)', fontStyle: 'italic' }}>
+              Aucun joueur correspondant
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EventFormModal({ event, onSave, onClose, onBulkSave, onOpenPoster }) {
   const { currentUser, isClubAdmin } = useAuth();
   const { allSports } = useSports();
@@ -934,14 +998,12 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
             </Field>
 
             {form.eventType !== 'tournament' && (
-              <Field label="Joueur du match" hint="Optionnel — affiché sur l'affiche résultat">
-                <input
-                  type="text" value={form.manOfMatch}
-                  onChange={e => set('manOfMatch', e.target.value)}
-                  placeholder="ex. Kevin Dupont"
-                  style={inputStyle}
-                />
-              </Field>
+              <MotmField
+                value={form.manOfMatch}
+                onChange={v => set('manOfMatch', v)}
+                clubId={currentUser?.clubId}
+                inputStyle={inputStyle}
+              />
             )}
           </form>
 

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../../lib/supabase.js';
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const DAY_COLORS = {
@@ -103,7 +104,7 @@ function EditView({ sessions, onUpdate }) {
 }
 
 // ── Monthly calendar ──────────────────────────────────────────────────────────
-function MonthCalendar({ sessions }) {
+function MonthCalendar({ sessions, clubId, onOpenDetail }) {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -248,8 +249,11 @@ function MonthCalendar({ sessions }) {
           <div className="divide-y divide-gray-50">
             {selectedSessions.map(s => {
               const catColor = CATEGORY_COLORS[s.category ?? 'Tous'] ?? '#64748b';
+              const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
               return (
-                <div key={s.id} className="flex items-center gap-3 px-4 py-3">
+                <div key={s.id}
+                  className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => onOpenDetail && onOpenDetail(s, dateStr)}>
                   <div className="flex-shrink-0 rounded-full" style={{ width: 3, alignSelf: 'stretch', backgroundColor: catColor, minHeight: 36 }} />
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-sm font-poppins" style={{ color: '#0F1E3A' }}>
@@ -258,7 +262,8 @@ function MonthCalendar({ sessions }) {
                     </div>
                     {s.location && <div className="text-xs text-gray-500 mt-0.5">{s.location}</div>}
                   </div>
-                  <div className="flex flex-col items-end gap-1">
+                  <div className="flex flex-col items-end gap-1.5">
+                    {clubId && <AttendanceBadge clubId={clubId} sessionRefId={s.id} date={dateStr} onClick={() => onOpenDetail && onOpenDetail(s, dateStr)} />}
                     {s.category && s.category !== 'Tous' && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
                         style={{ backgroundColor: `${catColor}18`, color: catColor }}>
@@ -301,7 +306,7 @@ function MonthCalendar({ sessions }) {
 }
 
 // ── List view ─────────────────────────────────────────────────────────────────
-function ListView({ sessions }) {
+function ListView({ sessions, clubId, onOpenDetail }) {
   const sorted = [...sessions].sort((a, b) => {
     const di = DAYS.indexOf(a.day) - DAYS.indexOf(b.day);
     return di !== 0 ? di : a.time.localeCompare(b.time);
@@ -356,16 +361,63 @@ function ListView({ sessions }) {
   );
 }
 
+// ── Attendance badge (fetches count for a specific date) ──────────────────────
+function AttendanceBadge({ clubId, sessionRefId, date, onClick }) {
+  const [count, setCount] = useState(null);
+
+  useEffect(() => {
+    if (!clubId || !date) return;
+    let cancelled = false;
+    supabase
+      .from('training_sessions')
+      .select('id')
+      .eq('club_id', String(clubId))
+      .eq('date', date)
+      .eq('session_ref_id', sessionRefId ?? '')
+      .single()
+      .then(({ data: sess }) => {
+        if (cancelled || !sess) return;
+        supabase
+          .from('training_attendance')
+          .select('id', { count: 'exact' })
+          .eq('session_id', sess.id)
+          .eq('status', 'present')
+          .then(({ count: c }) => { if (!cancelled) setCount(c ?? 0); });
+      });
+    return () => { cancelled = true; };
+  }, [clubId, sessionRefId, date]);
+
+  if (count === null) return null;
+  return (
+    <button
+      onClick={e => { e.stopPropagation(); onClick && onClick(); }}
+      className="flex items-center gap-1 px-2 py-0.5 rounded-full transition-colors hover:opacity-80"
+      style={{ backgroundColor: '#f0fdf4', color: '#22c55e' }}
+      title={`${count} présent(s)`}
+    >
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span style={{ fontSize: 9, fontWeight: 700 }}>{count}</span>
+    </button>
+  );
+}
+
 // ── Main block ────────────────────────────────────────────────────────────────
-export default function TrainingBlock({ data, isEditing, onUpdate }) {
+export default function TrainingBlock({ data, isEditing, onUpdate, clubId, currentUser, isManager }) {
   const sessions = data.sessions ?? [];
-  const [viewMode, setViewMode] = useState('calendar');
+  const [viewMode, setViewMode]           = useState('calendar');
+  const [selectedSession, setSelectedSession] = useState(null);  // { session, date }
 
   if (isEditing) return <EditView sessions={sessions} onUpdate={onUpdate} />;
 
   if (!sessions.length) return (
     <p className="text-sm text-gray-400 italic py-3 text-center">Aucun créneau d'entraînement renseigné.</p>
   );
+
+  // Lazy import TrainingSessionDetail only when needed
+  const openDetail = (session, date) => setSelectedSession({ session, date });
 
   return (
     <div>
@@ -383,9 +435,54 @@ export default function TrainingBlock({ data, isEditing, onUpdate }) {
       </div>
 
       {viewMode === 'calendar'
-        ? <MonthCalendar sessions={sessions} />
-        : <ListView sessions={sessions} />
+        ? <MonthCalendar sessions={sessions} clubId={clubId} onOpenDetail={openDetail} />
+        : <ListView sessions={sessions} clubId={clubId} onOpenDetail={openDetail} />
       }
+
+      {selectedSession && (
+        <TrainingSessionDetailLazy
+          sessionRef={selectedSession.session}
+          date={selectedSession.date}
+          clubId={clubId}
+          currentUser={currentUser}
+          isManager={isManager}
+          onClose={() => setSelectedSession(null)}
+        />
+      )}
     </div>
   );
+}
+
+// Lazy loader for TrainingSessionDetail
+function TrainingSessionDetailLazy({ sessionRef, date, clubId, currentUser, isManager, onClose }) {
+  const [Comp, setComp] = useState(null);
+  const [dbSession, setDbSession] = useState(null);
+
+  useEffect(() => {
+    import('../TrainingSessionDetail.jsx').then(m => setComp(() => m.default));
+    // Fetch or create the training_sessions row for this date
+    const dateStr = typeof date === 'number'
+      ? new Date(new Date().getFullYear(), new Date().getMonth(), date).toISOString().slice(0, 10)
+      : date;
+    supabase
+      .from('training_sessions')
+      .select('*')
+      .eq('club_id', String(clubId))
+      .eq('session_ref_id', sessionRef.id)
+      .eq('date', dateStr)
+      .single()
+      .then(async ({ data: existing }) => {
+        if (existing) { setDbSession(existing); return; }
+        // Create on-the-fly
+        const { data: created } = await supabase
+          .from('training_sessions')
+          .insert({ club_id: String(clubId), session_ref_id: sessionRef.id, date: dateStr, time: sessionRef.time, location: sessionRef.location ?? null })
+          .select()
+          .single();
+        setDbSession(created ?? null);
+      });
+  }, [sessionRef, date, clubId]);
+
+  if (!Comp || !dbSession) return null;
+  return <Comp session={dbSession} clubId={clubId} currentUser={currentUser} isManager={isManager} onClose={onClose} />;
 }
