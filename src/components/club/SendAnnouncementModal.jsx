@@ -50,9 +50,10 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
   const [error,       setError]       = useState('');
   const [scheduled,   setScheduled]   = useState(false);
   const [scheduleAt,  setScheduleAt]  = useState(() => {
-    const d = new Date(Date.now() + 60 * 60 * 1000); // default: now + 1h
+    const d = new Date(Date.now() + 60 * 60 * 1000);
     d.setSeconds(0, 0);
-    return d.toISOString().slice(0, 16); // 'YYYY-MM-DDTHH:mm'
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
   });
 
   const selectedType = TYPE_OPTIONS.find(t => t.key === type);
@@ -215,7 +216,7 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
                 <input
                   type="datetime-local"
                   value={scheduleAt}
-                  min={new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)}
+                  min={(() => { const _d = new Date(Date.now() + 5*60*1000); const _p = n => String(n).padStart(2,'0'); return `${_d.getFullYear()}-${_p(_d.getMonth()+1)}-${_p(_d.getDate())}T${_p(_d.getHours())}:${_p(_d.getMinutes())}`; })()}
                   onChange={e => setScheduleAt(e.target.value)}
                   style={{ width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 10, fontSize: 13, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
                 />

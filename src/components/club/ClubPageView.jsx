@@ -505,14 +505,18 @@ function TrainingCalendarGenerator({ sessions, club, team, onGenerate }) {
     const toDate  = new Date(to + 'T23:59:59');
     const events  = [];
     const base    = `training_${team.id}_${Date.now()}`;
+    const _p = n => String(n).padStart(2, '0');
+    const _tzOff = -new Date().getTimezoneOffset();
+    const _tzSuffix = `${_tzOff >= 0 ? '+' : '-'}${_p(Math.floor(Math.abs(_tzOff) / 60))}:${_p(Math.abs(_tzOff) % 60)}`;
     for (const s of sessions) {
       let cur = new Date(from);
       while (cur.getDay() !== DAY_IDX[s.day] && cur <= toDate) cur.setDate(cur.getDate() + 1);
       while (cur <= toDate && events.length < 200) {
+        const localDate = `${cur.getFullYear()}-${_p(cur.getMonth() + 1)}-${_p(cur.getDate())}`;
         events.push({
           title: `Entraînement ${team.name}`,
           sport: club.sport, sportGroup: club.sport,
-          date: `${cur.toISOString().slice(0, 10)}T${s.time}:00`,
+          date: `${localDate}T${s.time}:00${_tzSuffix}`,
           city: club.city ?? '', lat: club.lat ?? 48.3904, lng: club.lng ?? -4.4861,
           venue: s.location, description: `Entraînement — ${team.name}`,
           eventType: 'friendly',

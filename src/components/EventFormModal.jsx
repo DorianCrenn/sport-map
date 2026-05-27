@@ -129,10 +129,15 @@ function generateRecurring(base, freq, untilStr) {
   const step = freq === 'biweekly' ? 14 : 7;
   const seriesId = `series_${Date.now()}`;
   const until = new Date(untilStr + 'T23:59:59');
+  const _p = n => String(n).padStart(2, '0');
+  const _tzOff = -new Date().getTimezoneOffset();
+  const _tzSuffix = `${_tzOff >= 0 ? '+' : '-'}${_p(Math.floor(Math.abs(_tzOff) / 60))}:${_p(Math.abs(_tzOff) % 60)}`;
   const events = [];
   let cur = new Date(base.date);
   while (cur <= until && events.length < 52) {
-    events.push({ ...base, date: cur.toISOString().slice(0, 16), seriesId });
+    const d = `${cur.getFullYear()}-${_p(cur.getMonth() + 1)}-${_p(cur.getDate())}`;
+    const t = `${_p(cur.getHours())}:${_p(cur.getMinutes())}`;
+    events.push({ ...base, date: `${d}T${t}:00${_tzSuffix}`, seriesId });
     cur = new Date(cur.getTime() + step * 86400000);
   }
   return events;
