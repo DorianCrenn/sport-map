@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 import { useClubDashboard } from '../../hooks/useClubDashboard.js';
 import { useClubBrandKit } from '../../hooks/useClubBrandKit.js';
+import { FeaturedSection } from './PromoteFeedModal.jsx';
 
 function StatCard({ label, value, sub, color = 'var(--sl-t1)' }) {
   return (
@@ -359,6 +360,11 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
                 })}
               </div>
             )}
+
+            <FeaturedSection
+              club={club}
+              upcomingEvents={clubUpcomingEvents}
+            />
 
             <CalendrierEditorial
               upcomingEvents={clubUpcomingEvents}
