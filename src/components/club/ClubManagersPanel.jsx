@@ -21,6 +21,12 @@ const ROLES = [
     desc: 'Annonces clubs uniquement',
     color: '#22d96a',
   },
+  {
+    id: 'coach',
+    label: 'Entraîneur',
+    desc: 'Entraînements + équipes (lecture/gestion planning)',
+    color: '#0ea5e9',
+  },
 ];
 
 function roleMeta(id) {

@@ -356,9 +356,25 @@ function AppInner() {
         {showTrainings && (
           <Suspense fallback={null}><TrainingManagerPage onBack={() => setShowTrainings(false)} /></Suspense>
         )}
+        {/* ClubPageView inside the content area so BottomNav stays visible (same pattern as MyRidesPage) */}
+        {selectedSearchClub && (
+          <ClubPageView
+            key={selectedSearchClub.id}
+            club={selectedSearchClub}
+            allEvents={allEvents}
+            onBack={() => setSelectedSearchClub(null)}
+            onAddEvent={addEvent}
+            canAddEvent={isAdmin || isClubAdmin}
+            onArchiveSeason={archiveSeason}
+            onUpdateClub={async (data) => {
+              await updateClub(selectedSearchClub.id, data);
+              setSelectedSearchClub(prev => ({ ...prev, ...data }));
+            }}
+          />
+        )}
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements} />
 
       <Suspense fallback={null}>
         <AnimatePresence>
@@ -395,21 +411,6 @@ function AppInner() {
               key="csv-import"
               onBulkSave={bulkAddEvents}
               onClose={() => setShowCSVImport(false)}
-            />
-          )}
-          {selectedSearchClub && (
-            <ClubPageView
-              key={selectedSearchClub.id}
-              club={selectedSearchClub}
-              allEvents={allEvents}
-              onBack={() => setSelectedSearchClub(null)}
-              onAddEvent={addEvent}
-              canAddEvent={isAdmin || isClubAdmin}
-              onArchiveSeason={archiveSeason}
-              onUpdateClub={async (data) => {
-                await updateClub(selectedSearchClub.id, data);
-                setSelectedSearchClub(prev => ({ ...prev, ...data }));
-              }}
             />
           )}
           {showBadgeModal && newBadges.length > 0 && (

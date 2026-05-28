@@ -846,6 +846,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [showManagersPanel, setShowManagersPanel] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [clubInternalTab, setClubInternalTab] = useState('infos');
   const [activeTeamId, setActiveTeamId] = useState(null);
   const tabBarRef = useRef(null);
 
@@ -983,7 +984,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
-      className="fixed inset-0 flex flex-col z-20"
+      className="absolute inset-0 flex flex-col z-20"
       style={{ backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}
     >
       {/* ── Header ── */}
@@ -1023,40 +1024,6 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               <span className="hidden sm:inline">{linkCopied ? 'Copié !' : 'Partager'}</span>
             </button>
 
-            {isOwner && (
-              <button
-                onClick={() => setShowDashboard(true)}
-                aria-label="Tableau de bord du club"
-                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="3" width="6" height="6" rx="1"/><rect x="16" y="3" width="6" height="6" rx="1"/>
-                  <rect x="2" y="15" width="6" height="6" rx="1"/><rect x="16" y="15" width="6" height="6" rx="1"/>
-                  <line x1="11" y1="6" x2="13" y2="6"/><line x1="11" y1="18" x2="13" y2="18"/>
-                  <line x1="6" y1="11" x2="6" y2="13"/><line x1="18" y1="11" x2="18" y2="13"/>
-                  <line x1="11" y1="12" x2="13" y2="12"/>
-                </svg>
-                <span className="hidden sm:inline">Stats</span>
-              </button>
-            )}
-            {isOwner && (
-              <button
-                onClick={() => setShowManagersPanel(true)}
-                aria-label="Gérer les gestionnaires du club"
-                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-700 text-slate-300 hover:bg-slate-600"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
-                  <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
-                </svg>
-                <span className="hidden sm:inline">Gestion</span>
-                {managers.length > 0 && (
-                  <span className="text-[10px] font-bold px-1 py-0.5 rounded-full bg-blue-500 text-white leading-none">
-                    {managers.length}
-                  </span>
-                )}
-              </button>
-            )}
             {canEdit && onUpdateClub && (
               <button
                 onClick={() => setShowEditInfo(true)}
@@ -1405,6 +1372,40 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         </div>
       )}
 
+      {/* ── Internal nav (owner only) ── */}
+      {isOwner && (
+        <div style={{
+          flexShrink: 0, display: 'flex', gap: 6,
+          padding: '8px 16px',
+          borderBottom: '1px solid var(--sl-border)',
+          backgroundColor: 'var(--sl-bg)',
+        }}>
+          {[
+            { id: 'infos',   label: '📰 Infos'   },
+            { id: 'stats',   label: '📊 Stats'   },
+            { id: 'gestion', label: '⚙️ Gestion' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setClubInternalTab(tab.id);
+                if (tab.id === 'stats')   setShowDashboard(true);
+                if (tab.id === 'gestion') setShowManagersPanel(true);
+              }}
+              style={{
+                padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', transition: 'all 0.12s',
+                border: clubInternalTab === tab.id ? 'none' : '1px solid var(--sl-border)',
+                backgroundColor: clubInternalTab === tab.id ? '#6366f1' : 'var(--sl-pill-bg)',
+                color: clubInternalTab === tab.id ? '#fff' : 'var(--sl-pill-text)',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ── Content ── */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ overscrollBehavior: 'contain', '--club-font-title': `"${typography.titleFont}", sans-serif`, '--club-font-body': `"${typography.bodyFont}", sans-serif` }}>
         {activeTeam ? (
@@ -1557,7 +1558,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           onAdd={addManager}
           onRemove={removeManager}
           onRoleChange={updateManagerRole}
-          onClose={() => setShowManagersPanel(false)}
+          onClose={() => { setShowManagersPanel(false); setClubInternalTab('infos'); }}
         />
       )}
 
@@ -1600,7 +1601,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             clubEventIds={clubEventIds}
             allEvents={allEvents}
             onArchiveSeason={onArchiveSeason}
-            onClose={() => setShowDashboard(false)}
+            onClose={() => { setShowDashboard(false); setClubInternalTab('infos'); }}
           />
         )}
       </AnimatePresence>
