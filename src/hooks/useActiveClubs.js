@@ -19,34 +19,50 @@ export function useActiveClubs({ limit = 10 } = {}) {
       const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const end   = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
 
-      const { data, error } = await supabase
+      // Step 1 — events of the month (club_id only, no join — TEXT field has no FK)
+      const { data: eventsData, error } = await supabase
         .from('events')
-        .select('club_id, clubs(id, name, sport, city, logo_url)')
+        .select('club_id')
         .gte('date', start)
         .lt('date', end)
         .not('club_id', 'is', null);
 
-      if (cancelled || error || !data) { setLoading(false); return; }
+      if (cancelled || error || !eventsData) { setLoading(false); return; }
 
-      // Aggregate by club client-side
-      const map = {};
-      for (const row of data) {
-        const cid = row.club_id;
-        if (!cid) continue;
-        if (!map[cid]) {
-          map[cid] = {
-            clubId:    cid,
-            name:      row.clubs?.name      ?? cid,
-            sport:     row.clubs?.sport     ?? '',
-            city:      row.clubs?.city      ?? '',
-            logo_url:  row.clubs?.logo_url  ?? null,
-            count:     0,
-          };
-        }
-        map[cid].count++;
+      const countMap = {};
+      for (const row of eventsData) {
+        countMap[row.club_id] = (countMap[row.club_id] ?? 0) + 1;
       }
 
-      const sorted = Object.values(map)
+      const clubIds = Object.keys(countMap);
+      if (clubIds.length === 0) {
+        if (!cancelled) { setRanking([]); setLoading(false); }
+        return;
+      }
+
+      // Step 2 — fetch club details for those IDs
+      const { data: clubsData } = await supabase
+        .from('clubs')
+        .select('id, name, sport, city, logo_url')
+        .in('id', clubIds);
+
+      const clubMap = {};
+      for (const c of clubsData ?? []) {
+        clubMap[String(c.id)] = c;
+      }
+
+      const sorted = clubIds
+        .map(cid => {
+          const c = clubMap[cid] ?? {};
+          return {
+            clubId:   cid,
+            name:     c.name     ?? cid,
+            sport:    c.sport    ?? '',
+            city:     c.city     ?? '',
+            logo_url: c.logo_url ?? null,
+            count:    countMap[cid],
+          };
+        })
         .sort((a, b) => b.count - a.count)
         .slice(0, limit);
 

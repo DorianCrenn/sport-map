@@ -16,10 +16,10 @@ export function useNextTraining(clubId, userId, teamId = null) {
 
     let q = supabase
       .from('training_sessions')
-      .select('id, club_id, team_id, date, time, location, category, cancelled, note')
+      .select('id, club_id, team_id, date, time, location, status')
       .eq('club_id', String(clubId))
       .gte('date', today)
-      .neq('cancelled', true)
+      .neq('status', 'cancelled')
       .order('date', { ascending: true })
       .order('time', { ascending: true })
       .limit(1);

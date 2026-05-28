@@ -68,8 +68,7 @@ export function useFeaturedEvents({
           priority,
           starts_at,
           events:event_id (
-            id, title, date, sport, venue, city, poster_url,
-            home_team:homeTeam, away_team:awayTeam
+            id, title, date, sport, venue, city, team_name, adversaire, home_or_away
           ),
           clubs:club_id ( name )
         `)
@@ -110,9 +109,9 @@ export function useFeaturedEvents({
             sport:       ev.sport    ?? '',
             venue:       ev.venue    ?? undefined,
             city:        ev.city     ?? undefined,
-            poster_url:  ev.poster_url ?? undefined,
-            home_team:   ev.home_team  ?? undefined,
-            away_team:   ev.away_team  ?? undefined,
+            poster_url:  undefined,
+            home_team:   ev.team_name  ?? undefined,
+            away_team:   ev.adversaire ?? undefined,
           };
         });
 
