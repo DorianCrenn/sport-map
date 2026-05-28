@@ -4,10 +4,11 @@
 // prochain, enrichis avec les données d'affiche prêtes à rendre.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 // @ts-expect-error — JS non typé, migration progressive
-import { useClubs } from './useClubs.js';
-import type { WeekendMatch, RawMatch, PosterData, Club } from '../types/sportlink.js';
+import { useManagedClubs } from './useManagedClubs.js';
+import { supabase } from '../lib/supabase.js';
+import type { WeekendMatch, PosterData } from '../types/sportlink.js';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -101,94 +102,93 @@ function getWeekendRange(): { start: Date; end: Date } {
 
 /**
  * Retourne les matchs à domicile du week-end prochain pour tous les clubs
- * de l'utilisateur, avec les données d'affiche calculées.
+ * gérés par l'utilisateur, avec les données d'affiche calculées.
  *
- * Source : localStorage `club-page-{clubId}` → blocs type "matches"
+ * Source : table Supabase `events` (filtrée par club_id + date + home_or_away)
  */
 export function useWeekendPosters(): WeekendMatch[] {
-  // @ts-expect-error — useClubs retourne un objet JS non typé
-  const { userClubs } = useClubs() as { userClubs: Club[] };
+  // @ts-expect-error — useManagedClubs retourne un objet JS non typé
+  const { managedClubs } = useManagedClubs() as { managedClubs: { id: string; name: string; sport?: string; city?: string; logo_url?: string; logoUrl?: string }[] };
+  const [matches, setMatches] = useState<WeekendMatch[]>([]);
 
-  return useMemo(() => {
+  useEffect(() => {
+    if (!managedClubs?.length) { setMatches([]); return; }
+    let cancelled = false;
+
+    const clubIds = managedClubs.map(c => String(c.id));
     const { start, end } = getWeekendRange();
-    const matches: WeekendMatch[] = [];
+    const startIso = start.toISOString().slice(0, 10);
+    const endIso   = end.toISOString().slice(0, 10);
 
-    for (const club of userClubs) {
-      // Lecture des blocs du club depuis localStorage
-      let blocks: { type: string; data?: { matches?: RawMatch[] } }[] = [];
-      try {
-        const raw = localStorage.getItem(`club-page-${club.id}`);
-        if (raw) blocks = JSON.parse(raw);
-      } catch {
-        continue;
-      }
+    supabase
+      .from('events')
+      .select('id, title, date, sport, venue, city, team_name, adversaire, home_or_away, club_id')
+      .in('club_id', clubIds)
+      .gte('date', startIso)
+      .lte('date', endIso)
+      .eq('home_or_away', 'home')
+      .order('date')
+      .then(({ data }) => {
+        if (cancelled || !data) return;
 
-      for (const block of blocks) {
-        if (block.type !== 'matches') continue;
-        const rawMatches: RawMatch[] = block.data?.matches ?? [];
-
-        for (const m of rawMatches) {
-          // Seuls les matchs à domicile avec une date sont pris en compte
-          if (!m.date || !m.isHome) continue;
+        const result: WeekendMatch[] = data.map(ev => {
+          const club = managedClubs.find(c => String(c.id) === String(ev.club_id));
+          const sport = ev.sport || club?.sport || 'football';
+          const clubName = club?.name ?? ev.city ?? '?';
+          const logoUrl  = club?.logo_url ?? club?.logoUrl ?? '';
+          const accentColor = getAccent(sport);
+          const bgPresetId  = getBgPreset(sport);
 
           const matchDate = new Date(
-            `${m.date}T${m.time ? `${m.time}:00` : '15:00:00'}`
+            `${ev.date}T${ev.date.length === 10 ? '15:00:00' : ''}`
           );
-
-          // Filtre : seulement le week-end à venir
-          if (matchDate < start || matchDate > end) continue;
-
-          const sport = club.sport || 'football';
-          const accentColor = getAccent(sport);
-          const bgPresetId = getBgPreset(sport);
-          const logoUrl = club.logo_url || club.logoUrl || '';
+          const time = ev.date.length > 10 ? ev.date.slice(11, 16) : '15:00';
 
           const posterData: PosterData = {
             event: {
               date: matchDate.toISOString(),
               sport,
-              venue: m.venue ?? club.city,
-              city: club.city,
+              venue: ev.venue ?? ev.city,
+              city: ev.city ?? club?.city,
               homeOrAway: 'home',
             },
-            homeTeam: { name: club.name, logo: logoUrl },
-            awayTeam: { name: m.opponent || 'Adversaire', logo: '' },
-            championship: m.competition ?? '',
+            homeTeam: { name: clubName, logo: logoUrl },
+            awayTeam: { name: ev.adversaire || 'Adversaire', logo: '' },
+            championship: '',
             tagline: 'Venez nombreux ! 💪',
             accentColor,
           };
 
-          matches.push({
-            id: `${club.id}-${m.id}`,
-            clubId: club.id,
-            category: m.category || m.teamName || 'Équipe',
-            homeTeam: { name: club.name, logo: logoUrl },
-            awayTeam: { name: m.opponent || 'Adversaire', logo: '' },
+          return {
+            id: String(ev.id),
+            clubId: String(ev.club_id),
+            category: ev.team_name || 'Équipe',
+            homeTeam: { name: clubName, logo: logoUrl },
+            awayTeam: { name: ev.adversaire || 'Adversaire', logo: '' },
             date: matchDate,
-            time: m.time,
-            venue: m.venue ?? club.city,
-            competition: m.competition ?? '',
+            time,
+            venue: ev.venue ?? ev.city ?? '',
+            competition: '',
             sport,
             templateId: getTemplate(sport),
             bgPresetId,
             posterData,
-          });
-        }
-      }
-    }
+          };
+        });
 
-    // Tri chronologique
-    return matches.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [userClubs]);
+        setMatches(result);
+      });
+
+    return () => { cancelled = true; };
+  }, [managedClubs]);
+
+  return matches;
 }
 
-// ── Données mockées (tests & développement) ───────────────────────────────────
+// ── Données mockées (DEV seulement) ──────────────────────────────────────────
 
 /**
- * Jeu de données réaliste avec des clubs bretons du Finistère.
- * Usage : `<WeekendPosters matches={MOCK_WEEKEND_MATCHES} />`
- *
- * Les dates sont calculées dynamiquement pour pointer sur le prochain week-end.
+ * @deprecated — DEV uniquement. Ne pas appeler en production.
  */
 export function getMockWeekendMatches(): WeekendMatch[] {
   const { start } = getWeekendRange();

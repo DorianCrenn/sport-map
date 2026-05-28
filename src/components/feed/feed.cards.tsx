@@ -253,7 +253,16 @@ export function CarpoolCard({ item, onBook }: CarpoolCardProps) {
             <p className="text-[10px] font-black tracking-widest uppercase text-emerald-400 mb-0.5">
               🚗 Covoiturage
             </p>
-            <p className="text-[13px] font-bold text-[var(--sl-t1)]">{item.driver_name}</p>
+            <div className="flex items-center gap-2">
+              {item.driver_avatar ? (
+                <img src={item.driver_avatar} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-bold text-emerald-400">{item.driver_name[0]}</span>
+                </div>
+              )}
+              <p className="text-[13px] font-bold text-[var(--sl-t1)]">{item.driver_name}</p>
+            </div>
           </div>
           {full && (
             <span className="text-[9px] font-black tracking-wider uppercase px-2 py-1 rounded-lg bg-[var(--sl-surface)] text-[var(--sl-t3)] border border-[var(--sl-border)]">
@@ -326,6 +335,8 @@ interface FlashCardProps { item: FlashFeedItem }
 
 export function FlashCard({ item }: FlashCardProps) {
   const cfg = BADGE_CFG[item.badge];
+  const [expanded, setExpanded] = useState(false);
+  const isLong = item.message.length > 160;
 
   return (
     <article className={`rounded-2xl border ${cfg.border} ${cfg.bg} px-4 py-3.5 shadow-sm`}>
@@ -349,7 +360,21 @@ export function FlashCard({ item }: FlashCardProps) {
           )}
 
           {/* Message */}
-          <p className="text-[13px] text-[var(--sl-t1)] leading-relaxed">{item.message}</p>
+          <p
+            className="text-[13px] text-[var(--sl-t1)] leading-relaxed"
+            style={expanded ? undefined : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          >
+            {item.message}
+          </p>
+          {isLong && (
+            <button
+              onClick={() => setExpanded(v => !v)}
+              className="text-[11px] font-semibold mt-1"
+              style={{ color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              {expanded ? 'Voir moins' : 'Voir plus'}
+            </button>
+          )}
 
           {/* Auteur */}
           {item.author_name && (
@@ -362,123 +387,13 @@ export function FlashCard({ item }: FlashCardProps) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// FeaturedCard — Événement "À la Une" promu par le club
+// FeaturedGalleryCard — Carte compacte pour la galerie horizontale
 // ════════════════════════════════════════════════════════════════════════════
 
 interface FeaturedCardProps {
   item: FeaturedFeedItem;
-  /** Appelé quand l'utilisateur clique "Voir l'événement" */
   onNavigate?: (eventId: string) => void;
 }
-
-export function FeaturedCard({ item, onNavigate }: FeaturedCardProps) {
-  const cfg = PLAN_CONFIG[item.plan];
-
-  return (
-    <article
-      className="rounded-2xl overflow-hidden relative"
-      style={{
-        border:     `1px solid ${cfg.border}`,
-        boxShadow:  `0 0 24px ${cfg.glow}, 0 2px 8px rgba(0,0,0,0.3)`,
-        background: `linear-gradient(145deg, ${cfg.bg} 0%, var(--sl-bg) 70%)`,
-      }}
-    >
-      {/* Trait d'accent supérieur — couleur plan */}
-      <div className="h-[3px]" style={{ background: `linear-gradient(to right, ${cfg.accent}, ${cfg.accent}44)` }} />
-
-      <div className="px-4 pt-3 pb-4">
-
-        {/* ── En-tête : badge "À la Une" + label plan ── */}
-        <div className="flex items-center justify-between mb-3">
-          <span
-            className="inline-flex items-center gap-1.5 text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-lg"
-            style={{
-              background: `${cfg.accent}1a`,
-              color:       cfg.accent,
-              border:      `1px solid ${cfg.accent}40`,
-            }}
-          >
-            ⭐ À la Une
-          </span>
-          <span
-            className="text-[9px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md"
-            style={{ color: cfg.accent, background: `${cfg.accent}15`, border: `1px solid ${cfg.accent}25` }}
-          >
-            {cfg.label}
-          </span>
-        </div>
-
-        {/* ── Visuel : affiche ou gradient générique ── */}
-        {item.poster_url ? (
-          <img
-            src={item.poster_url}
-            alt={item.title}
-            className="w-full aspect-video object-cover rounded-xl mb-3"
-            loading="lazy"
-          />
-        ) : (
-          <div
-            className="w-full aspect-video rounded-xl mb-3 flex flex-col items-center justify-center gap-2.5 px-6"
-            style={{ background: `linear-gradient(135deg, ${cfg.accent}12, var(--sl-bg))`, border: `1px solid ${cfg.accent}18` }}
-          >
-            <SportChip sport={item.sport} />
-            {item.home_team && item.away_team ? (
-              <div className="text-center w-full">
-                <p className="text-[20px] font-black text-[var(--sl-t1)] tracking-tight leading-tight truncate">{item.home_team}</p>
-                <div className="flex items-center gap-3 justify-center my-1.5">
-                  <div className="flex-1 h-px" style={{ backgroundColor: `${cfg.accent}30` }} />
-                  <span className="text-[10px] font-black tracking-[0.3em]" style={{ color: cfg.accent }}>VS</span>
-                  <div className="flex-1 h-px" style={{ backgroundColor: `${cfg.accent}30` }} />
-                </div>
-                <p className="text-[20px] font-black text-[var(--sl-t3)] tracking-tight leading-tight truncate">{item.away_team}</p>
-              </div>
-            ) : (
-              <p className="text-[16px] font-bold text-[var(--sl-t1)] text-center">{item.title}</p>
-            )}
-          </div>
-        )}
-
-        {/* ── Nom du club ── */}
-        <p className="text-[11px] font-bold mb-0.5 truncate" style={{ color: cfg.accent }}>
-          {item.club_name}
-        </p>
-
-        {/* ── Titre de l'événement ── */}
-        {item.poster_url && (
-          <p className="text-[14px] font-bold text-[var(--sl-t1)] mb-2 truncate">{item.title}</p>
-        )}
-
-        {/* ── Métadonnées date + lieu ── */}
-        <div className="flex items-center gap-3 text-[11px] text-[var(--sl-t2)] mb-3.5 flex-wrap">
-          <span className="flex items-center gap-1">
-            <CalIcon />{fmtDate(item.date)} · {item.time}
-          </span>
-          {(item.venue || item.city) && (
-            <span className="flex items-center gap-1 truncate max-w-[140px]">
-              <LocIcon />{item.venue || item.city}
-            </span>
-          )}
-        </div>
-
-        {/* ── CTA ── */}
-        <button
-          onClick={() => onNavigate?.(item.event_id)}
-          className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all duration-150 active:scale-[0.98] hover:opacity-90"
-          style={{
-            background:  cfg.accent,
-            boxShadow:   `0 4px 14px ${cfg.accent}40`,
-          }}
-        >
-          Voir l'événement →
-        </button>
-      </div>
-    </article>
-  );
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// FeaturedGalleryCard — Carte compacte pour la galerie horizontale
-// ════════════════════════════════════════════════════════════════════════════
 
 export function FeaturedGalleryCard({ item, onNavigate }: FeaturedCardProps) {
   const cfg = PLAN_CONFIG[item.plan];

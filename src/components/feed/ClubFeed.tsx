@@ -172,9 +172,9 @@ export default function ClubFeed({
   // Graine aléatoire fixée au montage — varie l'ordre des sponsors + featured à chaque visite
   const [rotationSeed] = useState(() => Math.floor(Math.random() * 997));
 
-  // Priorité : données réelles → mock
-  const sourceItems    = realItems    ?? mockItems;
-  const sourceFeatured = realFeatured ?? mockFeatured;
+  // Priorité : données réelles → liste vide (jamais de mock silencieux en prod)
+  const sourceItems    = realItems    ?? [];
+  const sourceFeatured = realFeatured ?? [];
   const loading        = externalLoading ?? false;
 
   // Galerie featured : rotation de l'ordre selon la graine

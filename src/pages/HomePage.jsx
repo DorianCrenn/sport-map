@@ -4,7 +4,6 @@ import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import WeekendPosters from '../components/dashboard/WeekendPosters.tsx';
-import { getMockWeekendMatches } from '../hooks/useWeekendPosters.js';
 
 const PosterStudio = lazy(() => import('../components/PosterStudio.jsx'));
 
@@ -698,10 +697,8 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
 
         {/* Themed section */}
         <div style={{ backgroundColor:'var(--sl-hero-section-bg)', borderRadius:'24px 24px 0 0', marginTop:'-8px', position:'relative', zIndex:1 }}>
-          {/* Affiches du week-end — mock data pour test, retirer matches={...} en prod */}
           <div className="pt-5">
             <WeekendPosters
-              matches={getMockWeekendMatches()}
               onOpenInStudio={handleOpenInStudio}
             />
           </div>
@@ -807,7 +804,6 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             {/* Affiches du week-end — desktop */}
             <div className="pt-8">
               <WeekendPosters
-                matches={getMockWeekendMatches()}
                 onOpenInStudio={handleOpenInStudio}
               />
             </div>

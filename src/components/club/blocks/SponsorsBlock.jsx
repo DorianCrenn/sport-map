@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useClubSponsorsPage } from '../../../hooks/useClubSponsorsPage.js';
 
 const uid = () => `s_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
 
@@ -100,8 +101,10 @@ function TierSection({ tier, sponsors, isMultiTier }) {
   );
 }
 
-export function SponsorsBlockView({ block }) {
-  const sponsors = block.data?.sponsors ?? [];
+export function SponsorsBlockView({ block, clubId }) {
+  const dbSponsors = useClubSponsorsPage(clubId);
+  // DB en priorité, fallback sur les données locales du bloc (rétrocompatibilité)
+  const sponsors = dbSponsors.length ? dbSponsors : (block.data?.sponsors ?? []);
   if (sponsors.length === 0) return null;
 
   const grouped = {};
@@ -130,218 +133,15 @@ export function SponsorsBlockView({ block }) {
   );
 }
 
-const BLANK = { name: '', logo: '', url: '', tier: 'gold' };
-
-export function SponsorsBlockEditor({ block, onChange }) {
-  const sponsors = block.data?.sponsors ?? [];
-  const [form, setForm] = useState(BLANK);
-
-  function setF(k, v) {
-    setForm(prev => ({ ...prev, [k]: v }));
-  }
-
-  function add() {
-    if (!form.name.trim()) return;
-    onChange({ sponsors: [...sponsors, { ...form, id: uid() }] });
-    setForm(BLANK);
-  }
-
-  function remove(id) {
-    onChange({ sponsors: sponsors.filter(s => s.id !== id) });
-  }
-
-  function update(id, key, val) {
-    onChange({ sponsors: sponsors.map(s => s.id === id ? { ...s, [key]: val } : s) });
-  }
-
-  const labelSt = {
-    fontSize: 10,
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: '0.06em',
-    color: 'var(--sl-t3)',
-    marginBottom: 4,
-    display: 'block',
-  };
-
-  const closeBtnSt = {
-    flexShrink: 0,
-    width: 24,
-    height: 24,
-    borderRadius: '50%',
-    border: 'none',
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'var(--sl-t3)',
-  };
-
+export function SponsorsBlockEditor() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-        Partenaires &amp; Sponsors
+    <div style={{ padding: '20px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <span style={{ fontSize: 28 }}>🤝</span>
+      <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--sl-t1)' }}>
+        Gérez vos partenaires depuis l'onglet <strong style={{ color: '#6366f1' }}>Partenaires</strong>
       </div>
-
-      {sponsors.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {sponsors.map(s => {
-            const meta = TIER_META[s.tier] ?? TIER_META.partner;
-            return (
-              <div key={s.id} style={{
-                borderRadius: 10,
-                border: '1px solid var(--sl-border)',
-                backgroundColor: 'var(--sl-card)',
-                padding: '8px 10px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 6,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{
-                    display: 'inline-block',
-                    width: 8, height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: meta.color,
-                    flexShrink: 0,
-                  }} />
-                  <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {s.name || <span style={{ color: 'var(--sl-t3)', fontStyle: 'italic' }}>Sans nom</span>}
-                  </span>
-                  <button
-                    onClick={() => remove(s.id)}
-                    aria-label={`Supprimer ${s.name}`}
-                    style={closeBtnSt}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--sl-t3)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
-                  >
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </button>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  <div>
-                    <label style={labelSt}>Nom</label>
-                    <input
-                      value={s.name}
-                      onChange={e => update(s.id, 'name', e.target.value)}
-                      placeholder="Nom du sponsor"
-                      style={inputStyle}
-                    />
-                  </div>
-                  <div>
-                    <label style={labelSt}>Tier</label>
-                    <select
-                      value={s.tier}
-                      onChange={e => update(s.id, 'tier', e.target.value)}
-                      style={{ ...inputStyle }}
-                    >
-                      {TIER_ORDER.map(t => (
-                        <option key={t} value={t}>{TIER_META[t].label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={labelSt}>URL logo</label>
-                    <input
-                      value={s.logo}
-                      onChange={e => update(s.id, 'logo', e.target.value)}
-                      placeholder="https://…/logo.png"
-                      style={inputStyle}
-                    />
-                  </div>
-                  <div>
-                    <label style={labelSt}>URL lien</label>
-                    <input
-                      value={s.url}
-                      onChange={e => update(s.id, 'url', e.target.value)}
-                      placeholder="https://…"
-                      style={inputStyle}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div style={{
-        borderRadius: 10,
-        border: '1.5px dashed var(--sl-border-s)',
-        backgroundColor: 'var(--sl-surface)',
-        padding: '10px 12px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-      }}>
-        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--sl-t3)' }}>
-          Nouveau sponsor
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-          <div>
-            <label style={labelSt}>Nom *</label>
-            <input
-              value={form.name}
-              onChange={e => setF('name', e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
-              placeholder="Nom du sponsor"
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={labelSt}>Tier</label>
-            <select
-              value={form.tier}
-              onChange={e => setF('tier', e.target.value)}
-              style={{ ...inputStyle }}
-            >
-              {TIER_ORDER.map(t => (
-                <option key={t} value={t}>{TIER_META[t].label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label style={labelSt}>URL logo</label>
-            <input
-              value={form.logo}
-              onChange={e => setF('logo', e.target.value)}
-              placeholder="https://…/logo.png"
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={labelSt}>URL lien</label>
-            <input
-              value={form.url}
-              onChange={e => setF('url', e.target.value)}
-              placeholder="https://…"
-              style={inputStyle}
-            />
-          </div>
-        </div>
-        <button
-          onClick={add}
-          disabled={!form.name.trim()}
-          style={{
-            marginTop: 2,
-            padding: '8px 0',
-            borderRadius: 8,
-            border: 'none',
-            cursor: form.name.trim() ? 'pointer' : 'not-allowed',
-            backgroundColor: form.name.trim() ? 'var(--sl-green)' : 'var(--sl-border)',
-            color: form.name.trim() ? '#fff' : 'var(--sl-t3)',
-            fontSize: 12,
-            fontWeight: 700,
-            opacity: form.name.trim() ? 1 : 0.5,
-            transition: 'all 0.15s',
-          }}
-        >
-          + Ajouter un sponsor
-        </button>
+      <div style={{ fontSize: 12, color: 'var(--sl-t3)', maxWidth: 260, lineHeight: 1.5 }}>
+        Ce bloc affiche automatiquement les sponsors ayant <em>Page club</em> activé.
       </div>
     </div>
   );

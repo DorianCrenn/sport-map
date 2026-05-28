@@ -20,6 +20,9 @@ import NextMatchBlock from './blocks/NextMatchBlock.jsx';
 import AddBlockMenu from './AddBlockMenu.jsx';
 import ClubManagersPanel from './ClubManagersPanel.jsx';
 import ClubDashboard from './ClubDashboard.jsx';
+import RosterBlock from './blocks/RosterBlock.jsx';
+import ClubRosterPanel from './ClubRosterPanel.jsx';
+import ClubSponsorsPanel from './ClubSponsorsPanel.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import ClubFormModal from './ClubFormModal.jsx';
@@ -29,12 +32,14 @@ import { downloadClubICS } from '../../utils/exportICS.js';
 import { useClubManagers } from '../../hooks/useClubManagers.js';
 import { useClubTrainings } from '../../hooks/useClubTrainings.js';
 import { useShare } from '../../hooks/useShare.js';
+import { useClubEvents } from '../../hooks/useClubEvents.js';
 
 const BLOCK_LABELS = {
   title: 'Titre', text: 'Texte',
   'upcoming-events': 'Événements', training: 'Entraînements',
   image: 'Image', matches: 'Matchs', about: 'À propos', gallery: 'Galerie',
   sponsors: 'Sponsors', 'next-match': 'Prochain match',
+  roster: 'Effectif',
 };
 
 // ── Span helpers ──────────────────────────────────────────────────────────────
@@ -112,7 +117,7 @@ function FontInjector({ font }) {
 }
 
 // ── Block content renderer ────────────────────────────────────────────────────
-function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
+function BlockContent({ block, isEditing, onUpdate, allEvents, club, currentUser }) {
   return (
     <>
       {block.type === 'title'           && <TitleBlock           data={block.data} isEditing={isEditing} onUpdate={onUpdate} />}
@@ -131,9 +136,10 @@ function BlockContent({ block, isEditing, onUpdate, allEvents, club }) {
       )}
       {block.type === 'sponsors'        && (isEditing
         ? <SponsorsBlockEditor block={block} onChange={data => onUpdate(data)} />
-        : <SponsorsBlockView   block={block} />
+        : <SponsorsBlockView   block={block} clubId={club?.id} />
       )}
       {block.type === 'next-match'      && <NextMatchBlock data={block.data} allEvents={allEvents} club={club} />}
+      {block.type === 'roster'          && <RosterBlock data={block.data} clubId={club.id} currentUser={currentUser} />}
     </>
   );
 }
@@ -258,7 +264,7 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
       {/* Content */}
       <div className="p-4 flex-1" style={{ fontFamily: block.data?.font ? `'${block.data.font}', sans-serif` : undefined }}>
         <FontInjector font={block.data?.font} />
-        <BlockContent block={block} isEditing={true} onUpdate={onUpdate} allEvents={allEvents} club={club} />
+        <BlockContent block={block} isEditing={true} onUpdate={onUpdate} allEvents={allEvents} club={club} currentUser={undefined} />
       </div>
     </div>
   );
@@ -300,7 +306,7 @@ function EmptySlot({ remaining, onAdd }) {
 }
 
 // ── Draggable row ─────────────────────────────────────────────────────────────
-function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan, onMoveLeft, onMoveRight, onAddToRow, allEvents, club }) {
+function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan, onMoveLeft, onMoveRight, onAddToRow, allEvents, club, currentUser }) {
   const dragControls = useDragControls();
   const usedSpan   = row.blocks.reduce((s, b) => s + (b.span ?? 12), 0);
   const remaining  = 12 - usedSpan;
@@ -342,7 +348,7 @@ function DraggableRow({ row, isEditing, onUpdate, onDelete, onToggle, onSetSpan,
           ) : block.enabled ? (
             <div key={block.id} style={{ flex: spanToFlex(block.span ?? 12), minWidth: 0, marginBottom: 0, fontFamily: block.data?.font ? `'${block.data.font}', sans-serif` : undefined }}>
               <FontInjector font={block.data?.font} />
-              <BlockContent block={block} isEditing={false} onUpdate={() => {}} allEvents={allEvents} club={club} />
+              <BlockContent block={block} isEditing={false} onUpdate={() => {}} allEvents={allEvents} club={club} currentUser={currentUser} />
             </div>
           ) : null
         ))}
@@ -847,6 +853,8 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const [showDashboard, setShowDashboard] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [clubInternalTab, setClubInternalTab] = useState('infos');
+  const [showRosterPanel, setShowRosterPanel] = useState(false);
+  const [showSponsorsPanel, setShowSponsorsPanel] = useState(false);
   const [activeTeamId, setActiveTeamId] = useState(null);
   const tabBarRef = useRef(null);
 
@@ -907,9 +915,20 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
     url:         clubUrl,
   });
 
+  // ── Live events depuis Supabase (prioritaires sur allEvents localStorage) ──
+  const liveEvents = useClubEvents(club.id);
+  const effectiveEvents = useMemo(() => {
+    if (!liveEvents.length) return allEvents ?? [];
+    const liveIds = new Set(liveEvents.map(e => e.id));
+    return [
+      ...liveEvents,
+      ...(allEvents ?? []).filter(e => !liveIds.has(e.id)),
+    ];
+  }, [liveEvents, allEvents]);
+
   const clubEventIds = useMemo(
-    () => (allEvents ?? []).filter(e => String(e.clubId) === String(club.id)).map(e => e.id),
-    [allEvents, club.id]
+    () => effectiveEvents.filter(e => String(e.clubId) === String(club.id)).map(e => e.id),
+    [effectiveEvents, club.id]
   );
 
   const allTeams = useMemo(
@@ -923,7 +942,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
   const posterEvent = useMemo(() => {
     const now = new Date();
-    const next = (allEvents ?? [])
+    const next = effectiveEvents
       .filter(e => e.clubId === club.id && new Date(e.date) >= now)
       .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
     if (next) return next;
@@ -935,7 +954,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       city: club.city,
       eventType: 'friendly',
     };
-  }, [allEvents, club]);
+  }, [effectiveEvents, club]);
   const rows = getRows(blocks);
   const stats = useMatchStats(blocks);
   const pendingCount = usePendingResults(blocks);
@@ -974,7 +993,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
   function handleExportICS() {
     const now = new Date();
-    const upcoming = (allEvents ?? []).filter(e => e.clubId === club.id && new Date(e.date) >= now);
+    const upcoming = effectiveEvents.filter(e => e.clubId === club.id && new Date(e.date) >= now);
     downloadClubICS(upcoming, club.name);
   }
 
@@ -1384,13 +1403,17 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             { id: 'infos',   label: '📰 Infos'   },
             { id: 'stats',   label: '📊 Stats'   },
             { id: 'gestion', label: '⚙️ Gestion' },
+            { id: 'effectif', label: '📋 Effectif' },
+            { id: 'sponsors', label: '🤝 Partenaires' },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => {
                 setClubInternalTab(tab.id);
-                if (tab.id === 'stats')   setShowDashboard(true);
-                if (tab.id === 'gestion') setShowManagersPanel(true);
+                if (tab.id === 'stats')    setShowDashboard(true);
+                if (tab.id === 'gestion')  setShowManagersPanel(true);
+                if (tab.id === 'effectif') setShowRosterPanel(true);
+                if (tab.id === 'sponsors') setShowSponsorsPanel(true);
               }}
               style={{
                 padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
@@ -1417,7 +1440,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             updateBlock={updateBlock}
             addBlock={addBlock}
             club={club}
-            allEvents={allEvents ?? []}
+            allEvents={effectiveEvents}
             trainings={teamTrainings}
             onUpdateTrainings={setTeamTrainings}
             onAddEventForTeam={handleAddEventForTeam}
@@ -1447,8 +1470,9 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                     onMoveLeft={id => moveBlockInRow(id, 'left')}
                     onMoveRight={id => moveBlockInRow(id, 'right')}
                     onAddToRow={addBlockToRow}
-                    allEvents={allEvents ?? []}
+                    allEvents={effectiveEvents}
                     club={club}
+                    currentUser={currentUser}
                   />
 
                   {isEditing && (
@@ -1495,13 +1519,13 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
             {blocks.length === 0 && !isEditing && (() => {
               const now = new Date();
-              const hasUpcoming = (allEvents ?? []).some(
+              const hasUpcoming = effectiveEvents.some(
                 e => String(e.clubId) === String(club.id) && new Date(e.date) >= now
               );
               if (!hasUpcoming) return null;
               return (
                 <div style={{ padding: '0 0 16px' }}>
-                  <UpcomingEventsBlock data={{}} allEvents={allEvents ?? []} club={club} isEditing={false} onUpdate={() => {}} />
+                  <UpcomingEventsBlock data={{}} allEvents={effectiveEvents} club={club} isEditing={false} onUpdate={() => {}} />
                 </div>
               );
             })()}
@@ -1562,11 +1586,37 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         />
       )}
 
+      {/* Roster panel */}
+      {showRosterPanel && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            <button
+              onClick={() => { setShowRosterPanel(false); setClubInternalTab('infos'); }}
+              style={{ fontSize: 20, lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t1)', padding: '0 4px' }}
+            >
+              ←
+            </button>
+            <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--sl-t1)' }}>Effectif</span>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+            <ClubRosterPanel clubId={String(club.id)} teams={allTeams} />
+          </div>
+        </div>
+      )}
+
+      {/* Sponsors panel */}
+      {showSponsorsPanel && (
+        <ClubSponsorsPanel
+          clubId={String(club.id)}
+          onClose={() => { setShowSponsorsPanel(false); setClubInternalTab('infos'); }}
+        />
+      )}
+
       {/* Follow modal */}
       {showFollowModal && (
         <FollowModal
           club={club}
-          allEvents={allEvents ?? []}
+          allEvents={effectiveEvents}
           currentFollow={currentFollow}
           onSave={(options) => {
             if (isFollowing) {
@@ -1599,7 +1649,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             key="club-dashboard"
             club={club}
             clubEventIds={clubEventIds}
-            allEvents={allEvents}
+            allEvents={effectiveEvents}
             onArchiveSeason={onArchiveSeason}
             onClose={() => { setShowDashboard(false); setClubInternalTab('infos'); }}
           />
