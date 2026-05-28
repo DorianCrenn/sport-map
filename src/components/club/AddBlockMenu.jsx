@@ -123,53 +123,79 @@ const BLOCK_TYPES = [
 
 export default function AddBlockMenu({ onAdd, onCancel }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.18, ease: 'easeOut' }}
-      style={{ overflow: 'hidden', marginBottom: 12 }}
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
+      onClick={onCancel}
     >
-      <div style={{
-        borderRadius: 18, border: '1px solid var(--sl-border)',
-        backgroundColor: 'var(--sl-card)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-        padding: 14,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Choisir un type de bloc
-          </span>
-          <button
-            onClick={onCancel}
-            style={{ fontSize: 11, color: 'var(--sl-t3)', padding: '3px 10px', borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer' }}
-          >
-            Annuler
-          </button>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-          {BLOCK_TYPES.map(({ type, label, desc, icon }) => (
+      <motion.div
+        initial={{ y: '100%', opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: '100%', opacity: 0 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="w-full max-w-lg"
+        style={{ maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{
+          borderRadius: '20px 20px 0 0',
+          backgroundColor: 'var(--sl-card)',
+          borderTop: '1px solid var(--sl-border)',
+          display: 'flex', flexDirection: 'column',
+          maxHeight: '85vh', overflow: 'hidden',
+        }}>
+          {/* Drag handle */}
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4, flexShrink: 0 }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border)' }} />
+          </div>
+
+          {/* Header */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '8px 16px 10px', flexShrink: 0,
+          }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Choisir un type de bloc
+            </span>
             <button
-              key={type}
-              onClick={() => onAdd(type)}
+              onClick={onCancel}
               style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 12px', borderRadius: 12, textAlign: 'left',
-                border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)',
-                cursor: 'pointer', transition: 'all 0.12s',
+                fontSize: 11, color: 'var(--sl-t3)', padding: '3px 10px',
+                borderRadius: 8, border: '1px solid var(--sl-border)',
+                backgroundColor: 'transparent', cursor: 'pointer',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.backgroundColor = 'rgba(59,130,246,0.06)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.backgroundColor = 'var(--sl-surface)'; }}
             >
-              <span style={{ color: 'var(--sl-t3)', flexShrink: 0 }}>{icon}</span>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
-                <div style={{ fontSize: 10, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{desc}</div>
-              </div>
+              Annuler
             </button>
-          ))}
+          </div>
+
+          {/* Grid — scrollable if needed */}
+          <div style={{ overflowY: 'auto', padding: '0 12px 24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+              {BLOCK_TYPES.map(({ type, label, desc, icon }) => (
+                <button
+                  key={type}
+                  onClick={() => onAdd(type)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '10px 12px', borderRadius: 12, textAlign: 'left',
+                    border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)',
+                    cursor: 'pointer', transition: 'all 0.12s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.backgroundColor = 'rgba(59,130,246,0.06)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.backgroundColor = 'var(--sl-surface)'; }}
+                >
+                  <span style={{ color: 'var(--sl-t3)', flexShrink: 0 }}>{icon}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
+                    <div style={{ fontSize: 10, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{desc}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
