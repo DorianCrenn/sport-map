@@ -16,7 +16,7 @@ const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, c
   const { currentUser } = useAuth();
 
   if (currentUser) {
-    return <NewsPage followedClubIds={followedClubIds} />;
+    return <NewsPage followedClubIds={followedClubIds} onNavigate={onNavigate} />;
   }
 
   return (

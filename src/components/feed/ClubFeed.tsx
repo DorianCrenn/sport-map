@@ -18,6 +18,7 @@ import { useState, useMemo, useCallback } from 'react';
 import type { FeedItem, FeedFilter, SponsorFeedItem, FeaturedFeedItem } from './feed.types';
 import { MatchCard, CarpoolCard, FlashCard, SponsorCard, FeaturedGalleryCard } from './feed.cards';
 import { MOCK_FEED_ITEMS, MOCK_SPONSORS, MOCK_FEATURED } from './feed.mock';
+import NextTrainingCard from '../NextTrainingCard.jsx';
 
 // ════════════════════════════════════════════════════════════════════════════
 // Props
@@ -43,6 +44,9 @@ interface ClubFeedProps {
   onAttend?: (eventId: string, attending: boolean) => Promise<void>;
   onBookRide?: (rideId: string) => void;
   onShareEvent?: (eventId: string) => void;
+  /** Widget prochain entraînement */
+  currentUser?: unknown;
+  onNavigateClubs?: () => void;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -159,6 +163,8 @@ export default function ClubFeed({
   onAttend,
   onBookRide,
   onShareEvent,
+  currentUser,
+  onNavigateClubs,
 }: ClubFeedProps) {
   const [filter, setFilter] = useState<FeedFilter>('all');
   // Graine aléatoire fixée au montage — varie l'ordre des sponsors + featured à chaque visite
@@ -258,6 +264,13 @@ export default function ClubFeed({
         className="flex-1 overflow-y-auto overscroll-contain"
         style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
       >
+
+        {/* ── Widget prochain entraînement ── */}
+        {!loading && currentUser && (
+          <div className="px-4 pt-3">
+            <NextTrainingCard currentUser={currentUser} onNavigateClubs={onNavigateClubs} />
+          </div>
+        )}
 
         {/* ── Galerie horizontale "À la Une" ── */}
         {!loading && rotatedFeatured.length > 0 && (
