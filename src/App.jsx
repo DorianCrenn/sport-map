@@ -289,6 +289,7 @@ function AppInner() {
                   stats={homeStats}
                   clubs={allClubs}
                   allEvents={allEvents}
+                  onOpenTrainings={() => setShowTrainings(true)}
                 />
               </ErrorBoundary>
             )}

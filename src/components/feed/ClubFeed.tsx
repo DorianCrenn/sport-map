@@ -47,6 +47,7 @@ interface ClubFeedProps {
   /** Widget prochain entraînement */
   currentUser?: unknown;
   onNavigateClubs?: () => void;
+  onOpenTrainings?: () => void;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -165,6 +166,7 @@ export default function ClubFeed({
   onShareEvent,
   currentUser,
   onNavigateClubs,
+  onOpenTrainings,
 }: ClubFeedProps) {
   const [filter, setFilter] = useState<FeedFilter>('all');
   // Graine aléatoire fixée au montage — varie l'ordre des sponsors + featured à chaque visite
@@ -268,7 +270,7 @@ export default function ClubFeed({
         {/* ── Widget prochain entraînement ── */}
         {!loading && currentUser && (
           <div className="px-4 pt-3">
-            <NextTrainingCard currentUser={currentUser} onNavigateClubs={onNavigateClubs} />
+            <NextTrainingCard currentUser={currentUser} onNavigateClubs={onNavigateClubs} onOpenTrainings={onOpenTrainings} />
           </div>
         )}
 

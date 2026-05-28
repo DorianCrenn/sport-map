@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNextTraining } from '../hooks/useNextTraining.js';
+import { useMyPlayerProfile } from '../hooks/useMyPlayerProfile.js';
 import SendTrainingMessageModal from './club/SendTrainingMessageModal.jsx';
 
 const STATUS_CONFIG = {
@@ -8,13 +9,17 @@ const STATUS_CONFIG = {
   unsure:  { label: 'Peut-être', emoji: '🤔', color: '#f97316', bg: 'rgba(249,115,22,0.12)' },
 };
 
-export default function NextTrainingCard({ currentUser, onNavigateClubs }) {
-  const clubId    = currentUser?.clubId ?? null;
+export default function NextTrainingCard({ currentUser, onNavigateClubs, onOpenTrainings }) {
   const isManager = ['club_admin', 'admin', 'superadmin'].includes(currentUser?.role);
-  const { session, counts, myStatus, loading, respond, sendMessage } = useNextTraining(clubId, currentUser?.id);
+  const { profile: playerProfile, loading: playerLoading } = useMyPlayerProfile();
+
+  const clubId = currentUser?.clubId ?? playerProfile?.club_id ?? null;
+  const teamId = isManager ? null : (playerProfile?.team_id ?? null);
+
+  const { session, counts, myStatus, loading, respond, sendMessage } = useNextTraining(clubId, currentUser?.id, teamId);
   const [showMsgModal, setShowMsgModal] = useState(false);
 
-  if (!clubId || loading || !session) return null;
+  if (!clubId || loading || playerLoading || !session) return null;
 
   const dateLabel = new Intl.DateTimeFormat('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long',
@@ -36,14 +41,24 @@ export default function NextTrainingCard({ currentUser, onNavigateClubs }) {
           }}>
             🏋️ Prochain entraînement
           </span>
-          {onNavigateClubs && (
-            <button
-              onClick={onNavigateClubs}
-              style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-            >
-              Tout voir →
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {onOpenTrainings && (
+              <button
+                onClick={onOpenTrainings}
+                style={{ fontSize: 10, color: '#6366f1', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                Planning →
+              </button>
+            )}
+            {onNavigateClubs && (
+              <button
+                onClick={onNavigateClubs}
+                style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                Clubs →
+              </button>
+            )}
+          </div>
         </div>
 
         <p style={{

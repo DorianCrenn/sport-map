@@ -4,7 +4,7 @@ import { useClubSponsors } from '../hooks/useClubSponsors.ts';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import ClubFeed from '../components/feed/ClubFeed.tsx';
 
-export default function NewsPage({ followedClubIds = [], onNavigate }) {
+export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrainings }) {
   const { currentUser } = useAuth();
   const { items, loading }     = useFeedItems(followedClubIds);
   const { items: featured }    = useFeaturedEvents({ clubIds: followedClubIds });
@@ -21,6 +21,7 @@ export default function NewsPage({ followedClubIds = [], onNavigate }) {
       loading={loading}
       currentUser={currentUser}
       onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
+      onOpenTrainings={onOpenTrainings}
     />
   );
 }

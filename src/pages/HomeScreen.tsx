@@ -10,13 +10,14 @@ interface HomeScreenProps {
   stats?: Record<string, number>;
   clubs?: unknown[];
   allEvents?: unknown[];
+  onOpenTrainings?: () => void;
 }
 
-const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, clubs, allEvents }) => {
+const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, clubs, allEvents, onOpenTrainings }) => {
   const { currentUser } = useAuth();
 
   if (currentUser) {
-    return <NewsPage followedClubIds={followedClubIds} onNavigate={onNavigate} />;
+    return <NewsPage followedClubIds={followedClubIds} onNavigate={onNavigate} onOpenTrainings={onOpenTrainings} />;
   }
 
   return (

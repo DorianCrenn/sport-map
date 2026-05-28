@@ -1,33 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-export function useNextTraining(clubId, userId) {
+export function useNextTraining(clubId, userId, teamId = null) {
   const [session, setSession]   = useState(null);
   const [counts, setCounts]     = useState({ present: 0, absent: 0, unsure: 0 });
   const [myStatus, setMyStatus] = useState(null);
   const [loading, setLoading]   = useState(true);
   const [prevStatus, setPrevStatus] = useState(null);
 
-  // Phase 1 — fetch the next upcoming session for the club
+  // Phase 1 — fetch the next upcoming session for the club (+ optional team filter)
   useEffect(() => {
     if (!clubId) { setLoading(false); return; }
     let cancelled = false;
     const today = new Date().toISOString().slice(0, 10);
-    supabase
+
+    let q = supabase
       .from('training_sessions')
-      .select('id, club_id, date, time, location, category, cancelled, note')
+      .select('id, club_id, team_id, date, time, location, category, cancelled, note')
       .eq('club_id', String(clubId))
       .gte('date', today)
       .neq('cancelled', true)
       .order('date', { ascending: true })
       .order('time', { ascending: true })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled) { setSession(data ?? null); setLoading(false); }
-      });
+      .limit(1);
+
+    if (teamId) q = q.eq('team_id', String(teamId));
+
+    q.maybeSingle().then(({ data }) => {
+      if (!cancelled) { setSession(data ?? null); setLoading(false); }
+    });
+
     return () => { cancelled = true; };
-  }, [clubId]);
+  }, [clubId, teamId]);
 
   // Phase 2 — fetch attendance + realtime when session is known
   useEffect(() => {

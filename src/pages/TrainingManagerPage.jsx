@@ -1,8 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { useClubs } from '../hooks/useClubs.js';
+import { useManagedClubs } from '../hooks/useManagedClubs.js';
+import { useMyPlayerProfile } from '../hooks/useMyPlayerProfile.js';
 import { useClubTrainings } from '../hooks/useClubTrainings.js';
+import { useTrainingSessions } from '../hooks/useTrainingSessions.js';
+import { useTrainingAttendance } from '../hooks/useTrainingAttendance.js';
 import TrainingBlock from '../components/club/blocks/TrainingBlock.jsx';
 
 const BackIcon = () => (
@@ -11,42 +14,202 @@ const BackIcon = () => (
   </svg>
 );
 
+const STATUS_CFG = {
+  present: { label: 'Présent',   emoji: '✅', color: '#22c55e', bg: 'rgba(34,197,94,0.12)'  },
+  absent:  { label: 'Absent',    emoji: '❌', color: '#ef4444', bg: 'rgba(239,68,68,0.12)'  },
+  unsure:  { label: 'Peut-être', emoji: '🤔', color: '#f97316', bg: 'rgba(249,115,22,0.12)' },
+};
+
+const FRENCH_DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+const FRENCH_MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+
+function formatSessionDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return `${FRENCH_DAYS[d.getDay()]} ${d.getDate()} ${FRENCH_MONTHS[d.getMonth()]}`;
+}
+
+// ── Composant carte de séance pour la vue joueur "À venir" ────────────────────
+function UpcomingSessionCard({ session, currentUser }) {
+  const { counts, myStatus, respond } = useTrainingAttendance(session.id, currentUser?.id);
+  return (
+    <div style={{
+      borderRadius: 14, border: '1px solid var(--sl-border)',
+      backgroundColor: 'var(--sl-card)', overflow: 'hidden', marginBottom: 10,
+    }}>
+      <div style={{ height: 3, background: myStatus === 'present' ? '#22c55e' : myStatus === 'absent' ? '#ef4444' : myStatus === 'unsure' ? '#f97316' : 'var(--sl-border)' }} />
+      <div style={{ padding: '12px 14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--sl-t1)', margin: 0 }}>
+              {formatSessionDate(session.date)}
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--sl-t2)', margin: '2px 0 0', display: 'flex', gap: 6 }}>
+              {session.time && <span>{session.time}</span>}
+              {session.time && session.location && <span>·</span>}
+              {session.location && <span>{session.location}</span>}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 4, fontSize: 10, color: 'var(--sl-t3)' }}>
+            <span>✅ {counts.present}</span>
+            <span>❌ {counts.absent}</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {Object.entries(STATUS_CFG).map(([s, cfg]) => (
+            <button
+              key={s}
+              onClick={() => respond(s)}
+              style={{
+                flex: 1, padding: '7px 4px', borderRadius: 10, cursor: 'pointer',
+                border: `1.5px solid ${myStatus === s ? cfg.color : 'var(--sl-border)'}`,
+                backgroundColor: myStatus === s ? cfg.bg : 'transparent',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                transition: 'all 0.15s',
+              }}
+            >
+              <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
+              <span style={{ fontSize: 9, fontWeight: 700, color: myStatus === s ? cfg.color : 'var(--sl-t3)' }}>
+                {cfg.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Page principale ───────────────────────────────────────────────────────────
 export default function TrainingManagerPage({ onBack }) {
   const { currentUser } = useAuth();
-  const { userClubs } = useClubs();
-  const clubId = currentUser?.clubId ?? null;
+  const isManager = ['club_admin', 'admin', 'superadmin'].includes(currentUser?.role);
+
+  // ── Données manager ───────────────────────────────────────────────────────
+  const { managedClubs, loading: clubsLoading } = useManagedClubs();
+  const [selectedClubId, setSelectedClubId] = useState(null);
+
+  // Initialise selectedClubId quand managedClubs se charge
+  useEffect(() => {
+    if (selectedClubId || !managedClubs.length) return;
+    setSelectedClubId(String(managedClubs[0].id));
+  }, [managedClubs, selectedClubId]);
+
   const myClub = useMemo(
-    () => userClubs.find(c => String(c.id) === String(clubId)) ?? null,
-    [userClubs, clubId]
+    () => managedClubs.find(c => String(c.id) === selectedClubId) ?? null,
+    [managedClubs, selectedClubId]
   );
 
-  const [trainings, setTrainings] = useClubTrainings(clubId);
-  const [mode, setMode] = useState('calendar'); // 'calendar' | 'edit'
+  const [trainings, setTrainings] = useClubTrainings(isManager ? selectedClubId : null);
+  const { sessions: allDbSessions, generateFromRecurring } =
+    useTrainingSessions(isManager ? selectedClubId : null, null);
+
+  // ── Données joueur ────────────────────────────────────────────────────────
+  const { profile: playerProfile, loading: playerLoading } = useMyPlayerProfile();
+  const playerClubId  = playerProfile?.club_id  ?? null;
+  const playerTeamId  = playerProfile?.team_id  ?? null;
+  const playerTeamName = useMemo(() => {
+    if (!playerProfile) return null;
+    // Chercher le nom de l'équipe dans les clubs chargés
+    for (const club of managedClubs) {
+      if (String(club.id) !== String(playerClubId)) continue;
+      for (const cat of (club.categories ?? [])) {
+        const t = (cat.teams ?? []).find(t => String(t.id) === String(playerTeamId));
+        if (t) return t.name;
+      }
+    }
+    return null;
+  }, [playerProfile, playerClubId, playerTeamId, managedClubs]);
+
+  const { sessions: playerDbSessions, generateFromRecurring: playerGenerateFromRecurring } =
+    useTrainingSessions(!isManager ? playerClubId : null, !isManager ? playerTeamId : null);
+  const [playerTrainings] = useClubTrainings(!isManager ? playerClubId : null);
+
+  // ── Mode UI ───────────────────────────────────────────────────────────────
+  // Manager : 'calendar' | 'edit'   Joueur : 'upcoming' | 'calendar'
+  const [mode, setMode] = useState(isManager ? 'calendar' : 'upcoming');
+  const [selectedTeam, setSelectedTeam] = useState('all');
   const [addingTeam, setAddingTeam] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
+  const [generatedCount, setGeneratedCount] = useState(0);
 
-  // Derive team list : club.teams → then trainings keys → fallback 'default'
+  // ── Dérivation des équipes (manager) ─────────────────────────────────────
   const clubTeams = useMemo(() => {
-    const fromClub  = (myClub?.teams ?? []).map(t => ({ id: String(t.id ?? t.name ?? t), name: t.name ?? String(t) }));
-    const fromKeys  = Object.keys(trainings).filter(k => !fromClub.some(t => t.id === k));
-    const extra     = fromKeys.map(k => ({ id: k, name: k === 'default' ? 'Mon équipe' : k }));
-    const all       = [...fromClub, ...extra];
-    return all.length > 0 ? all : [{ id: 'default', name: 'Mon équipe' }];
+    const fromCategories = (myClub?.categories ?? []).flatMap(cat =>
+      (cat.teams ?? []).map(t => ({
+        id:      String(t.id),
+        name:    t.name,
+        catName: cat.name,
+        level:   t.level ?? '',
+      }))
+    );
+    const fromKeys = Object.keys(trainings).filter(k => !fromCategories.some(t => t.id === k));
+    const extra    = fromKeys.map(k => ({ id: k, name: k === 'default' ? 'Mon équipe' : k, catName: '' }));
+    const all      = [...fromCategories, ...extra];
+    return all.length > 0 ? all : [{ id: 'default', name: 'Mon équipe', catName: '' }];
   }, [myClub, trainings]);
 
-  // All sessions flattened for calendar view
-  const allSessions = useMemo(() => Object.values(trainings).flat(), [trainings]);
+  // Sessions templates aplaties (pour le mode calendrier manager)
+  const allTemplateSessions = useMemo(() => Object.values(trainings).flat(), [trainings]);
 
+  // Sessions filtrées par équipe sélectionnée (manager calendar)
+  const filteredTemplateSessions = useMemo(() => {
+    if (selectedTeam === 'all') return allTemplateSessions;
+    return trainings[selectedTeam] ?? [];
+  }, [allTemplateSessions, trainings, selectedTeam]);
+
+  // ── Auto-génération des séances concrètes (manager) ───────────────────────
+  const hasGenerated = useMemo(() => new Set(), []); // guard une seule génération par club
+  useEffect(() => {
+    if (!isManager || !selectedClubId || !clubTeams.length || hasGenerated.has(selectedClubId)) return;
+    if (Object.keys(trainings).length === 0) return;
+    hasGenerated.add(selectedClubId);
+    let total = 0;
+    async function gen() {
+      for (const team of clubTeams) {
+        const recurring = (trainings[team.id] ?? []).filter(s => s.recurring);
+        if (!recurring.length) continue;
+        const n = await generateFromRecurring(recurring, team.id, 4);
+        total += n ?? 0;
+      }
+      if (total > 0) setGeneratedCount(c => c + total);
+    }
+    gen();
+  }, [isManager, selectedClubId, clubTeams, trainings, generateFromRecurring, hasGenerated]);
+
+  // ── Auto-génération joueur ────────────────────────────────────────────────
+  const playerGenerated = useMemo(() => new Set(), []);
+  useEffect(() => {
+    if (isManager || !playerClubId || !playerTeamId || playerGenerated.has(playerClubId)) return;
+    if (Object.keys(playerTrainings).length === 0) return;
+    playerGenerated.add(playerClubId);
+    const recurring = (playerTrainings[playerTeamId] ?? Object.values(playerTrainings).flat()).filter(s => s.recurring);
+    if (!recurring.length) return;
+    playerGenerateFromRecurring(recurring, playerTeamId, 4);
+  }, [isManager, playerClubId, playerTeamId, playerTrainings, playerGenerateFromRecurring, playerGenerated]);
+
+  // Prochaines séances joueur (8 max)
+  const upcomingSessions = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return playerDbSessions
+      .filter(s => s.date >= today && s.cancelled !== true)
+      .slice(0, 8);
+  }, [playerDbSessions]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
   function handleAddTeam() {
     const name = newTeamName.trim();
     if (!name) return;
     const key = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-    if (!trainings[key]) {
-      setTrainings(prev => ({ ...prev, [key]: [] }));
-    }
-    setNewTeamName('');
-    setAddingTeam(false);
+    if (!trainings[key]) setTrainings(prev => ({ ...prev, [key]: [] }));
+    setNewTeamName(''); setAddingTeam(false);
   }
+
+  // ── Rendu ─────────────────────────────────────────────────────────────────
+  const isPlayerMode = !isManager;
+  const headerTitle  = isPlayerMode ? '📋 Mon planning' : '🏋️ Mes entraînements';
+  const headerSub    = isPlayerMode
+    ? playerTeamName ?? playerProfile?.name ?? null
+    : myClub?.name ?? null;
 
   return (
     <motion.div
@@ -60,12 +223,10 @@ export default function TrainingManagerPage({ onBack }) {
         backgroundColor: 'var(--sl-bg)', zIndex: 40,
       }}
     >
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* ── Header ─────────────────────────────────────────────────────── */}
       <div style={{
-        flexShrink: 0,
-        backgroundColor: 'var(--sl-card)',
-        borderBottom: '1px solid var(--sl-border)',
-        padding: '14px 16px',
+        flexShrink: 0, backgroundColor: 'var(--sl-card)',
+        borderBottom: '1px solid var(--sl-border)', padding: '14px 16px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
@@ -78,30 +239,59 @@ export default function TrainingManagerPage({ onBack }) {
           >
             <BackIcon />
           </button>
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>
-              🏋️ Mes entraînements
-            </h1>
-            {myClub && (
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>
+                {headerTitle}
+              </h1>
+              {isManager && generatedCount > 0 && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+                  backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1',
+                }}>
+                  {generatedCount} séance{generatedCount > 1 ? 's' : ''} planifiée{generatedCount > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+            {headerSub && (
               <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0, marginTop: 1 }}>
-                {myClub.name}
+                {headerSub}
               </p>
             )}
           </div>
         </div>
+
+        {/* Sélecteur de club (multi-club manager) */}
+        {isManager && managedClubs.length > 1 && (
+          <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+            {managedClubs.map(club => (
+              <button
+                key={club.id}
+                onClick={() => { setSelectedClubId(String(club.id)); setSelectedTeam('all'); }}
+                style={{
+                  padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  border: String(club.id) === selectedClubId ? 'none' : '1px solid var(--sl-border)',
+                  backgroundColor: String(club.id) === selectedClubId ? '#6366f1' : 'var(--sl-pill-bg)',
+                  color: String(club.id) === selectedClubId ? '#fff' : 'var(--sl-pill-text)',
+                }}
+              >
+                {club.name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* ── Mode toggle ────────────────────────────────────────────────────── */}
+      {/* ── Mode toggle ─────────────────────────────────────────────────── */}
       <div style={{
-        flexShrink: 0,
-        display: 'flex', gap: 6, padding: '10px 16px',
-        borderBottom: '1px solid var(--sl-border)',
-        backgroundColor: 'var(--sl-bg)',
+        flexShrink: 0, display: 'flex', gap: 6, padding: '10px 16px',
+        borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-bg)',
       }}>
-        {[
-          { key: 'calendar', label: '📅 Calendrier' },
-          { key: 'edit',     label: '✏️ Créneaux' },
-        ].map(({ key, label }) => (
+        {(isManager
+          ? [{ key: 'calendar', label: '📅 Calendrier' }, { key: 'edit', label: '✏️ Créneaux' }]
+          : [{ key: 'upcoming', label: '📋 À venir' }, { key: 'calendar', label: '📅 Calendrier' }]
+        ).map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setMode(key)}
@@ -118,13 +308,94 @@ export default function TrainingManagerPage({ onBack }) {
         ))}
       </div>
 
-      {/* ── Content ────────────────────────────────────────────────────────── */}
+      {/* ── Content ─────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
 
-        {/* ── CALENDAR MODE ── */}
-        {mode === 'calendar' && (
+        {/* ════════ PLAYER NOT LINKED ════════ */}
+        {isPlayerMode && !playerLoading && !playerProfile && (
+          <div style={{ textAlign: 'center', padding: '60px 24px' }}>
+            <p style={{ fontSize: 36, marginBottom: 12 }}>👤</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>
+              Vous n'êtes rattaché à aucune équipe
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--sl-t3)', lineHeight: 1.5 }}>
+              Demandez à votre manager de vous ajouter au roster de votre club
+            </p>
+          </div>
+        )}
+
+        {/* ════════ PLAYER — À VENIR ════════ */}
+        {isPlayerMode && playerProfile && mode === 'upcoming' && (
+          <div style={{ padding: '12px 16px 80px' }}>
+            {upcomingSessions.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 24px' }}>
+                <p style={{ fontSize: 36, marginBottom: 12 }}>📅</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>
+                  Aucune séance à venir
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--sl-t3)', lineHeight: 1.5 }}>
+                  Votre entraîneur n'a pas encore planifié de séances
+                </p>
+              </div>
+            ) : (
+              upcomingSessions.map(s => (
+                <UpcomingSessionCard key={s.id} session={s} currentUser={currentUser} />
+              ))
+            )}
+          </div>
+        )}
+
+        {/* ════════ PLAYER — CALENDRIER ════════ */}
+        {isPlayerMode && playerProfile && mode === 'calendar' && (
           <div style={{ padding: '12px 0 80px' }}>
-            {allSessions.length === 0 ? (
+            {(playerTrainings[playerTeamId] ?? Object.values(playerTrainings).flat()).length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 24px' }}>
+                <p style={{ fontSize: 36, marginBottom: 12 }}>🏋️</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)' }}>
+                  Aucun planning défini
+                </p>
+              </div>
+            ) : (
+              <TrainingBlock
+                data={{ sessions: playerTrainings[playerTeamId] ?? Object.values(playerTrainings).flat() }}
+                isEditing={false}
+                onUpdate={() => {}}
+                clubId={String(playerClubId)}
+                currentUser={currentUser}
+                isManager={false}
+              />
+            )}
+          </div>
+        )}
+
+        {/* ════════ MANAGER — CALENDRIER ════════ */}
+        {isManager && mode === 'calendar' && (
+          <div style={{ padding: '12px 0 80px' }}>
+            {/* Filtre par équipe */}
+            {clubTeams.length > 1 && (
+              <div style={{
+                display: 'flex', gap: 6, padding: '0 16px 10px',
+                overflowX: 'auto', flexShrink: 0,
+              }}>
+                {[{ id: 'all', name: 'Tout' }, ...clubTeams].map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setSelectedTeam(t.id)}
+                    style={{
+                      padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                      cursor: 'pointer', whiteSpace: 'nowrap',
+                      border: selectedTeam === t.id ? 'none' : '1px solid var(--sl-border)',
+                      backgroundColor: selectedTeam === t.id ? '#6366f1' : 'var(--sl-pill-bg)',
+                      color: selectedTeam === t.id ? '#fff' : 'var(--sl-pill-text)',
+                    }}
+                  >
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {filteredTemplateSessions.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 24px' }}>
                 <p style={{ fontSize: 36, marginBottom: 12 }}>🏋️</p>
                 <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>
@@ -146,10 +417,10 @@ export default function TrainingManagerPage({ onBack }) {
               </div>
             ) : (
               <TrainingBlock
-                data={{ sessions: allSessions }}
+                data={{ sessions: filteredTemplateSessions }}
                 isEditing={false}
                 onUpdate={() => {}}
-                clubId={String(clubId)}
+                clubId={String(selectedClubId)}
                 currentUser={currentUser}
                 isManager={true}
               />
@@ -157,80 +428,88 @@ export default function TrainingManagerPage({ onBack }) {
           </div>
         )}
 
-        {/* ── EDIT MODE ── */}
-        {mode === 'edit' && (
+        {/* ════════ MANAGER — EDIT ════════ */}
+        {isManager && mode === 'edit' && (
           <div style={{ padding: '12px 16px 80px' }}>
-
-            {clubTeams.map((team) => (
-              <TeamSection
-                key={team.id}
-                team={team}
-                sessions={trainings[team.id] ?? []}
-                onUpdate={patch => setTrainings(prev => ({ ...prev, [team.id]: patch.sessions }))}
-                clubId={String(clubId)}
-                currentUser={currentUser}
-              />
-            ))}
-
-            {/* Add team */}
-            {addingTeam ? (
-              <div style={{
-                marginTop: 12, padding: 12, borderRadius: 14,
-                border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)',
-              }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 8 }}>
-                  Nom de l'équipe
-                </p>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input
-                    autoFocus
-                    value={newTeamName}
-                    onChange={e => setNewTeamName(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleAddTeam(); if (e.key === 'Escape') setAddingTeam(false); }}
-                    placeholder="ex : Seniors A, U17…"
-                    style={{
-                      flex: 1, padding: '8px 10px', borderRadius: 8, fontSize: 12,
-                      border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)',
-                      color: 'var(--sl-t1)', outline: 'none',
-                    }}
-                  />
-                  <button
-                    onClick={handleAddTeam}
-                    disabled={!newTeamName.trim()}
-                    style={{
-                      padding: '8px 14px', borderRadius: 8, backgroundColor: '#6366f1',
-                      color: '#fff', border: 'none', fontSize: 12, fontWeight: 700,
-                      cursor: newTeamName.trim() ? 'pointer' : 'not-allowed', opacity: newTeamName.trim() ? 1 : 0.5,
-                    }}
-                  >
-                    Ajouter
-                  </button>
-                  <button
-                    onClick={() => { setAddingTeam(false); setNewTeamName(''); }}
-                    style={{
-                      padding: '8px 10px', borderRadius: 8, backgroundColor: 'var(--sl-surface)',
-                      color: 'var(--sl-t3)', border: '1px solid var(--sl-border)', fontSize: 12, cursor: 'pointer',
-                    }}
-                  >
-                    Annuler
-                  </button>
-                </div>
+            {clubsLoading ? (
+              <div style={{ textAlign: 'center', padding: 40, color: 'var(--sl-t3)', fontSize: 13 }}>
+                Chargement…
               </div>
             ) : (
-              <button
-                onClick={() => setAddingTeam(true)}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  width: '100%', marginTop: 12, padding: '12px',
-                  borderRadius: 14, cursor: 'pointer', fontSize: 13, fontWeight: 600,
-                  border: '2px dashed var(--sl-border)', color: 'var(--sl-t3)',
-                  backgroundColor: 'transparent',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.color = 'var(--sl-t3)'; }}
-              >
-                + Ajouter une équipe
-              </button>
+              <>
+                {clubTeams.map(team => (
+                  <TeamSection
+                    key={team.id}
+                    team={team}
+                    sessions={trainings[team.id] ?? []}
+                    onUpdate={patch => setTrainings(prev => ({ ...prev, [team.id]: patch.sessions }))}
+                    clubId={String(selectedClubId)}
+                    currentUser={currentUser}
+                  />
+                ))}
+
+                {/* Ajouter une équipe */}
+                {addingTeam ? (
+                  <div style={{
+                    marginTop: 12, padding: 12, borderRadius: 14,
+                    border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)',
+                  }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 8 }}>
+                      Nom de l'équipe
+                    </p>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input
+                        autoFocus
+                        value={newTeamName}
+                        onChange={e => setNewTeamName(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleAddTeam(); if (e.key === 'Escape') setAddingTeam(false); }}
+                        placeholder="ex : Seniors A, U17…"
+                        style={{
+                          flex: 1, padding: '8px 10px', borderRadius: 8, fontSize: 12,
+                          border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)',
+                          color: 'var(--sl-t1)', outline: 'none',
+                        }}
+                      />
+                      <button
+                        onClick={handleAddTeam}
+                        disabled={!newTeamName.trim()}
+                        style={{
+                          padding: '8px 14px', borderRadius: 8, backgroundColor: '#6366f1',
+                          color: '#fff', border: 'none', fontSize: 12, fontWeight: 700,
+                          cursor: newTeamName.trim() ? 'pointer' : 'not-allowed',
+                          opacity: newTeamName.trim() ? 1 : 0.5,
+                        }}
+                      >
+                        Ajouter
+                      </button>
+                      <button
+                        onClick={() => { setAddingTeam(false); setNewTeamName(''); }}
+                        style={{
+                          padding: '8px 10px', borderRadius: 8, backgroundColor: 'var(--sl-surface)',
+                          color: 'var(--sl-t3)', border: '1px solid var(--sl-border)', fontSize: 12, cursor: 'pointer',
+                        }}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setAddingTeam(true)}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      width: '100%', marginTop: 12, padding: '12px',
+                      borderRadius: 14, cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                      border: '2px dashed var(--sl-border)', color: 'var(--sl-t3)',
+                      backgroundColor: 'transparent',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.color = 'var(--sl-t3)'; }}
+                  >
+                    + Ajouter une équipe
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}
@@ -239,7 +518,7 @@ export default function TrainingManagerPage({ onBack }) {
   );
 }
 
-// ── Team section with collapsible TrainingBlock ───────────────────────────────
+// ── Section équipe repliable (mode EDIT manager) ──────────────────────────────
 function TeamSection({ team, sessions, onUpdate, clubId, currentUser }) {
   const [open, setOpen] = useState(true);
 
@@ -255,11 +534,13 @@ function TeamSection({ team, sessions, onUpdate, clubId, currentUser }) {
         }}
       >
         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{
-            display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
-            backgroundColor: '#6366f1', flexShrink: 0,
-          }} />
-          {team.name}
+          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#6366f1', flexShrink: 0 }} />
+          <span>{team.name}</span>
+          {team.catName && team.catName !== team.name && (
+            <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--sl-t3)', fontStyle: 'italic' }}>
+              {team.catName}
+            </span>
+          )}
         </span>
         <span style={{ fontSize: 11, color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', gap: 6 }}>
           {sessions.length} créneau{sessions.length !== 1 ? 'x' : ''}

@@ -16,7 +16,7 @@ export function useTrainingSessions(clubId, teamId = null) {
       .from('training_sessions')
       .select('*')
       .eq('club_id', clubIdStr)
-      .gte('date', new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)) // 7 jours passés + futur
+      .gte('date', new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10))
       .order('date', { ascending: true });
 
     if (teamId) query = query.eq('team_id', teamId);
@@ -25,6 +25,10 @@ export function useTrainingSessions(clubId, teamId = null) {
       if (cancelled) return;
       if (error) console.error('[TrainingSessions] fetch failed:', error.message);
       setSessions(data ?? []);
+      setLoading(false);
+    }).catch(err => {
+      if (cancelled) return;
+      console.error('[TrainingSessions] fetch rejected:', err.message);
       setLoading(false);
     });
 
@@ -53,33 +57,60 @@ export function useTrainingSessions(clubId, teamId = null) {
     await supabase.from('training_sessions').delete().eq('id', id);
   }, []);
 
-  // Génère des instances de séances récurrentes à partir du JSONB club_trainings
-  const generateFromRecurring = useCallback(async (recurSessions, weeksAhead = 4) => {
+  // Génère des instances concrètes de séances récurrentes dans training_sessions.
+  // teamId (2e param) est l'équipe à laquelle rattacher les séances créées.
+  // Utilise une dédup côté DB pour éviter les doublons même si l'état local est incomplet.
+  const generateFromRecurring = useCallback(async (recurSessions, targetTeamId, weeksAhead = 4) => {
     const DAY_TO_JS = { Lundi:1, Mardi:2, Mercredi:3, Jeudi:4, Vendredi:5, Samedi:6, Dimanche:0 };
     const today = new Date();
-    const end = new Date(today.getTime() + weeksAhead * 7 * 86400000);
-    const toCreate = [];
+    const end   = new Date(today.getTime() + weeksAhead * 7 * 86400000);
+    const todayStr = today.toISOString().slice(0, 10);
+    const endStr   = end.toISOString().slice(0, 10);
 
-    for (const s of recurSessions) {
-      if (!s.recurring) continue;
+    const recurring = (recurSessions ?? []).filter(s => s.recurring);
+    if (!recurring.length) return 0;
+
+    const allRefIds = recurring.map(s => s.id);
+
+    // Vérification côté DB — quelles combinaisons (ref_id, date) existent déjà ?
+    const { data: existing } = await supabase
+      .from('training_sessions')
+      .select('session_ref_id, date')
+      .eq('club_id', clubIdStr)
+      .in('session_ref_id', allRefIds)
+      .gte('date', todayStr)
+      .lte('date', endStr);
+
+    const existingSet = new Set((existing ?? []).map(e => `${e.session_ref_id}|${e.date}`));
+
+    const toCreate = [];
+    for (const s of recurring) {
       const jsDay = DAY_TO_JS[s.day];
+      if (jsDay === undefined) continue;
       let cur = new Date(today);
       cur.setDate(cur.getDate() + ((jsDay - cur.getDay() + 7) % 7));
       while (cur <= end) {
         const dateStr = cur.toISOString().slice(0, 10);
-        const exists = sessions.some(ts => ts.session_ref_id === s.id && ts.date === dateStr);
-        if (!exists) {
-          toCreate.push({ club_id: clubIdStr, team_id: null, session_ref_id: s.id, date: dateStr, time: s.time, location: s.location ?? null });
+        if (!existingSet.has(`${s.id}|${dateStr}`)) {
+          toCreate.push({
+            club_id:        clubIdStr,
+            team_id:        targetTeamId ?? null,
+            session_ref_id: s.id,
+            date:           dateStr,
+            time:           s.time        ?? null,
+            location:       s.location   ?? null,
+          });
         }
         cur = new Date(cur.getTime() + 7 * 86400000);
       }
     }
 
-    if (!toCreate.length) return;
+    if (!toCreate.length) return 0;
     const { data, error } = await supabase.from('training_sessions').insert(toCreate).select();
-    if (error) { console.error('[TrainingSessions] generate failed:', error.message); return; }
+    if (error) { console.error('[TrainingSessions] generate failed:', error.message); return 0; }
     setSessions(prev => [...prev, ...(data ?? [])].sort((a, b) => a.date.localeCompare(b.date)));
-  }, [clubIdStr, sessions]);
+    return data?.length ?? 0;
+  }, [clubIdStr]);
 
   return { sessions, loading, createSession, updateSession, deleteSession, generateFromRecurring };
 }
