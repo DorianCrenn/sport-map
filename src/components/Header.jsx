@@ -12,7 +12,8 @@ export default function Header({
   onShowAnnouncements, announcementsUnreadCount = 0,
 }) {
   const { allSports } = useSports();
-  const { currentUser, isAdmin, isClubAdmin, logout } = useAuth();
+  const { currentUser, isAdmin, isClubAdmin, logout,
+          devRole, setDevRole, devClubId, setDevClubId } = useAuth();
   const { pendingRequests } = useClubRequests();
   const pendingCount = isAdmin ? pendingRequests.length : 0;
   const totalBadge = pendingCount + rideNotifCount;
@@ -365,6 +366,65 @@ export default function Header({
           )}
         </AnimatePresence>
       </div>
+
+      {/* ── Dev role switcher (DEV only) ── */}
+      {setDevRole && currentUser && (
+        <div style={{
+          display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0,
+          padding: '3px 6px', borderRadius: 12,
+          backgroundColor: 'rgba(234,179,8,0.12)',
+          border: '1px solid rgba(234,179,8,0.35)',
+        }}>
+          <div style={{ display: 'flex', gap: 3 }}>
+            {[
+              { role: null,         label: '👤 Réel' },
+              { role: 'user',       label: 'User'    },
+              { role: 'club_admin', label: 'Club'    },
+              { role: 'admin',      label: 'Admin'   },
+              { role: 'superadmin', label: 'Super'   },
+            ].map(({ role, label }) => {
+              const active = devRole === role;
+              return (
+                <button
+                  key={String(role)}
+                  onClick={() => { setDevRole(role); if (role !== 'club_admin') setDevClubId(null); }}
+                  style={{
+                    padding: '2px 7px', borderRadius: 10, fontSize: 10, fontWeight: 700,
+                    cursor: 'pointer', border: 'none', transition: 'all 0.1s',
+                    backgroundColor: active ? '#eab308' : 'transparent',
+                    color: active ? '#000' : 'rgba(234,179,8,0.8)',
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          {devRole === 'club_admin' && clubs.length > 0 && (
+            <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', maxWidth: 260 }}>
+              {clubs.slice(0, 6).map(club => {
+                const active = devClubId === String(club.id);
+                return (
+                  <button
+                    key={club.id}
+                    onClick={() => setDevClubId(active ? null : String(club.id))}
+                    title={club.name}
+                    style={{
+                      padding: '1px 6px', borderRadius: 8, fontSize: 9, fontWeight: 600,
+                      cursor: 'pointer', border: 'none', transition: 'all 0.1s',
+                      backgroundColor: active ? '#eab308' : 'rgba(234,179,8,0.2)',
+                      color: active ? '#000' : 'rgba(234,179,8,0.9)',
+                      maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {club.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Bell / announcements */}
       {onShowAnnouncements && (

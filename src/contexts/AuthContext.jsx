@@ -456,17 +456,28 @@ export function AuthProvider({ children }) {
   // ── Derived state ─────────────────────────────────────────────────────────
 
   const currentUser = useMemo(() => mapProfile(authUser, profile), [authUser, profile]);
-  const isAdmin     = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
-  const isClubAdmin = currentUser?.role === 'club_admin';
+
+  // ── Dev role override (DEV uniquement — invisible en production) ──────────
+  const [devRole,   setDevRole]   = useState(null);
+  const [devClubId, setDevClubId] = useState(null);
+
+  const effectiveRole = (devRole && !import.meta.env.PROD) ? devRole : currentUser?.role;
+  const effectiveUser = (devRole && !import.meta.env.PROD && currentUser)
+    ? { ...currentUser, role: devRole, clubId: devClubId ?? currentUser.clubId }
+    : currentUser;
+
+  const isAdmin     = effectiveRole === 'admin' || effectiveRole === 'superadmin';
+  const isClubAdmin = effectiveRole === 'club_admin';
   const isLoggedIn  = !!currentUser;
 
   return (
     <AuthContext.Provider value={{
-      currentUser, loading,
+      currentUser: effectiveUser, loading,
       login, register, logout, updateProfile, refetchProfile,
       loginWithGoogle, loginWithProvider, requestPasswordReset,
       follows, followedClubs, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow,
       isAdmin, isClubAdmin, isLoggedIn,
+      ...(import.meta.env.PROD ? {} : { devRole, setDevRole, devClubId, setDevClubId }),
     }}>
       {children}
     </AuthContext.Provider>
