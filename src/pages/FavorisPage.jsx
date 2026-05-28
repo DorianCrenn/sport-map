@@ -238,7 +238,7 @@ function NotifBanner({ favoriteEvents }) {
         const delay = new Date(event.date).getTime() - now - 60 * 60 * 1000;
         if (delay > 0) navigator.serviceWorker.controller.postMessage({ type: 'SCHEDULE_NOTIFICATION', title: `📅 ${event.title}`, body: `Dans 1h · ${event.venue || event.city}`, delay, tag: `event-${event.id}` });
       }
-      new Notification('🔔 Rappels activés !', { body: `Tu seras notifié 1h avant tes ${favoriteEvents.length} événement${favoriteEvents.length > 1 ? 's' : ''} favoris.`, icon: '/Logo-sportlink-sans-fond.png' });
+      new Notification('🔔 Rappels activés !', { body: `Tu seras notifié 1h avant tes ${favoriteEvents.length} événement${favoriteEvents.length > 1 ? 's' : ''} favoris.`, icon: '/icon-192.png' });
     }
   }
   return (

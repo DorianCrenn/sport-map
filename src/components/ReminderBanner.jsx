@@ -42,7 +42,7 @@ export default function ReminderBanner({ today, tomorrow, onNavigateToFavoris })
       scheduleNotifications([...today, ...tomorrow]);
       new Notification('🔔 SportLink — Rappels activés', {
         body: label,
-        icon: '/Logo-sportlink-sans-fond.png',
+        icon: '/icon-192.png',
       });
     }
   }
