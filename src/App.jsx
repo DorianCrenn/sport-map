@@ -238,6 +238,16 @@ function AppInner() {
     }
   }
 
+  if (loading) return (
+    <div style={{
+      display: 'flex', height: '100dvh',
+      alignItems: 'center', justifyContent: 'center',
+      backgroundColor: 'var(--sl-bg)',
+    }}>
+      <div className="w-11 h-11 rounded-full border-[3px] border-indigo-500 border-t-transparent animate-spin" />
+    </div>
+  );
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
       <OfflineBanner />

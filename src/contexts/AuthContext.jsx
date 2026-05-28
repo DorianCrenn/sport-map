@@ -95,11 +95,13 @@ export function AuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // TOKEN_REFRESHED only rotates the JWT — profile hasn't changed and must NOT
-        // increment fetchSeq or it would invalidate an in-flight INITIAL_SESSION fetch.
+        // TOKEN_REFRESHED only rotates the JWT — profile hasn't changed.
+        // Do NOT call done() here: if TOKEN_REFRESHED fires before INITIAL_SESSION
+        // (expired token case), calling done() would set loading=false before
+        // fetchProfile runs, exposing partial currentUser data.
+        // INITIAL_SESSION always fires and owns the done() call.
         if (event === 'TOKEN_REFRESHED') {
           if (session?.user) setAuthUser(session.user);
-          done();
           return;
         }
 
@@ -108,37 +110,51 @@ export function AuthProvider({ children }) {
         if (session?.user) {
           setAuthUser(session.user);
           try {
-            const prof = await Promise.race([
+            // 6s < 8s failsafe — ensures this race resolves before the failsafe fires,
+          // so done() is always called with the real profile result (or null on slow DB).
+          const prof = await Promise.race([
               fetchProfile(session.user),
-              new Promise(resolve => setTimeout(() => resolve(null), 10000)),
+              new Promise(resolve => setTimeout(() => resolve(null), 6000)),
             ]);
             if (seq === fetchSeq) {
               // Never overwrite a valid profile with a timeout null
               setProfile(prev => prof !== null ? prof : prev);
             }
 
+            // Helper: cap any Supabase query at 5s so MANAGER/ROSTER never block done()
+            const withTimeout = (p) => Promise.race([
+              p,
+              new Promise(r => setTimeout(() => r({ data: null, error: null }), 5000)),
+            ]);
+
             // MANAGER-001: Activate pending manager invitation on login
             if (session.user.email) {
               try {
-                const { data: pendingManager } = await supabase
-                  .from('club_managers')
-                  .select('club_id, role')
-                  .eq('email', session.user.email.toLowerCase())
-                  .eq('status', 'pending')
-                  .maybeSingle();
+                const { data: pendingManager } = await withTimeout(
+                  supabase
+                    .from('club_managers')
+                    .select('club_id, role')
+                    .eq('email', session.user.email.toLowerCase())
+                    .eq('status', 'pending')
+                    .maybeSingle()
+                );
 
                 if (pendingManager) {
-                  await supabase
-                    .from('club_managers')
-                    .update({ status: 'active' })
-                    .eq('email', session.user.email.toLowerCase());
+                  await withTimeout(
+                    supabase
+                      .from('club_managers')
+                      .update({ status: 'active' })
+                      .eq('email', session.user.email.toLowerCase())
+                  );
 
                   const currentProf = prof ?? (await fetchProfile(session.user));
                   if (currentProf && !currentProf.club_id) {
-                    await supabase
-                      .from('profiles')
-                      .update({ club_id: pendingManager.club_id, role: 'club_admin' })
-                      .eq('id', session.user.id);
+                    await withTimeout(
+                      supabase
+                        .from('profiles')
+                        .update({ club_id: pendingManager.club_id, role: 'club_admin' })
+                        .eq('id', session.user.id)
+                    );
                     const updatedProf = await fetchProfile(session.user);
                     if (seq === fetchSeq && updatedProf) setProfile(updatedProf);
                   }
@@ -151,18 +167,22 @@ export function AuthProvider({ children }) {
             // ROSTER-001: Auto-assign user_id on club_players when email matches
             if (session.user.email) {
               try {
-                const { data: playerEntry } = await supabase
-                  .from('club_players')
-                  .select('id')
-                  .eq('email', session.user.email.toLowerCase())
-                  .is('user_id', null)
-                  .maybeSingle();
+                const { data: playerEntry } = await withTimeout(
+                  supabase
+                    .from('club_players')
+                    .select('id')
+                    .eq('email', session.user.email.toLowerCase())
+                    .is('user_id', null)
+                    .maybeSingle()
+                );
 
                 if (playerEntry) {
-                  await supabase
-                    .from('club_players')
-                    .update({ user_id: session.user.id })
-                    .eq('id', playerEntry.id);
+                  await withTimeout(
+                    supabase
+                      .from('club_players')
+                      .update({ user_id: session.user.id })
+                      .eq('id', playerEntry.id)
+                  );
                 }
               } catch (e) {
                 console.warn('[Auth] ROSTER-001 non-blocking error:', e.message);
