@@ -32,7 +32,7 @@ const PROFIL = {
   id: 'profil', label: 'Profil',
   icon: (a) => <svg width="22" height="22" viewBox="0 0 24 24" fill={a ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
 };
-export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV, overlayOpen = false }) {
+export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV, onOpenTrainings, overlayOpen = false }) {
   const { isAdmin, isClubAdmin, currentUser } = useAuth();
   const canFab = isAdmin || isClubAdmin;
   const HOME = currentUser ? HOME_FEED : HOME_VISITOR;
@@ -47,10 +47,11 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
 
   function handleFabAction(action) {
     setFabOpen(false);
-    if (action === 'event') onAddEvent?.();
-    if (action === 'csv')   onImportCSV?.();
-    if (action === 'clubs') onTabChange?.('clubs');
-    if (action === 'map') onTabChange?.('map');
+    if (action === 'event')     onAddEvent?.();
+    if (action === 'csv')       onImportCSV?.();
+    if (action === 'trainings') onOpenTrainings?.();
+    if (action === 'clubs')     onTabChange?.('clubs');
+    if (action === 'map')       onTabChange?.('map');
   }
 
   return (
@@ -97,6 +98,12 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                   label="Mon club"
                   color="var(--sl-blue)"
                   onClick={() => handleFabAction('clubs')}
+                />
+                <FabAction
+                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+                  label="Mes entraînements"
+                  color="#22c55e"
+                  onClick={() => handleFabAction('trainings')}
                 />
                 <FabAction
                   icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>}

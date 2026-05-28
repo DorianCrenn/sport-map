@@ -29,7 +29,8 @@ const OnboardingPage     = lazy(() => import('./pages/OnboardingPage.jsx'));
 const EventFormModal     = lazy(() => import('./components/EventFormModal.jsx'));
 const CSVImportModal     = lazy(() => import('./components/CSVImportModal.jsx'));
 const BadgeUnlockModal   = lazy(() => import('./components/BadgeUnlockModal.jsx'));
-const MyRidesPage        = lazy(() => import('./pages/MyRidesPage.jsx'));
+const MyRidesPage           = lazy(() => import('./pages/MyRidesPage.jsx'));
+const TrainingManagerPage   = lazy(() => import('./pages/TrainingManagerPage.jsx'));
 const AnnouncementsCenter = lazy(() => import('./components/AnnouncementsCenter.jsx'));
 const PosterStudio        = lazy(() => import('./components/PosterStudio.jsx'));
 import OfflineBanner from './components/OfflineBanner.jsx';
@@ -57,6 +58,7 @@ function AppInner() {
   const { unreadCount: rideNotifCount } = useRideNotifications();
   const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
   const [showMyRides, setShowMyRides] = useState(false);
+  const [showTrainings, setShowTrainings] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [clubOverlayOpen, setClubOverlayOpen] = useState(false);
 
@@ -340,9 +342,12 @@ function AppInner() {
         {showMyRides && (
           <Suspense fallback={null}><MyRidesPage onBack={() => setShowMyRides(false)} /></Suspense>
         )}
+        {showTrainings && (
+          <Suspense fallback={null}><TrainingManagerPage onBack={() => setShowTrainings(false)} /></Suspense>
+        )}
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || !!selectedSearchClub || showAnnouncements} />
 
       <Suspense fallback={null}>
         <AnimatePresence>
