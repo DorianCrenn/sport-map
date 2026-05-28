@@ -26,6 +26,12 @@ vi.mock('../../lib/supabase.js', () => ({
       resetPasswordForEmail: vi.fn().mockResolvedValue({ error: null }),
     },
     from: mockFrom,
+    channel: vi.fn(() => ({
+      on:          vi.fn().mockReturnThis(),
+      subscribe:   vi.fn().mockReturnThis(),
+      unsubscribe: vi.fn(),
+    })),
+    removeChannel: vi.fn(),
   },
 }));
 
@@ -37,6 +43,7 @@ function makeProfileQuery(profile = null) {
   return {
     select:      vi.fn().mockReturnThis(),
     eq:          vi.fn().mockReturnThis(),
+    is:          vi.fn().mockReturnThis(),
     maybeSingle: vi.fn().mockResolvedValue({ data: profile, error: null }),
     update:      vi.fn().mockReturnThis(),
     insert:      vi.fn().mockReturnThis(),
@@ -85,6 +92,42 @@ function simulateSession(role = 'user', name = 'DB Name') {
     favorite_sports: [], followed_clubs: [],
     onboarding_done: false, badges: [],
   }));
+}
+
+function makeRejectingQuery(msg = 'Supabase error') {
+  return {
+    select:      vi.fn().mockReturnThis(),
+    eq:          vi.fn().mockReturnThis(),
+    is:          vi.fn().mockReturnThis(),
+    update:      vi.fn().mockReturnThis(),
+    insert:      vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockRejectedValue(new Error(msg)),
+    then:        (fn, rej) => Promise.reject(new Error(msg)).then(fn, rej),
+  };
+}
+
+function simulateSessionWithTableError(errorTable) {
+  mockOnAuthStateChange.mockImplementationOnce((cb) => {
+    Promise.resolve().then(() =>
+      cb('SIGNED_IN', {
+        user: {
+          id: 'user-42',
+          email: 'test@sportlink.fr',
+          created_at: '2026-01-01T00:00:00Z',
+          user_metadata: { name: 'Test' },
+        },
+      })
+    );
+    return { data: { subscription: { unsubscribe: vi.fn() } } };
+  });
+
+  const baseProfile = { name: 'Test', role: 'user', favorite_sports: [], followed_clubs: [], onboarding_done: false, badges: [] };
+
+  mockFrom.mockImplementation((table) => {
+    if (table === errorTable) return makeRejectingQuery(`${table} unavailable`);
+    if (table === 'profiles')   return makeProfileQuery(baseProfile);
+    return makeProfileQuery(null);
+  });
 }
 
 // ── Tests — état non connecté ─────────────────────────────────────────────────
@@ -232,5 +275,129 @@ describe('AuthContext — useAuth hors provider', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<Bad />)).toThrow('useAuth must be used within AuthProvider');
     spy.mockRestore();
+  });
+});
+
+// ── Tests — blocs non-bloquants MANAGER-001 / ROSTER-001 ─────────────────────
+
+describe("AuthContext — onAuthStateChange : blocs non-bloquants (try/catch)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("club_managers inaccessible → loading false, utilisateur connecté", async () => {
+    simulateSessionWithTableError("club_managers");
+    renderAuth();
+    await waitFor(
+      () => expect(screen.queryByText("loading")).not.toBeInTheDocument(),
+      { timeout: 3000 }
+    );
+    expect(screen.getByTestId("logged-in").textContent).toBe("true");
+  });
+
+  it("club_players inaccessible → loading false, utilisateur connecté", async () => {
+    simulateSessionWithTableError("club_players");
+    renderAuth();
+    await waitFor(
+      () => expect(screen.queryByText("loading")).not.toBeInTheDocument(),
+      { timeout: 3000 }
+    );
+    expect(screen.getByTestId("logged-in").textContent).toBe("true");
+  });
+
+  it("club_managers ET club_players inaccessibles → loading false, utilisateur connecté", async () => {
+    mockOnAuthStateChange.mockImplementationOnce((cb) => {
+      Promise.resolve().then(() =>
+        cb("SIGNED_IN", {
+          user: { id: "user-42", email: "test@sportlink.fr", created_at: "2026-01-01T00:00:00Z", user_metadata: { name: "Test" } },
+        })
+      );
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+    const baseProfile = { name: "Test", role: "user", favorite_sports: [], followed_clubs: [], onboarding_done: false, badges: [] };
+    mockFrom.mockImplementation((table) => {
+      if (table === "club_managers" || table === "club_players")
+        return makeRejectingQuery(`${table} unavailable`);
+      if (table === "profiles") return makeProfileQuery(baseProfile);
+      return makeProfileQuery(null);
+    });
+
+    renderAuth();
+    await waitFor(
+      () => expect(screen.queryByText("loading")).not.toBeInTheDocument(),
+      { timeout: 3000 }
+    );
+    expect(screen.getByTestId("logged-in").textContent).toBe("true");
+  });
+
+  it("manager pending trouvé → update club_managers et profiles appelés", async () => {
+    mockOnAuthStateChange.mockImplementationOnce((cb) => {
+      Promise.resolve().then(() =>
+        cb("SIGNED_IN", {
+          user: { id: "user-42", email: "test@sportlink.fr", created_at: "2026-01-01T00:00:00Z", user_metadata: { name: "Test" } },
+        })
+      );
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+
+    const managerUpdateSpy = vi.fn().mockReturnThis();
+    const profileUpdateSpy = vi.fn().mockReturnThis();
+    const baseProfile = { name: "Test", role: "user", club_id: null, favorite_sports: [], followed_clubs: [], onboarding_done: false, badges: [] };
+
+    mockFrom.mockImplementation((table) => {
+      if (table === "club_managers") {
+        return {
+          select:      vi.fn().mockReturnThis(),
+          eq:          vi.fn().mockReturnThis(),
+          is:          vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: { club_id: "club-xyz", role: "manager" }, error: null }),
+          update:      managerUpdateSpy,
+          insert:      vi.fn().mockReturnThis(),
+          then:        (fn) => Promise.resolve({ data: null, error: null }).then(fn),
+        };
+      }
+      if (table === "profiles") {
+        return { ...makeProfileQuery(baseProfile), update: profileUpdateSpy };
+      }
+      return makeProfileQuery(null);
+    });
+
+    renderAuth();
+    await waitFor(
+      () => expect(screen.queryByText("loading")).not.toBeInTheDocument(),
+      { timeout: 3000 }
+    );
+    expect(managerUpdateSpy).toHaveBeenCalledWith({ status: "active" });
+    expect(profileUpdateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ club_id: "club-xyz", role: "club_admin" })
+    );
+  });
+
+  it("aucun manager pending → profiles.update non appelé pour club_id", async () => {
+    mockOnAuthStateChange.mockImplementationOnce((cb) => {
+      Promise.resolve().then(() =>
+        cb("SIGNED_IN", {
+          user: { id: "user-42", email: "test@sportlink.fr", created_at: "2026-01-01T00:00:00Z", user_metadata: { name: "Test" } },
+        })
+      );
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+
+    const profileUpdateSpy = vi.fn().mockReturnThis();
+    const baseProfile = { name: "Test", role: "user", club_id: null, favorite_sports: [], followed_clubs: [], onboarding_done: false, badges: [] };
+
+    mockFrom.mockImplementation((table) => {
+      if (table === "profiles") {
+        return { ...makeProfileQuery(baseProfile), update: profileUpdateSpy };
+      }
+      return makeProfileQuery(null);
+    });
+
+    renderAuth();
+    await waitFor(
+      () => expect(screen.queryByText("loading")).not.toBeInTheDocument(),
+      { timeout: 3000 }
+    );
+    expect(profileUpdateSpy).not.toHaveBeenCalledWith(
+      expect.objectContaining({ club_id: expect.anything() })
+    );
   });
 });
