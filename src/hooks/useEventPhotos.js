@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 
 const BUCKET = 'event-photos';
 const MAX_PHOTOS = 10;
+const MAX_FILE_SIZE_MB = 5;
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 export function useEventPhotos(eventId) {
   const { currentUser } = useAuth();
@@ -31,6 +33,15 @@ export function useEventPhotos(eventId) {
   const uploadPhoto = useCallback(async (file, clubId, caption = '') => {
     if (!currentUser || !eventId || !clubId) return null;
     if (photos.length >= MAX_PHOTOS) return null;
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      console.error(`[EventPhotos] type non supporté: ${file.type}`);
+      return { error: `Type non supporté. Utilisez JPG, PNG ou WebP.` };
+    }
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      console.error(`[EventPhotos] fichier trop lourd: ${(file.size / 1024 / 1024).toFixed(1)} Mo`);
+      return { error: `Fichier trop lourd (max ${MAX_FILE_SIZE_MB} Mo).` };
+    }
 
     setUploading(true);
     try {

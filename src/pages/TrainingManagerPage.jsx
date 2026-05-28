@@ -432,8 +432,15 @@ export default function TrainingManagerPage({ onBack }) {
         {isManager && mode === 'edit' && (
           <div style={{ padding: '12px 16px 80px' }}>
             {clubsLoading ? (
-              <div style={{ textAlign: 'center', padding: 40, color: 'var(--sl-t3)', fontSize: 13 }}>
-                Chargement…
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 4 }}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} style={{
+                    height: 76, borderRadius: 14,
+                    backgroundColor: 'var(--sl-surface)',
+                    animation: 'pulse 1.4s ease-in-out infinite',
+                    opacity: 1 - i * 0.15,
+                  }} />
+                ))}
               </div>
             ) : (
               <>

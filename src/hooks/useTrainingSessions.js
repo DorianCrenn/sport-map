@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 
 export function useTrainingSessions(clubId, teamId = null) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const prevSessionsRef = useRef([]);
 
   const clubIdStr = String(clubId ?? '');
 
@@ -47,14 +48,28 @@ export function useTrainingSessions(clubId, teamId = null) {
   }, [clubIdStr]);
 
   const updateSession = useCallback(async (id, patch) => {
-    setSessions(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s));
+    if (patch.status && !['active', 'cancelled', 'rescheduled'].includes(patch.status)) return;
+    setSessions(prev => {
+      prevSessionsRef.current = prev;
+      return prev.map(s => s.id === id ? { ...s, ...patch } : s);
+    });
     const { error } = await supabase.from('training_sessions').update(patch).eq('id', id);
-    if (error) console.error('[TrainingSessions] update failed:', error.message);
+    if (error) {
+      console.error('[TrainingSessions] update failed, rolling back:', error.message);
+      setSessions(prevSessionsRef.current);
+    }
   }, []);
 
   const deleteSession = useCallback(async (id) => {
-    setSessions(prev => prev.filter(s => s.id !== id));
-    await supabase.from('training_sessions').delete().eq('id', id);
+    setSessions(prev => {
+      prevSessionsRef.current = prev;
+      return prev.filter(s => s.id !== id);
+    });
+    const { error } = await supabase.from('training_sessions').delete().eq('id', id);
+    if (error) {
+      console.error('[TrainingSessions] delete failed, rolling back:', error.message);
+      setSessions(prevSessionsRef.current);
+    }
   }, []);
 
   // Génère des instances concrètes de séances récurrentes dans training_sessions.

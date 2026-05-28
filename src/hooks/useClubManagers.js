@@ -46,10 +46,12 @@ export function useClubManagers(clubId) {
 
   // ── Add (optimistic + Supabase) ───────────────────────────────────────────
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   const addManager = useCallback(async (email, role = 'manager') => {
     const normalized = email.trim().toLowerCase();
-    const validRole = ['manager', 'editor', 'communicant'].includes(role) ? role : 'manager';
-    if (!normalized) return false;
+    const validRole = ['manager', 'editor', 'communicant', 'coach'].includes(role) ? role : 'manager';
+    if (!EMAIL_RE.test(normalized)) return false;
     if (managers.some(m => m.email === normalized)) return false;
 
     const name = normalized
@@ -73,14 +75,19 @@ export function useClubManagers(clubId) {
   }, [managers, clubId]);
 
   const updateManagerRole = useCallback(async (email, role) => {
-    const validRole = ['manager', 'editor', 'communicant'].includes(role) ? role : 'manager';
+    const validRole = ['manager', 'editor', 'communicant', 'coach'].includes(role) ? role : 'manager';
+    const snapshot = managers;
     setManagers(prev => prev.map(m => m.email === email ? { ...m, role: validRole } : m));
-    await supabase
+    const { error } = await supabase
       .from('club_managers')
       .update({ role: validRole })
       .eq('club_id', String(clubId))
       .eq('email', email);
-  }, [clubId]);
+    if (error) {
+      console.error('[Managers] role update failed, rolling back:', error.message);
+      setManagers(snapshot);
+    }
+  }, [clubId, managers]);
 
   // ── Remove (optimistic + Supabase) ───────────────────────────────────────
 

@@ -249,6 +249,7 @@ function AppInner() {
   );
 
   return (
+    <ErrorBoundary name="AppShell">
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
       <OfflineBanner />
       {activeTab !== 'home' && (
@@ -374,7 +375,9 @@ function AppInner() {
         )}
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements} />
+      <ErrorBoundary name="BottomNav">
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements} />
+      </ErrorBoundary>
 
       <Suspense fallback={null}>
         <AnimatePresence>
@@ -438,6 +441,7 @@ function AppInner() {
         </AnimatePresence>
       </Suspense>
     </div>
+    </ErrorBoundary>
   );
 }
 
