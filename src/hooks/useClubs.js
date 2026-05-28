@@ -50,8 +50,17 @@ export function useClubs() {
       .limit(500)
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error) { console.error('[Clubs] fetch failed:', error.message); }
-        if (data) setUserClubs(data.map(mapFromDB));
+        if (error) {
+          console.error('[Clubs] fetch failed:', error.message);
+          setLoading(false);
+          return;
+        }
+        setUserClubs(data?.map(mapFromDB) ?? []);
+        setLoading(false);
+      })
+      .catch(err => {
+        if (cancelled) return;
+        console.error('[Clubs] fetch rejected:', err.message);
         setLoading(false);
       });
     return () => { cancelled = true; };

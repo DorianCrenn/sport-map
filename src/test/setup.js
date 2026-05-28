@@ -1,26 +1,19 @@
 import '@testing-library/jest-dom';
-import { vi, beforeEach } from 'vitest';
 
-// ── localStorage mock ────────────────────────────────────────────────────────
-let _store = {};
-const localStorageMock = {
-  getItem:    vi.fn((key) => _store[key] ?? null),
-  setItem:    vi.fn((key, value) => { _store[key] = String(value); }),
-  removeItem: vi.fn((key) => { delete _store[key]; }),
-  clear:      vi.fn(() => { _store = {}; }),
-};
-Object.defineProperty(window, 'localStorage', { value: localStorageMock, writable: true });
+// Suppress console.error/warn noise in tests unless explicitly checking them
+vi.spyOn(console, 'error').mockImplementation(() => {});
+vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-// ── Browser API stubs ────────────────────────────────────────────────────────
-global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
-global.URL.revokeObjectURL = vi.fn();
-global.window.open = vi.fn();
-
-// ── CSS vars (jsdom ne supporte pas les custom properties) ──────────────────
-global.CSS = { supports: vi.fn(() => false) };
-
-// ── Reset entre chaque test ──────────────────────────────────────────────────
-beforeEach(() => {
-  vi.clearAllMocks();
-  _store = {};
-});
+// jsdom localStorage polyfill (some vitest environments don't expose it)
+if (typeof localStorage === 'undefined' || typeof localStorage.clear !== 'function') {
+  const store = {};
+  const ls = {
+    getItem:    (k)    => store[k] ?? null,
+    setItem:    (k, v) => { store[k] = String(v); },
+    removeItem: (k)    => { delete store[k]; },
+    clear:      ()     => { Object.keys(store).forEach(k => delete store[k]); },
+    get length()       { return Object.keys(store).length; },
+    key:        (i)    => Object.keys(store)[i] ?? null,
+  };
+  Object.defineProperty(globalThis, 'localStorage', { value: ls, writable: true });
+}
