@@ -8,7 +8,6 @@ import { useToast } from '../contexts/ToastContext.jsx';
 import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
-import { STATIC_CLUBS } from '../data/clubs.js';
 import { BADGE_DEFS, BADGE_ORDER, LEVELS, getLevel } from '../hooks/useBadges.js';
 import { usePlan } from '../hooks/usePlan.js';
 import BadgeUnlockModal from '../components/BadgeUnlockModal.jsx';
@@ -99,7 +98,7 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
   const { allSports } = useSports();
   const { userClubs } = useClubs();
   const { planId, plan: planInfo, isUpgradeable: canUpgrade } = usePlan();
-  const allClubs = [...userClubs, ...STATIC_CLUBS];
+  const allClubs = userClubs;
   const followedClubIds = followedClubs;
   const [editingSports, setEditingSports] = useState(false);
   const [selectedSports, setSelectedSports] = useState(new Set());

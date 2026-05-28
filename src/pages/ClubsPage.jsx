@@ -11,8 +11,6 @@ import ClubFormModal from '../components/club/ClubFormModal.jsx';
 import ClubRequestModal from '../components/club/ClubRequestModal.jsx';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { SkeletonClubCard } from '../components/Skeleton.jsx';
-import { STATIC_CLUBS } from '../data/clubs.js';
-
 export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent, onClubOverlayChange, onArchiveSeason }) {
   const { allSports: SPORTS } = useSports();
   const { userClubs, loading: clubsLoading, addClub, updateClub, deleteClub } = useClubs();
@@ -34,7 +32,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
     return () => onClubOverlayChange?.(false);
   }, [selectedClub, onClubOverlayChange]);
 
-  const allClubs = [...userClubs, ...STATIC_CLUBS];
+  const allClubs = userClubs;
   const favoriteSports = currentUser?.favoriteSports || [];
   const inFavoritesMode = favoriteSports.length > 0 && !showAllSports;
 

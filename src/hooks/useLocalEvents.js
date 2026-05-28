@@ -107,18 +107,28 @@ export function useLocalEvents() {
   // ── Initial fetch ─────────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
-    supabase
-      .from('events')
-      .select('*')
-      .eq('is_archived', false)
-      .order('date', { ascending: true })
-      .limit(500)
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) console.error('[Events] fetch failed:', error.message);
-        if (data) setEvents(data.map(mapFromDB));
-        setLoading(false);
-      });
+    async function load() {
+      let { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('is_archived', false)
+        .order('date', { ascending: true })
+        .limit(500);
+      // Fallback : si la colonne is_archived n'existe pas encore en DB
+      if (error) {
+        console.warn('[Events] fetch (1/2) failed:', error.message);
+        ({ data, error } = await supabase
+          .from('events')
+          .select('*')
+          .order('date', { ascending: true })
+          .limit(500));
+      }
+      if (cancelled) return;
+      if (error) console.error('[Events] fetch failed:', error.message);
+      if (data) setEvents(data.map(mapFromDB));
+      setLoading(false);
+    }
+    load();
     return () => { cancelled = true; };
   }, []);
 

@@ -4,8 +4,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { useToast } from './contexts/ToastContext.jsx';
 import { SportsProvider } from './contexts/SportsContext.jsx';
-import { EVENTS } from './data/events.js';
-import { STATIC_CLUBS } from './data/clubs.js';
 import { useLocalEvents } from './hooks/useLocalEvents.js';
 import { useBadges } from './hooks/useBadges.js';
 import { FavoritesProvider, useFavoritesContext } from './contexts/FavoritesContext.jsx';
@@ -104,7 +102,7 @@ function AppInner() {
   const pendingDeepLink = useRef(null);
 
   const allEvents = useMemo(
-    () => [...EVENTS, ...userEvents, ...clubMatchEvents],
+    () => [...userEvents, ...clubMatchEvents],
     [userEvents, clubMatchEvents]
   );
 
@@ -116,7 +114,7 @@ function AppInner() {
     }
   }, [allEvents, setKnownAttendeeIds]);
 
-  const allClubs = useMemo(() => [...userClubs, ...STATIC_CLUBS], [userClubs]);
+  const allClubs = useMemo(() => userClubs, [userClubs]);
   allClubsRef.current = allClubs;
 
   const { earned: earnedBadges, newBadges, markSeen } = useBadges({ attending, allEvents });
@@ -131,10 +129,7 @@ function AppInner() {
 
     if (clubMatch) {
       const id = clubMatch[1];
-      // 1) Check static clubs immediately (no async needed)
-      const staticClub = STATIC_CLUBS.find(c => String(c.id) === id);
-      if (staticClub) { setSelectedSearchClub(staticClub); return; }
-      // 2) For Supabase clubs (UUID), fetch directly — don't wait for allClubs
+      // Fetch Supabase club directly — don't wait for allClubs
       pendingDeepLink.current = id;
       supabase.from('clubs').select('*').eq('id', id).maybeSingle()
         .then(({ data }) => {
@@ -204,7 +199,7 @@ function AppInner() {
     const weekEnd = new Date(now); weekEnd.setDate(now.getDate() + 7);
     const thisWeek = allEvents.filter(e => { const d = new Date(e.date); return d >= now && d < weekEnd; }).length;
     return {
-      clubs: userClubs.length + STATIC_CLUBS.length,
+      clubs: userClubs.length,
       events: allEvents.length,
       sports: Object.keys(allSports).length,
       thisWeek,

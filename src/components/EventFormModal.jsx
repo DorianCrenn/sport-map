@@ -3,7 +3,6 @@ import { Z } from '../constants/zIndex.js';
 import { eventFormSchema, validate } from '../lib/schemas.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EVENT_TYPES } from '../data/cities.js';
-import { STATIC_CLUBS } from '../data/clubs.js';
 import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -596,7 +595,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const { currentUser, isClubAdmin } = useAuth();
   const { allSports } = useSports();
   const { userClubs } = useClubs();
-  const allClubs = [...userClubs, ...STATIC_CLUBS];
+  const allClubs = userClubs;
   const myClub = currentUser?.clubId ? allClubs.find(c => String(c.id) === String(currentUser.clubId)) : null;
   const useSmartMode = !!(isClubAdmin && myClub);
   const isEdit = !!event && !event?._isNew;
