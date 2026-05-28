@@ -1,32 +1,10 @@
--- ── Audit pré-production — FK manquantes + index + CHECK constraint ──────────
--- À appliquer APRÈS avoir vérifié l'absence d'enregistrements orphelins :
---   SELECT COUNT(*) FROM club_managers   WHERE club_id NOT IN (SELECT id::text FROM clubs);
---   SELECT COUNT(*) FROM club_pages      WHERE club_id NOT IN (SELECT id::text FROM clubs);
---   SELECT COUNT(*) FROM club_page_views WHERE club_id NOT IN (SELECT id::text FROM clubs);
---   SELECT COUNT(*) FROM club_trainings  WHERE club_id NOT IN (SELECT id::text FROM clubs);
--- Si > 0, nettoyer d'abord :
---   DELETE FROM club_managers   WHERE club_id NOT IN (SELECT id::text FROM clubs);
---   etc.
-
--- ── FK club_managers → clubs ──────────────────────────────────────────────────
-ALTER TABLE public.club_managers
-  ADD CONSTRAINT fk_club_managers_club
-  FOREIGN KEY (club_id) REFERENCES public.clubs(id) ON DELETE CASCADE;
-
--- ── FK club_pages → clubs ─────────────────────────────────────────────────────
-ALTER TABLE public.club_pages
-  ADD CONSTRAINT fk_club_pages_club
-  FOREIGN KEY (club_id) REFERENCES public.clubs(id) ON DELETE CASCADE;
-
--- ── FK club_page_views → clubs ────────────────────────────────────────────────
-ALTER TABLE public.club_page_views
-  ADD CONSTRAINT fk_club_page_views_club
-  FOREIGN KEY (club_id) REFERENCES public.clubs(id) ON DELETE CASCADE;
-
--- ── FK club_trainings → clubs ─────────────────────────────────────────────────
-ALTER TABLE public.club_trainings
-  ADD CONSTRAINT fk_club_trainings_club
-  FOREIGN KEY (club_id) REFERENCES public.clubs(id) ON DELETE CASCADE;
+-- ── Audit pré-production — index + CHECK constraint ─────────────────────────
+--
+-- NOTE : Les FK club_id → clubs(id) ne peuvent pas être ajoutées en l'état :
+-- club_id est stocké en TEXT dans ces tables alors que clubs.id est UUID.
+-- PostgreSQL refuse un FK entre types incompatibles sans conversion préalable.
+-- La conversion TEXT → UUID de toutes ces colonnes est une refactorisation
+-- hors scope ici (nécessite une migration avec downtime et mise à jour du code).
 
 -- ── Index club_pages(club_id) ─────────────────────────────────────────────────
 -- useClubPage.js filtre par club_id à chaque chargement de page club
