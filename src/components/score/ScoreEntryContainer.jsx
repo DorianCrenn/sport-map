@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useMatchScore } from '../../hooks/useMatchScore.js';
 import { getSportConfig } from '../../config/sportMatchConfig.js';
 import SportScoreForm from './SportScoreForm.jsx';
+import TennisEncountersManager from './tennis/TennisEncountersManager.jsx';
 
 /**
  * Conteneur principal de saisie de score.
@@ -66,10 +67,13 @@ export default function ScoreEntryContainer({ event, onUpdateEvent }) {
     );
   }
 
+  // Tennis : déléguer entièrement à TennisEncountersManager
+  if (config.scoreType === 'individual_encounters') {
+    return <TennisEncountersManager event={event} onUpdateEvent={onUpdateEvent} />;
+  }
+
   const canSave = config.scoreType === 'calculated'
     ? true  // rugby : toujours sauvegardable
-    : config.scoreType === 'individual_encounters'
-    ? false  // tennis : pas de bouton ici
     : (formData.home !== undefined || formData.sets_home !== undefined);
 
   const inp = {

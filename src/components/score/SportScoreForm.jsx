@@ -20,12 +20,8 @@ export default function SportScoreForm({ config, value, onChange }) {
     case 'sets':
       return <SetsScoreInputs {...props} />;
     case 'individual_encounters':
-      // Tennis géré par TennisEncountersManager (Phase 2)
-      return (
-        <div style={{ padding: '14px', textAlign: 'center', color: 'var(--sl-t3)', fontSize: 12 }}>
-          🎾 Gérez les rencontres individuelles via le panneau "Rencontres" ci-dessous.
-        </div>
-      );
+      // Géré directement dans ScoreEntryContainer via TennisEncountersManager
+      return null;
     case 'simple':
     default:
       return <SimpleScoreInputs {...props} />;
