@@ -137,6 +137,29 @@ export function MatchCard({ item, onAttend, onShare }: MatchCardProps) {
   return (
     <article className="rounded-2xl overflow-hidden border border-[var(--sl-border)] bg-[var(--sl-card)] shadow-md">
 
+      {/* ── En-tête : logo club + badge tournoi ── */}
+      {(item.club_name || item.event_type === 'tournament') && (
+        <div className="flex items-center justify-between px-4 pt-3 pb-1">
+          <div className="flex items-center gap-2">
+            {item.club_logo_url ? (
+              <img src={item.club_logo_url} alt={item.club_name} className="w-6 h-6 rounded-full object-cover shrink-0 ring-1 ring-[var(--sl-border)]" />
+            ) : item.club_name ? (
+              <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
+                <span className="text-[9px] font-bold text-indigo-400">{item.club_name[0]}</span>
+              </div>
+            ) : null}
+            {item.club_name && (
+              <span className="text-[10px] font-bold text-[var(--sl-t3)] truncate max-w-[120px]">{item.club_name}</span>
+            )}
+          </div>
+          {item.event_type === 'tournament' && (
+            <span className="text-[9px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/25 shrink-0">
+              🏆 Tournoi
+            </span>
+          )}
+        </div>
+      )}
+
       {/* ── Hero : affiche IA ou gradient générique ── */}
       <div className="relative">
         {item.poster_url ? (

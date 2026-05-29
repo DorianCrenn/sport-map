@@ -26,6 +26,9 @@ export interface MatchFeedItem extends BaseFeedItem {
   poster_url?: string;  // URL de l'affiche générée (null = affichage générique)
   attendee_count: number;
   user_is_attending: boolean;
+  club_name?:     string;
+  club_logo_url?: string;
+  event_type?:    string;  // 'match' | 'tournament' | null
 }
 
 // ── Carte Covoiturage Logistique ──────────────────────────────────────────────

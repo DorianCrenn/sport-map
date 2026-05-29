@@ -60,9 +60,12 @@ function mapUpcoming(event: Record<string, unknown>): MatchFeedItem {
     venue:            (event.venue as string) ?? '',
     city:             (event.city as string) ?? '',
     sport:            (event.sport as string) ?? 'Football',
-    poster_url:       event.poster_url as string | undefined,
-    attendee_count:   0,
+    poster_url:        event.poster_url as string | undefined,
+    attendee_count:    0,
     user_is_attending: false,
+    club_name:         (event.clubs as any)?.name      ?? undefined,
+    club_logo_url:     (event.clubs as any)?.logo_url  ?? undefined,
+    event_type:        (event.event_type as string)    ?? undefined,
   };
 }
 

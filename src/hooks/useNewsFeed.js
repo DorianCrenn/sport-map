@@ -47,12 +47,13 @@ export function useNewsFeed({ followedClubIds = [] }) {
         .order('date', { ascending: false })
         .limit(10);
 
-      // Prochains matchs — events futurs des clubs suivis
+      // Prochains matchs — events futurs + 7 derniers jours (matchs récents sans score)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const { data: ups } = await supabase
         .from('events')
-        .select('id, title, sport, date, club_id, venue, city, event_type, level, home_or_away')
+        .select('id, title, sport, date, club_id, venue, city, event_type, level, home_or_away, poster_url, clubs(name, logo_url)')
         .in('club_id', clubIds)
-        .gte('date', now)
+        .gte('date', sevenDaysAgo)
         .order('date', { ascending: true })
         .limit(10);
 
