@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
@@ -8,11 +8,12 @@ import SportFilterBar from '../components/SportFilterBar.jsx';
 import DateFilterBar from '../components/DateFilterBar.jsx';
 import MapView from '../components/MapView.jsx';
 import EventSidebar from '../components/EventSidebar.jsx';
-import EventFormModal from '../components/EventFormModal.jsx';
 import MobileEventSheet from '../components/MobileEventSheet.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import { useSports } from '../hooks/useSports.js';
 import EmptyMapGuide from '../components/EmptyMapGuide.jsx';
+
+const EventFormModal = lazy(() => import('../components/EventFormModal.jsx'));
 
 export default function MapPage({
   allEvents, activeDepartment, canAddEvent,
@@ -419,12 +420,14 @@ export default function MapPage({
       </div>
 
       {modalEvent !== undefined && (
-        <EventFormModal
-          event={modalEvent}
-          onSave={handleSave}
-          onBulkSave={handleBulkSave}
-          onClose={() => setModalEvent(undefined)}
-        />
+        <Suspense fallback={null}>
+          <EventFormModal
+            event={modalEvent}
+            onSave={handleSave}
+            onBulkSave={handleBulkSave}
+            onClose={() => setModalEvent(undefined)}
+          />
+        </Suspense>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
@@ -10,9 +10,10 @@ import SportIcon from '../components/SportIcon.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import { BADGE_DEFS, BADGE_ORDER, LEVELS, getLevel } from '../hooks/useBadges.js';
 import { usePlan } from '../hooks/usePlan.js';
-import BadgeUnlockModal from '../components/BadgeUnlockModal.jsx';
 import ClubLeaderboard from '../components/ClubLeaderboard.jsx';
 import UserLeaderboard from '../components/UserLeaderboard.jsx';
+
+const BadgeUnlockModal = lazy(() => import('../components/BadgeUnlockModal.jsx'));
 
 // ── Theme toggle switch ────────────────────────────────────────────────────────
 function ThemeToggle() {
@@ -626,10 +627,12 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
       {/* Badge preview modal (temporary — dev only) */}
       <AnimatePresence>
         {previewBadges && (
-          <BadgeUnlockModal
-            badges={previewBadges}
-            onDone={() => setPreviewBadges(null)}
-          />
+          <Suspense fallback={null}>
+            <BadgeUnlockModal
+              badges={previewBadges}
+              onDone={() => setPreviewBadges(null)}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
     </div>

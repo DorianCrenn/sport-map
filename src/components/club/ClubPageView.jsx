@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { useDynamicMeta } from '../../hooks/useDynamicMeta.js';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
@@ -26,8 +26,8 @@ import ClubSponsorsPanel from './ClubSponsorsPanel.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import ClubFormModal from './ClubFormModal.jsx';
-import EventFormModal from '../EventFormModal.jsx';
-import PosterStudio from '../PosterStudio.jsx';
+const EventFormModal = lazy(() => import('../EventFormModal.jsx'));
+const PosterStudio   = lazy(() => import('../PosterStudio.jsx'));
 import { downloadClubICS } from '../../utils/exportICS.js';
 import { useClubManagers } from '../../hooks/useClubManagers.js';
 import { useClubTrainings } from '../../hooks/useClubTrainings.js';
@@ -1562,16 +1562,22 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
 
       {/* Team event modal */}
       {teamEventModal !== undefined && (
-        <EventFormModal
-          event={teamEventModal}
-          onSave={handleTeamEventSave}
-          onBulkSave={handleBulkTeamEventSave}
-          onClose={() => setTeamEventModal(undefined)}
-        />
+        <Suspense fallback={null}>
+          <EventFormModal
+            event={teamEventModal}
+            onSave={handleTeamEventSave}
+            onBulkSave={handleBulkTeamEventSave}
+            onClose={() => setTeamEventModal(undefined)}
+          />
+        </Suspense>
       )}
 
       {/* Poster studio modal */}
-      {showPoster && <PosterStudio event={posterEvent} club={club} onClose={() => setShowPoster(false)} />}
+      {showPoster && (
+        <Suspense fallback={null}>
+          <PosterStudio event={posterEvent} club={club} onClose={() => setShowPoster(false)} />
+        </Suspense>
+      )}
 
       {/* Managers panel */}
       {showManagersPanel && (
