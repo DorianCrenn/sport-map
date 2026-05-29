@@ -996,14 +996,6 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               <textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Informations complémentaires…" rows={3} style={{ ...inputStyle, resize: 'none' }} />
             </Field>
 
-            {form.eventType !== 'tournament' && (
-              <MotmField
-                value={form.manOfMatch}
-                onChange={v => set('manOfMatch', v)}
-                clubId={currentUser?.clubId}
-                inputStyle={inputStyle}
-              />
-            )}
           </form>
 
           {/* Footer */}

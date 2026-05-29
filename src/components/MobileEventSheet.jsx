@@ -35,21 +35,25 @@ function getEffectiveStatus(event) {
 function QuickScoreEdit({ event, onUpdateEvent }) {
   const [home, setHome] = useState(String(event.score?.home ?? ''));
   const [away, setAway] = useState(String(event.score?.away ?? ''));
+  const [motm, setMotm] = useState(event.man_of_match ?? '');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     setHome(String(event.score?.home ?? ''));
     setAway(String(event.score?.away ?? ''));
-  }, [event.score?.home, event.score?.away]);
+    setMotm(event.man_of_match ?? '');
+  }, [event.score?.home, event.score?.away, event.man_of_match]);
 
   function handleSave() {
     const h = parseInt(home, 10);
     const a = parseInt(away, 10);
     if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
-    onUpdateEvent(event.id, { score: { home: h, away: a } });
+    onUpdateEvent(event.id, { score: { home: h, away: a }, man_of_match: motm.trim() || null });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
+
+  const inp = { padding: '7px 10px', borderRadius: 8, fontSize: 12, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', width: '100%', boxSizing: 'border-box' };
 
   return (
     <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 14, marginBottom: 14 }}>
@@ -82,6 +86,17 @@ function QuickScoreEdit({ event, onUpdateEvent }) {
         >
           {saved ? '✓ Enregistré' : 'Enregistrer'}
         </button>
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 4 }}>
+          Joueur du match
+        </label>
+        <input
+          value={motm}
+          onChange={e => setMotm(e.target.value)}
+          placeholder="Nom du joueur (optionnel)"
+          style={inp}
+        />
       </div>
     </div>
   );
