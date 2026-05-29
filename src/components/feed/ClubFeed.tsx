@@ -48,6 +48,8 @@ interface ClubFeedProps {
   currentUser?: unknown;
   onNavigateClubs?: () => void;
   onOpenTrainings?: () => void;
+  /** Slot optionnel affiché en haut du feed scrollable (ex: QuickSetupCard) */
+  headerSlot?: React.ReactNode;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -167,6 +169,7 @@ export default function ClubFeed({
   currentUser,
   onNavigateClubs,
   onOpenTrainings,
+  headerSlot,
 }: ClubFeedProps) {
   const [filter, setFilter] = useState<FeedFilter>('all');
   // Graine aléatoire fixée au montage — varie l'ordre des sponsors + featured à chaque visite
@@ -266,6 +269,9 @@ export default function ClubFeed({
         className="flex-1 overflow-y-auto overscroll-contain"
         style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
       >
+
+        {/* ── Slot header optionnel (ex: QuickSetupCard) ── */}
+        {headerSlot && <div className="px-4 pt-3">{headerSlot}</div>}
 
         {/* ── Widget prochain entraînement ── */}
         {!loading && currentUser && (

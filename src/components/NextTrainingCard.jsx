@@ -18,6 +18,8 @@ export default function NextTrainingCard({ currentUser, onNavigateClubs, onOpenT
 
   const { session, counts, myStatus, loading, respond, sendMessage } = useNextTraining(clubId, currentUser?.id, teamId);
   const [showMsgModal, setShowMsgModal] = useState(false);
+  const [msgDropdown, setMsgDropdown]   = useState(false);
+  const [targetGroup, setTargetGroup]   = useState(null);
 
   if (!clubId || loading || playerLoading || !session) return null;
 
@@ -92,17 +94,64 @@ export default function NextTrainingCard({ currentUser, onNavigateClubs, onOpenT
                 </div>
               ))}
             </div>
-            <button
-              onClick={() => setShowMsgModal(true)}
-              style={{
-                width: '100%', padding: '10px', borderRadius: 12, fontSize: 13, fontWeight: 700,
-                background: 'var(--sl-surface)', color: 'var(--sl-t1)',
-                border: '1px solid var(--sl-border)', cursor: 'pointer',
-                display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              📣 Envoyer un message
-            </button>
+            <div style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--sl-border)' }}>
+                <button
+                  onClick={() => { setTargetGroup(null); setMsgDropdown(false); setShowMsgModal(true); }}
+                  style={{
+                    flex: 1, padding: '10px', fontSize: 13, fontWeight: 700,
+                    background: 'var(--sl-surface)', color: 'var(--sl-t1)',
+                    border: 'none', cursor: 'pointer',
+                    display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  📣 Envoyer un message
+                </button>
+                <button
+                  onClick={() => setMsgDropdown(v => !v)}
+                  style={{
+                    padding: '10px 12px', fontSize: 13,
+                    background: 'var(--sl-surface)', color: 'var(--sl-t3)',
+                    borderLeft: '1px solid var(--sl-border)', border: 'none', cursor: 'pointer',
+                  }}
+                >
+                  ▾
+                </button>
+              </div>
+              {msgDropdown && (
+                <div style={{
+                  position: 'absolute', bottom: 'calc(100% + 6px)', left: 0, right: 0,
+                  background: 'var(--sl-card)', borderRadius: 12,
+                  border: '1px solid var(--sl-border-s)',
+                  boxShadow: 'var(--sl-shadow-xl)', overflow: 'hidden', zIndex: 20,
+                }}>
+                  {[
+                    { group: null,     label: 'Envoyer à tous',              count: null },
+                    { group: 'absent', label: 'Cibler les absents',          count: counts?.absent ?? 0, color: '#ef4444' },
+                    { group: 'unsure', label: 'Cibler les peut-être',        count: counts?.unsure ?? 0, color: '#f97316' },
+                  ].map(({ group, label, count, color }) => (
+                    <button
+                      key={group ?? 'all'}
+                      onClick={() => { setTargetGroup(group); setMsgDropdown(false); setShowMsgModal(true); }}
+                      style={{
+                        width: '100%', padding: '10px 14px', textAlign: 'left',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        borderBottom: group === null ? '1px solid var(--sl-border)' : 'none',
+                      }}
+                    >
+                      <span>{label}</span>
+                      {count !== null && (
+                        <span style={{ fontSize: 11, fontWeight: 800, color: color ?? 'var(--sl-t3)', background: `${color ?? '#64748b'}18`, padding: '2px 7px', borderRadius: 20 }}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -137,7 +186,9 @@ export default function NextTrainingCard({ currentUser, onNavigateClubs, onOpenT
           clubId={clubId}
           userId={currentUser?.id}
           onSend={sendMessage}
-          onClose={() => setShowMsgModal(false)}
+          onClose={() => { setShowMsgModal(false); setTargetGroup(null); }}
+          targetGroup={targetGroup}
+          counts={counts}
         />
       )}
     </div>

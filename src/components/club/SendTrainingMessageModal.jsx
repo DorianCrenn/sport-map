@@ -7,7 +7,7 @@ const TYPES = [
   { id: 'rescheduled',  label: 'Horaire modifié',   emoji: '🕐',  color: '#f97316' },
 ];
 
-export default function SendTrainingMessageModal({ session, clubId, userId, onSend, onClose }) {
+export default function SendTrainingMessageModal({ session, clubId, userId, onSend, onClose, targetGroup = null, counts = {} }) {
   const [type, setType]       = useState('info');
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
@@ -42,6 +42,14 @@ export default function SendTrainingMessageModal({ session, clubId, userId, onSe
           <p className="text-xs text-gray-400 mt-0.5">
             {session?.date} · {session?.time ?? ''} · {session?.location ?? ''}
           </p>
+          {targetGroup && (
+            <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, backgroundColor: targetGroup === 'absent' ? 'rgba(239,68,68,0.08)' : 'rgba(249,115,22,0.08)', border: `1px solid ${targetGroup === 'absent' ? 'rgba(239,68,68,0.25)' : 'rgba(249,115,22,0.25)'}`, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 12 }}>📬</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: targetGroup === 'absent' ? '#ef4444' : '#f97316' }}>
+                Message ciblé : <strong>{targetGroup === 'absent' ? `Absents (${counts?.absent ?? 0})` : `Peut-être (${counts?.unsure ?? 0})`}</strong>
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="px-6 py-5 space-y-4">

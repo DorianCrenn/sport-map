@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useManagedClubs } from '../hooks/useManagedClubs.js';
 
 const HOME_VISITOR = {
   id: 'home', label: 'Accueil',
@@ -34,7 +35,9 @@ const PROFIL = {
 };
 export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV, onOpenTrainings, overlayOpen = false }) {
   const { isAdmin, isClubAdmin, currentUser } = useAuth();
-  const canFab = isAdmin || isClubAdmin;
+  const { managedClubs } = useManagedClubs();
+  const isCoach = !isAdmin && !isClubAdmin && managedClubs.length > 0;
+  const canFab = isAdmin || isClubAdmin || isCoach;
   const HOME = currentUser ? HOME_FEED : HOME_VISITOR;
   const [fabOpen, setFabOpen] = useState(false);
 
@@ -94,29 +97,33 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                   onClick={() => handleFabAction('event')}
                 />
                 <FabAction
-                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
-                  label="Mon club"
-                  color="var(--sl-blue)"
-                  onClick={() => handleFabAction('clubs')}
-                />
-                <FabAction
                   icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
                   label="Mes entraînements"
                   color="#22c55e"
                   onClick={() => handleFabAction('trainings')}
                 />
-                <FabAction
-                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>}
-                  label="Importer un CSV"
-                  color="#a855f7"
-                  onClick={() => handleFabAction('csv')}
-                />
-                <FabAction
-                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>}
-                  label="Voir la carte"
-                  color="#f59e0b"
-                  onClick={() => handleFabAction('map')}
-                />
+                {!isCoach && (
+                  <>
+                    <FabAction
+                      icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
+                      label="Mon club"
+                      color="var(--sl-blue)"
+                      onClick={() => handleFabAction('clubs')}
+                    />
+                    <FabAction
+                      icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>}
+                      label="Importer un CSV"
+                      color="#a855f7"
+                      onClick={() => handleFabAction('csv')}
+                    />
+                    <FabAction
+                      icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>}
+                      label="Voir la carte"
+                      color="#f59e0b"
+                      onClick={() => handleFabAction('map')}
+                    />
+                  </>
+                )}
               </div>
             </motion.div>
           </>
