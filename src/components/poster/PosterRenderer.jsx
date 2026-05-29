@@ -405,7 +405,42 @@ function PlayerLayer({ layer, accentColor }) {
   );
 }
 
-const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', bgImageOverlay = 0.52, bgImageGradient = false, effects = {}, overlayElements = [], aiOverlayElements = [], playerLayers = [] }) {
+function SponsorBand({ logos, h }) {
+  if (!logos?.length) return null;
+  const bandH  = Math.round(h * 0.072);
+  const logoH  = Math.round(h * 0.036);
+  const maxLogoW = Math.round(h * 0.09);
+  const gap    = Math.round(h * 0.018);
+  return (
+    <div style={{
+      position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 19,
+      height: bandH,
+      backgroundColor: 'rgba(0,0,0,0.68)',
+      borderTop: '1px solid rgba(255,255,255,0.10)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap, padding: `0 ${gap}px`,
+      pointerEvents: 'none',
+    }}>
+      {logos.slice(0, 6).map((url, i) => (
+        <img
+          key={i}
+          src={url}
+          alt=""
+          style={{
+            height: logoH,
+            maxWidth: maxLogoW,
+            objectFit: 'contain',
+            display: 'block',
+            filter: 'brightness(0) invert(1)',
+            opacity: 0.85,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', bgImageOverlay = 0.52, bgImageGradient = false, effects = {}, overlayElements = [], aiOverlayElements = [], playerLayers = [], sponsorLogos = [] }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
@@ -507,10 +542,12 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
           );
         })}
 
+        <SponsorBand logos={sponsorLogos} h={h} />
+
         <div
           aria-hidden="true"
           style={{
-            position: 'absolute', bottom: 10, right: 12, zIndex: 20,
+            position: 'absolute', bottom: sponsorLogos?.length ? Math.round(h * 0.072) + 6 : 10, right: 12, zIndex: 20,
             fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
             textTransform: 'uppercase', fontFamily: 'Inter, sans-serif',
             color: 'rgba(255,255,255,0.30)',

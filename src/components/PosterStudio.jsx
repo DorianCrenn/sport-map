@@ -16,6 +16,7 @@ import {
 } from '../hooks/usePosterDraft.js';
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
+import { useClubSponsorsPage } from '../hooks/useClubSponsorsPage.js';
 import { useClubAIUsage } from '../hooks/useClubAIUsage.js';
 import { usePosterAI } from '../hooks/usePosterAI.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
@@ -71,6 +72,10 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const { usage: aiUsage, optimisticIncrement: aiIncrement } = useClubAIUsage(club?.id);
   const aiGenerateBlocked = !hasPremium && aiUsage.generate_count >= aiUsage.monthly_limit;
   const aiImportBlocked   = !hasPremium && aiUsage.import_count   >= aiUsage.monthly_limit;
+
+  const pageSponsors = useClubSponsorsPage(club?.id);
+  const [useBandSponsors, setUseBandSponsors] = useState(false);
+  const [selectedSponsorIds, setSelectedSponsorIds] = useState(new Set());
 
   const [poster, dispatch] = useReducer(posterReducer, {
     format: 'story', templateId: isTournamentEvent ? 'tr-premium' : (resultMode ? 'impact' : 'simple'),
@@ -380,6 +385,14 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     sponsor: sponsorSrc || null,
   };
 
+  const activeBandLogos = useMemo(() => {
+    if (!useBandSponsors) return [];
+    const pool = pageSponsors.filter(s => s.showInPoster);
+    const selected = pool.filter(s => selectedSponsorIds.has(s.id));
+    const source = selected.length > 0 ? selected : pool;
+    return source.map(s => s.logoWhite || s.logo).filter(Boolean).slice(0, 6);
+  }, [useBandSponsors, pageSponsors, selectedSponsorIds]);
+
   const posterEffects = { tint: bgTint || null, tintOp: bgTintOp };
 
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
@@ -575,7 +588,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         {/* Hidden HD renderer for export */}
         <div style={{ position: 'fixed', left: -9999, top: 0, pointerEvents: 'none', zIndex: -1 }}>
           <div ref={exportWrapperRef} style={{ position: 'relative', width: w, height: h, overflow: 'hidden' }}>
-            <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+            <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} />
             {scoreHome !== undefined && scoreAway !== undefined && (
               <div style={{
                 position: 'absolute', bottom: 72, left: '50%', transform: 'translateX(-50%)',
@@ -602,7 +615,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         {/* Hidden HD renderer — alt format */}
         <div style={{ position: 'fixed', left: -9999, top: 0, pointerEvents: 'none', zIndex: -1 }}>
           <div ref={altExportWrapperRef} style={{ position: 'relative', width: altW, height: altH, overflow: 'hidden' }}>
-            <PosterRenderer templateId={templateId} data={posterData} format={altFormat} previewWidth={altW} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+            <PosterRenderer templateId={templateId} data={posterData} format={altFormat} previewWidth={altW} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} />
             {scoreHome !== undefined && scoreAway !== undefined && (
               <div style={{
                 position: 'absolute', bottom: 72, left: '50%', transform: 'translateX(-50%)',
@@ -631,7 +644,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           {previewFull && (
             <motion.div key="full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, borderRadius: 'inherit' }}>
-              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+              <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} />
               <button onClick={() => setPreviewFull(false)}
                 style={{ padding: '12px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Fermer
@@ -781,7 +794,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                     <span style={{ fontSize: 11, color: '#E1306C', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Instagram Story · 9:16</span>
                     <div style={{ width: 240, height: 427, borderRadius: 20, overflow: 'hidden', position: 'relative', boxShadow: '0 0 0 3px #E1306C66, 0 28px 70px rgba(0,0,0,0.6)', backgroundColor: '#000', flexShrink: 0 }}>
-                      <PosterRenderer templateId={templateId} data={posterData} format="story" previewWidth={240} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+                      <PosterRenderer templateId={templateId} data={posterData} format="story" previewWidth={240} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} />
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 48, background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)', zIndex: 10, display: 'flex', alignItems: 'flex-start', padding: '10px 12px 0', gap: 7 }}>
                         <div style={{ flex: 1, height: 2.5, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginTop: 6 }} />
                         <div style={{ width: 26, height: 26, borderRadius: '50%', border: '2px solid white', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.15)' }}>
@@ -809,7 +822,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                         <svg style={{ marginLeft: 'auto' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                       </div>
                       <div style={{ overflow: 'hidden' }}>
-                        <PosterRenderer templateId={templateId} data={posterData} format="post" previewWidth={290} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+                        <PosterRenderer templateId={templateId} data={posterData} format="post" previewWidth={290} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} />
                       </div>
                       <div style={{ padding: '8px 12px 10px', display: 'flex', gap: 14, alignItems: 'center' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -838,7 +851,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                       <div style={{ padding: '14px 10px 14px', backgroundColor: '#0b141a' }}>
                         <div style={{ maxWidth: '88%', marginLeft: 'auto', backgroundColor: '#005c4b', borderRadius: '10px 2px 10px 10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
                           <div style={{ overflow: 'hidden' }}>
-                            <PosterRenderer templateId={templateId} data={posterData} format="post" previewWidth={232} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} />
+                            <PosterRenderer templateId={templateId} data={posterData} format="post" previewWidth={232} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} />
                           </div>
                           <div style={{ padding: '4px 10px 6px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 4 }}>
                             <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>maintenant</span>
@@ -2517,13 +2530,13 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                       );
                     })()}
 
-                    {/* Logo partenaire */}
+                    {/* Logo partenaire unique (upload manuel) */}
                     <div>
-                      <SLabel>Logo partenaire / sponsor</SLabel>
+                      <SLabel>Logo sponsor unique (upload)</SLabel>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => sponsorRef.current?.click()}
                           style={{ flex: 1, padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', backgroundColor: sponsorSrc ? `${accentColor}14` : 'var(--sl-surface)', border: sponsorSrc ? `1.5px solid ${accentColor}` : '1.5px dashed var(--sl-border-s)', color: sponsorSrc ? accentColor : 'var(--sl-t2)' }}>
-                          {sponsorSrc ? '✓ Logo sponsor chargé' : '+ Ajouter un logo sponsor'}
+                          {sponsorSrc ? '✓ Logo chargé' : '+ Charger un logo'}
                         </button>
                         {sponsorSrc && <button onClick={() => set('sponsorSrc', '')} style={{ padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-surface)', color: '#ef4444', border: '1px solid var(--sl-border)', cursor: 'pointer' }}>✕</button>}
                         <input ref={sponsorRef} type="file" accept="image/*" onChange={e => readFile(e, v => set('sponsorSrc', v))} style={{ display: 'none' }} />
@@ -2535,6 +2548,62 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                         </div>
                       )}
                     </div>
+
+                    {/* Bandeau multi-sponsors depuis DB */}
+                    {pageSponsors.length > 0 && (
+                      <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <SLabel style={{ margin: 0 }}>🤝 Bandeau partenaires</SLabel>
+                          <button
+                            onClick={() => setUseBandSponsors(v => !v)}
+                            style={{
+                              padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                              border: 'none', cursor: 'pointer',
+                              backgroundColor: useBandSponsors ? 'rgba(34,197,94,0.15)' : 'var(--sl-surface)',
+                              color: useBandSponsors ? '#16a34a' : 'var(--sl-t3)',
+                            }}
+                          >
+                            {useBandSponsors ? '● Actif' : '○ Inactif'}
+                          </button>
+                        </div>
+
+                        {useBandSponsors && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            <p style={{ fontSize: 10, color: 'var(--sl-t3)', margin: 0 }}>
+                              Tous sélectionnés par défaut — décochez pour exclure :
+                            </p>
+                            {pageSponsors.filter(s => s.showInPoster).map(s => {
+                              const checked = !selectedSponsorIds.has(s.id) || selectedSponsorIds.size === 0
+                                ? (selectedSponsorIds.size === 0 ? true : !selectedSponsorIds.has(s.id))
+                                : selectedSponsorIds.has(s.id);
+                              const isSelected = selectedSponsorIds.size === 0 || selectedSponsorIds.has(s.id);
+                              return (
+                                <label key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '5px 8px', borderRadius: 8, backgroundColor: isSelected ? 'rgba(99,102,241,0.08)' : 'transparent' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => {
+                                      setSelectedSponsorIds(prev => {
+                                        const next = new Set(prev.size === 0 ? pageSponsors.map(x => x.id) : prev);
+                                        if (next.has(s.id)) next.delete(s.id); else next.add(s.id);
+                                        return next;
+                                      });
+                                    }}
+                                    style={{ width: 14, height: 14 }}
+                                  />
+                                  {(s.logoWhite || s.logo) && (
+                                    <div style={{ width: 28, height: 20, backgroundColor: '#111', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                      <img src={s.logoWhite || s.logo} alt="" style={{ maxWidth: 24, maxHeight: 16, objectFit: 'contain' }} />
+                                    </div>
+                                  )}
+                                  <span style={{ fontSize: 11, color: 'var(--sl-t1)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
