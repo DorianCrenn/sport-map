@@ -1,7 +1,19 @@
 import { useState } from 'react';
 import { useClubSponsorsPage } from '../../../hooks/useClubSponsorsPage.js';
 
-const uid = () => `s_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+function isColorDark(hex = '#ffffff') {
+  const h = hex.replace('#', '').padEnd(6, '0');
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.35;
+}
+
+/** Retourne l'URL du logo adapté au fond (blanc sur fond sombre, couleur sinon). */
+function pickLogo(sponsor, bgColor) {
+  if (sponsor.logoWhite && isColorDark(bgColor ?? '#ffffff')) return sponsor.logoWhite;
+  return sponsor.logo;
+}
 
 const TIER_ORDER = ['gold', 'silver', 'bronze', 'partner'];
 

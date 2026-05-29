@@ -485,9 +485,20 @@ export function FeaturedGalleryCard({ item, onNavigate }: FeaturedCardProps) {
 // SponsorCard — Carte Sponsor Local (insertion native)
 // ════════════════════════════════════════════════════════════════════════════
 
+function bgLuminance(hex: string = '#111827'): number {
+  const h = hex.replace('#', '').padEnd(6, '0');
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
 interface SponsorCardProps { item: SponsorFeedItem }
 
 export function SponsorCard({ item }: SponsorCardProps) {
+  const dark = bgLuminance(item.bg_color ?? '#111827') < 0.35;
+  const logoSrc = dark && item.logo_white_url ? item.logo_white_url : item.logo_url;
+
   return (
     <article
       className="rounded-2xl overflow-hidden border border-[var(--sl-border)] shadow-sm"
@@ -501,10 +512,10 @@ export function SponsorCard({ item }: SponsorCardProps) {
       </div>
 
       <div className="px-4 pb-4 flex items-start gap-3">
-        {/* Logo sponsor (fallback emoji) */}
-        {item.logo_url ? (
+        {/* Logo — adapté au fond (blanc si fond sombre + logo_white_url disponible) */}
+        {logoSrc ? (
           <img
-            src={item.logo_url}
+            src={logoSrc}
             alt={item.sponsor_name}
             className="w-12 h-12 rounded-xl object-contain bg-white/10 p-1.5 shrink-0"
           />

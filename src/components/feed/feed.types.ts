@@ -64,7 +64,8 @@ export interface SponsorFeedItem extends BaseFeedItem {
   sponsor_id: string;
   sponsor_name: string;
   logo_url?: string;
-  bg_color?: string;   // couleur de fond de la carte
+  logo_white_url?: string;  // version blanche/monochrome pour fonds sombres
+  bg_color?: string;
   tagline: string;
   cta_label?: string;
   cta_url?: string;
