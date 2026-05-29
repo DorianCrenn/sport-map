@@ -12,6 +12,7 @@ import SportIcon from './SportIcon.jsx';
 import PosterStudio from './PosterStudio.jsx';
 import RideSection from './rides/RideSection.jsx';
 import EventPhotoGallery from './EventPhotoGallery.jsx';
+import ScoreEntryContainer from './score/ScoreEntryContainer.jsx';
 
 const EVENT_TYPE_META = {
   championship: { label: 'Championnat', color: '#3b82f6' },
@@ -465,7 +466,7 @@ export default function MobileEventSheet({
               <RideSection event={event} snapPoint="full" />
 
               {canEditThis && isPast && onUpdateEvent && (
-                <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} />
+                <ScoreEntryContainer event={event} onUpdateEvent={onUpdateEvent} />
               )}
 
               <EventPhotoGallery
