@@ -440,7 +440,7 @@ function SponsorBand({ logos, h }) {
   );
 }
 
-const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', bgImageOverlay = 0.52, bgImageGradient = false, effects = {}, overlayElements = [], aiOverlayElements = [], playerLayers = [], sponsorLogos = [] }) {
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', bgImageOverlay = 0.52, bgImageGradient = false, effects = {}, overlayElements = [], aiOverlayElements = [], playerLayers = [], sponsorLogos = [], showWatermark = true }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
@@ -544,19 +544,21 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
 
         <SponsorBand logos={sponsorLogos} h={h} />
 
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute', bottom: sponsorLogos?.length ? Math.round(h * 0.072) + 6 : 10, right: 12, zIndex: 20,
-            fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
-            textTransform: 'uppercase', fontFamily: 'Inter, sans-serif',
-            color: 'rgba(255,255,255,0.30)',
-            pointerEvents: 'none', userSelect: 'none',
-            mixBlendMode: 'screen',
-          }}
-        >
-          SportLink
-        </div>
+        {showWatermark && (
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute', bottom: sponsorLogos?.length ? Math.round(h * 0.072) + 6 : 10, right: 12, zIndex: 20,
+              fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
+              textTransform: 'uppercase', fontFamily: 'Inter, sans-serif',
+              color: 'rgba(255,255,255,0.30)',
+              pointerEvents: 'none', userSelect: 'none',
+              mixBlendMode: 'screen',
+            }}
+          >
+            SportLink
+          </div>
+        )}
       </div>
     </div>
   );
