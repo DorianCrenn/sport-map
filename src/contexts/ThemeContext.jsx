@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
 
 const ThemeContext = createContext(null);
 
@@ -22,11 +22,14 @@ function applyTheme(theme) {
 }
 
 export function ThemeProvider({ children }) {
-  const [theme, setThemeState] = useState(() => {
-    const t = getInitialTheme();
-    applyTheme(t);
-    return t;
-  });
+  const [theme, setThemeState] = useState(getInitialTheme);
+
+  // Applique le thème avant le premier paint pour éviter le FOUC.
+  // L'initializer useState ne doit pas écrire dans le DOM.
+  useLayoutEffect(() => {
+    applyTheme(theme);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sync when system preference changes (only if no saved pref)
   useEffect(() => {

@@ -1,15 +1,12 @@
 import { useRef, memo } from 'react';
 import { motion } from 'framer-motion';
+import { formatDate } from '../lib/dateUtils.js';
 
 const PREDEFINED = [
   { key: 'today',   label: "Aujourd'hui" },
   { key: 'weekend', label: 'Ce week-end' },
   { key: 'week',    label: 'Cette semaine' },
 ];
-
-function formatDate(iso) {
-  return new Date(iso + 'T00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-}
 
 const DateFilterBar = memo(function DateFilterBar({ active, onChange, upcomingOnly = true, onUpcomingOnlyChange }) {
   const dateInputRef = useRef(null);

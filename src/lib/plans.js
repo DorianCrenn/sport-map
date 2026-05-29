@@ -52,7 +52,10 @@ const PLAN_ORDER = ['free', 'starter', 'pro', 'federation'];
 
 export function canUse(feature, plan = 'free') {
   const allowed = PLAN_FEATURES[feature];
-  if (!allowed) return true; // unknown features are unrestricted
+  if (!allowed) {
+    if (import.meta.env.DEV) console.warn(`[Plans] Feature inconnue : "${feature}" — accès refusé par défaut`);
+    return false;
+  }
   return allowed.includes(plan);
 }
 

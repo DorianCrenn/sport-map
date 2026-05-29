@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
@@ -39,6 +39,10 @@ export function useClubs() {
   const { currentUser } = useAuth();
   const [userClubs, setUserClubs] = useState([]);
   const [loading, setLoading]    = useState(true);
+  // Ref pour éviter les stale closures dans updateClub/deleteClub
+  // sans recréer ces callbacks à chaque changement de userClubs.
+  const userClubsRef = useRef([]);
+  useEffect(() => { userClubsRef.current = userClubs; }, [userClubs]);
 
   // ── Initial fetch ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -68,9 +72,8 @@ export function useClubs() {
 
   // ── Realtime ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    const key = Math.random().toString(36).slice(2, 8);
     const channel = supabase
-      .channel(`clubs-realtime-${key}`)
+      .channel('clubs-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clubs' }, ({ new: row }) => {
         setUserClubs(prev => prev.some(c => c.id === row.id) ? prev : [mapFromDB(row), ...prev]);
       })
@@ -104,7 +107,9 @@ export function useClubs() {
   }, [currentUser?.id]);
 
   const updateClub = useCallback(async (id, patch) => {
-    const snapshot = userClubs.find(c => c.id === id);
+    // Lire depuis la ref pour ne pas avoir userClubs en dépendance
+    // (évite de recréer ce callback à chaque update de la liste).
+    const snapshot = userClubsRef.current.find(c => c.id === id);
     setUserClubs(clubs => clubs.map(c => c.id === id ? { ...c, ...patch } : c));
     try {
       const merged = snapshot ? { ...snapshot, ...patch } : patch;
@@ -118,11 +123,11 @@ export function useClubs() {
       if (snapshot) setUserClubs(clubs => clubs.map(c => c.id === id ? snapshot : c));
       throw err;
     }
-  }, [currentUser?.id, userClubs]);
+  }, [currentUser?.id]);
 
   const deleteClub = useCallback(async (id) => {
-    const snapshot  = userClubs.find(c => c.id === id);
-    const snapshotIdx = userClubs.findIndex(c => c.id === id);
+    const snapshot    = userClubsRef.current.find(c => c.id === id);
+    const snapshotIdx = userClubsRef.current.findIndex(c => c.id === id);
     setUserClubs(clubs => clubs.filter(c => c.id !== id));
     try {
       const { error } = await supabase.from('clubs').delete().eq('id', id);
@@ -132,13 +137,13 @@ export function useClubs() {
       if (snapshot) {
         setUserClubs(clubs => {
           const next = [...clubs];
-          next.splice(snapshotIdx, 0, snapshot); // restore original position
+          next.splice(snapshotIdx, 0, snapshot);
           return next;
         });
       }
       throw err;
     }
-  }, [userClubs]);
+  }, []);
 
   return { userClubs, loading, addClub, updateClub, deleteClub };
 }

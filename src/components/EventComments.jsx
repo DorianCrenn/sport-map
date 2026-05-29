@@ -1,36 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEventComments } from '../hooks/useEventComments.js';
+import { timeAgo } from '../lib/dateUtils.js';
+import Avatar from './ui/Avatar.jsx';
 
 const MAX_LEN = 500;
-
-function timeAgo(isoStr) {
-  const diff = Math.floor((Date.now() - new Date(isoStr)) / 1000);
-  if (diff < 60)  return 'À l\'instant';
-  if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
-  return `il y a ${Math.floor(diff / 86400)} j`;
-}
-
-function Avatar({ name }) {
-  const initials = (name ?? '?')
-    .split(' ')
-    .slice(0, 2)
-    .map(w => w[0])
-    .join('')
-    .toUpperCase();
-  const hue = [...(name ?? '')].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
-  return (
-    <div style={{
-      width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 10, fontWeight: 800, color: '#fff',
-      backgroundColor: `hsl(${hue},55%,45%)`,
-    }}>
-      {initials}
-    </div>
-  );
-}
 
 function CommentItem({ comment, userId, onDelete }) {
   const isOwn = comment.user_id === userId;

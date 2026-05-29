@@ -251,14 +251,12 @@ export function useClubPage(club) {
     }, 1500);
   }, [clubIdStr]);
 
-  // Keep ref in sync with latest state values (sync, no deps issues)
-  useEffect(() => { latestRef.current.blocks = blocks; }, [blocks]);
+  // Sync ref + effets secondaires en un seul effect (3→1)
   useEffect(() => {
-    latestRef.current.typography = typography;
+    latestRef.current = { blocks, typography, theme };
     injectGoogleFont(typography.titleFont);
     injectGoogleFont(typography.bodyFont);
-  }, [typography]);
-  useEffect(() => { latestRef.current.theme = theme; }, [theme]);
+  }, [blocks, typography, theme]);
 
   // Single save trigger — fires once per batch of changes, not three times
   useEffect(() => {

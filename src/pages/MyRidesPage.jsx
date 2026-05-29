@@ -5,6 +5,7 @@ import { useRideNotifications } from '../hooks/useRideNotifications.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import RideCard from '../components/rides/RideCard.jsx';
+import { timeAgo } from '../lib/dateUtils.js';
 
 const TABS = [
   { key: 'driving',   label: 'Mes trajets',   icon: '🚗' },
@@ -18,15 +19,6 @@ const STATUS_META = {
   refused:   { label: '❌ Refusée',    color: '#ef4444', bg: 'rgba(239,68,68,0.1)'  },
   cancelled: { label: '↩ Annulée',    color: '#64748b', bg: 'rgba(100,116,139,0.1)' },
 };
-
-function timeAgo(dateStr) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 60)   return `il y a ${m} min`;
-  const h = Math.floor(m / 60);
-  if (h < 24)   return `il y a ${h} h`;
-  return `il y a ${Math.floor(h / 24)} j`;
-}
 
 function EmptyState({ icon, title, subtitle }) {
   return (

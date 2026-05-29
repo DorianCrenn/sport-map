@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyAnnouncements } from '../hooks/useMyAnnouncements.js';
+import { timeAgo } from '../lib/dateUtils.js';
 
 const TYPE_META = {
   urgent: { label: 'URGENT', color: '#ef4444', bg: 'rgba(239,68,68,0.12)', icon: '🚨' },
@@ -8,18 +9,6 @@ const TYPE_META = {
   result: { label: 'RÉSULTAT', color: '#22d96a', bg: 'rgba(34,217,106,0.12)', icon: '⚽' },
   event:  { label: 'ÉVÉNEMENT', color: '#a855f7', bg: 'rgba(168,85,247,0.12)', icon: '🎉' },
 };
-
-function timeAgo(dateStr) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1)   return 'À l\'instant';
-  if (m < 60)  return `Il y a ${m} min`;
-  const h = Math.floor(m / 60);
-  if (h < 24)  return `Il y a ${h} h`;
-  const d = Math.floor(h / 24);
-  if (d < 7)   return `Il y a ${d} j`;
-  return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-}
 
 export default function AnnouncementsCenter({ onClose }) {
   const { announcements, readIds, unreadCount, loading, markRead, markAllRead } = useMyAnnouncements();

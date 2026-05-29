@@ -1,35 +1,43 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-const AttendeeCountContext = createContext({ getCount: () => 0, setKnownIds: () => {} });
+const AttendeeCountContext = createContext(null);
 
 export function useAttendeeCount(eventId) {
-  const { getCount } = useContext(AttendeeCountContext);
-  return getCount(String(eventId));
+  const ctx = useContext(AttendeeCountContext);
+  if (!ctx) return 0;
+  return ctx.getCount(String(eventId));
 }
 
 export function useAttendeeCountActions() {
-  const { setKnownIds } = useContext(AttendeeCountContext);
-  return setKnownIds;
+  const ctx = useContext(AttendeeCountContext);
+  if (!ctx) return () => {};
+  return ctx.setKnownIds;
 }
 
 export function AttendeeCountProvider({ children }) {
-  const [counts, setCounts]   = useState({});
-  const [knownIds, setKnownIds] = useState(null); // null = load all; string[] = filter
-  const knownIdsRef = useRef(null);
+  const [counts, setCounts]         = useState({});
+  const [knownIds, setKnownIdsState] = useState(null);
+  const knownIdsRef  = useRef(null);
+  const debounceRef  = useRef(null);
 
   useEffect(() => { knownIdsRef.current = knownIds; }, [knownIds]);
+
+  // Debounce les mises à jour de knownIds pour éviter de recréer
+  // le channel Realtime à chaque scroll/pan de la carte.
+  const setKnownIds = useCallback((ids) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setKnownIdsState(ids), 300);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       let query = supabase.from('event_attendee_counts').select('event_id, count');
-      // Filter to known visible events when available (avoids full table scan)
       if (knownIds && knownIds.length > 0) {
         query = query.in('event_id', knownIds);
       } else if (knownIds !== null) {
-        // knownIds = [] means events haven't loaded yet — skip fetch
         return;
       }
       const { data, error } = await query;
@@ -48,7 +56,6 @@ export function AttendeeCountProvider({ children }) {
         const row = payload.new?.event_id ? payload.new : payload.old;
         if (!row?.event_id) { load(); return; }
         const id = String(row.event_id);
-        // Ignore events outside the known set when filtering is active
         if (knownIdsRef.current !== null && !knownIdsRef.current.includes(id)) return;
         setCounts(prev => {
           const curr = prev[id] ?? 0;
