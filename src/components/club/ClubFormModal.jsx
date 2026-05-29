@@ -1,9 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import SportIcon from '../SportIcon.jsx';
 import CityAutocomplete from '../CityAutocomplete.jsx';
 import { clubSchema, validate } from '../../lib/schemas.js';
+import { supabase } from '../../lib/supabase.js';
 
 const AGE_CATEGORIES = [
   'U7', 'U7F', 'U9', 'U9F', 'U11', 'U11F', 'U13', 'U13F',
@@ -37,53 +39,82 @@ const selectCls = 'text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-whit
 
 
 // ── Logo upload ───────────────────────────────────────────────────────────────
-function LogoUpload({ logo, name, sport, onChange }) {
+function LogoUpload({ logo, name, sport, clubId, userId, onChange }) {
   const ref = useRef();
   const { allSports } = useSports();
+  const [uploading, setUploading] = useState(false);
   const sportColor = allSports[sport]?.color ?? '#64748b';
   const initials = (name || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3);
 
-  function handleFile(e) {
+  async function handleFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) { alert('Image trop grande (max 2 Mo)'); return; }
-    const reader = new FileReader();
-    reader.onload = ev => onChange(ev.target.result);
-    reader.readAsDataURL(file);
+
+    setUploading(true);
+    const ext  = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const folder = clubId ?? `new-${userId ?? 'anon'}`;
+    const path = `clubs/${folder}/${Date.now()}-logo.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from('club-logos')
+      .upload(path, file, { contentType: file.type, upsert: true });
+
+    if (error || !data) {
+      alert("Erreur lors de l'upload du logo.");
+      setUploading(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('club-logos')
+      .getPublicUrl(data.path);
+
+    onChange(publicUrl);
+    setUploading(false);
     e.target.value = '';
   }
 
+  const isStorageUrl = logo && logo.startsWith('http');
+
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative" onClick={() => ref.current?.click()} style={{ cursor: 'pointer' }}>
+      <div className="relative" onClick={() => !uploading && ref.current?.click()} style={{ cursor: uploading ? 'wait' : 'pointer' }}>
         <div className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-lg font-oswald select-none"
-          style={{ backgroundColor: logo ? 'transparent' : sportColor, boxShadow: '0 0 0 2px white, 0 0 0 3.5px rgba(0,0,0,0.08)' }}>
-          {logo
-            ? <img src={logo} alt="logo" className="w-full h-full object-cover" />
+          style={{ backgroundColor: (logo && !uploading) ? 'transparent' : sportColor, boxShadow: '0 0 0 2px white, 0 0 0 3.5px rgba(0,0,0,0.08)' }}>
+          {uploading
+            ? <span style={{ fontSize: 11, fontWeight: 700, color: 'white' }}>Upload…</span>
+            : logo
+            ? <img src={logo} alt="logo" className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none'; }} />
             : initials}
         </div>
-        {/* Camera overlay */}
-        <div className="absolute inset-0 rounded-2xl flex items-center justify-center transition-opacity opacity-0 hover:opacity-100"
-          style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
-          </svg>
-        </div>
+        {!uploading && (
+          <div className="absolute inset-0 rounded-2xl flex items-center justify-center transition-opacity opacity-0 hover:opacity-100"
+            style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => ref.current?.click()}
-          className="text-xs font-semibold text-slate-600 hover:text-slate-800 transition-colors">
-          {logo ? 'Changer le logo' : 'Ajouter un logo'}
+        <button type="button" onClick={() => !uploading && ref.current?.click()}
+          className="text-xs font-semibold text-slate-600 hover:text-slate-800 transition-colors"
+          disabled={uploading}>
+          {uploading ? 'Upload en cours…' : logo ? 'Changer le logo' : 'Ajouter un logo'}
         </button>
-        {logo && (
+        {logo && !uploading && (
           <button type="button" onClick={() => onChange(null)}
             className="text-xs text-red-400 hover:text-red-600 transition-colors">
             Supprimer
           </button>
         )}
       </div>
-      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      {isStorageUrl && (
+        <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 600 }}>✓ Hébergé sur SportLink</span>
+      )}
+      <input ref={ref} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={handleFile} />
     </div>
   );
 }
@@ -145,6 +176,7 @@ function CategoryBlock({ cat, onAddTeam, onUpdateTeam, onRemoveTeam, onRemoveCat
 // ── Main modal ────────────────────────────────────────────────────────────────
 export default function ClubFormModal({ club, onSave, onClose }) {
   const { allSports: SPORTS } = useSports();
+  const { currentUser } = useAuth();
   const isEdit = !!club;
 
   const [form, setForm] = useState({
@@ -278,6 +310,8 @@ export default function ClubFormModal({ club, onSave, onClose }) {
             logo={form.logoUrl}
             name={form.name}
             sport={form.sport}
+            clubId={club?.id}
+            userId={currentUser?.id}
             onChange={val => set('logoUrl', val)}
           />
 
