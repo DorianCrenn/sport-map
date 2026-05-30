@@ -396,8 +396,8 @@ export default function MobileEventSheet({
         {/* Follow club — when event belongs to a tracked club */}
         <FollowClubButton event={event} />
 
-        {/* Pronostic — visible dès le mode detail, matchs futurs uniquement */}
-        {snapPoint !== 'full' && event.eventType !== 'tournament' && !isPast && (
+        {/* Pronostic — tous les modes, matchs futurs uniquement */}
+        {event.eventType !== 'tournament' && !isPast && (
           <EventPredictions eventId={event.id} event={event} />
         )}
 
