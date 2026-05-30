@@ -6,7 +6,13 @@ import { useFilteredEvents } from '../../hooks/useFilteredEvents.js';
 
 const today = new Date();
 const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-const inTwoDays = new Date(today); inTwoDays.setDate(today.getDate() + 2);
+
+// Trouver un jour ouvrable (Lun-Ven) 2+ jours dans le futur
+// pour éviter qu'il coïncide avec le week-end et fausse le test "weekend"
+const inTwoDays = new Date(today);
+inTwoDays.setDate(today.getDate() + 2);
+if (inTwoDays.getDay() === 6) inTwoDays.setDate(inTwoDays.getDate() + 2); // Sam → Lun
+if (inTwoDays.getDay() === 0) inTwoDays.setDate(inTwoDays.getDate() + 1); // Dim → Lun
 
 // Prochain samedi
 function nextSaturday() {

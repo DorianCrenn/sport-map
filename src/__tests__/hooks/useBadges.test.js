@@ -239,8 +239,8 @@ describe('BADGE_DEFS — structure', () => {
     }
   });
 
-  it('BADGE_ORDER contient exactement 7 badges', () => {
-    expect(BADGE_ORDER).toHaveLength(7);
+  it('BADGE_ORDER contient exactement 8 badges', () => {
+    expect(BADGE_ORDER).toHaveLength(8);
   });
 
   it('BADGE_ORDER correspond aux clés de BADGE_DEFS', () => {

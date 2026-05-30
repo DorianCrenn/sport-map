@@ -22,8 +22,8 @@ function isThisWeekend(dateStr) {
   const day = d.getDay();
   const today = new Date();
   const todayDay = today.getDay();
-  // Find next Saturday
-  const daysUntilSat = (6 - todayDay + 7) % 7;
+  // Find next Saturday — || 7 ensures today=Saturday still looks forward 7 days
+  const daysUntilSat = (6 - todayDay + 7) % 7 || 7;
   const sat = new Date(today);
   sat.setDate(today.getDate() + daysUntilSat);
   sat.setHours(0, 0, 0, 0);

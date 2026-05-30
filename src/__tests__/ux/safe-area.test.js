@@ -41,9 +41,13 @@ describe('UX — Safe-area-inset-bottom (iPhone home bar)', () => {
 
   describe('Pages principales (scroll sous la BottomNav)', () => {
     it('FavorisPage — 3 onglets défilables ont safe-area', () => {
-      // MatchsTab + ClubsTab + CalendarTab = 3 conteneurs
-      const err = assertSafeArea('pages/FavorisPage.jsx', 3);
-      expect(err).toBeNull();
+      // FavorisPage délègue le scroll à ses 3 onglets enfants
+      const errs = [
+        assertSafeArea('pages/favoris/MatchsTab.jsx', 1),
+        assertSafeArea('pages/favoris/ClubsTab.jsx', 1),
+        assertSafeArea('pages/favoris/CalendarTab.jsx', 1),
+      ].filter(Boolean);
+      expect(errs, errs.join('\n')).toHaveLength(0);
     });
 
     it('ClubsPage — liste clubs a safe-area', () => {
@@ -52,7 +56,8 @@ describe('UX — Safe-area-inset-bottom (iPhone home bar)', () => {
     });
 
     it('NewsPage — feed a safe-area', () => {
-      const err = assertSafeArea('pages/NewsPage.jsx', 1);
+      // NewsPage délègue le rendu scrollable à ClubFeed
+      const err = assertSafeArea('components/feed/ClubFeed.tsx', 1);
       expect(err).toBeNull();
     });
 
@@ -106,9 +111,11 @@ describe('UX — Safe-area-inset-bottom (iPhone home bar)', () => {
      */
     it('les occurrences utilisent le fallback (env(..., 0px))', () => {
       const FILES = [
-        'pages/FavorisPage.jsx',
+        'pages/favoris/MatchsTab.jsx',
+        'pages/favoris/ClubsTab.jsx',
+        'pages/favoris/CalendarTab.jsx',
         'pages/ClubsPage.jsx',
-        'pages/NewsPage.jsx',
+        'components/feed/ClubFeed.tsx',
         'pages/ProfilPage.jsx',
         'components/MobileEventSheet.jsx',
         'components/AnnouncementsCenter.jsx',

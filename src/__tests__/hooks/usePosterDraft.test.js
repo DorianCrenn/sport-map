@@ -15,6 +15,12 @@ vi.mock('../../lib/supabase.js', () => ({
   },
 }));
 
+vi.mock('../../contexts/AuthContext.jsx', () => ({
+  useAuth: vi.fn(() => ({ currentUser: null })),
+}));
+
+import { useAuth } from '../../contexts/AuthContext.jsx';
+
 import {
   usePosterDraft,
   usePosterLibrary,
@@ -116,6 +122,8 @@ describe('usePosterDraft', () => {
 
 describe('usePosterLibrary — localStorage', () => {
   beforeEach(() => {
+    localStorage.clear();
+    useAuth.mockReturnValue({ currentUser: null });
     mockGetUser.mockResolvedValue({ data: { user: null } });
     mockFrom.mockReturnValue(makeQuery({ data: [], error: null }));
   });
@@ -216,8 +224,15 @@ describe('usePosterLibrary — localStorage', () => {
 });
 
 describe('usePosterLibrary — Supabase sync', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    useAuth.mockReturnValue({ currentUser: null });
+    mockFrom.mockClear();
+    mockFrom.mockReturnValue(makeQuery({ data: [], error: null }));
+  });
+
   it('charge depuis Supabase si utilisateur connecté', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    useAuth.mockReturnValue({ currentUser: { id: 'user-1' } });
     mockFrom.mockReturnValue(makeQuery({
       data: [
         { id: 'p1', name: 'Remote 1', created_at: '2026-01-01T00:00:00Z', layers: { templateId: 'neon' } },
@@ -232,7 +247,7 @@ describe('usePosterLibrary — Supabase sync', () => {
   });
 
   it('ne remplace pas le localStorage si Supabase retourne erreur', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    useAuth.mockReturnValue({ currentUser: { id: 'user-1' } });
     mockFrom.mockReturnValue(makeQuery({ data: null, error: { message: 'offline' } }));
 
     localStorage.setItem('sl-poster-library', JSON.stringify([
@@ -240,16 +255,16 @@ describe('usePosterLibrary — Supabase sync', () => {
     ]));
 
     const { result } = renderHook(() => usePosterLibrary());
-    // After Supabase returns error, local entries should still be there
+    // Supabase retourne une erreur → les entrées locales doivent rester
     await waitFor(() => expect(result.current.entries.length).toBeGreaterThan(0));
     expect(result.current.entries[0].name).toBe('Local');
   });
 
   it('ne fait pas de requête Supabase si non connecté', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null } });
-
-    renderHook(() => usePosterLibrary());
-    await waitFor(() => expect(mockGetUser).toHaveBeenCalled());
+    // useAuth retourne null par défaut (beforeEach)
+    const { result } = renderHook(() => usePosterLibrary());
+    // Laisser les effets s'exécuter
+    await act(async () => {});
     expect(mockFrom).not.toHaveBeenCalled();
   });
 });
@@ -257,6 +272,11 @@ describe('usePosterLibrary — Supabase sync', () => {
 // ── useFavoriteTemplates ──────────────────────────────────────────────────────
 
 describe('useFavoriteTemplates', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    useAuth.mockReturnValue({ currentUser: null });
+  });
+
   it('getAll retourne [] par défaut', () => {
     const { result } = renderHook(() => useFavoriteTemplates());
     expect(result.current.getAll()).toEqual([]);
@@ -319,6 +339,11 @@ describe('useFavoriteTemplates', () => {
 // ── useDefaultTemplate ────────────────────────────────────────────────────────
 
 describe('useDefaultTemplate', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    useAuth.mockReturnValue({ currentUser: null });
+  });
+
   it('get retourne null si rien défini', () => {
     const { result } = renderHook(() => useDefaultTemplate('club-1'));
     expect(result.current.get()).toBeNull();

@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { supabase } from '../lib/supabase.js';
 
 // ── Badge definitions ──────────────────────────────────────────────────────────
 
@@ -74,6 +75,16 @@ export const BADGE_DEFS = {
     threshold: '25 participations',
     xp: 1000,
   },
+  oracle: {
+    id: 'oracle',
+    name: 'Oracle',
+    description: '3 pronostics corrects — tu lis l\'avenir !',
+    icon: '🔮',
+    color: '#6366f1',
+    glow: 'rgba(99,102,241,0.45)',
+    threshold: '3 bons pronostics',
+    xp: 150,
+  },
 };
 
 // ── XP / Levels ────────────────────────────────────────────────────────────────
@@ -108,11 +119,11 @@ export function getLevel(xp) {
   return { ...current, xp, nextLevel: next, progress };
 }
 
-export const BADGE_ORDER = ['first_step', 'explorer', 'loyal_fan', 'streak_3', 'streak_5', 'veteran', 'champion'];
+export const BADGE_ORDER = ['first_step', 'explorer', 'loyal_fan', 'streak_3', 'streak_5', 'veteran', 'oracle', 'champion'];
 
 // ── Badge computation ──────────────────────────────────────────────────────────
 
-export function computeEarned(attending, allEvents) {
+export function computeEarned(attending, allEvents, correctPredictions = 0) {
   if (!attending || attending.size === 0) return [];
 
   const attendedIds = [...attending].map(String);
@@ -140,6 +151,7 @@ export function computeEarned(attending, allEvents) {
   if (maxStreak >= 3) earned.push('streak_3');
   if (maxStreak >= 5) earned.push('streak_5');
   if (total >= 10) earned.push('veteran');
+  if (correctPredictions >= 3) earned.push('oracle');
   if (total >= 25) earned.push('champion');
   return earned;
 }
@@ -182,10 +194,33 @@ function computeMaxStreak(sortedEvents) {
 
 export function useBadges({ attending, allEvents }) {
   const { currentUser, updateProfile } = useAuth();
+  const [correctPredictions, setCorrectPredictions] = useState(0);
+
+  // Charge le nombre de pronostics corrects (event terminé + score connu + bonne prédiction)
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    supabase
+      .from('event_predictions')
+      .select('prediction, events!inner(score, date)')
+      .eq('user_id', currentUser.id)
+      .not('events.score', 'is', null)
+      .then(({ data }) => {
+        if (!data) return;
+        const count = data.filter(row => {
+          const score = row.events?.score;
+          if (!score || score.home == null || score.away == null) return false;
+          if (row.prediction === 'home') return score.home > score.away;
+          if (row.prediction === 'away') return score.away > score.home;
+          if (row.prediction === 'draw') return score.home === score.away;
+          return false;
+        }).length;
+        setCorrectPredictions(count);
+      });
+  }, [currentUser?.id]);
 
   const earned = useMemo(
-    () => computeEarned(attending, allEvents),
-    [attending, allEvents]
+    () => computeEarned(attending, allEvents, correctPredictions),
+    [attending, allEvents, correctPredictions]
   );
 
   const levelInfo = useMemo(

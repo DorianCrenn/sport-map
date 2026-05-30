@@ -3,11 +3,12 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-const { mockFrom, mockGetUser, mockChannel, mockRemoveChannel } = vi.hoisted(() => ({
+const { mockFrom, mockGetUser, mockChannel, mockRemoveChannel, mockUseAuth } = vi.hoisted(() => ({
   mockFrom:          vi.fn(),
   mockGetUser:       vi.fn().mockResolvedValue({ data: { user: null } }),
   mockChannel:       vi.fn(),
   mockRemoveChannel: vi.fn(),
+  mockUseAuth:       vi.fn(() => ({ currentUser: null, isLoggedIn: false })),
 }));
 
 vi.mock('../../lib/supabase.js', () => ({
@@ -17,6 +18,10 @@ vi.mock('../../lib/supabase.js', () => ({
     channel:       mockChannel,
     removeChannel: mockRemoveChannel,
   },
+}));
+
+vi.mock('../../contexts/AuthContext.jsx', () => ({
+  useAuth: (...args) => mockUseAuth(...args),
 }));
 
 import { useEventReactions, REACTION_EMOJIS } from '../../hooks/useEventReactions.js';
@@ -50,6 +55,7 @@ function makeChannel() {
 beforeEach(() => {
   mockFrom.mockReset();
   mockGetUser.mockReset().mockResolvedValue({ data: { user: null } });
+  mockUseAuth.mockReturnValue({ currentUser: null, isLoggedIn: false });
   mockChannel.mockReset();
   mockRemoveChannel.mockReset();
   makeChannel();
@@ -110,7 +116,7 @@ describe('useEventReactions — toggle (optimiste)', () => {
   });
 
   it('ajoute un emoji dans mine immediatement (optimiste)', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockUseAuth.mockReturnValue({ currentUser: { id: 'u1' }, isLoggedIn: true });
     // Tous les appels retournent un q vide (pas de réactions initiales)
     mockFrom.mockReturnValue(q({ data: [], error: null }));
 
@@ -124,7 +130,7 @@ describe('useEventReactions — toggle (optimiste)', () => {
   });
 
   it('retire un emoji de mine si deja present (optimiste)', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockUseAuth.mockReturnValue({ currentUser: { id: 'u1' }, isLoggedIn: true });
 
     // agg: 🔥=3, own: [🔥]
     mockFrom.mockImplementation((table) => {

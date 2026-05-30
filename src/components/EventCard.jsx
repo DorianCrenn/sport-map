@@ -9,6 +9,7 @@ import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
 import { useClubPlayers } from '../hooks/useClubPlayers.js';
 import EventReactions from './EventReactions.jsx';
 import EventComments from './EventComments.jsx';
+import { useEventPredictionCount } from '../hooks/useEventPredictions.js';
 import EventPhotoGallery from './EventPhotoGallery.jsx';
 import { useAttendanceContext } from '../contexts/AttendanceContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
@@ -547,6 +548,7 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
   const { toast } = useToast();
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const attendeeCount = useAttendeeCount(event.id);
+  const predictionCount = useEventPredictionCount(event.eventType !== 'tournament' && new Date(event.date) > new Date() ? event.id : null);
   const [showPoster, setShowPoster] = useState(false);
   const [posterInitBg, setPosterInitBg] = useState(null);
   const [resultScore, setResultScore] = useState(null);
@@ -689,6 +691,12 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
                 {attendeeCount} J'y serai
+              </div>
+            )}
+            {predictionCount > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#f59e0b' }}>
+                <span>⚡</span>
+                {predictionCount} pronostic{predictionCount > 1 ? 's' : ''}
               </div>
             )}
           </div>

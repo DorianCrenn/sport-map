@@ -75,9 +75,9 @@ const PRIMARY_BUTTONS_44 = [
   { file: 'components/EventFormModal.jsx',     hint: 'aria-label="Fermer"' },
   // MobileEventSheet — fermeture
   { file: 'components/MobileEventSheet.jsx',  hint: 'aria-label="Fermer"' },
-  // FavorisPage — navigation mois (prev/next)
-  { file: 'pages/FavorisPage.jsx',             hint: 'onClick={prevMonth}' },
-  { file: 'pages/FavorisPage.jsx',             hint: 'onClick={nextMonth}' },
+  // FavorisPage — navigation mois (prev/next) dans l'onglet CalendarTab
+  { file: 'pages/favoris/CalendarTab.jsx',     hint: 'onClick={prevMonth}' },
+  { file: 'pages/favoris/CalendarTab.jsx',     hint: 'onClick={nextMonth}' },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────

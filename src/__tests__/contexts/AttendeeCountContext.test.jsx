@@ -75,6 +75,10 @@ describe('AttendeeCountContext — chargement initial', () => {
 
 describe('AttendeeCountContext — mises à jour Realtime partielles (PERF-004)', () => {
   beforeEach(() => {
+    // Vider les appels accumulés pour que calls[0] soit bien le handler du test courant
+    mockOn.mockClear();
+    mockChannel.mockClear();
+    mockFrom.mockClear();
     mockFrom.mockReturnValue(makeQuery([
       { event_id: 'evt-1', count: 3 },
     ]));

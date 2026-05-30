@@ -297,7 +297,7 @@ export default function ClubFeed({
           </div>
         )}
 
-        <div className="flex flex-col gap-3 p-4 pb-28" role="list" aria-label="Fil d'actualité du club">
+        <div className="flex flex-col gap-3 p-4" style={{ paddingBottom: 'calc(112px + env(safe-area-inset-bottom, 0px))' } as React.CSSProperties} role="list" aria-label="Fil d'actualité du club">
 
           {/* ── État chargement : squelettes ── */}
           {loading && (

@@ -13,6 +13,7 @@ import PosterStudio from './PosterStudio.jsx';
 import RideSection from './rides/RideSection.jsx';
 import EventPhotoGallery from './EventPhotoGallery.jsx';
 import ScoreEntryContainer from './score/ScoreEntryContainer.jsx';
+import EventPredictions from './EventPredictions.jsx';
 
 const EVENT_TYPE_META = {
   championship: { label: 'Championnat', color: '#3b82f6' },
@@ -461,6 +462,11 @@ export default function MobileEventSheet({
                     );
                   })}
                 </div>
+              )}
+
+              {/* Pronostic — uniquement sur les matchs futurs */}
+              {event.eventType !== 'tournament' && (
+                <EventPredictions eventId={event.id} event={event} />
               )}
 
               <RideSection event={event} snapPoint="full" />
