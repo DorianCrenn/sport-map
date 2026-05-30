@@ -396,6 +396,11 @@ export default function MobileEventSheet({
         {/* Follow club — when event belongs to a tracked club */}
         <FollowClubButton event={event} />
 
+        {/* Pronostic — visible dès le mode detail, matchs futurs uniquement */}
+        {snapPoint !== 'full' && event.eventType !== 'tournament' && !isPast && (
+          <EventPredictions eventId={event.id} event={event} />
+        )}
+
         {/* Ride teaser — compact, only in detail/peek mode */}
         {snapPoint !== 'full' && <RideSection event={event} snapPoint={snapPoint} />}
 
@@ -462,11 +467,6 @@ export default function MobileEventSheet({
                     );
                   })}
                 </div>
-              )}
-
-              {/* Pronostic — uniquement sur les matchs futurs */}
-              {event.eventType !== 'tournament' && (
-                <EventPredictions eventId={event.id} event={event} />
               )}
 
               <RideSection event={event} snapPoint="full" />

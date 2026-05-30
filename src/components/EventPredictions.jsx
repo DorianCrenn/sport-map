@@ -1,10 +1,10 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEventPredictions } from '../hooks/useEventPredictions.js';
 
-const LABELS = {
-  home: { icon: '🏠', label: 'Domicile' },
-  draw: { icon: '⚖️', label: 'Match nul' },
-  away: { icon: '✈️', label: 'Visiteur' },
+const COLORS = {
+  home: { main: '#3b82f6', dim: 'rgba(59,130,246,0.18)', border: '#3b82f6' },
+  draw: { main: '#94a3b8', dim: 'rgba(148,163,184,0.15)', border: '#64748b' },
+  away: { main: '#ef4444', dim: 'rgba(239,68,68,0.18)', border: '#ef4444' },
 };
 
 export default function EventPredictions({ eventId, event }) {
@@ -12,9 +12,9 @@ export default function EventPredictions({ eventId, event }) {
   const awayTeam = event?.awayTeam || 'Visiteur';
 
   const labels = {
-    home: { icon: '🏠', label: homeTeam },
-    draw: { icon: '⚖️', label: 'Nul' },
-    away: { icon: '✈️', label: awayTeam },
+    home: homeTeam,
+    draw: 'Nul',
+    away: awayTeam,
   };
 
   const { counts, mine, vote, loading, isLocked, total, isLoggedIn } =
@@ -22,43 +22,43 @@ export default function EventPredictions({ eventId, event }) {
 
   if (loading) return null;
 
+  const showPct = total > 0;
+
   return (
     <div style={{
       borderRadius: 14,
       border: '1px solid var(--sl-border)',
       backgroundColor: 'var(--sl-card)',
-      padding: '12px 14px',
+      padding: '10px 12px 12px',
       marginBottom: 12,
     }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 14 }}>⚡</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Pronostic</span>
+          <span style={{ fontSize: 13 }}>⚡</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)' }}>Qui va gagner ?</span>
           {total > 0 && (
-            <span style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 500 }}>
-              {total} vote{total > 1 ? 's' : ''}
+            <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>
+              · {total >= 1000 ? `${(total / 1000).toFixed(1)}k` : total} vote{total > 1 ? 's' : ''}
             </span>
           )}
         </div>
-        {isLocked && (
-          <span style={{
-            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
-            color: 'var(--sl-t3)', backgroundColor: 'var(--sl-surface)',
-            border: '1px solid var(--sl-border-s)',
-          }}>
+        {isLocked ? (
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, color: 'var(--sl-t3)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)' }}>
             ⏱ Verrouillé
           </span>
-        )}
+        ) : !isLoggedIn ? (
+          <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Connecte-toi pour voter</span>
+        ) : null}
       </div>
 
-      {/* Vote buttons */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {/* ── 3 colonnes ── */}
+      <div style={{ display: 'flex', gap: 5 }}>
         {(['home', 'draw', 'away']).map(choice => {
-          const count  = counts[choice] ?? 0;
-          const pct    = total > 0 ? Math.round((count / total) * 100) : 0;
+          const pct     = showPct ? Math.round((counts[choice] ?? 0) / total * 100) : 0;
           const isVoted = mine === choice;
-          const showBar = total > 0 || isVoted;
+          const color   = COLORS[choice];
+          const isLeading = showPct && pct === Math.max(counts.home, counts.draw, counts.away) / total * 100;
 
           return (
             <button
@@ -66,85 +66,69 @@ export default function EventPredictions({ eventId, event }) {
               onClick={() => vote(choice)}
               disabled={isLocked || !isLoggedIn}
               style={{
+                flex: 1,
                 position: 'relative',
-                display: 'flex', alignItems: 'center',
-                width: '100%', minHeight: 44,
-                padding: '0 12px',
+                minHeight: 56,
                 borderRadius: 10,
-                border: `1.5px solid ${isVoted ? 'var(--sl-green)' : 'var(--sl-border-s)'}`,
-                backgroundColor: isVoted
-                  ? 'var(--sl-green-dim)'
-                  : isLocked
-                    ? 'var(--sl-surface)'
-                    : 'var(--sl-surface)',
-                cursor: isLocked || !isLoggedIn ? 'default' : 'pointer',
+                border: `1.5px solid ${isVoted ? color.border : isLeading && showPct ? `${color.main}55` : 'var(--sl-border-s)'}`,
+                backgroundColor: isVoted ? color.dim : 'var(--sl-surface)',
                 overflow: 'hidden',
+                cursor: isLocked || !isLoggedIn ? 'default' : 'pointer',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                padding: '6px 4px',
                 transition: 'border-color 0.15s',
+                gap: 2,
               }}
             >
-              {/* Progress bar background */}
-              {showBar && (
+              {/* Barre de progression horizontale en fond */}
+              {showPct && (
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
-                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
                   style={{
                     position: 'absolute', left: 0, top: 0, bottom: 0,
-                    backgroundColor: isVoted
-                      ? 'rgba(34,197,94,0.15)'
-                      : 'rgba(148,163,184,0.1)',
-                    borderRadius: 10,
+                    backgroundColor: isVoted ? color.dim : `${color.main}12`,
                     pointerEvents: 'none',
                   }}
                 />
               )}
 
-              {/* Label */}
-              <span style={{ fontSize: 14, marginRight: 8, position: 'relative', zIndex: 1 }}>
-                {labels[choice].icon}
-              </span>
+              {/* Nom de l'équipe / X */}
               <span style={{
-                flex: 1, textAlign: 'left', fontSize: 12, fontWeight: isVoted ? 700 : 500,
-                color: isVoted ? 'var(--sl-green)' : 'var(--sl-t2)',
+                fontSize: choice === 'draw' ? 15 : 10,
+                fontWeight: choice === 'draw' ? 800 : 700,
+                color: isVoted ? color.main : isLeading && showPct ? color.main : 'var(--sl-t2)',
+                textAlign: 'center',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                width: '100%', paddingInline: 2,
                 position: 'relative', zIndex: 1,
+                lineHeight: 1.2,
               }}>
-                {labels[choice].label}
+                {choice === 'draw' ? 'X' : labels[choice]}
               </span>
 
-              {/* Percentage */}
-              {showBar && (
-                <span style={{
-                  fontSize: 12, fontWeight: 700, minWidth: 36, textAlign: 'right',
-                  color: isVoted ? 'var(--sl-green)' : 'var(--sl-t3)',
-                  position: 'relative', zIndex: 1,
-                }}>
-                  {pct}%
-                </span>
-              )}
+              {/* Pourcentage */}
+              <span style={{
+                fontSize: 14, fontWeight: 800,
+                color: isVoted ? color.main : isLeading && showPct ? color.main : 'var(--sl-t3)',
+                position: 'relative', zIndex: 1,
+                lineHeight: 1,
+              }}>
+                {showPct ? `${pct}%` : '—'}
+              </span>
 
-              {/* "ta voix" indicator */}
+              {/* Indicateur "ta voix" */}
               {isVoted && (
-                <span style={{ fontSize: 10, color: 'var(--sl-green)', marginLeft: 6, position: 'relative', zIndex: 1 }}>✓</span>
+                <span style={{ fontSize: 9, color: color.main, position: 'relative', zIndex: 1, fontWeight: 700 }}>
+                  ✓ mon vote
+                </span>
               )}
             </button>
           );
         })}
       </div>
-
-      {/* CTA non connecté */}
-      {!isLoggedIn && !isLocked && (
-        <p style={{ fontSize: 11, color: 'var(--sl-t3)', textAlign: 'center', marginTop: 8, marginBottom: 0 }}>
-          Connecte-toi pour voter
-        </p>
-      )}
-
-      {/* Message après coup d'envoi */}
-      {isLocked && total === 0 && (
-        <p style={{ fontSize: 11, color: 'var(--sl-t3)', textAlign: 'center', marginTop: 8, marginBottom: 0 }}>
-          Aucun pronostic pour ce match
-        </p>
-      )}
     </div>
   );
 }
