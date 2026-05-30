@@ -104,12 +104,40 @@ function QuickScoreEdit({ event, onUpdateEvent }) {
   );
 }
 
-function FollowClubButton({ event }) {
+function FollowClubButton({ event, compact = false }) {
   const { isLoggedIn, isFollowingClub, followClub, unfollowClub } = useAuth();
   const { allSports: SPORTS } = useSports();
   if (!isLoggedIn || !event.clubId) return null;
   const following = isFollowingClub(event.clubId);
   const sportColor = SPORTS[event.sport]?.color ?? '#22d96a';
+
+  if (compact) {
+    return (
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={() => following
+          ? unfollowClub(event.clubId)
+          : followClub(event.clubId, { teams: 'all', notif: { match: true, news: true } })
+        }
+        title={following ? `Ne plus suivre ${event.clubName ?? 'ce club'}` : `Suivre ${event.clubName ?? 'ce club'}`}
+        style={{
+          padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          fontSize: 12, fontWeight: 700,
+          backgroundColor: following ? `${sportColor}15` : 'var(--sl-surface)',
+          color: following ? sportColor : 'var(--sl-t2)',
+          border: `1px solid ${following ? sportColor : 'var(--sl-border-s)'}`,
+          transition: 'all 0.18s', whiteSpace: 'nowrap',
+        }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill={following ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        {following ? '✓' : 'Suivre'}
+      </motion.button>
+    );
+  }
+
   return (
     <motion.button
       whileTap={{ scale: 0.97 }}
@@ -153,7 +181,7 @@ export default function MobileEventSheet({
   const sheetRef = useRef(null);
   useFocusTrap(sheetRef, snapPoint === 'full');
 
-  const SNAP_H = { peek: '108px', detail: '52dvh', full: '100%' };
+  const SNAP_H = { peek: '108px', detail: '72dvh', full: '100%' };
 
   const group = SPORTS[event.sport];
   const sportColor = group?.color ?? '#22d96a';
@@ -327,10 +355,10 @@ export default function MobileEventSheet({
           {event.title}
         </h2>
 
-        {/* Championship / Cup subtitle */}
-        {event.eventType === 'championship' && (event.teamName || event.level) && (
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#3b82f6', marginBottom: 10, opacity: 0.9, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {[event.teamName, event.level].filter(Boolean).join(' — ')}
+        {/* Championship subtitle — teamName seulement (level déjà dans le badge) */}
+        {event.eventType === 'championship' && event.teamName && (
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#3b82f6', marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {event.teamName}
           </div>
         )}
         {event.eventType === 'cup' && event.cupType && (
@@ -351,28 +379,28 @@ export default function MobileEventSheet({
         {/* Meta */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
           <MetaRow icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}>
-            <div style={{ fontWeight: 600, color: 'var(--sl-t1)', fontSize: 13 }}>{dateStr}</div>
-            <div style={{ fontSize: 12, color: 'var(--sl-t3)' }}>à {timeStr}</div>
+            <div style={{ fontWeight: 600, color: 'var(--sl-t1)', fontSize: 13 }}>{dateStr} · {timeStr}</div>
           </MetaRow>
           {(event.venue || event.city) && (
             <MetaRow icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}>
-              <div style={{ fontSize: 13, color: 'var(--sl-t1)', fontWeight: 500 }}>{event.venue || event.city}</div>
-              {event.venue && event.city && <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{event.city}</div>}
+              <div style={{ fontSize: 13, color: 'var(--sl-t1)', fontWeight: 500 }}>
+                {[event.venue, event.city].filter(Boolean).join(' · ')}
+              </div>
             </MetaRow>
           )}
         </div>
 
-        {/* Social actions — always visible */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+        {/* Social actions — 3 colonnes si club suivable, 2 sinon */}
+        <div style={{ display: 'grid', gridTemplateColumns: event.clubId ? '1fr 1fr auto' : '1fr 1fr', gap: 8, marginBottom: 12 }}>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => toggleAttend(event.id)}
             style={{
-              padding: '12px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
+              padding: '12px 0', borderRadius: 12, cursor: 'pointer',
               fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               backgroundColor: attending ? 'var(--sl-green-dim)' : 'var(--sl-surface)',
               color: attending ? 'var(--sl-green)' : 'var(--sl-t2)',
-              border: `1px solid ${attending ? 'var(--sl-green)' : 'transparent'}`,
+              border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`,
               transition: 'all 0.15s',
             }}
           >
@@ -391,10 +419,8 @@ export default function MobileEventSheet({
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
             M'y rendre
           </button>
+          {event.clubId && <FollowClubButton event={event} compact />}
         </div>
-
-        {/* Follow club — when event belongs to a tracked club */}
-        <FollowClubButton event={event} />
 
         {/* Pronostic — tous les modes, matchs futurs uniquement */}
         {event.eventType !== 'tournament' && !isPast && (
