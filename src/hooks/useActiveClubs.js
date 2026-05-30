@@ -31,6 +31,7 @@ export function useActiveClubs({ limit = 10 } = {}) {
 
       const countMap = {};
       for (const row of eventsData) {
+        if (!row.club_id) continue; // défense en plus du filtre DB
         countMap[row.club_id] = (countMap[row.club_id] ?? 0) + 1;
       }
 

@@ -12,6 +12,10 @@ function captureICSContent() {
   }
   global.Blob = MockBlob;
 
+  // URL.createObjectURL/revokeObjectURL ne fonctionnent pas avec MockBlob dans jsdom
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
+  vi.spyOn(URL, 'revokeObjectURL').mockReturnValue(undefined);
+
   const link = { href: '', download: '', click: vi.fn() };
   vi.spyOn(document, 'createElement').mockReturnValue(link);
 

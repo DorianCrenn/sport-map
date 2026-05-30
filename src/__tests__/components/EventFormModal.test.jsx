@@ -187,7 +187,8 @@ describe('EventFormModal — validation Zod', () => {
     const arg = onSave.mock.calls[0][0];
     expect(arg).toMatchObject({
       sport: 'Football',
-      date: '2026-06-15T15:00:00',
+      // buildEvent ajoute le décalage timezone local — on vérifie le préfixe uniquement
+      date: expect.stringContaining('2026-06-15T15:00:00'),
     });
   });
 

@@ -19,6 +19,7 @@ function makeQuery(resolved = { data: [], error: null }) {
     gte:    vi.fn().mockReturnThis(),
     lt:     vi.fn().mockReturnThis(),
     not:    vi.fn().mockResolvedValue(resolved),
+    in:     vi.fn().mockResolvedValue(resolved),
   };
   return q;
 }
