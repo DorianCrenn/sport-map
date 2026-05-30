@@ -33,9 +33,15 @@ export function useManagedClubs() {
   const managedClubs = useMemo(() => {
     const ids = new Set(extraClubIds);
     if (currentUser?.clubId) ids.add(String(currentUser.clubId));
+    // Clubs créés par cet utilisateur (robustesse si profiles.club_id encore null)
+    if (currentUser?.id) {
+      userClubs
+        .filter(c => String(c.userId) === String(currentUser.id))
+        .forEach(c => ids.add(String(c.id)));
+    }
     if (!ids.size) return [];
     return userClubs.filter(c => ids.has(String(c.id)));
-  }, [userClubs, extraClubIds, currentUser?.clubId]);
+  }, [userClubs, extraClubIds, currentUser?.clubId, currentUser?.id]);
 
   return { managedClubs, loading: clubsLoading || managersLoading };
 }

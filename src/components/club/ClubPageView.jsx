@@ -76,7 +76,9 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const { isAdmin, isClubAdmin, currentUser, isLoggedIn, follows, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow } = useAuth();
   const { share } = useShare();
   const canAddEvent = canAddEventProp ?? (isAdmin || isClubAdmin);
-  const isOwner = isAdmin || (isClubAdmin && currentUser?.clubId === club.id);
+  const isOwner = isAdmin
+    || club.userId === currentUser?.id
+    || (isClubAdmin && currentUser?.clubId === club.id);
   const { managers, addManager, removeManager, updateManagerRole, isManager } = useClubManagers(club.id);
   const canEdit = isOwner || isManager(currentUser?.email);
   const [showFollowModal, setShowFollowModal] = useState(false);
