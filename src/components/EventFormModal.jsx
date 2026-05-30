@@ -21,7 +21,9 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const { allSports } = useSports();
   const { userClubs } = useClubs();
   const allClubs = userClubs;
-  const myClub = currentUser?.clubId ? allClubs.find(c => String(c.id) === String(currentUser.clubId)) : null;
+  const myClub = allClubs.find(c => String(c.id) === String(currentUser?.clubId))
+    ?? allClubs.find(c => String(c.userId) === String(currentUser?.id))
+    ?? null;
   const useSmartMode = !!(isClubAdmin && myClub);
   const isEdit = !!event && !event?._isNew;
   const sportOptions = Object.values(allSports).filter(s => !s.isArchived).map(s => s.label);
@@ -404,6 +406,8 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               <VenueAutocomplete
                 value={form.venue}
                 onChange={v => set('venue', v)}
+                cityLat={form.cityLat}
+                cityLng={form.cityLng}
                 onSelect={({ name, city, lat, lng }) => {
                   set('venue', name);
                   if (city && !form.cityName) set('cityName', city);

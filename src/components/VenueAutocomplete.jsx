@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 // Venue autocomplete using Photon (Komoot) — free, no API key, OSM-based.
-// Proximity-biased toward Finistère (lon=-4.2, lat=48.2).
+// Proximity-biased toward the selected city (cityLat/cityLng) or Finistère center as fallback.
 // onSelect is called with { name, city, lat, lng } when the user picks a suggestion.
-export default function VenueAutocomplete({ value, onChange, onSelect, placeholder, style }) {
+export default function VenueAutocomplete({ value, onChange, onSelect, placeholder, style, cityLat, cityLng }) {
   const [query, setQuery]           = useState(value || '');
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen]             = useState(false);
@@ -19,7 +19,9 @@ export default function VenueAutocomplete({ value, onChange, onSelect, placehold
     abortRef.current = new AbortController();
     setLoading(true);
     try {
-      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lon=-4.2&lat=48.2&limit=7&lang=fr`;
+      const lat = cityLat ?? 48.2;
+      const lon = cityLng ?? -4.2;
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lon=${lon}&lat=${lat}&limit=7&lang=fr`;
       const res = await fetch(url, { signal: abortRef.current.signal });
       const data = await res.json();
       const features = (data.features ?? []).filter(f => f.properties?.name).slice(0, 6);
@@ -30,7 +32,13 @@ export default function VenueAutocomplete({ value, onChange, onSelect, placehold
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [cityLat, cityLng]);
+
+  // Relancer la recherche si la ville change et qu'un terme est déjà saisi
+  useEffect(() => {
+    if (query.trim().length >= 2) search(query);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityLat, cityLng]);
 
   function handleChange(e) {
     const q = e.target.value;
