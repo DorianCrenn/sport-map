@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { Z } from '../constants/zIndex.js';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useManagedClubs } from '../hooks/useManagedClubs.js';
@@ -220,7 +221,7 @@ export default function TrainingManagerPage({ onBack }) {
       style={{
         position: 'absolute', inset: 0,
         display: 'flex', flexDirection: 'column',
-        backgroundColor: 'var(--sl-bg)', zIndex: 40,
+        backgroundColor: 'var(--sl-bg)', zIndex: Z.formModal,
       }}
     >
       {/* ── Header ─────────────────────────────────────────────────────── */}
