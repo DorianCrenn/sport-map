@@ -58,7 +58,7 @@ function QuickSetupCard({ userId, onDismiss }) {
 }
 
 export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrainings }) {
-  const { currentUser, isAdmin, isClubAdmin } = useAuth();
+  const { currentUser, isAdmin, isClubAdmin, follows } = useAuth();
   const { managedClubs } = useManagedClubs();
 
   const isManager = isAdmin || isClubAdmin || managedClubs.length > 0;
@@ -73,12 +73,14 @@ export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrain
   }
 
   // Les clubs gérés sont visibles dans le feed sans avoir à les suivre explicitement
-  const feedClubIds = useMemo(() => {
-    const managed = managedClubs.map(c => String(c.id));
-    return [...new Set([...followedClubIds, ...managed])];
-  }, [followedClubIds, managedClubs]);
+  const managedClubIds = useMemo(() => managedClubs.map(c => String(c.id)), [managedClubs]);
 
-  const { items, loading }     = useFeedItems(feedClubIds);
+  const feedClubIds = useMemo(() => {
+    return [...new Set([...followedClubIds, ...managedClubIds])];
+  }, [followedClubIds, managedClubIds]);
+
+  // follows est passé pour filtrer par équipe quand teams !== 'all'
+  const { items, loading }     = useFeedItems(feedClubIds, follows, managedClubIds);
   const { items: featured }    = useFeaturedEvents({ clubIds: feedClubIds });
   const { sponsors }           = useClubSponsors(feedClubIds);
   const hasClubs = feedClubIds.length > 0;

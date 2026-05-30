@@ -118,8 +118,12 @@ function mapResult(event: Record<string, unknown>): FlashFeedItem {
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
-export function useFeedItems(followedClubIds: string[]) {
-  const { announcements, results, upcoming, rides, loading } = useNewsFeed({ followedClubIds });
+export function useFeedItems(
+  followedClubIds: string[],
+  follows: { clubId: string; teams: 'all' | string[] }[] = [],
+  managedClubIds: string[] = [],
+) {
+  const { announcements, results, upcoming, rides, loading } = useNewsFeed({ followedClubIds, follows, managedClubIds });
 
   const items = useMemo<FeedItem[]>(() => {
     // Lookup event → city/venue pour les destinations de covoiturage

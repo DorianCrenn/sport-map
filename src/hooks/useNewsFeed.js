@@ -8,9 +8,21 @@ import { supabase } from '../lib/supabase.js';
  *   - Résultats récents (events avec score non null, clubs suivis)
  *   - Prochains matchs des clubs suivis
  *
+ * follows        : tableau { clubId, teams: 'all' | string[] } — filtre par équipe
+ * managedClubIds : IDs des clubs gérés (admin/coach) — pas de filtre d'équipe pour eux
+ *
  * Fonctionne sans auth — retourne des tableaux vides si non connecté.
  */
-export function useNewsFeed({ followedClubIds = [] }) {
+
+function isEventVisible(event, follows, managedClubIds) {
+  const cid = String(event.club_id);
+  if (managedClubIds.includes(cid)) return true;
+  const follow = follows.find(f => String(f.clubId) === cid);
+  if (!follow || follow.teams === 'all') return true;
+  return follow.teams.includes(event.team_name ?? '');
+}
+
+export function useNewsFeed({ followedClubIds = [], follows = [], managedClubIds = [] }) {
   const [announcements, setAnnouncements] = useState([]);
   const [results, setResults]             = useState([]);
   const [upcoming, setUpcoming]           = useState([]);
@@ -40,7 +52,7 @@ export function useNewsFeed({ followedClubIds = [] }) {
       const now = new Date().toISOString();
       const { data: res } = await supabase
         .from('events')
-        .select('id, title, sport, date, score, club_id, venue, city, event_type, level')
+        .select('id, title, sport, date, score, club_id, venue, city, event_type, level, team_name')
         .in('club_id', clubIds)
         .not('score', 'is', null)
         .lt('date', now)
@@ -51,7 +63,7 @@ export function useNewsFeed({ followedClubIds = [] }) {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const { data: ups } = await supabase
         .from('events')
-        .select('id, title, sport, date, club_id, venue, city, event_type, level, home_or_away, poster_url, clubs(name, logo_url)')
+        .select('id, title, sport, date, club_id, venue, city, event_type, level, home_or_away, team_name, poster_url, clubs(name, logo_url)')
         .in('club_id', clubIds)
         .gte('date', sevenDaysAgo)
         .order('date', { ascending: true })
@@ -77,8 +89,8 @@ export function useNewsFeed({ followedClubIds = [] }) {
 
       if (cancelled) return;
       setAnnouncements(ann ?? []);
-      setResults(res ?? []);
-      setUpcoming(ups ?? []);
+      setResults((res ?? []).filter(e => isEventVisible(e, follows, managedClubIds)));
+      setUpcoming((ups ?? []).filter(e => isEventVisible(e, follows, managedClubIds)));
       setRides(ridesData);
       setLoading(false);
     }
@@ -125,6 +137,7 @@ export function useNewsFeed({ followedClubIds = [] }) {
       }, (payload) => {
         const row = payload.new;
         if (!clubIdSet.has(String(row.club_id))) return;
+        if (!isEventVisible(row, follows, managedClubIds)) return;
         if (new Date(row.date) >= new Date()) {
           setUpcoming(prev => [row, ...prev].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 10));
         }
@@ -158,7 +171,7 @@ export function useNewsFeed({ followedClubIds = [] }) {
       supabase.removeChannel(channel);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [followedClubIds.join(',')]);
+  }, [followedClubIds.join(','), follows.map(f => `${f.clubId}:${f.teams}`).join(';'), managedClubIds.join(',')]);
 
   return { announcements, results, upcoming, rides, loading, hasClubs };
 }
