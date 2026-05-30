@@ -38,6 +38,7 @@ function mapToDB(data, userId) {
 export function useClubs() {
   const { currentUser } = useAuth();
   const [userClubs, setUserClubs] = useState([]);
+  const channelId = useRef(`clubs-rt-${Math.random().toString(36).slice(2)}`);
   const [loading, setLoading]    = useState(true);
   // Ref pour éviter les stale closures dans updateClub/deleteClub
   // sans recréer ces callbacks à chaque changement de userClubs.
@@ -73,7 +74,7 @@ export function useClubs() {
   // ── Realtime ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const channel = supabase
-      .channel('clubs-realtime')
+      .channel(channelId.current)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clubs' }, ({ new: row }) => {
         setUserClubs(prev => prev.some(c => c.id === row.id) ? prev : [mapFromDB(row), ...prev]);
       })

@@ -38,6 +38,25 @@ import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
 import { useAttendeeCountActions } from './contexts/AttendeeCountContext.jsx';
 
+function ModalLoader() {
+  return (
+    <>
+      <style>{`@keyframes sl-spin { to { transform: rotate(360deg) } }`}</style>
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 9998,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: 'var(--sl-bg)',
+      }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          border: '3px solid var(--sl-border)', borderTopColor: 'var(--sl-green)',
+          animation: 'sl-spin 0.7s linear infinite',
+        }} />
+      </div>
+    </>
+  );
+}
+
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs } = useAuth();
   const [activeTab, _setActiveTab] = useState(() => {
@@ -61,6 +80,7 @@ function AppInner() {
   const [showTrainings, setShowTrainings] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [clubOverlayOpen, setClubOverlayOpen] = useState(false);
+  const [clubOverlayLoading, setClubOverlayLoading] = useState(false);
 
   const allClubsRef = useRef([]);
 
@@ -133,8 +153,10 @@ function AppInner() {
       const id = clubMatch[1];
       // Fetch Supabase club directly — don't wait for allClubs
       pendingDeepLink.current = id;
+      setClubOverlayLoading(true);
       supabase.from('clubs').select('*').eq('id', id).maybeSingle()
         .then(({ data }) => {
+          setClubOverlayLoading(false);
           if (!data) return;
           setSelectedSearchClub({
             id: data.id, name: data.name, sport: data.sport,
@@ -162,6 +184,11 @@ function AppInner() {
     if (event) {
       setFocusEventId(event.id);
       setActiveTab('map');
+      window.history.replaceState(null, '', window.location.pathname);
+      pendingEventDeepLink.current = null;
+    } else {
+      // Events are loaded but the ID wasn't found — event deleted or invalid link
+      toast({ message: 'Événement introuvable ou supprimé', type: 'error' });
       window.history.replaceState(null, '', window.location.pathname);
       pendingEventDeepLink.current = null;
     }
@@ -346,17 +373,20 @@ function AppInner() {
                 />
               </ErrorBoundary>
             )}
-            {activeTab === 'admin' && isAdmin && <ErrorBoundary name="Admin"><Suspense fallback={null}><AdminPage /></Suspense></ErrorBoundary>}
+            {activeTab === 'admin' && isAdmin && <ErrorBoundary name="Admin"><Suspense fallback={<ModalLoader />}><AdminPage /></Suspense></ErrorBoundary>}
           </motion.div>
         </AnimatePresence>
 
         {/* MyRidesPage lives inside the content area so BottomNav stays visible */}
         {showMyRides && (
-          <Suspense fallback={null}><MyRidesPage onBack={() => setShowMyRides(false)} /></Suspense>
+          <Suspense fallback={<ModalLoader />}><MyRidesPage onBack={() => setShowMyRides(false)} /></Suspense>
         )}
         {showTrainings && (
-          <Suspense fallback={null}><TrainingManagerPage onBack={() => setShowTrainings(false)} /></Suspense>
+          <Suspense fallback={<ModalLoader />}><TrainingManagerPage onBack={() => setShowTrainings(false)} /></Suspense>
         )}
+        {/* Spinner pendant le chargement d'un club via deep link #club/:id */}
+        {clubOverlayLoading && <ModalLoader />}
+
         {/* ClubPageView inside the content area so BottomNav stays visible (same pattern as MyRidesPage) */}
         {selectedSearchClub && (
           <ClubPageView
@@ -379,7 +409,7 @@ function AppInner() {
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements} />
       </ErrorBoundary>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<ModalLoader />}>
         <AnimatePresence>
           {showAuth && (
             <AuthPage

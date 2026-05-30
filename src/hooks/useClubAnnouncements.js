@@ -70,7 +70,8 @@ export function useClubAnnouncements(clubId) {
   }, [clubId, fetch]);
 
   const sendAnnouncement = useCallback(async ({ type, title, message, targetTeams, clubName, scheduledFor }) => {
-    if (!currentUser || !clubId) throw new Error('not authenticated');
+    if (!currentUser) throw new Error('Connecte-toi pour envoyer une annonce');
+    if (!clubId) throw new Error('Aucun club sélectionné');
     const { data, error } = await supabase
       .from('club_announcements')
       .insert({

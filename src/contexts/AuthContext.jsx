@@ -227,7 +227,7 @@ export function AuthProvider({ children }) {
         table: 'profiles',
         filter: `id=eq.${authUser.id}`,
       }, ({ new: row }) => {
-        setProfile(row);
+        setProfile(mapProfile(authUser, row));
       })
       .subscribe();
     return () => supabase.removeChannel(channel);
@@ -317,7 +317,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const updateProfile = useCallback(async (patch) => {
-    if (!authUser) return;
+    if (!authUser) return { error: new Error('Non connecté') };
     const map = {
       name:           'name',
       avatar:         'avatar_url',
@@ -330,12 +330,17 @@ export function AuthProvider({ children }) {
       // role, plan et clubId intentionnellement absents — modifiables uniquement côté serveur
     };
     const dbPatch = {};
+    const uiPatch = {};
     for (const [key, col] of Object.entries(map)) {
-      if (key in patch) dbPatch[col] = patch[key];
+      if (key in patch) { dbPatch[col] = patch[key]; uiPatch[key] = patch[key]; }
     }
     const { error } = await supabase.from('profiles').update(dbPatch).eq('id', authUser.id);
-    if (error) console.error('[Auth] updateProfile error:', error.message);
-    else setProfile(prev => prev ? { ...prev, ...dbPatch } : prev);
+    if (error) {
+      console.error('[Auth] updateProfile error:', error.message);
+      return { error };
+    }
+    setProfile(prev => prev ? { ...prev, ...uiPatch } : prev);
+    return { error: null };
   }, [authUser]);
 
   // ── OAuth ─────────────────────────────────────────────────────────────────
