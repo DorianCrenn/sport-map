@@ -50,6 +50,10 @@ interface ClubFeedProps {
   onOpenTrainings?: () => void;
   /** Slot optionnel affiché en haut du feed scrollable (ex: QuickSetupCard) */
   headerSlot?: React.ReactNode;
+  /** Filtre piloté depuis l'extérieur — masque les pills internes quand fourni */
+  externalFilter?: FeedFilter;
+  /** Masque le header (titre + pills) quand la navigation est gérée au niveau parent */
+  hideHeader?: boolean;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -170,8 +174,12 @@ export default function ClubFeed({
   onNavigateClubs,
   onOpenTrainings,
   headerSlot,
+  externalFilter,
+  hideHeader = false,
 }: ClubFeedProps) {
-  const [filter, setFilter] = useState<FeedFilter>('all');
+  const [internalFilter, setInternalFilter] = useState<FeedFilter>('all');
+  const filter = externalFilter ?? internalFilter;
+
   // Graine aléatoire fixée au montage — varie l'ordre des sponsors + featured à chaque visite
   const [rotationSeed] = useState(() => Math.floor(Math.random() * 997));
 
@@ -217,50 +225,53 @@ export default function ClubFeed({
 
       {/* ══════════════════════════════════════════════════════════
           Header sticky — nom du club + onglets filtres
+          Masqué quand hideHeader=true (navigation gérée au niveau parent)
       ══════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-10 bg-[var(--sl-bg)]/96 backdrop-blur-sm border-b border-[var(--sl-border)]">
-        <div className="px-4 pt-4 pb-0">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-[9px] font-black tracking-[0.18em] uppercase text-[var(--sl-t3)] mb-0.5">
-                Fil d'actualité
-              </p>
-              <h1 className="text-[17px] font-black text-[var(--sl-t1)] tracking-tight leading-none">
-                {clubName}
-              </h1>
-            </div>
-            <div className="w-9 h-9 rounded-2xl bg-indigo-600/15 border border-indigo-600/25 flex items-center justify-center">
-              <span className="text-base select-none">🏟️</span>
+      {!hideHeader && (
+        <header className="sticky top-0 z-10 bg-[var(--sl-bg)]/96 backdrop-blur-sm border-b border-[var(--sl-border)]">
+          <div className="px-4 pt-4 pb-0">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-[9px] font-black tracking-[0.18em] uppercase text-[var(--sl-t3)] mb-0.5">
+                  Fil d'actualité
+                </p>
+                <h1 className="text-[17px] font-black text-[var(--sl-t1)] tracking-tight leading-none">
+                  {clubName}
+                </h1>
+              </div>
+              <div className="w-9 h-9 rounded-2xl bg-indigo-600/15 border border-indigo-600/25 flex items-center justify-center">
+                <span className="text-base select-none">🏟️</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* ── Onglets filtres — scroll horizontal sur mobile ── */}
-        <div
-          className="flex gap-1.5 px-4 pb-3 overflow-x-auto"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
-        >
-          {FILTERS.map(f => {
-            const active = filter === f.key;
-            return (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={[
-                  'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold',
-                  'whitespace-nowrap transition-all duration-150 shrink-0',
-                  active
-                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-900/50'
-                    : 'bg-[var(--sl-pill-bg)] text-[var(--sl-pill-text)] hover:bg-[var(--sl-hover)] border border-[var(--sl-border)]',
-                ].join(' ')}
-              >
-                <span className="text-[13px]">{f.emoji}</span>
-                {f.label}
-              </button>
-            );
-          })}
-        </div>
-      </header>
+          {/* ── Onglets filtres — scroll horizontal sur mobile ── */}
+          <div
+            className="flex gap-1.5 px-4 pb-3 overflow-x-auto"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
+          >
+            {FILTERS.map(f => {
+              const active = internalFilter === f.key;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setInternalFilter(f.key)}
+                  className={[
+                    'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold',
+                    'whitespace-nowrap transition-all duration-150 shrink-0',
+                    active
+                      ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-900/50'
+                      : 'bg-[var(--sl-pill-bg)] text-[var(--sl-pill-text)] hover:bg-[var(--sl-hover)] border border-[var(--sl-border)]',
+                  ].join(' ')}
+                >
+                  <span className="text-[13px]">{f.emoji}</span>
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
+        </header>
+      )}
 
       {/* ══════════════════════════════════════════════════════════
           Feed — liste scrollable des cartes
@@ -310,7 +321,7 @@ export default function ClubFeed({
 
           {/* ── État vide ── */}
           {!loading && feedItems.length === 0 && (
-            <EmptyState filter={filter} />
+            <EmptyState filter={filter as FeedFilter} />
           )}
 
           {/* ── Cartes du feed ── */}
