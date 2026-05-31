@@ -37,7 +37,7 @@ export default function MyRidesPage({ onBack }) {
   const [activeTab, setActiveTab] = useState('driving');
 
   // Actions (used by driving tab)
-  async function handleAccept(requestId, rideId, passengerId, passengerName) {
+  async function handleAccept(requestId, rideId, passengerId) {
     const { error } = await supabase
       .from('ride_requests')
       .update({ status: 'accepted' })
@@ -80,7 +80,7 @@ export default function MyRidesPage({ onBack }) {
     refetch();
   }
 
-  async function handleCancelRequest(requestId, rideId) {
+  async function handleCancelRequest(requestId) {
     await supabase.from('ride_requests').update({ status: 'cancelled' }).eq('id', requestId);
     refetch();
   }

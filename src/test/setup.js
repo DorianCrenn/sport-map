@@ -1,3 +1,4 @@
+/* global vi */
 import '@testing-library/jest-dom';
 
 // Suppress console.error/warn noise in tests unless explicitly checking them

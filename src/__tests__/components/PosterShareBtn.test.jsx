@@ -39,6 +39,9 @@ async function waitForPhase() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // URL.createObjectURL/revokeObjectURL en tant que spies (requis par les tests de fallback)
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
+  vi.spyOn(URL, 'revokeObjectURL').mockReturnValue(undefined);
   // Réinitialiser canShare/share
   Object.defineProperty(navigator, 'canShare', { value: undefined, writable: true, configurable: true });
   Object.defineProperty(navigator, 'share',    { value: undefined, writable: true, configurable: true });

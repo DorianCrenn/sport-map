@@ -8,7 +8,7 @@ import { useToast } from '../contexts/ToastContext.jsx';
 import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
-import { BADGE_DEFS, BADGE_ORDER, LEVELS, getLevel } from '../hooks/useBadges.js';
+import { BADGE_DEFS, BADGE_ORDER, getLevel } from '../hooks/useBadges.js';
 import { usePlan } from '../hooks/usePlan.js';
 import ClubLeaderboard from '../components/ClubLeaderboard.jsx';
 import UserLeaderboard from '../components/UserLeaderboard.jsx';

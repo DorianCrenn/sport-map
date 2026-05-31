@@ -16,6 +16,8 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_on_club_created ON public.clubs;
+
 CREATE TRIGGER trg_on_club_created
   AFTER INSERT ON public.clubs
   FOR EACH ROW

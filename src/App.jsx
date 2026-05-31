@@ -68,9 +68,13 @@ function AppInner() {
     sessionStorage.setItem('sl-tab', tab);
     _setActiveTab(tab);
   }, []);
-  const [activeDepartment, setActiveDepartment] = useState('finistere');
+  const [activeDepartment] = useState('finistere');
   const [showAuth, setShowAuth] = useState(false);
   const [pendingOnboarding, setPendingOnboarding] = useState(false);
+  const [showNewEventForm, setShowNewEventForm] = useState(false);
+  const [showCSVImport, setShowCSVImport] = useState(false);
+  const [studioEvent, setStudioEvent] = useState(null);
+  const [studioClub,  setStudioClub]  = useState(null);
 
   const { toast } = useToast();
   const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent, archiveSeason } = useLocalEvents();
@@ -79,7 +83,7 @@ function AppInner() {
   const [showMyRides, setShowMyRides] = useState(false);
   const [showTrainings, setShowTrainings] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
-  const [clubOverlayOpen, setClubOverlayOpen] = useState(false);
+  const [, setClubOverlayOpen] = useState(false);
   const [clubOverlayLoading, setClubOverlayLoading] = useState(false);
 
   const allClubsRef = useRef([]);
@@ -109,10 +113,6 @@ function AppInner() {
   }, [addEventsBatch, toast]);
   const { favorites } = useFavoritesContext();
   const { attending } = useAttendanceContext();
-  const [showNewEventForm, setShowNewEventForm] = useState(false);
-  const [showCSVImport, setShowCSVImport] = useState(false);
-  const [studioEvent, setStudioEvent] = useState(null);
-  const [studioClub,  setStudioClub]  = useState(null);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasShownBadge = useRef(false);
   const clubMatchEvents = useClubMatches();
@@ -137,6 +137,7 @@ function AppInner() {
   }, [allEvents, setKnownAttendeeIds]);
 
   const allClubs = useMemo(() => userClubs, [userClubs]);
+  // eslint-disable-next-line react-hooks/refs
   allClubsRef.current = allClubs;
 
   const { earned: earnedBadges, newBadges, markSeen } = useBadges({ attending, allEvents });
@@ -153,6 +154,7 @@ function AppInner() {
       const id = clubMatch[1];
       // Fetch Supabase club directly — don't wait for allClubs
       pendingDeepLink.current = id;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClubOverlayLoading(true);
       supabase.from('clubs').select('*').eq('id', id).maybeSingle()
         .then(({ data }) => {

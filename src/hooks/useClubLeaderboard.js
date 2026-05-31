@@ -32,7 +32,7 @@ export function useClubLeaderboard({ limit = 10, sportFilter = null } = {}) {
 
         const ranked = (data ?? []).map(row => ({
           rank:       row.rank,
-          club:       { id: row.club_id, name: row.name, sport: row.sport, city: row.city, logo_url: row.logo_url },
+          club:       { id: row.club_id, name: row.name ?? 'Club inconnu', sport: row.sport ?? '', city: row.city ?? '', logo_url: row.logo_url ?? null },
           eventCount: row.event_count,
         }));
 

@@ -3,11 +3,12 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-const { mockFrom, mockGetUser, mockChannel, mockRemoveChannel } = vi.hoisted(() => ({
+const { mockFrom, mockGetUser, mockChannel, mockRemoveChannel, mockUseAuth } = vi.hoisted(() => ({
   mockFrom:          vi.fn(),
   mockGetUser:       vi.fn().mockResolvedValue({ data: { user: null } }),
   mockChannel:       vi.fn(),
   mockRemoveChannel: vi.fn(),
+  mockUseAuth:       vi.fn(() => ({ currentUser: null, isLoggedIn: false })),
 }));
 
 vi.mock('../../lib/supabase.js', () => ({
@@ -17,6 +18,10 @@ vi.mock('../../lib/supabase.js', () => ({
     channel:       mockChannel,
     removeChannel: mockRemoveChannel,
   },
+}));
+
+vi.mock('../../contexts/AuthContext.jsx', () => ({
+  useAuth: (...args) => mockUseAuth(...args),
 }));
 
 import { useEventComments } from '../../hooks/useEventComments.js';
@@ -66,6 +71,7 @@ beforeEach(() => {
   mockGetUser.mockReset().mockResolvedValue({ data: { user: null } });
   mockChannel.mockReset();
   mockRemoveChannel.mockReset();
+  mockUseAuth.mockReturnValue({ currentUser: null, isLoggedIn: false });
   makeChannel();
 });
 
@@ -103,6 +109,7 @@ describe('useEventComments — initial state', () => {
 describe('useEventComments — isLoggedIn', () => {
   it('isLoggedIn est true quand un user est connecte', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockUseAuth.mockReturnValue({ currentUser: { id: 'u1' }, isLoggedIn: true });
     mockFrom.mockReturnValue(q({ data: [], error: null }));
 
     const { result } = renderHook(() => useEventComments('evt-1'));
@@ -149,6 +156,7 @@ describe('useEventComments — addComment', () => {
 
   it('addComment ajoute un commentaire optimiste puis le remplace par le vrai', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockUseAuth.mockReturnValue({ currentUser: { id: 'u1' }, isLoggedIn: true });
 
     const realComment = makeComment({ id: 'c-real', content: 'Bravo !' });
 
@@ -177,6 +185,7 @@ describe('useEventComments — addComment', () => {
 
   it('addComment retire le commentaire temporaire si erreur serveur', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockUseAuth.mockReturnValue({ currentUser: { id: 'u1' }, isLoggedIn: true });
 
     // First call (load) returns empty, second call (insert) returns error
     let callCount = 0;
@@ -204,6 +213,7 @@ describe('useEventComments — addComment', () => {
 describe('useEventComments — deleteComment', () => {
   it('deleteComment retire le commentaire immediatement (optimiste)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockUseAuth.mockReturnValue({ currentUser: { id: 'u1' }, isLoggedIn: true });
     const comment = makeComment({ id: 'c1', user_id: 'u1' });
     mockFrom.mockReturnValue(q({ data: [comment], error: null }));
 

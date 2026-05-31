@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import EventCard from './EventCard.jsx';
 
 const PAGE_SIZE = 30;
@@ -40,6 +40,7 @@ export default function EventSidebar({
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Reset pagination when event list changes
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [events]);
 
   // IntersectionObserver: load more when sentinel enters viewport

@@ -24,7 +24,7 @@ function StatCard({ label, value, sub, color = 'var(--sl-t1)' }) {
 }
 
 function BarChart({ data }) {
-  const max = Math.max(...data.map(d => d.count), 1);
+  const max = Math.max(...(data ?? []).map(d => d.count), 1);
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 64 }}>
       {data.map((d, i) => (
@@ -136,6 +136,7 @@ function AnnouncementsSection({ club }) {
   }
 
   function fmtAgo(iso) {
+    // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - new Date(iso).getTime();
     const h = Math.floor(diff / 3600000);
     if (h < 1) return 'à l\'instant';

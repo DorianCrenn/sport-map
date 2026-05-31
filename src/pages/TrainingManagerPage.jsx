@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Z } from '../constants/zIndex.js';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -92,6 +92,7 @@ export default function TrainingManagerPage({ onBack }) {
   // Initialise selectedClubId quand managedClubs se charge
   useEffect(() => {
     if (selectedClubId || !managedClubs.length) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedClubId(String(managedClubs[0].id));
   }, [managedClubs, selectedClubId]);
 
@@ -101,7 +102,7 @@ export default function TrainingManagerPage({ onBack }) {
   );
 
   const [trainings, setTrainings] = useClubTrainings(isManager ? selectedClubId : null);
-  const { sessions: allDbSessions, generateFromRecurring } =
+  const { generateFromRecurring } =
     useTrainingSessions(isManager ? selectedClubId : null, null);
 
   // ── Données joueur ────────────────────────────────────────────────────────
@@ -152,6 +153,7 @@ export default function TrainingManagerPage({ onBack }) {
 
   // Initialiser l'onglet actif sur la première équipe dès que clubTeams est disponible
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!activeTabId && clubTeams.length > 0) setActiveTabId(clubTeams[0].id);
   }, [clubTeams, activeTabId]);
 
@@ -180,11 +182,11 @@ export default function TrainingManagerPage({ onBack }) {
   }, [allTemplateSessions, trainings, selectedTeam]);
 
   // ── Auto-génération des séances concrètes (manager) ───────────────────────
-  const hasGenerated = useMemo(() => new Set(), []); // guard une seule génération par club
+  const hasGenerated = useRef(new Set()); // guard une seule génération par club
   useEffect(() => {
-    if (!isManager || !selectedClubId || !clubTeams.length || hasGenerated.has(selectedClubId)) return;
+    if (!isManager || !selectedClubId || !clubTeams.length || hasGenerated.current.has(selectedClubId)) return;
     if (Object.keys(trainings).length === 0) return;
-    hasGenerated.add(selectedClubId);
+    hasGenerated.current.add(selectedClubId);
     let total = 0;
     async function gen() {
       for (const team of clubTeams) {
@@ -199,11 +201,11 @@ export default function TrainingManagerPage({ onBack }) {
   }, [isManager, selectedClubId, clubTeams, trainings, generateFromRecurring, hasGenerated]);
 
   // ── Auto-génération joueur ────────────────────────────────────────────────
-  const playerGenerated = useMemo(() => new Set(), []);
+  const playerGenerated = useRef(new Set());
   useEffect(() => {
-    if (isManager || !playerClubId || !playerTeamId || playerGenerated.has(playerClubId)) return;
+    if (isManager || !playerClubId || !playerTeamId || playerGenerated.current.has(playerClubId)) return;
     if (Object.keys(playerTrainings).length === 0) return;
-    playerGenerated.add(playerClubId);
+    playerGenerated.current.add(playerClubId);
     const recurring = (playerTrainings[playerTeamId] ?? Object.values(playerTrainings).flat()).filter(s => s.recurring);
     if (!recurring.length) return;
     playerGenerateFromRecurring(recurring, playerTeamId, 4);
@@ -598,55 +600,3 @@ function MergedSessionRow({ session, hostTeam }) {
   );
 }
 
-// ── Section équipe repliable (mode EDIT manager) ──────────────────────────────
-function TeamSection({ team, sessions, onUpdate, clubId, currentUser }) {
-  const [open, setOpen] = useState(true);
-
-  return (
-    <div style={{ marginBottom: 12 }}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          width: '100%', padding: '10px 14px', borderRadius: open ? '12px 12px 0 0' : 12,
-          border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)',
-          cursor: 'pointer', transition: 'border-radius 0.15s',
-        }}
-      >
-        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#6366f1', flexShrink: 0 }} />
-          <span>{team.name}</span>
-          {team.catName && team.catName !== team.name && (
-            <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--sl-t3)', fontStyle: 'italic' }}>
-              {team.catName}
-            </span>
-          )}
-        </span>
-        <span style={{ fontSize: 11, color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          {sessions.length} créneau{sessions.length !== 1 ? 'x' : ''}
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
-            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </span>
-      </button>
-
-      {open && (
-        <div style={{
-          border: '1px solid var(--sl-border)', borderTop: 'none',
-          borderRadius: '0 0 12px 12px', backgroundColor: 'var(--sl-card)',
-          padding: 12,
-        }}>
-          <TrainingBlock
-            data={{ sessions }}
-            isEditing={true}
-            onUpdate={onUpdate}
-            clubId={clubId}
-            currentUser={currentUser}
-            isManager={true}
-          />
-        </div>
-      )}
-    </div>
-  );
-}

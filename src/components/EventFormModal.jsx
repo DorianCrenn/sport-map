@@ -9,11 +9,10 @@ import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import CityAutocomplete from './CityAutocomplete.jsx';
 import VenueAutocomplete from './VenueAutocomplete.jsx';
 import SportIcon from './SportIcon.jsx';
-import { BREST, TEAM_PRESETS, CHAMPIONSHIP_LEVELS, EMPTY_FORM } from '../lib/eventFormConstants.js';
+import { BREST, TEAM_PRESETS, CHAMPIONSHIP_LEVELS } from '../lib/eventFormConstants.js';
 import { inferCategory, generateRecurring, toFormValues, buildEvent } from '../lib/eventFormHelpers.js';
 import {
-  Field, ChampionshipLevelPicker, CupTypePicker, AdversaireField,
-  PillPicker, TournamentFields, ContextualTypeFields, EventTypeRadio, MotmField,
+  Field, AdversaireField, ContextualTypeFields, EventTypeRadio,
 } from './event/EventFormFields.jsx';
 
 export default function EventFormModal({ event, onSave, onClose, onBulkSave, onOpenPoster }) {
@@ -67,6 +66,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const [createdEvent, setCreatedEvent] = useState(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm(toFormValues(event, buildDefaults(event)));
   }, [event]); // eslint-disable-line react-hooks/exhaustive-deps
 
