@@ -5,8 +5,9 @@ import { useClubSponsors } from '../hooks/useClubSponsors.ts';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useManagedClubs } from '../hooks/useManagedClubs.js';
 import ClubFeed from '../components/feed/ClubFeed.tsx';
+import MatchesTab from '../components/feed/MatchesTab.jsx';
 
-function QuickSetupCard({ userId, onDismiss }) {
+function QuickSetupCard({ onDismiss }) {
   const [copied, setCopied] = useState(false);
 
   function handleShare() {
@@ -57,11 +58,46 @@ function QuickSetupCard({ userId, onDismiss }) {
   );
 }
 
+// Primary tab bar shared between Matchs and Actus
+function PrimaryTabBar({ active, onChange }) {
+  const tabs = [
+    { key: 'matches', label: 'Matchs' },
+    { key: 'feed',    label: 'Actus'  },
+  ];
+
+  return (
+    <div
+      className="flex shrink-0 bg-[var(--sl-bg)] border-b border-[var(--sl-border)]"
+      style={{ boxShadow: 'inset 0 -1px 0 var(--sl-border)' }}
+    >
+      {tabs.map(tab => (
+        <button
+          key={tab.key}
+          onClick={() => onChange(tab.key)}
+          className={[
+            'flex-1 py-3 text-[14px] font-bold transition-colors relative',
+            active === tab.key
+              ? 'text-indigo-500'
+              : 'text-[var(--sl-t3)] hover:text-[var(--sl-t2)]',
+          ].join(' ')}
+        >
+          {tab.label}
+          {active === tab.key && (
+            <span className="absolute bottom-0 left-6 right-6 h-[2px] rounded-full bg-indigo-500" />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrainings }) {
   const { currentUser, isAdmin, isClubAdmin, follows } = useAuth();
   const { managedClubs } = useManagedClubs();
 
-  const isManager = isAdmin || isClubAdmin || managedClubs.length > 0;
+  const [primaryTab, setPrimaryTab] = useState('matches');
+
+  const isManager  = isAdmin || isClubAdmin || managedClubs.length > 0;
   const dismissKey = `sl-quick-setup-dismissed-${currentUser?.id}`;
   const [setupDismissed, setSetupDismissed] = useState(
     () => !!localStorage.getItem(dismissKey)
@@ -72,35 +108,45 @@ export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrain
     setSetupDismissed(true);
   }
 
-  // Les clubs gérés sont visibles dans le feed sans avoir à les suivre explicitement
   const managedClubIds = useMemo(() => managedClubs.map(c => String(c.id)), [managedClubs]);
 
-  const feedClubIds = useMemo(() => {
-    return [...new Set([...followedClubIds, ...managedClubIds])];
-  }, [followedClubIds, managedClubIds]);
+  const feedClubIds = useMemo(
+    () => [...new Set([...followedClubIds, ...managedClubIds])],
+    [followedClubIds, managedClubIds],
+  );
 
-  // follows est passé pour filtrer par équipe quand teams !== 'all'
-  const { items, loading }     = useFeedItems(feedClubIds, follows, managedClubIds);
-  const { items: featured }    = useFeaturedEvents({ clubIds: feedClubIds });
-  const { sponsors }           = useClubSponsors(feedClubIds);
+  const { items, loading }  = useFeedItems(feedClubIds, follows, managedClubIds);
+  const { items: featured } = useFeaturedEvents({ clubIds: feedClubIds });
+  const { sponsors }        = useClubSponsors(feedClubIds);
   const hasClubs = feedClubIds.length > 0;
 
   const showSetupCard = isManager && hasClubs && !setupDismissed;
 
   return (
-    <ClubFeed
-      clubId="followed"
-      clubName="Mes clubs"
-      items={hasClubs ? items : undefined}
-      featuredItems={hasClubs ? featured : undefined}
-      sponsorItems={hasClubs ? sponsors : undefined}
-      loading={loading}
-      currentUser={currentUser}
-      onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
-      onOpenTrainings={onOpenTrainings}
-      headerSlot={showSetupCard ? (
-        <QuickSetupCard userId={currentUser?.id} onDismiss={dismissSetup} />
-      ) : undefined}
-    />
+    <div className="flex flex-col h-full bg-[var(--sl-bg)]">
+
+      <PrimaryTabBar active={primaryTab} onChange={setPrimaryTab} />
+
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {primaryTab === 'matches' ? (
+          <MatchesTab followedClubIds={feedClubIds} />
+        ) : (
+          <ClubFeed
+            clubId="followed"
+            clubName="Mes clubs"
+            items={hasClubs ? items : undefined}
+            featuredItems={hasClubs ? featured : undefined}
+            sponsorItems={hasClubs ? sponsors : undefined}
+            loading={loading}
+            currentUser={currentUser}
+            onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
+            onOpenTrainings={onOpenTrainings}
+            headerSlot={showSetupCard ? (
+              <QuickSetupCard onDismiss={dismissSetup} />
+            ) : undefined}
+          />
+        )}
+      </div>
+    </div>
   );
 }
