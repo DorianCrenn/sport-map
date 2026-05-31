@@ -1,6 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useFavoritesContext } from '../../contexts/FavoritesContext.jsx';
+import { useManagedClubs } from '../../hooks/useManagedClubs.js';
 import { useMatchesForDate } from '../../hooks/useMatchesForDate.js';
+import { useMatchScore } from '../../hooks/useMatchScore.js';
 import { useEliteSponsors } from '../../hooks/useEliteSponsors.js';
 import { SPORTS } from '../../data/events.js';
 
@@ -79,89 +82,250 @@ function ChevronRight() {
   );
 }
 
-function StarIcon() {
-  return (
+function HeartIcon({ filled }) {
+  return filled ? (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  ) : (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
     </svg>
   );
 }
 
 // ─── MatchRow ─────────────────────────────────────────────────────────────────
 
-function MatchRow({ event }) {
+function MatchRowInner({ event, children }) {
+  const { isFavorite, toggleFavorite } = useFavoritesContext();
   const { home, away } = parseTeams(event.title);
-  const score    = parseScore(event.score);
-  const status   = getStatus(event);
-  const isLive   = status === 'live';
+  const score      = parseScore(event.score);
+  const status     = getStatus(event);
+  const isLive     = status === 'live';
   const isFinished = status === 'finished';
+  const fav        = isFavorite(event.id);
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[var(--sl-border)] last:border-b-0 hover:bg-[var(--sl-hover)] active:bg-[var(--sl-hover)] transition-colors cursor-pointer">
+    <div className="border-b border-[var(--sl-border)] last:border-b-0">
+      <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--sl-hover)] active:bg-[var(--sl-hover)] transition-colors cursor-pointer">
 
-      {/* Time / status */}
-      <div className="w-10 shrink-0 flex flex-col items-center justify-center gap-0.5">
-        {isLive ? (
-          <>
-            <span className="text-[10px] text-[var(--sl-t3)] leading-none">{formatTime(event.date)}</span>
-            <span className="text-[11px] font-black text-red-500 leading-none">{getLiveMinute(event.date)}'</span>
-          </>
-        ) : (
-          <>
-            <span className="text-[11.5px] font-semibold text-[var(--sl-t2)] leading-none">{formatTime(event.date)}</span>
-            {isFinished && (
-              <span className="text-[9px] font-bold text-[var(--sl-t3)] leading-none uppercase tracking-wide mt-0.5">FT</span>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Separator */}
-      <div className="w-px h-8 shrink-0 bg-[var(--sl-border)]" />
-
-      {/* Teams + scores */}
-      <div className="flex-1 min-w-0">
-        {away ? (
-          <>
-            <div className="flex items-center justify-between gap-2 mb-[4px]">
-              <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{home}</span>
-              {score != null ? (
-                <span className={`text-[13px] font-bold shrink-0 leading-tight tabular-nums ${isLive ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>
-                  {score.home}
-                </span>
-              ) : (
-                <span className="text-[13px] text-[var(--sl-t3)] shrink-0 leading-tight">-</span>
+        {/* Time / status */}
+        <div className="w-10 shrink-0 flex flex-col items-center justify-center gap-0.5">
+          {isLive ? (
+            <>
+              <span className="text-[10px] text-[var(--sl-t3)] leading-none">{formatTime(event.date)}</span>
+              <span className="text-[11px] font-black text-red-500 leading-none">{getLiveMinute(event.date)}'</span>
+            </>
+          ) : (
+            <>
+              <span className="text-[11.5px] font-semibold text-[var(--sl-t2)] leading-none">{formatTime(event.date)}</span>
+              {isFinished && (
+                <span className="text-[9px] font-bold text-[var(--sl-t3)] leading-none uppercase tracking-wide mt-0.5">FT</span>
               )}
-            </div>
+            </>
+          )}
+        </div>
+
+        {/* Separator */}
+        <div className="w-px h-8 shrink-0 bg-[var(--sl-border)]" />
+
+        {/* Teams + scores */}
+        <div className="flex-1 min-w-0">
+          {away ? (
+            <>
+              <div className="flex items-center justify-between gap-2 mb-[4px]">
+                <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{home}</span>
+                {score != null ? (
+                  <span className={`text-[13px] font-bold shrink-0 leading-tight tabular-nums ${isLive ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>
+                    {score.home}
+                  </span>
+                ) : (
+                  <span className="text-[13px] text-[var(--sl-t3)] shrink-0 leading-tight">-</span>
+                )}
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[13px] text-[var(--sl-t2)] truncate leading-tight">{away}</span>
+                {score != null ? (
+                  <span className={`text-[13px] font-bold shrink-0 leading-tight tabular-nums ${isLive ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>
+                    {score.away}
+                  </span>
+                ) : (
+                  <span className="text-[13px] text-[var(--sl-t3)] shrink-0 leading-tight">-</span>
+                )}
+              </div>
+            </>
+          ) : (
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[13px] text-[var(--sl-t2)] truncate leading-tight">{away}</span>
-              {score != null ? (
-                <span className={`text-[13px] font-bold shrink-0 leading-tight tabular-nums ${isLive ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>
-                  {score.away}
-                </span>
-              ) : (
-                <span className="text-[13px] text-[var(--sl-t3)] shrink-0 leading-tight">-</span>
+              <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{home}</span>
+              {isFinished && score != null && (
+                <span className="text-[12px] font-bold text-[var(--sl-t1)] shrink-0 tabular-nums">{score.home}</span>
               )}
             </div>
-          </>
-        ) : (
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{home}</span>
-            {isFinished && score != null && (
-              <span className="text-[12px] font-bold text-[var(--sl-t1)] shrink-0 tabular-nums">{score.home}</span>
-            )}
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Heart + optional extra action */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          {children}
+          <button
+            className={`w-8 h-8 flex items-center justify-center transition-all rounded-full hover:bg-[var(--sl-hover)] ${fav ? 'text-red-500' : 'text-[var(--sl-t3)] hover:text-red-400'}`}
+            aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+            onClick={(e) => { e.stopPropagation(); toggleFavorite(event.id); }}
+          >
+            <HeartIcon filled={fav} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MatchRow({ event }) {
+  return <MatchRowInner event={event} />;
+}
+
+// ─── AdminMatchRow — match row with inline score editor ──────────────────────
+
+function AdminMatchRowFull({ event, onScoreUpdated }) {
+  const [expanded, setExpanded] = useState(false);
+  const { matchScore, saving, saved, saveScore } = useMatchScore(event.id);
+
+  const [homeInput, setHome] = useState(null);
+  const [awayInput, setAway] = useState(null);
+  const [liveMode, setLiveMode] = useState(getStatus(event) === 'live');
+
+  const derivedScore = parseScore(event.score)
+    ?? (matchScore?.score_home != null ? { home: matchScore.score_home, away: matchScore.score_away } : null);
+
+  const home = homeInput ?? String(derivedScore?.home ?? '');
+  const away = awayInput ?? String(derivedScore?.away ?? '');
+
+  async function handleSave(e) {
+    e.stopPropagation();
+    const h = parseInt(home, 10);
+    const a = parseInt(away, 10);
+    if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
+    await saveScore(
+      { score_home: h, score_away: a, sport: event.sport ?? 'Football', status: liveMode ? 'live' : 'final' },
+      onScoreUpdated,
+    );
+    if (!saving) setExpanded(false);
+  }
+
+  return (
+    <div className="border-b border-[var(--sl-border)] last:border-b-0 bg-[var(--sl-surface)]">
+      {/* Row */}
+      <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--sl-hover)] transition-colors cursor-pointer" onClick={() => setExpanded(v => !v)}>
+        {/* Time */}
+        <div className="w-10 shrink-0 flex flex-col items-center justify-center gap-0.5">
+          {liveMode ? (
+            <>
+              <span className="text-[10px] text-[var(--sl-t3)] leading-none">{formatTime(event.date)}</span>
+              <span className="text-[11px] font-black text-red-500 leading-none animate-pulse">{getLiveMinute(event.date)}'</span>
+            </>
+          ) : (
+            <>
+              <span className="text-[11.5px] font-semibold text-[var(--sl-t2)] leading-none">{formatTime(event.date)}</span>
+              {parseScore(event.score) && (
+                <span className="text-[9px] font-bold text-[var(--sl-t3)] leading-none uppercase tracking-wide mt-0.5">FT</span>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="w-px h-8 shrink-0 bg-[var(--sl-border)]" />
+
+        {/* Teams */}
+        <div className="flex-1 min-w-0">
+          {(() => {
+            const { home: h, away: a } = parseTeams(event.title);
+            const sc = parseScore(event.score);
+            return a ? (
+              <>
+                <div className="flex items-center justify-between gap-2 mb-[4px]">
+                  <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{h}</span>
+                  <span className={`text-[13px] font-bold shrink-0 tabular-nums ${liveMode ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>{sc != null ? sc.home : '-'}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[13px] text-[var(--sl-t2)] truncate leading-tight">{a}</span>
+                  <span className={`text-[13px] font-bold shrink-0 tabular-nums ${liveMode ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>{sc != null ? sc.away : '-'}</span>
+                </div>
+              </>
+            ) : (
+              <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate">{h}</span>
+            );
+          })()}
+        </div>
+
+        {/* Edit indicator */}
+        <div className={`flex items-center gap-1 text-[11px] font-semibold shrink-0 px-2 py-1 rounded-full transition-colors ${expanded ? 'bg-indigo-500/20 text-indigo-400' : 'bg-[var(--sl-pill-bg)] text-[var(--sl-t3)]'}`}>
+          <EditIcon />
+          <span>Score</span>
+        </div>
       </div>
 
-      {/* Favourite star */}
-      <button
-        className="w-8 h-8 shrink-0 flex items-center justify-center text-[var(--sl-t3)] hover:text-amber-400 transition-colors rounded-full hover:bg-[var(--sl-hover)]"
-        aria-label="Ajouter aux favoris"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <StarIcon />
-      </button>
+      {/* Inline score editor */}
+      {expanded && (
+        <div className="px-4 pb-4 pt-1" onClick={e => e.stopPropagation()}>
+          {/* Live toggle */}
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-black tracking-[0.15em] uppercase text-[var(--sl-t3)]">
+              {parseScore(event.score) != null ? 'Modifier le score' : 'Saisir le score'}
+            </span>
+            <button
+              onClick={() => setLiveMode(v => !v)}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${liveMode ? 'bg-red-600/20 text-red-500 border border-red-500/30' : 'bg-[var(--sl-pill-bg)] text-[var(--sl-t3)] border border-[var(--sl-border)]'}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${liveMode ? 'bg-red-500 animate-pulse' : 'bg-[var(--sl-t3)]'}`} />
+              {liveMode ? 'En direct' : 'Terminé'}
+            </button>
+          </div>
+
+          {/* Score inputs */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex-1 flex flex-col gap-1">
+              <span className="text-[9px] font-bold text-[var(--sl-t3)] uppercase tracking-wider truncate">
+                {parseTeams(event.title).home}
+              </span>
+              <input
+                type="number" min="0" max="99" value={home}
+                onChange={e => setHome(e.target.value)}
+                className="w-full text-center font-black text-[22px] py-2 rounded-xl bg-[var(--sl-card)] border border-[var(--sl-border-s)] text-[var(--sl-t1)] focus:outline-none focus:border-indigo-500"
+                style={{ tabularNums: true }}
+              />
+            </div>
+            <span className="text-[18px] font-black text-[var(--sl-t3)] pb-1 shrink-0">—</span>
+            <div className="flex-1 flex flex-col gap-1">
+              <span className="text-[9px] font-bold text-[var(--sl-t3)] uppercase tracking-wider truncate text-right">
+                {parseTeams(event.title).away ?? 'Extérieur'}
+              </span>
+              <input
+                type="number" min="0" max="99" value={away}
+                onChange={e => setAway(e.target.value)}
+                className="w-full text-center font-black text-[22px] py-2 rounded-xl bg-[var(--sl-card)] border border-[var(--sl-border-s)] text-[var(--sl-t1)] focus:outline-none focus:border-indigo-500"
+                style={{ tabularNums: true }}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className={`w-full py-2.5 rounded-xl text-[13px] font-bold transition-all ${saved ? 'bg-green-600/20 text-green-500 border border-green-500/30' : 'bg-indigo-600 text-white hover:bg-indigo-500'} disabled:opacity-50`}
+          >
+            {saved ? '✓ Score enregistré' : saving ? 'Enregistrement…' : 'Enregistrer le score'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -339,6 +503,7 @@ function MatchesEmpty({ subTab, statusFilter }) {
   const msgs = {
     all:          { emoji: '📅', title: 'Aucun match ce jour', sub: "Naviguez vers un autre jour ou ajoutez des sports favoris dans votre profil." },
     favorites:    { emoji: '⭐', title: 'Aucun match pour vos clubs', sub: 'Suivez plus de clubs pour voir leurs rencontres ici.' },
+    'my-club':    { emoji: '🏟️', title: 'Aucun match ce jour', sub: 'Naviguez vers un autre jour pour trouver les matchs de votre club.' },
     competitions: { emoji: '🏆', title: 'Aucun sport disponible', sub: '' },
   };
   const statusMsgs = {
@@ -360,7 +525,7 @@ function MatchesEmpty({ subTab, statusFilter }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-const SUB_TABS = [
+const BASE_SUB_TABS = [
   { key: 'all',          label: 'Tous' },
   { key: 'favorites',    label: 'Favoris' },
   { key: 'competitions', label: 'Compétitions' },
@@ -374,7 +539,26 @@ const STATUS_FILTERS = [
 
 export default function MatchesTab({ followedClubIds = [] }) {
   const { currentUser } = useAuth();
+  const { managedClubs } = useManagedClubs();
   const favoriteSports = currentUser?.favoriteSports ?? [];
+
+  const managedClubIds = useMemo(
+    () => managedClubs.map(c => String(c.id)),
+    [managedClubs],
+  );
+
+  const isManager = managedClubs.length > 0;
+
+  // Inject "Mon Club" between Favoris and Compétitions only for managers
+  const SUB_TABS = useMemo(() => {
+    if (!isManager) return BASE_SUB_TABS;
+    return [
+      { key: 'all',          label: 'Tous' },
+      { key: 'favorites',    label: 'Favoris' },
+      { key: 'my-club',      label: 'Mon Club' },
+      { key: 'competitions', label: 'Compétitions' },
+    ];
+  }, [isManager]);
 
   const [subTab,       setSubTab]       = useState('all');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
@@ -393,7 +577,7 @@ export default function MatchesTab({ followedClubIds = [] }) {
 
   const goToToday = useCallback(() => setSelectedDate(new Date()), []);
 
-  // "Tous" data — all events for the day, filtered by favourite sports (or sport filter from grid)
+  // "Tous" data
   const allSports = useMemo(() => {
     if (sportFilter) return [sportFilter];
     if (favoriteSports.length > 0) return favoriteSports;
@@ -402,34 +586,43 @@ export default function MatchesTab({ followedClubIds = [] }) {
   }, [sportFilter, currentUser?.favoriteSports]);
 
   const { matches: allMatches, loading: allLoading } = useMatchesForDate({
-    date:  selectedDate,
+    date:   selectedDate,
     sports: allSports,
-    skip:  subTab === 'favorites',
+    skip:   subTab === 'favorites' || subTab === 'my-club',
   });
 
-  // "Favoris" data — events from followed clubs only
+  // "Favoris" data — followed clubs
   const { matches: favMatches, loading: favLoading } = useMatchesForDate({
     date:    selectedDate,
     clubIds: followedClubIds,
     skip:    subTab !== 'favorites',
   });
 
-  const currentMatches = subTab === 'favorites' ? favMatches : allMatches;
-  const loading        = subTab === 'favorites' ? favLoading : allLoading;
+  // "Mon Club" data — managed clubs only
+  const { matches: myClubMatches, loading: myClubLoading } = useMatchesForDate({
+    date:    selectedDate,
+    clubIds: managedClubIds,
+    skip:    subTab !== 'my-club',
+  });
 
-  // Live count (always computed from currentMatches before status filter)
+  const currentMatches = subTab === 'favorites' ? favMatches
+    : subTab === 'my-club' ? myClubMatches
+    : allMatches;
+
+  const loading = subTab === 'favorites' ? favLoading
+    : subTab === 'my-club' ? myClubLoading
+    : allLoading;
+
   const liveCount = useMemo(
     () => currentMatches.filter(m => getStatus(m) === 'live').length,
     [currentMatches],
   );
 
-  // Apply status filter
   const filteredMatches = useMemo(() => {
     if (!statusFilter) return currentMatches;
     return currentMatches.filter(m => getStatus(m) === statusFilter);
   }, [currentMatches, statusFilter]);
 
-  // Group by sport
   const groups = useMemo(() => {
     const map = {};
     for (const m of filteredMatches) {
@@ -440,7 +633,6 @@ export default function MatchesTab({ followedClubIds = [] }) {
     return Object.entries(map).map(([sport, matches]) => ({ sport, matches }));
   }, [filteredMatches]);
 
-  // Sports grid — all sports with their event count today
   const sportCounts = useMemo(() => {
     const counts = {};
     for (const m of allMatches) {
@@ -610,14 +802,36 @@ export default function MatchesTab({ followedClubIds = [] }) {
           </div>
         )}
 
-        {/* ── Match list ── */}
-        {subTab !== 'competitions' && (
+        {/* ── Mon Club tab — admin score management ── */}
+        {subTab === 'my-club' && (
+          loading ? (
+            <MatchesSkeleton />
+          ) : myClubMatches.length === 0 ? (
+            <MatchesEmpty subTab="my-club" statusFilter={statusFilter} />
+          ) : (
+            <>
+              <div className="px-4 pt-3 pb-1">
+                <p className="text-[10px] font-black tracking-[0.18em] uppercase text-[var(--sl-t3)]">
+                  {managedClubs.map(c => c.name).join(' · ')}
+                </p>
+              </div>
+              {(statusFilter
+                ? myClubMatches.filter(m => getStatus(m) === statusFilter)
+                : myClubMatches
+              ).map(m => (
+                <AdminMatchRowFull key={m.id} event={m} />
+              ))}
+            </>
+          )
+        )}
+
+        {/* ── Match list (Tous + Favoris) ── */}
+        {subTab !== 'competitions' && subTab !== 'my-club' && (
           loading ? (
             <MatchesSkeleton />
           ) : groups.length === 0 ? (
             <MatchesEmpty subTab={subTab} statusFilter={statusFilter} />
           ) : (
-            // Inject elite sponsor banners every 2 sport groups (only on "Tous" tab)
             groups.flatMap(({ sport, matches }, idx) => {
               const nodes = [<SportGroup key={sport} sport={sport} matches={matches} />];
               const shouldInject = subTab === 'all' && eliteSponsors.length > 0 && (idx + 1) % 2 === 0;
