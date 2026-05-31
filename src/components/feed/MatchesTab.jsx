@@ -3,8 +3,8 @@ import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useFavoritesContext } from '../../contexts/FavoritesContext.jsx';
 import { useManagedClubs } from '../../hooks/useManagedClubs.js';
 import { useMatchesForDate } from '../../hooks/useMatchesForDate.js';
-import { useMatchScore } from '../../hooks/useMatchScore.js';
 import { useEliteSponsors } from '../../hooks/useEliteSponsors.js';
+import ScoreEntryContainer from '../score/ScoreEntryContainer.jsx';
 import { SPORTS } from '../../data/events.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -193,41 +193,27 @@ function MatchRow({ event }) {
   return <MatchRowInner event={event} />;
 }
 
-// ─── AdminMatchRow — match row with inline score editor ──────────────────────
+// ─── AdminMatchRow — match row with ScoreEntryContainer ──────────────────────
 
 function AdminMatchRowFull({ event, onScoreUpdated }) {
   const [expanded, setExpanded] = useState(false);
-  const { matchScore, saving, saved, saveScore } = useMatchScore(event.id);
+  const status     = getStatus(event);
+  const isLive     = status === 'live';
+  const hasScore   = parseScore(event.score) != null;
 
-  const [homeInput, setHome] = useState(null);
-  const [awayInput, setAway] = useState(null);
-  const [liveMode, setLiveMode] = useState(getStatus(event) === 'live');
-
-  const derivedScore = parseScore(event.score)
-    ?? (matchScore?.score_home != null ? { home: matchScore.score_home, away: matchScore.score_away } : null);
-
-  const home = homeInput ?? String(derivedScore?.home ?? '');
-  const away = awayInput ?? String(derivedScore?.away ?? '');
-
-  async function handleSave(e) {
-    e.stopPropagation();
-    const h = parseInt(home, 10);
-    const a = parseInt(away, 10);
-    if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
-    await saveScore(
-      { score_home: h, score_away: a, sport: event.sport ?? 'Football', status: liveMode ? 'live' : 'final' },
-      onScoreUpdated,
-    );
-    if (!saving) setExpanded(false);
-  }
+  const { home: homeTeam, away: awayTeam } = parseTeams(event.title);
+  const sc = parseScore(event.score);
 
   return (
     <div className="border-b border-[var(--sl-border)] last:border-b-0 bg-[var(--sl-surface)]">
-      {/* Row */}
-      <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--sl-hover)] transition-colors cursor-pointer" onClick={() => setExpanded(v => !v)}>
+      {/* Row header — tap to expand/collapse */}
+      <div
+        className="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--sl-hover)] transition-colors cursor-pointer"
+        onClick={() => setExpanded(v => !v)}
+      >
         {/* Time */}
         <div className="w-10 shrink-0 flex flex-col items-center justify-center gap-0.5">
-          {liveMode ? (
+          {isLive ? (
             <>
               <span className="text-[10px] text-[var(--sl-t3)] leading-none">{formatTime(event.date)}</span>
               <span className="text-[11px] font-black text-red-500 leading-none animate-pulse">{getLiveMinute(event.date)}'</span>
@@ -235,95 +221,42 @@ function AdminMatchRowFull({ event, onScoreUpdated }) {
           ) : (
             <>
               <span className="text-[11.5px] font-semibold text-[var(--sl-t2)] leading-none">{formatTime(event.date)}</span>
-              {parseScore(event.score) && (
-                <span className="text-[9px] font-bold text-[var(--sl-t3)] leading-none uppercase tracking-wide mt-0.5">FT</span>
-              )}
+              {hasScore && <span className="text-[9px] font-bold text-[var(--sl-t3)] leading-none uppercase tracking-wide mt-0.5">FT</span>}
             </>
           )}
         </div>
 
         <div className="w-px h-8 shrink-0 bg-[var(--sl-border)]" />
 
-        {/* Teams */}
+        {/* Teams + score */}
         <div className="flex-1 min-w-0">
-          {(() => {
-            const { home: h, away: a } = parseTeams(event.title);
-            const sc = parseScore(event.score);
-            return a ? (
-              <>
-                <div className="flex items-center justify-between gap-2 mb-[4px]">
-                  <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{h}</span>
-                  <span className={`text-[13px] font-bold shrink-0 tabular-nums ${liveMode ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>{sc != null ? sc.home : '-'}</span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[13px] text-[var(--sl-t2)] truncate leading-tight">{a}</span>
-                  <span className={`text-[13px] font-bold shrink-0 tabular-nums ${liveMode ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>{sc != null ? sc.away : '-'}</span>
-                </div>
-              </>
-            ) : (
-              <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate">{h}</span>
-            );
-          })()}
+          {awayTeam ? (
+            <>
+              <div className="flex items-center justify-between gap-2 mb-[4px]">
+                <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{homeTeam}</span>
+                <span className={`text-[13px] font-bold shrink-0 tabular-nums ${isLive ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>{sc != null ? sc.home : '-'}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[13px] text-[var(--sl-t2)] truncate leading-tight">{awayTeam}</span>
+                <span className={`text-[13px] font-bold shrink-0 tabular-nums ${isLive ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>{sc != null ? sc.away : '-'}</span>
+              </div>
+            </>
+          ) : (
+            <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate">{homeTeam}</span>
+          )}
         </div>
 
-        {/* Edit indicator */}
+        {/* Edit chip */}
         <div className={`flex items-center gap-1 text-[11px] font-semibold shrink-0 px-2 py-1 rounded-full transition-colors ${expanded ? 'bg-indigo-500/20 text-indigo-400' : 'bg-[var(--sl-pill-bg)] text-[var(--sl-t3)]'}`}>
           <EditIcon />
-          <span>Score</span>
+          <span>{hasScore ? 'Modifier' : 'Saisir'}</span>
         </div>
       </div>
 
-      {/* Inline score editor */}
+      {/* ScoreEntryContainer — sport-aware form */}
       {expanded && (
-        <div className="px-4 pb-4 pt-1" onClick={e => e.stopPropagation()}>
-          {/* Live toggle */}
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] font-black tracking-[0.15em] uppercase text-[var(--sl-t3)]">
-              {parseScore(event.score) != null ? 'Modifier le score' : 'Saisir le score'}
-            </span>
-            <button
-              onClick={() => setLiveMode(v => !v)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${liveMode ? 'bg-red-600/20 text-red-500 border border-red-500/30' : 'bg-[var(--sl-pill-bg)] text-[var(--sl-t3)] border border-[var(--sl-border)]'}`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${liveMode ? 'bg-red-500 animate-pulse' : 'bg-[var(--sl-t3)]'}`} />
-              {liveMode ? 'En direct' : 'Terminé'}
-            </button>
-          </div>
-
-          {/* Score inputs */}
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex-1 flex flex-col gap-1">
-              <span className="text-[9px] font-bold text-[var(--sl-t3)] uppercase tracking-wider truncate">
-                {parseTeams(event.title).home}
-              </span>
-              <input
-                type="number" min="0" max="99" value={home}
-                onChange={e => setHome(e.target.value)}
-                className="w-full text-center font-black text-[22px] py-2 rounded-xl bg-[var(--sl-card)] border border-[var(--sl-border-s)] text-[var(--sl-t1)] focus:outline-none focus:border-indigo-500"
-                style={{ tabularNums: true }}
-              />
-            </div>
-            <span className="text-[18px] font-black text-[var(--sl-t3)] pb-1 shrink-0">—</span>
-            <div className="flex-1 flex flex-col gap-1">
-              <span className="text-[9px] font-bold text-[var(--sl-t3)] uppercase tracking-wider truncate text-right">
-                {parseTeams(event.title).away ?? 'Extérieur'}
-              </span>
-              <input
-                type="number" min="0" max="99" value={away}
-                onChange={e => setAway(e.target.value)}
-                className="w-full text-center font-black text-[22px] py-2 rounded-xl bg-[var(--sl-card)] border border-[var(--sl-border-s)] text-[var(--sl-t1)] focus:outline-none focus:border-indigo-500"
-                style={{ tabularNums: true }}
-              />
-            </div>
-          </div>
-
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className={`w-full py-2.5 rounded-xl text-[13px] font-bold transition-all ${saved ? 'bg-green-600/20 text-green-500 border border-green-500/30' : 'bg-indigo-600 text-white hover:bg-indigo-500'} disabled:opacity-50`}
-          >
-            {saved ? '✓ Score enregistré' : saving ? 'Enregistrement…' : 'Enregistrer le score'}
-          </button>
+        <div className="px-4 pb-1" onClick={e => e.stopPropagation()}>
+          <ScoreEntryContainer event={event} onUpdateEvent={onScoreUpdated} />
         </div>
       )}
     </div>

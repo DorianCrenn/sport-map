@@ -24,7 +24,7 @@ export function useMatchesForDate({ date, clubIds, sports, skip = false }) {
 
       let query = supabase
         .from('events')
-        .select('id, title, sport, date, score, club_id, venue, city, level, event_type')
+        .select('id, title, sport, date, score, club_id, venue, city, level, event_type, man_of_match')
         .gte('date', dayStart.toISOString())
         .lte('date', dayEnd.toISOString())
         .order('date', { ascending: true })
