@@ -1,23 +1,27 @@
--- ROLES-001d : politique SELECT manquante sur club_managers
--- Sans cette policy, les requêtes frontend sur club_managers retournent 403.
--- La table était lisible uniquement via les fonctions SECURITY DEFINER
--- (sl_is_club_manager_for, sl_can_manage_club) mais pas en lecture directe.
+-- ROLES-001d : GRANT + politique SELECT manquants sur club_managers
 --
--- auth.email() ne fonctionne pas fiablement en contexte RLS.
--- Pattern correct : JOIN auth.users sur uid — identique à sl_is_club_manager_for.
+-- Deux problèmes distincts causaient le 403 PostgREST :
+--   1. Pas de GRANT SELECT sur la table → PostgREST refuse sans même évaluer la RLS
+--   2. Policy SELECT absente ou avec auth.email() non fonctionnel en RLS
+--
+-- Pattern correct pour le USING : JOIN auth.users sur uid (identique à sl_is_club_manager_for)
 
+-- ── 1. Permission SQL niveau table ────────────────────────────────────────────
+GRANT SELECT ON public.club_managers TO authenticated;
+
+-- ── 2. Policy RLS ─────────────────────────────────────────────────────────────
 DROP POLICY IF EXISTS "managers_select_own_or_owner" ON public.club_managers;
 
 CREATE POLICY "managers_select_own_or_owner"
   ON public.club_managers FOR SELECT
   USING (
-    -- Le manager peut voir ses propres lignes (join auth.users sur uid)
+    -- Le manager voit ses propres lignes (join auth.users sur uid)
     EXISTS (
       SELECT 1 FROM auth.users u
       WHERE u.id = auth.uid()
         AND lower(u.email) = lower(club_managers.email)
     )
-    -- Le propriétaire du club voit qui gère son club
+    -- Le propriétaire du club voit ses gestionnaires
     OR EXISTS (
       SELECT 1 FROM public.clubs
       WHERE clubs.id::text = club_managers.club_id
