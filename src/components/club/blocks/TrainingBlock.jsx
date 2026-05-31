@@ -44,12 +44,14 @@ const RecurIcon = () => (
 );
 
 // ── Edit mode ─────────────────────────────────────────────────────────────────
-function EditView({ sessions, onUpdate }) {
+function EditView({ sessions, onUpdate, allTeams = [], currentTeamId = null }) {
+  const otherTeams = allTeams.filter(t => t.id !== currentTeamId);
+
   function addSession() {
     onUpdate({
       sessions: [...sessions, {
         id: uid(), day: 'Lundi', time: '18h00', duration: 90,
-        location: '', category: 'Seniors', recurring: true,
+        location: '', category: 'Seniors', recurring: true, mergedTeamIds: [],
       }],
     });
   }
@@ -58,6 +60,13 @@ function EditView({ sessions, onUpdate }) {
   }
   function deleteSession(id) {
     onUpdate({ sessions: sessions.filter(s => s.id !== id) });
+  }
+  function toggleMerge(sessionId, teamId) {
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session) return;
+    const current = session.mergedTeamIds ?? [];
+    const next = current.includes(teamId) ? current.filter(id => id !== teamId) : [...current, teamId];
+    updateSession(sessionId, { mergedTeamIds: next });
   }
 
   return (
@@ -93,6 +102,29 @@ function EditView({ sessions, onUpdate }) {
               Récurrent
             </label>
           </div>
+          {/* Commun avec d'autres équipes */}
+          {otherTeams.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-xs text-gray-400 font-medium flex-shrink-0">🔗 Commun avec :</span>
+              {otherTeams.map(team => {
+                const merged = (s.mergedTeamIds ?? []).includes(team.id);
+                return (
+                  <button
+                    key={team.id}
+                    type="button"
+                    onClick={() => toggleMerge(s.id, team.id)}
+                    className={`text-xs px-2 py-0.5 rounded-full border transition-colors font-medium ${
+                      merged
+                        ? 'bg-indigo-50 border-indigo-300 text-indigo-600'
+                        : 'bg-gray-50 border-gray-200 text-gray-400 hover:border-indigo-200 hover:text-indigo-400'
+                    }`}
+                  >
+                    {merged ? '✓ ' : ''}{team.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       ))}
       <button onClick={addSession}
@@ -405,12 +437,12 @@ function AttendanceBadge({ clubId, sessionRefId, date, onClick }) {
 }
 
 // ── Main block ────────────────────────────────────────────────────────────────
-export default function TrainingBlock({ data, isEditing, onUpdate, clubId, currentUser, isManager }) {
+export default function TrainingBlock({ data, isEditing, onUpdate, clubId, currentUser, isManager, allTeams = [], currentTeamId = null }) {
   const sessions = data.sessions ?? [];
   const [viewMode, setViewMode]           = useState('calendar');
   const [selectedSession, setSelectedSession] = useState(null);  // { session, date }
 
-  if (isEditing) return <EditView sessions={sessions} onUpdate={onUpdate} />;
+  if (isEditing) return <EditView sessions={sessions} onUpdate={onUpdate} allTeams={allTeams} currentTeamId={currentTeamId} />;
 
   if (!sessions.length) return (
     <p className="text-sm text-gray-400 italic py-3 text-center">Aucun créneau d'entraînement renseigné.</p>

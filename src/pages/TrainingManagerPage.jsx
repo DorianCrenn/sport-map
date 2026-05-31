@@ -132,6 +132,7 @@ export default function TrainingManagerPage({ onBack }) {
   const [addingTeam, setAddingTeam] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
   const [generatedCount, setGeneratedCount] = useState(0);
+  const [activeTabId, setActiveTabId] = useState(null);
 
   // ── Dérivation des équipes (manager) ─────────────────────────────────────
   const clubTeams = useMemo(() => {
@@ -148,6 +149,26 @@ export default function TrainingManagerPage({ onBack }) {
     const all      = [...fromCategories, ...extra];
     return all.length > 0 ? all : [{ id: 'default', name: 'Mon équipe', catName: '' }];
   }, [myClub, trainings]);
+
+  // Initialiser l'onglet actif sur la première équipe dès que clubTeams est disponible
+  useEffect(() => {
+    if (!activeTabId && clubTeams.length > 0) setActiveTabId(clubTeams[0].id);
+  }, [clubTeams, activeTabId]);
+
+  // Séances communes reçues par l'équipe active (depuis d'autres équipes)
+  const mergedSessionsForActiveTeam = useMemo(() => {
+    if (!activeTabId) return [];
+    const result = [];
+    for (const team of clubTeams) {
+      if (team.id === activeTabId) continue;
+      for (const session of trainings[team.id] ?? []) {
+        if ((session.mergedTeamIds ?? []).includes(activeTabId)) {
+          result.push({ session, hostTeam: team });
+        }
+      }
+    }
+    return result;
+  }, [activeTabId, clubTeams, trainings]);
 
   // Sessions templates aplaties (pour le mode calendrier manager)
   const allTemplateSessions = useMemo(() => Object.values(trainings).flat(), [trainings]);
@@ -203,6 +224,7 @@ export default function TrainingManagerPage({ onBack }) {
     const key = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
     if (!trainings[key]) setTrainings(prev => ({ ...prev, [key]: [] }));
     setNewTeamName(''); setAddingTeam(false);
+    setActiveTabId(key);
   }
 
   // ── Rendu ─────────────────────────────────────────────────────────────────
@@ -431,98 +453,148 @@ export default function TrainingManagerPage({ onBack }) {
 
         {/* ════════ MANAGER — EDIT ════════ */}
         {isManager && mode === 'edit' && (
-          <div style={{ padding: '12px 16px 80px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             {clubsLoading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 4 }}>
+              <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[1, 2, 3].map(i => (
-                  <div key={i} style={{
-                    height: 76, borderRadius: 14,
-                    backgroundColor: 'var(--sl-surface)',
-                    animation: 'pulse 1.4s ease-in-out infinite',
-                    opacity: 1 - i * 0.15,
-                  }} />
+                  <div key={i} style={{ height: 40, borderRadius: 10, backgroundColor: 'var(--sl-surface)', opacity: 1 - i * 0.2 }} />
                 ))}
               </div>
             ) : (
               <>
-                {clubTeams.map(team => (
-                  <TeamSection
-                    key={team.id}
-                    team={team}
-                    sessions={trainings[team.id] ?? []}
-                    onUpdate={patch => setTrainings(prev => ({ ...prev, [team.id]: patch.sessions }))}
-                    clubId={String(selectedClubId)}
-                    currentUser={currentUser}
-                  />
-                ))}
-
-                {/* Ajouter une équipe */}
-                {addingTeam ? (
-                  <div style={{
-                    marginTop: 12, padding: 12, borderRadius: 14,
-                    border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)',
-                  }}>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 8 }}>
-                      Nom de l'équipe
-                    </p>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <input
-                        autoFocus
-                        value={newTeamName}
-                        onChange={e => setNewTeamName(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleAddTeam(); if (e.key === 'Escape') setAddingTeam(false); }}
-                        placeholder="ex : Seniors A, U17…"
-                        style={{
-                          flex: 1, padding: '8px 10px', borderRadius: 8, fontSize: 12,
-                          border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)',
-                          color: 'var(--sl-t1)', outline: 'none',
-                        }}
-                      />
+                {/* ── Barre d'onglets ── */}
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, padding: '10px 16px 0', overflowX: 'auto', scrollbarWidth: 'none', flexShrink: 0 }}>
+                  {clubTeams.map(team => {
+                    const isActive = activeTabId === team.id;
+                    const count = (trainings[team.id] ?? []).length;
+                    return (
                       <button
-                        onClick={handleAddTeam}
-                        disabled={!newTeamName.trim()}
+                        key={team.id}
+                        onClick={() => setActiveTabId(team.id)}
                         style={{
-                          padding: '8px 14px', borderRadius: 8, backgroundColor: '#6366f1',
-                          color: '#fff', border: 'none', fontSize: 12, fontWeight: 700,
-                          cursor: newTeamName.trim() ? 'pointer' : 'not-allowed',
-                          opacity: newTeamName.trim() ? 1 : 0.5,
+                          padding: '7px 14px 8px', borderRadius: '10px 10px 0 0',
+                          border: '1px solid var(--sl-border)',
+                          borderBottom: isActive ? '1px solid var(--sl-card)' : '1px solid var(--sl-border)',
+                          backgroundColor: isActive ? 'var(--sl-card)' : 'var(--sl-surface)',
+                          color: isActive ? '#6366f1' : 'var(--sl-t3)',
+                          fontSize: 12, fontWeight: isActive ? 700 : 500,
+                          cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+                          transition: 'all 0.12s', display: 'flex', alignItems: 'center', gap: 5,
+                          marginBottom: isActive ? -1 : 0,
                         }}
                       >
-                        Ajouter
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isActive ? '#6366f1' : 'var(--sl-border-s)', flexShrink: 0 }} />
+                        {team.name}
+                        <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 5px', borderRadius: 8, backgroundColor: isActive ? 'rgba(99,102,241,0.12)' : 'var(--sl-border)', color: isActive ? '#6366f1' : 'var(--sl-t3)' }}>
+                          {count}
+                        </span>
                       </button>
-                      <button
-                        onClick={() => { setAddingTeam(false); setNewTeamName(''); }}
-                        style={{
-                          padding: '8px 10px', borderRadius: 8, backgroundColor: 'var(--sl-surface)',
-                          color: 'var(--sl-t3)', border: '1px solid var(--sl-border)', fontSize: 12, cursor: 'pointer',
-                        }}
-                      >
-                        Annuler
-                      </button>
-                    </div>
-                  </div>
-                ) : (
+                    );
+                  })}
                   <button
                     onClick={() => setAddingTeam(true)}
+                    title="Ajouter une équipe"
                     style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                      width: '100%', marginTop: 12, padding: '12px',
-                      borderRadius: 14, cursor: 'pointer', fontSize: 13, fontWeight: 600,
-                      border: '2px dashed var(--sl-border)', color: 'var(--sl-t3)',
-                      backgroundColor: 'transparent',
+                      padding: '7px 12px 8px', borderRadius: '10px 10px 0 0',
+                      border: '1px dashed var(--sl-border)', borderBottom: '1px solid var(--sl-border)',
+                      backgroundColor: 'transparent', color: 'var(--sl-t3)',
+                      fontSize: 16, cursor: 'pointer', flexShrink: 0, lineHeight: 1,
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.color = 'var(--sl-t3)'; }}
                   >
-                    + Ajouter une équipe
+                    +
                   </button>
-                )}
+                </div>
+
+                {/* ── Contenu de l'onglet actif ── */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 80px', borderTop: '1px solid var(--sl-border)' }}>
+                  {/* Formulaire ajout équipe */}
+                  {addingTeam && (
+                    <div style={{ margin: '12px 0', padding: 12, borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 8 }}>Nouvelle équipe</p>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <input
+                          autoFocus value={newTeamName}
+                          onChange={e => setNewTeamName(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') handleAddTeam(); if (e.key === 'Escape') setAddingTeam(false); }}
+                          placeholder="ex : Seniors A, U17…"
+                          style={{ flex: 1, padding: '8px 10px', borderRadius: 8, fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
+                        />
+                        <button onClick={handleAddTeam} disabled={!newTeamName.trim()} style={{ padding: '8px 14px', borderRadius: 8, backgroundColor: '#6366f1', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: newTeamName.trim() ? 'pointer' : 'not-allowed', opacity: newTeamName.trim() ? 1 : 0.5 }}>Ajouter</button>
+                        <button onClick={() => { setAddingTeam(false); setNewTeamName(''); }} style={{ padding: '8px 10px', borderRadius: 8, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)', border: '1px solid var(--sl-border)', fontSize: 12, cursor: 'pointer' }}>✕</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTabId && (() => {
+                    const activeTeam = clubTeams.find(t => t.id === activeTabId);
+                    if (!activeTeam) return null;
+                    return (
+                      <div>
+                        <div style={{ borderRadius: '0 0 12px 12px', backgroundColor: 'var(--sl-card)', padding: 12, border: '1px solid var(--sl-border)', borderTop: 'none', marginBottom: 12 }}>
+                          <TrainingBlock
+                            data={{ sessions: trainings[activeTabId] ?? [] }}
+                            isEditing={true}
+                            onUpdate={patch => setTrainings(prev => ({ ...prev, [activeTabId]: patch.sessions }))}
+                            clubId={String(selectedClubId)}
+                            currentUser={currentUser}
+                            isManager={true}
+                            allTeams={clubTeams}
+                            currentTeamId={activeTabId}
+                          />
+                        </div>
+
+                        {/* Séances communes reçues d'autres équipes */}
+                        {mergedSessionsForActiveTeam.length > 0 && (
+                          <div style={{ marginBottom: 16 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6366f1', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                              Séances communes
+                            </div>
+                            {mergedSessionsForActiveTeam.map(({ session, hostTeam }) => (
+                              <MergedSessionRow key={session.id} session={session} hostTeam={hostTeam} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
               </>
             )}
           </div>
         )}
       </div>
     </motion.div>
+  );
+}
+
+// ── Séance commune (lecture seule) ───────────────────────────────────────────
+const DAY_BADGE_COLORS = {
+  Lundi: '#6366f1', Mardi: '#8b5cf6', Mercredi: '#ec4899',
+  Jeudi: '#f97316', Vendredi: '#eab308', Samedi: '#22c55e', Dimanche: '#ef4444',
+};
+
+function MergedSessionRow({ session, hostTeam }) {
+  const col = DAY_BADGE_COLORS[session.day] ?? '#6366f1';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+      padding: '8px 12px', borderRadius: 10, marginBottom: 6,
+      border: '1px dashed rgba(99,102,241,0.3)',
+      backgroundColor: 'rgba(99,102,241,0.04)',
+    }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: col, flexShrink: 0 }}>{session.day}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)' }}>{session.time}</span>
+      {session.duration && <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{session.duration} min</span>}
+      {session.location && (
+        <span style={{ fontSize: 11, color: 'var(--sl-t3)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {session.location}
+        </span>
+      )}
+      <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1', flexShrink: 0 }}>
+        🔗 {hostTeam.name}
+      </span>
+    </div>
   );
 }
 
