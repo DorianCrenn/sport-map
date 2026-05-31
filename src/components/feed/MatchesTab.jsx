@@ -185,6 +185,15 @@ function MatchRowInner({ event, children }) {
           </button>
         </div>
       </div>
+
+      {/* Team name badge */}
+      {event.team_name && (
+        <div className="px-4 pb-2 -mt-1">
+          <span className="text-[10px] font-semibold text-[var(--sl-t3)] bg-[var(--sl-surface)] px-2 py-0.5 rounded-full border border-[var(--sl-border)]">
+            {event.team_name}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -252,6 +261,15 @@ function AdminMatchRowFull({ event, onScoreUpdated }) {
           <span>{hasScore ? 'Modifier' : 'Saisir'}</span>
         </div>
       </div>
+
+      {/* Team name badge */}
+      {event.team_name && !expanded && (
+        <div className="px-4 pb-2 -mt-1">
+          <span className="text-[10px] font-semibold text-[var(--sl-t3)] bg-[var(--sl-card)] px-2 py-0.5 rounded-full border border-[var(--sl-border)]">
+            {event.team_name}
+          </span>
+        </div>
+      )}
 
       {/* ScoreEntryContainer — sport-aware form */}
       {expanded && (
