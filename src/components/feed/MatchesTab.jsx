@@ -142,8 +142,15 @@ function MatchRowInner({ event, children }) {
         <div className="flex-1 min-w-0">
           {away ? (
             <>
-              <div className="flex items-center justify-between gap-2 mb-[4px]">
-                <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{home}</span>
+              <div className="flex items-center justify-between gap-2 mb-[3px]">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{home}</span>
+                  {event.team_name && (
+                    <span className="text-[9px] font-bold text-[var(--sl-t3)] bg-[var(--sl-surface)] px-1.5 py-0.5 rounded-full border border-[var(--sl-border)] shrink-0 whitespace-nowrap">
+                      {event.team_name}
+                    </span>
+                  )}
+                </div>
                 {score != null ? (
                   <span className={`text-[13px] font-bold shrink-0 leading-tight tabular-nums ${isLive ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>
                     {score.home}
@@ -165,7 +172,14 @@ function MatchRowInner({ event, children }) {
             </>
           ) : (
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{home}</span>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{home}</span>
+                {event.team_name && (
+                  <span className="text-[9px] font-bold text-[var(--sl-t3)] bg-[var(--sl-surface)] px-1.5 py-0.5 rounded-full border border-[var(--sl-border)] shrink-0 whitespace-nowrap">
+                    {event.team_name}
+                  </span>
+                )}
+              </div>
               {isFinished && score != null && (
                 <span className="text-[12px] font-bold text-[var(--sl-t1)] shrink-0 tabular-nums">{score.home}</span>
               )}
@@ -185,15 +199,6 @@ function MatchRowInner({ event, children }) {
           </button>
         </div>
       </div>
-
-      {/* Team name badge */}
-      {event.team_name && (
-        <div className="px-4 pb-2 -mt-1">
-          <span className="text-[10px] font-semibold text-[var(--sl-t3)] bg-[var(--sl-surface)] px-2 py-0.5 rounded-full border border-[var(--sl-border)]">
-            {event.team_name}
-          </span>
-        </div>
-      )}
     </div>
   );
 }
@@ -241,8 +246,15 @@ function AdminMatchRowFull({ event, onScoreUpdated }) {
         <div className="flex-1 min-w-0">
           {awayTeam ? (
             <>
-              <div className="flex items-center justify-between gap-2 mb-[4px]">
-                <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{homeTeam}</span>
+              <div className="flex items-center justify-between gap-2 mb-[3px]">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate leading-tight">{homeTeam}</span>
+                  {event.team_name && (
+                    <span className="text-[9px] font-bold text-[var(--sl-t3)] bg-[var(--sl-card)] px-1.5 py-0.5 rounded-full border border-[var(--sl-border)] shrink-0 whitespace-nowrap">
+                      {event.team_name}
+                    </span>
+                  )}
+                </div>
                 <span className={`text-[13px] font-bold shrink-0 tabular-nums ${isLive ? 'text-red-500' : 'text-[var(--sl-t1)]'}`}>{sc != null ? sc.home : '-'}</span>
               </div>
               <div className="flex items-center justify-between gap-2">
@@ -251,7 +263,14 @@ function AdminMatchRowFull({ event, onScoreUpdated }) {
               </div>
             </>
           ) : (
-            <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate">{homeTeam}</span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-[13px] font-semibold text-[var(--sl-t1)] truncate">{homeTeam}</span>
+              {event.team_name && (
+                <span className="text-[9px] font-bold text-[var(--sl-t3)] bg-[var(--sl-card)] px-1.5 py-0.5 rounded-full border border-[var(--sl-border)] shrink-0 whitespace-nowrap">
+                  {event.team_name}
+                </span>
+              )}
+            </div>
           )}
         </div>
 
@@ -261,15 +280,6 @@ function AdminMatchRowFull({ event, onScoreUpdated }) {
           <span>{hasScore ? 'Modifier' : 'Saisir'}</span>
         </div>
       </div>
-
-      {/* Team name badge */}
-      {event.team_name && !expanded && (
-        <div className="px-4 pb-2 -mt-1">
-          <span className="text-[10px] font-semibold text-[var(--sl-t3)] bg-[var(--sl-card)] px-2 py-0.5 rounded-full border border-[var(--sl-border)]">
-            {event.team_name}
-          </span>
-        </div>
-      )}
 
       {/* ScoreEntryContainer — sport-aware form */}
       {expanded && (

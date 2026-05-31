@@ -27,12 +27,12 @@ export function useNewsFeed({ followedClubIds = [], follows = [], managedClubIds
   const [results, setResults]             = useState([]);
   const [upcoming, setUpcoming]           = useState([]);
   const [rides, setRides]                 = useState([]);
-  const [loading, setLoading]             = useState(true);
+  const [loading, setLoading]             = useState(false);
 
   const hasClubs = followedClubIds.length > 0;
 
   useEffect(() => {
-    if (!hasClubs) { setLoading(false); return; }
+    if (!hasClubs) return;
 
     let cancelled = false;
 
@@ -63,7 +63,7 @@ export function useNewsFeed({ followedClubIds = [], follows = [], managedClubIds
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const { data: ups } = await supabase
         .from('events')
-        .select('id, title, sport, date, club_id, venue, city, event_type, level, home_or_away, team_name, poster_url, clubs(name, logo_url)')
+        .select('id, title, sport, date, club_id, venue, city, event_type, level, home_or_away, team_name, poster_url')
         .in('club_id', clubIds)
         .gte('date', sevenDaysAgo)
         .order('date', { ascending: true })
