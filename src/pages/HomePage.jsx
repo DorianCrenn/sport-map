@@ -4,6 +4,7 @@ import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import WeekendPosters from '../components/dashboard/WeekendPosters.tsx';
+import PlansSection from '../components/home/PlansSection.jsx';
 
 const PosterStudio = lazy(() => import('../components/PosterStudio.jsx'));
 
@@ -532,10 +533,13 @@ function FeaturesSection({ stats = {}, onNavigate }) {
   const { clubs = 0, events = 0, sports = 0, thisWeek = 0 } = stats;
   return (
     <div className="px-5 pt-6 pb-6 md:px-12 md:pt-10 md:pb-10">
-      {/* How it works + club banner — mobile */}
+      {/* How it works + plans + club banner — mobile */}
       <div className="md:hidden">
         <HowItWorks />
-        <ClubBanner onNavigate={onNavigate} />
+        <PlansSection onCta={() => onNavigate('profil')} />
+        <div style={{ marginTop: 40 }}>
+          <ClubBanner onNavigate={onNavigate} />
+        </div>
       </div>
 
       {/* Stats */}
@@ -857,6 +861,11 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
                   </motion.div>
                 ))}
               </div>
+            </div>
+
+            {/* Plans d'abonnement — desktop */}
+            <div style={{ borderTop: '1px solid var(--sl-border)', paddingBottom: 48 }}>
+              <PlansSection onCta={() => onNavigate('profil')} />
             </div>
 
             {/* Club banner — desktop */}
