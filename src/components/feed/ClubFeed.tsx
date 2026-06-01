@@ -253,6 +253,8 @@ export default function ClubFeed({
 
           {/* ── Onglets filtres — scroll horizontal sur mobile ── */}
           <div
+            role="group"
+            aria-label="Filtrer le fil d'actualité"
             className="flex gap-1.5 px-4 pb-3 overflow-x-auto"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
           >
@@ -262,6 +264,8 @@ export default function ClubFeed({
                 <button
                   key={f.key}
                   onClick={() => setInternalFilter(f.key)}
+                  aria-pressed={active}
+                  aria-label={f.label}
                   className={[
                     'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold',
                     'whitespace-nowrap transition-all duration-150 shrink-0',
@@ -270,7 +274,7 @@ export default function ClubFeed({
                       : 'bg-[var(--sl-pill-bg)] text-[var(--sl-pill-text)] hover:bg-[var(--sl-hover)] border border-[var(--sl-border)]',
                   ].join(' ')}
                 >
-                  <span className="text-[13px]">{f.emoji}</span>
+                  <span className="text-[13px]" aria-hidden="true">{f.emoji}</span>
                   {f.label}
                 </button>
               );

@@ -281,7 +281,7 @@ export function CarpoolCard({ item, onBook }: CarpoolCardProps) {
               {item.driver_avatar ? (
                 <img src={item.driver_avatar} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />
               ) : (
-                <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0" aria-hidden="true">
                   <span className="text-[10px] font-bold text-emerald-400">{item.driver_name[0]}</span>
                 </div>
               )}
@@ -367,7 +367,7 @@ export function FlashCard({ item }: FlashCardProps) {
       <div className="flex gap-3 items-start">
 
         {/* Icône badge */}
-        <span className="text-xl shrink-0 mt-0.5 select-none">{cfg.icon}</span>
+        <span className="text-xl shrink-0 mt-0.5 select-none" aria-hidden="true">{cfg.icon}</span>
 
         <div className="min-w-0 flex-1">
           {/* Label badge + horodatage */}

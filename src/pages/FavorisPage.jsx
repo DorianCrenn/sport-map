@@ -41,12 +41,15 @@ export default function FavorisPage({ allEvents, allClubs = [] }) {
             {follows.length > 0 && ` · ${follows.length} club${follows.length > 1 ? 's' : ''}`}
           </span>
         </div>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div role="tablist" aria-label="Sections sauvegardées" style={{ display: 'flex', gap: 4 }}>
           {TABS.map(tab => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`tab-panel-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
                   flex: 1, padding: '11px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
@@ -56,7 +59,7 @@ export default function FavorisPage({ allEvents, allClubs = [] }) {
                   transition: 'all 0.15s',
                 }}
               >
-                <span style={{ marginRight: 4 }}>{tab.icon}</span>{tab.label}
+                <span aria-hidden="true" style={{ marginRight: 4 }}>{tab.icon}</span>{tab.label}
               </button>
             );
           })}

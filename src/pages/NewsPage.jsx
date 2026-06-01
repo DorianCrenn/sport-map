@@ -65,6 +65,7 @@ function NavTabBar({ activeMain, activeFeed, onMainChange, onFeedChange }) {
                 key={f.key}
                 onClick={() => onFeedChange(f.key)}
                 aria-pressed={active}
+                aria-label={`${f.label}${active ? ' (filtre actif)' : ''}`}
                 className={[
                   'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold',
                   'whitespace-nowrap transition-all duration-150 shrink-0',

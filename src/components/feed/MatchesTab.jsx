@@ -646,10 +646,12 @@ export default function MatchesTab({ followedClubIds = [], onNavigateClubs }) {
       <div className="shrink-0 bg-[var(--sl-bg)] border-b border-[var(--sl-border)]">
 
         {/* Sub-tabs */}
-        <div className="flex border-b border-[var(--sl-border)]">
+        <div role="tablist" aria-label="Filtrer les matchs" className="flex border-b border-[var(--sl-border)]">
           {SUB_TABS.map(tab => (
             <button
               key={tab.key}
+              role="tab"
+              aria-selected={subTab === tab.key}
               onClick={() => handleSubTabChange(tab.key)}
               className={[
                 'flex-1 py-3 text-[13px] font-bold transition-colors relative',
@@ -700,6 +702,8 @@ export default function MatchesTab({ followedClubIds = [], onNavigateClubs }) {
         {/* Status filters (hidden on Compétitions) */}
         {subTab !== 'competitions' && (
           <div
+            role="group"
+            aria-label="Filtrer par statut de match"
             className="flex gap-2 px-4 pb-3 overflow-x-auto"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
@@ -711,6 +715,8 @@ export default function MatchesTab({ followedClubIds = [], onNavigateClubs }) {
                 <button
                   key={f.key}
                   onClick={() => setStatusFilter(isActive ? null : f.key)}
+                  aria-pressed={isActive}
+                  aria-label={`${f.label}${isActive ? ' (actif, cliquer pour désactiver)' : ''}`}
                   className={[
                     'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold whitespace-nowrap transition-all shrink-0',
                     isActive && isLiveBtn
@@ -742,11 +748,12 @@ export default function MatchesTab({ followedClubIds = [], onNavigateClubs }) {
             {sportFilter && (
               <button
                 onClick={() => setSportFilter(null)}
+                aria-label={`Retirer le filtre ${sportFilter}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 shrink-0 whitespace-nowrap"
               >
-                <span>{SPORTS[sportFilter]?.emoji}</span>
+                <span aria-hidden="true">{SPORTS[sportFilter]?.emoji}</span>
                 <span>{sportFilter}</span>
-                <span className="text-[10px] opacity-70">✕</span>
+                <span aria-hidden="true" className="text-[10px] opacity-70">✕</span>
               </button>
             )}
           </div>

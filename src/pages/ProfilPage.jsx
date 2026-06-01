@@ -255,7 +255,7 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
               {/* Compact badge strip */}
               <button
                 onClick={() => setPreviewBadges(BADGE_ORDER)}
-                title="Voir mes badges"
+                aria-label={`Voir mes badges — ${earnedBadges.length} sur ${BADGE_ORDER.length} débloqués`}
                 style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
                 {BADGE_ORDER.map(id => {
