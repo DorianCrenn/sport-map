@@ -93,6 +93,54 @@ export function openInstagramShare(text, url = '') {
   }
 }
 
+// ── URL de partage profond ────────────────────────────────────────────────────
+
+/**
+ * URL de partage pour un événement (deep link hash-based).
+ */
+export function generateEventUrl(eventId) {
+  return `${window.location.origin}${window.location.pathname}#event/${eventId}`;
+}
+
+/**
+ * URL de partage pour une page club (deep link hash-based).
+ */
+export function generateClubUrl(clubId) {
+  return `${window.location.origin}${window.location.pathname}#club/${clubId}`;
+}
+
+// ── Partage club ──────────────────────────────────────────────────────────────
+
+/**
+ * Génère un texte de partage lisible depuis les données d'un club.
+ */
+export function generateClubShareText(club, options = {}) {
+  if (!club) return '';
+  const { includeUrl = false } = options;
+  const url = generateClubUrl(club.id);
+
+  const lines = [
+    `🏟️ ${club.name}`,
+  ];
+
+  if (club.sport) lines.push(`🏅 ${club.sport}${club.city ? ` · ${club.city}` : ''}`);
+
+  if (club.description) {
+    // Tronquer à 120 chars pour les aperçus
+    const desc = club.description.length > 120
+      ? `${club.description.slice(0, 117)}…`
+      : club.description;
+    lines.push(desc);
+  }
+
+  lines.push('');
+  lines.push('Rejoins-nous sur SportLink 🟢');
+
+  if (includeUrl) lines.push(url);
+
+  return lines.join('\n');
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function capitalize(str) {

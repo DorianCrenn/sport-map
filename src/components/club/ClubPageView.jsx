@@ -27,6 +27,126 @@ import { useClubTrainings } from '../../hooks/useClubTrainings.js';
 import { useShare } from '../../hooks/useShare.js';
 import { useClubEvents } from '../../hooks/useClubEvents.js';
 
+// ── Checklist post-création ────────────────────────────────────────────────────
+
+function ClubSetupChecklist({ club, blocks, events, canEdit, onDismiss, onEditPage, onCreateEvent, onSendAnnouncement }) {
+  const hasBlocks     = blocks.length > 0;
+  const hasEvents     = events.length > 0;
+  const hasMembers    = (club.members ?? 0) > 0;
+  const done          = [hasBlocks, hasEvents, hasMembers].filter(Boolean).length;
+  const total         = 3;
+  const pct           = Math.round((done / total) * 100);
+
+  if (!canEdit) return null;
+
+  const items = [
+    {
+      done: hasBlocks,
+      label: 'Personnaliser la page du club',
+      desc: 'Ajoutez des blocs (présentation, événements, photos…)',
+      action: onEditPage,
+      actionLabel: 'Modifier la page',
+    },
+    {
+      done: hasEvents,
+      label: 'Créer votre premier événement',
+      desc: 'Match, tournoi ou entraînement',
+      action: onCreateEvent,
+      actionLabel: '+ Événement',
+    },
+    {
+      done: hasMembers,
+      label: 'Inviter vos membres',
+      desc: 'Partagez le lien du club pour que vos joueurs vous suivent',
+      action: null,
+      actionLabel: null,
+    },
+  ];
+
+  return (
+    <div style={{
+      margin: '12px 0 4px',
+      borderRadius: 16, overflow: 'hidden',
+      border: '1px solid rgba(99,102,241,0.25)',
+      backgroundColor: 'rgba(99,102,241,0.06)',
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px 8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          </div>
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 800, color: '#6366f1', margin: 0, lineHeight: 1.2 }}>Configuration du club</p>
+            <p style={{ fontSize: 10, color: 'var(--sl-t3)', margin: 0 }}>{done}/{total} étapes complétées</p>
+          </div>
+        </div>
+        <button
+          onClick={onDismiss}
+          aria-label="Fermer la checklist"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t3)', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6 }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Barre de progression */}
+      <div style={{ height: 3, backgroundColor: 'var(--sl-border)', margin: '0 14px 10px' }}>
+        <div style={{ height: '100%', backgroundColor: pct === 100 ? '#22d96a' : '#6366f1', borderRadius: 2, width: `${pct}%`, transition: 'width 0.4s ease' }} />
+      </div>
+
+      {/* Items */}
+      <div style={{ padding: '0 10px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {items.map((item, i) => (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '8px 10px', borderRadius: 10,
+            backgroundColor: item.done ? 'rgba(34,217,106,0.06)' : 'transparent',
+          }}>
+            <div style={{
+              width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+              backgroundColor: item.done ? '#22d96a' : 'var(--sl-border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {item.done && (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              )}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: item.done ? 'var(--sl-t3)' : 'var(--sl-t1)', margin: 0, textDecoration: item.done ? 'line-through' : 'none', lineHeight: 1.3 }}>
+                {item.label}
+              </p>
+              {!item.done && (
+                <p style={{ fontSize: 10, color: 'var(--sl-t3)', margin: '1px 0 0', lineHeight: 1.4 }}>{item.desc}</p>
+              )}
+            </div>
+            {!item.done && item.action && (
+              <button
+                onClick={item.action}
+                style={{
+                  flexShrink: 0, padding: '5px 10px', borderRadius: 8,
+                  border: '1px solid rgba(99,102,241,0.3)',
+                  backgroundColor: 'rgba(99,102,241,0.1)',
+                  color: '#6366f1', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {item.actionLabel}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function useMatchStats(blocks) {
   const matches = blocks
     .filter(b => b.type === 'matches')
@@ -75,13 +195,17 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const { allSports: SPORTS } = useSports();
   const { isAdmin, isClubAdmin, currentUser, isLoggedIn, follows, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow } = useAuth();
   const { share } = useShare();
-  const canAddEvent = canAddEventProp ?? (isAdmin || isClubAdmin);
   const isOwner = isAdmin
     || club.userId === currentUser?.id
     || (isClubAdmin && currentUser?.clubId === club.id);
   const { managers, addManager, removeManager, updateManagerRole, isManager } = useClubManagers(club.id);
-  const canEdit = isOwner || isManager(currentUser?.email);
+  const canEdit     = isOwner || isManager(currentUser?.email);
+  // Les managers (manager/editor) peuvent aussi créer des événements
+  const canAddEvent = (canAddEventProp ?? (isAdmin || isClubAdmin)) || isManager(currentUser?.email);
   const [showFollowModal, setShowFollowModal] = useState(false);
+  const [loginHint, setLoginHint] = useState(false);
+  const checklistKey = `sl-club-checklist-dismissed-${club.id}`;
+  const [checklistDismissed, setChecklistDismissed] = useState(() => !!localStorage.getItem(checklistKey));
   const isFollowing = isFollowingClub(club.id);
   const currentFollow = getFollow(club.id);
 
@@ -280,7 +404,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           background: `radial-gradient(circle, ${accentColor}22 0%, transparent 65%)`,
         }} />
         <div className="flex items-center justify-between px-4 pt-4 pb-3">
-          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm transition-colors cursor-pointer">
+          <button onClick={onBack} aria-label="Retour à la liste des clubs" className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm transition-colors cursor-pointer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             Clubs
           </button>
@@ -321,14 +445,14 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             {canEdit && onUpdateClub && (
               <button
                 onClick={() => setShowEditInfo(true)}
-                aria-label="Modifier les informations du club"
+                aria-label="Modifier les informations et équipes du club"
                 className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-600 text-slate-200 hover:bg-slate-500"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
                 </svg>
-                <span className="hidden sm:inline">Équipes</span>
+                <span className="hidden sm:inline">Modifier</span>
               </button>
             )}
           </div>
@@ -384,21 +508,43 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         {/* Action buttons — own row so the club name area gets full width */}
         <div className="px-4 pb-4 flex gap-2">
           {/* Follow */}
-          <button
-            onClick={() => isLoggedIn ? setShowFollowModal(true) : null}
-            title={isFollowing ? 'Modifier le suivi' : 'Suivre ce club'}
-            className="flex flex-col items-center gap-1 p-2 rounded-xl transition-colors cursor-pointer"
-            style={{ backgroundColor: isFollowing ? `${accentColor}25` : 'rgba(255,255,255,0.08)' }}
-          >
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: isFollowing ? `${accentColor}30` : 'rgba(255,255,255,0.1)' }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill={isFollowing ? accentColor : 'none'} stroke={isFollowing ? accentColor : '#cbd5e1'} strokeWidth="2" strokeLinecap="round">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-            </div>
-            <span className="text-[9px] font-medium" style={{ color: isFollowing ? accentColor : '#94a3b8' }}>
-              {isFollowing ? 'Suivi' : 'Suivre'}
-            </span>
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => {
+                if (isLoggedIn) {
+                  setShowFollowModal(true);
+                } else {
+                  setLoginHint(true);
+                  setTimeout(() => setLoginHint(false), 2200);
+                }
+              }}
+              aria-label={isFollowing ? 'Modifier les préférences de suivi du club' : 'Suivre ce club'}
+              title={isFollowing ? 'Modifier le suivi' : 'Suivre ce club'}
+              className="flex flex-col items-center gap-1 p-2 rounded-xl transition-colors cursor-pointer"
+              style={{ backgroundColor: isFollowing ? `${accentColor}25` : 'rgba(255,255,255,0.08)' }}
+            >
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: isFollowing ? `${accentColor}30` : 'rgba(255,255,255,0.1)' }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill={isFollowing ? accentColor : 'none'} stroke={isFollowing ? accentColor : '#cbd5e1'} strokeWidth="2" strokeLinecap="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </div>
+              <span className="text-[9px] font-medium" style={{ color: isFollowing ? accentColor : '#94a3b8' }}>
+                {isFollowing ? 'Suivi' : 'Suivre'}
+              </span>
+            </button>
+            {loginHint && (
+              <div style={{
+                position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)',
+                backgroundColor: 'rgba(15,23,42,0.95)', color: '#f1f5f9',
+                fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                padding: '5px 10px', borderRadius: 8,
+                pointerEvents: 'none', zIndex: 10,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+              }}>
+                Connecte-toi pour suivre
+              </div>
+            )}
+          </div>
 
           {/* Poster */}
           <button
@@ -631,7 +777,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               onClick={() => setActiveTeamId(null)}
               className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer"
               style={activeTeamId === null
-                ? { borderColor: '#1e293b', color: 'var(--sl-t1)' }
+                ? { borderColor: accentColor, color: 'var(--sl-t1)' }
                 : { borderColor: 'transparent', color: 'var(--sl-t3)' }}
             >
               Général
@@ -643,7 +789,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
                 onClick={() => setActiveTeamId(team.id)}
                 className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer"
                 style={activeTeamId === team.id
-                  ? { borderColor: '#1e293b', color: 'var(--sl-t1)' }
+                  ? { borderColor: accentColor, color: 'var(--sl-t1)' }
                   : { borderColor: 'transparent', color: 'var(--sl-t3)' }}
               >
                 {team.name}
@@ -700,37 +846,50 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               }}
             >
               {[
-                { id: 'infos',    label: '📰 Ma page',        ariaLabel: 'Page publique du club'          },
-                { id: 'stats',    label: '📊 Statistiques',   ariaLabel: 'Statistiques et tableau de bord' },
-                { id: 'gestion',  label: '⚙️ Gestion',        ariaLabel: 'Gestion des administrateurs'    },
-                { id: 'effectif', label: '👥 Membres',         ariaLabel: 'Effectif et membres du club'    },
-                { id: 'sponsors', label: '🤝 Partenaires',    ariaLabel: 'Sponsors et partenaires'        },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  role="tab"
-                  aria-selected={clubInternalTab === tab.id}
-                  aria-label={tab.ariaLabel}
-                  title={tab.ariaLabel}
-                  onClick={() => {
-                    setClubInternalTab(tab.id);
-                    if (tab.id === 'stats')    setShowDashboard(true);
-                    if (tab.id === 'gestion')  setShowManagersPanel(true);
-                    if (tab.id === 'effectif') setShowRosterPanel(true);
-                    if (tab.id === 'sponsors') setShowSponsorsPanel(true);
-                  }}
-                  style={{
-                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    cursor: 'pointer', transition: 'all 0.12s',
-                    whiteSpace: 'nowrap', flexShrink: 0,
-                    border: clubInternalTab === tab.id ? 'none' : '1px solid var(--sl-border)',
-                    backgroundColor: clubInternalTab === tab.id ? '#6366f1' : 'var(--sl-pill-bg)',
-                    color: clubInternalTab === tab.id ? '#fff' : 'var(--sl-pill-text)',
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
+                { id: 'infos',    label: '📰 Ma page',       ariaLabel: 'Page publique du club',           isPanel: false },
+                { id: 'stats',    label: '📊 Statistiques',  ariaLabel: 'Statistiques et tableau de bord', isPanel: true  },
+                { id: 'gestion',  label: '⚙️ Gestion',       ariaLabel: 'Gestion des administrateurs',     isPanel: true  },
+                { id: 'effectif', label: '👥 Membres',        ariaLabel: 'Effectif et membres du club',     isPanel: true  },
+                { id: 'sponsors', label: '🤝 Partenaires',   ariaLabel: 'Sponsors et partenaires',         isPanel: true  },
+              ].map(tab => {
+                const isActive = clubInternalTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-label={tab.ariaLabel}
+                    title={tab.ariaLabel}
+                    onClick={() => {
+                      setClubInternalTab(tab.id);
+                      if (tab.id === 'stats')    setShowDashboard(true);
+                      if (tab.id === 'gestion')  setShowManagersPanel(true);
+                      if (tab.id === 'effectif') setShowRosterPanel(true);
+                      if (tab.id === 'sponsors') setShowSponsorsPanel(true);
+                    }}
+                    style={{
+                      padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                      cursor: 'pointer', transition: 'all 0.12s',
+                      whiteSpace: 'nowrap', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      border: isActive ? 'none' : '1px solid var(--sl-border)',
+                      backgroundColor: isActive
+                        ? (tab.isPanel ? '#0f172a' : '#6366f1')
+                        : 'var(--sl-pill-bg)',
+                      color: isActive ? '#fff' : 'var(--sl-pill-text)',
+                    }}
+                  >
+                    {tab.label}
+                    {tab.isPanel && (
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true" style={{ opacity: isActive ? 0.7 : 0.35, flexShrink: 0 }}>
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
             </div>
             {/* Fade overflow hint — indique qu'il y a du contenu à droite */}
             <div
@@ -746,7 +905,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       )}
 
       {/* ── Content ── */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ overscrollBehavior: 'contain', '--club-font-title': `"${typography.titleFont}", sans-serif`, '--club-font-body': `"${typography.bodyFont}", sans-serif` }}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ overscrollBehavior: 'contain', '--club-font-title': `"${typography.titleFont}", sans-serif`, '--club-font-body': `"${typography.bodyFont}", sans-serif`, paddingBottom: canEdit && !showEditInfo && !showAnnouncement && !showDashboard ? `calc(${isEditing ? 80 : 160}px + env(safe-area-inset-bottom, 0px))` : undefined }}>
         {activeTeam ? (
           <TeamView
             key={activeTeam.id}
@@ -773,6 +932,19 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           />
         ) : (
           <div className="px-4 py-5 overflow-x-hidden">
+            {/* Checklist post-création — visible tant que non dismissed */}
+            {canEdit && !isEditing && !checklistDismissed && (
+              <ClubSetupChecklist
+                club={club}
+                blocks={blocks}
+                events={effectiveEvents.filter(e => String(e.clubId) === String(club.id))}
+                canEdit={canEdit}
+                onDismiss={() => { localStorage.setItem(checklistKey, '1'); setChecklistDismissed(true); }}
+                onEditPage={() => setIsEditing(true)}
+                onCreateEvent={handleCreateClubEvent}
+                onSendAnnouncement={() => setShowAnnouncement(true)}
+              />
+            )}
             <Reorder.Group axis="y" values={rows} onReorder={reorderRows} as="div">
               {rows.map(row => (
                 <div key={row.rowId}>
@@ -838,11 +1010,47 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               const hasUpcoming = effectiveEvents.some(
                 e => String(e.clubId) === String(club.id) && new Date(e.date) >= now
               );
-              if (!hasUpcoming) return null;
               return (
-                <div style={{ padding: '0 0 16px' }}>
-                  <UpcomingEventsBlock data={{}} allEvents={effectiveEvents} club={club} isEditing={false} onUpdate={() => {}} />
-                </div>
+                <>
+                  {hasUpcoming && (
+                    <div style={{ padding: '0 0 16px' }}>
+                      <UpcomingEventsBlock data={{}} allEvents={effectiveEvents} club={club} isEditing={false} onUpdate={() => {}} />
+                    </div>
+                  )}
+                  {!hasUpcoming && (
+                    <div style={{ padding: '24px 0 16px', textAlign: 'center' }}>
+                      <div style={{
+                        borderRadius: 16, padding: '28px 20px',
+                        backgroundColor: 'var(--sl-surface)',
+                        border: '1px solid var(--sl-border)',
+                      }}>
+                        <div style={{
+                          width: 52, height: 52, borderRadius: 14,
+                          backgroundColor: 'var(--sl-card)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          margin: '0 auto 14px',
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <rect x="3" y="3" width="18" height="18" rx="3"/>
+                            <path d="M9 9h6M9 13h4"/>
+                          </svg>
+                        </div>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--sl-t1)', marginBottom: 6 }}>
+                          Ce club n'a pas encore publié de contenu
+                        </p>
+                        {club.description ? (
+                          <p style={{ fontSize: 12, color: 'var(--sl-t3)', lineHeight: 1.6, margin: 0 }}>
+                            {club.description}
+                          </p>
+                        ) : (
+                          <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: 0 }}>
+                            Revenez bientôt pour voir les actualités de ce club.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
               );
             })()}
 
@@ -914,11 +1122,14 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
             <button
               onClick={() => { setShowRosterPanel(false); setClubInternalTab('infos'); }}
-              style={{ fontSize: 20, lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t1)', padding: '0 4px' }}
+              aria-label="Retour à la page du club"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t1)', borderRadius: 8, padding: 0 }}
             >
-              ←
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
             </button>
-            <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--sl-t1)' }}>Effectif</span>
+            <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--sl-t1)' }}>Membres</span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
             <ClubRosterPanel clubId={String(club.id)} teams={allTeams} />

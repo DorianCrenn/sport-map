@@ -23,7 +23,7 @@ import {
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
 import { useClubSponsorsPage } from '../hooks/useClubSponsorsPage.js';
-import { useClubPlan } from '../hooks/useClubPlan.js';
+import { useClubFeatures } from '../hooks/useClubFeatures.js';
 import { useClubAIUsage } from '../hooks/useClubAIUsage.js';
 import { usePosterAI } from '../hooks/usePosterAI.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
@@ -52,9 +52,12 @@ function posterReducer(state, action) {
 export default function PosterStudio({ event, onClose, club, quickMode = false, resultMode = null, initialBgSrc = null }) {
   const { allSports } = useSports();
   const { currentUser } = useAuth();
-  const { isPremium: clubHasPlan } = useClubPlan(club?.id);
-  const hasPremium = currentUser?.role === 'admin' || currentUser?.role === 'superadmin'
-    || currentUser?.role === 'club_admin' || currentUser?.isPremium || clubHasPlan;
+  const features = useClubFeatures(club?.id);
+
+  // Feature flags explicites — remplacent le booléen hasPremium générique
+  const hasPremium       = features.can('POSTER_WATERMARK_REMOVE');  // Starter+
+  const canUseAI         = features.can('POSTER_AI_BACKGROUND');      // Elite
+  const canUseSponsors   = features.can('POSTER_SPONSORS_LOGOS');     // Pro+
 
   const posterRef           = useRef(null);
   const exportRef           = useRef(null);
@@ -78,8 +81,10 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const clubMedia  = useClubMedia(club?.id);
   const clubDNA    = useClubDNA(club?.id);
   const { usage: aiUsage, optimisticIncrement: aiIncrement } = useClubAIUsage(club?.id);
-  const aiGenerateBlocked = !hasPremium && aiUsage.generate_count >= aiUsage.monthly_limit;
-  const aiImportBlocked   = !hasPremium && aiUsage.import_count   >= aiUsage.monthly_limit;
+  // Quota IA depuis le plan (plus depuis monthly_limit hardcodé en DB)
+  const { aiGeneratesPerMonth, aiImportsPerMonth } = features.quotas;
+  const aiGenerateBlocked = !canUseAI || features.overQuota('aiGeneratesPerMonth', aiUsage.generate_count);
+  const aiImportBlocked   = !canUseAI || features.overQuota('aiImportsPerMonth',   aiUsage.import_count);
 
   const pageSponsors = useClubSponsorsPage(club?.id);
   const [useBandSponsors, setUseBandSponsors] = useState(false);
@@ -120,6 +125,15 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   // Mode Simple : wizard 3 étapes (désactivé en quickMode / resultMode qui sont déjà des raccourcis)
   const [simpleMode,    setSimpleMode]    = useState(!quickMode && !resultMode);
   const [wizardStep,    setWizardStep]    = useState(1);
+  const [isDesktop,     setIsDesktop]     = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1024);
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  useEffect(() => {
+    if (isDesktop && activeTab === 'template') setActiveTab('style');
+  }, [isDesktop]); // eslint-disable-line
   const [watermarkVisible, setWatermarkVisible] = useState(true);
   const [editorOpen,    setEditorOpen]    = useState(false);
   const [previewFull,   setPreviewFull]   = useState(false);
@@ -588,18 +602,22 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
       style={{
         position: 'fixed', inset: 0, zIndex: Z.posterStudio,
         backgroundColor: 'rgba(0,0,0,0.75)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        display: 'flex', alignItems: isDesktop ? 'center' : 'flex-end', justifyContent: 'center',
       }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <motion.div
-        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+        initial={{ y: isDesktop ? 0 : '100%', opacity: isDesktop ? 0 : 1 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: isDesktop ? 0 : '100%', opacity: isDesktop ? 0 : 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 34 }}
         style={{
-          width: '100%', maxWidth: 640, height: '96dvh',
-          borderRadius: '22px 22px 0 0',
+          width: '100%',
+          maxWidth: isDesktop ? 1100 : 640,
+          height: isDesktop ? '90dvh' : '96dvh',
+          borderRadius: isDesktop ? 16 : '22px 22px 0 0',
           backgroundColor: 'var(--sl-card)',
-          border: '1px solid var(--sl-border)', borderBottom: 'none',
+          border: '1px solid var(--sl-border)', borderBottom: isDesktop ? '1px solid var(--sl-border)' : 'none',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
           position: 'relative',
         }}
@@ -803,7 +821,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         )}
 
         {/* ── Static content wrapper — overlays contained here, no Framer Motion transform ── */}
-        <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: isDesktop && !simpleMode ? 'row' : 'column' }}>
 
         {/* Platform preview overlay — DISTRIB-001c */}
         <AnimatePresence>
@@ -1037,6 +1055,66 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* ── Colonne gauche — Templates (desktop expert uniquement) ──────────── */}
+        {isDesktop && !simpleMode && (() => {
+          const ps = {
+            poster, dispatch, set,
+            format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode, bgPreset,
+            bgTint, bgTintOp, homeName, awayName, homeLogo, awayLogo,
+            championship, tagline, sponsorSrc, transforms,
+            overlayElements, aiOverlayElements, playerLayers, scoreHome, scoreAway,
+            activeTab, setActiveTab, exportOpen, setExportOpen,
+            watermarkVisible, setWatermarkVisible,
+            libName, setLibName, libFilter, setLibFilter, favVersion, setFavVersion,
+            mediaSearch, setMediaSearch, mediaFavOnly, setMediaFavOnly, mediaFolder, setMediaFolder,
+            tagEditingId, setTagEditingId, tagInput, setTagInput,
+            isDragOver, playerName, setPlayerName,
+            variants, setVariants, variantSeed, setVariantSeed, variantsOpen, setVariantsOpen,
+            aiPosterLoading, aiPosterHint, setAiPosterHint, aiPosterVariants,
+            aiElEditorUid, setAiElEditorUid, savedAiBgs, savedAiEls,
+            useBandSponsors, setUseBandSponsors, selectedSponsorIds, setSelectedSponsorIds,
+            showUpgradeModal, setShowUpgradeModal,
+            clubMedia, clubDNA, pageSponsors, hasPremium, aiUsage,
+            aiBgLoading, aiBgResult, customPrompt, setCustomPrompt, generateBg,
+            aiElLoading, elementPrompt, setElementPrompt, generateElement,
+            aiGenerateBlocked, aiImportBlocked, isTournamentEvent,
+            favTplHook, libHook, defTplHook,
+            posterData, activeBandLogos, posterEffects, sportColors, clubColors,
+            displayTemplates, hasLayerChanges, activeTpl,
+            w, h, altFormat, altW, altH, PREVIEW_W, previewH,
+            exportWrapperRef, altExportWrapperRef, sponsorRef, bgFileRef,
+            homeLogoRef, awayLogoRef, playerFileRef, replaceFileRef, replaceTargetId, dnaFileRef,
+            handleDownload, handleDownloadAll, handleShareWhatsApp, handleShareIG,
+            handleShareFacebook, handleCopyLink, handleGenerateAIPoster,
+            handlePlayerFile, handleDragOver, handleDragLeave, handleDrop,
+            addPlayerLayer, removePlayerLayer, updatePlayerLayer,
+            addOverlayElement, removeOverlayElement, updateOverlayElement,
+            addAiOverlay, removeAiOverlay, updateAiOverlay,
+            addSavedBg, removeSavedBg, addSavedEl, removeSavedEl,
+            saveToLib, loadFromLibrary, toggleFavTpl, setLayerProp, resetLayers,
+            applyBgUrl, readFile, handleTabClick,
+            event, club,
+          };
+          return (
+            <div style={{
+              width: 236, flexShrink: 0,
+              borderRight: '1px solid var(--sl-border)',
+              backgroundColor: 'var(--sl-surface)',
+              overflowY: 'auto', overflowX: 'hidden',
+              display: 'flex', flexDirection: 'column',
+            }}>
+              <div style={{ padding: '10px 10px 4px', flexShrink: 0 }}>
+                <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)' }}>
+                  Templates
+                </span>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0 10px 12px' }}>
+                <TemplatePanelTab ps={ps} />
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Indicateur de progression — mode Simple ──────────────────────────── */}
         {simpleMode && (
@@ -1377,7 +1455,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           backgroundColor: 'var(--sl-card)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}>
-          {PANEL_TABS.map(({ id, label, Icon }) => {
+          {PANEL_TABS.filter(t => !(isDesktop && t.id === 'template')).map(({ id, label, Icon }) => {
             const isActive = activeTab === id;
             const color = isActive ? accentColor : 'var(--sl-t3)';
             const hasBadge = (id === 'style' && hasLayerChanges)

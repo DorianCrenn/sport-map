@@ -224,42 +224,94 @@ export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrain
   return (
     <div className="flex flex-col h-full bg-[var(--sl-bg)]">
 
-      <NavTabBar
-        activeMain={activeMain}
-        activeFeed={activeFeed}
-        onMainChange={setActiveMain}
-        onFeedChange={setActiveFeed}
-      />
+      {/* Tab bar — mobile uniquement */}
+      <div className="md:hidden">
+        <NavTabBar
+          activeMain={activeMain}
+          activeFeed={activeFeed}
+          onMainChange={setActiveMain}
+          onFeedChange={setActiveFeed}
+        />
+      </div>
 
-      <div className="flex-1 min-h-0 overflow-hidden">
-        {activeMain === 'agenda' ? (
+      {/* Desktop header — titres fixes des 2 colonnes */}
+      <div className="hidden md:flex shrink-0 border-b border-[var(--sl-border)]">
+        <div className="flex-1 py-3 px-5 text-[13px] font-bold text-[var(--sl-t1)] border-r border-[var(--sl-border)]">Agenda</div>
+        <div className="flex-1 py-3 px-5 flex items-center justify-between">
+          <span className="text-[13px] font-bold text-[var(--sl-t1)]">Mes clubs</span>
+          {hasClubs && (
+            <div className="flex gap-1.5">
+              {FEED_FILTERS.map(f => {
+                const active = activeFeed === f.key;
+                return (
+                  <button
+                    key={f.key}
+                    onClick={() => setActiveFeed(f.key)}
+                    aria-pressed={active}
+                    className={[
+                      'flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all',
+                      active
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-[var(--sl-pill-bg)] text-[var(--sl-pill-text)] border border-[var(--sl-border)]',
+                    ].join(' ')}
+                  >
+                    <span className="text-[12px]" aria-hidden="true">{f.emoji}</span>
+                    {f.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Contenu — mobile : onglets / desktop : 2 colonnes */}
+      <div className="flex-1 min-h-0 overflow-hidden md:flex">
+
+        {/* Colonne Agenda */}
+        <div className={[
+          'flex-1 min-h-0 min-w-0',
+          // Mobile : visible seulement si onglet actif
+          activeMain === 'agenda' ? 'flex flex-col' : 'hidden',
+          // Desktop : toujours visible, séparateur
+          'md:flex md:flex-col md:border-r md:border-[var(--sl-border)]',
+        ].join(' ')}>
           <MatchesTab
             followedClubIds={feedClubIds}
             onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
           />
-        ) : !hasClubs ? (
-          <NoClubsZeroState
-            onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
-            onSwitchToAgenda={() => setActiveMain('agenda')}
-          />
-        ) : (
-          <ClubFeed
-            clubId="followed"
-            clubName="Mes clubs"
-            items={items}
-            featuredItems={featured}
-            sponsorItems={sponsors}
-            loading={loading}
-            currentUser={currentUser}
-            onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
-            onOpenTrainings={onOpenTrainings}
-            externalFilter={activeFeed}
-            hideHeader
-            headerSlot={showSetupCard ? (
-              <QuickSetupCard onDismiss={dismissSetup} />
-            ) : undefined}
-          />
-        )}
+        </div>
+
+        {/* Colonne Mes clubs */}
+        <div className={[
+          'flex-1 min-h-0 min-w-0',
+          activeMain === 'mes-clubs' ? 'flex flex-col' : 'hidden',
+          'md:flex md:flex-col',
+        ].join(' ')}>
+          {!hasClubs ? (
+            <NoClubsZeroState
+              onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
+              onSwitchToAgenda={() => setActiveMain('agenda')}
+            />
+          ) : (
+            <ClubFeed
+              clubId="followed"
+              clubName="Mes clubs"
+              items={items}
+              featuredItems={featured}
+              sponsorItems={sponsors}
+              loading={loading}
+              currentUser={currentUser}
+              onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
+              onOpenTrainings={onOpenTrainings}
+              externalFilter={activeFeed}
+              hideHeader
+              headerSlot={showSetupCard ? (
+                <QuickSetupCard onDismiss={dismissSetup} />
+              ) : undefined}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

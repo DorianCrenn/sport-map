@@ -12,6 +12,9 @@ import MobileEventSheet from '../components/MobileEventSheet.jsx';
 import SportIcon from '../components/SportIcon.jsx';
 import { useSports } from '../hooks/useSports.js';
 import EmptyMapGuide from '../components/EmptyMapGuide.jsx';
+import { formatDate, formatTime } from '../lib/dateUtils.js';
+import { useDynamicMeta } from '../hooks/useDynamicMeta.js';
+import { generateEventUrl } from '../lib/eventShare.js';
 
 const EventFormModal = lazy(() => import('../components/EventFormModal.jsx'));
 
@@ -47,6 +50,7 @@ export default function MapPage({
   const [upcomingOnly, setUpcomingOnly] = useState(true);
   const [flyTarget, setFlyTarget] = useState(null);
   const [geoError, setGeoError] = useState(null);
+  const [viewMode, setViewMode] = useState('map'); // 'map' | 'list'
   const autoRequested = useRef(false);
 
   useEffect(() => {
@@ -137,6 +141,14 @@ export default function MapPage({
     () => selectedEvent?.clubId ? allClubs.find(c => c.id === selectedEvent.clubId) ?? null : null,
     [allClubs, selectedEvent]
   );
+
+  // Meta dynamiques pour les crawlers quand un événement est sélectionné
+  useDynamicMeta(selectedEvent ? {
+    title:       selectedEvent.title ?? `${selectedEvent.homeTeam ?? selectedEvent.sport} — ${selectedEvent.awayTeam ?? selectedEvent.city}`,
+    description: `${selectedEvent.sport} · ${formatDate(selectedEvent.date)}${selectedEvent.city ? ` · ${selectedEvent.city}` : ''}`,
+    image:       selectedEvent.poster_url || selectedClub?.logo_url || undefined,
+    url:         generateEventUrl(selectedEvent.id),
+  } : {});
 
   const visibleEvents = useMemo(() => {
     const inBounds = mapBounds
@@ -301,31 +313,105 @@ export default function MapPage({
       </AnimatePresence>
 
       <div className="flex flex-1 min-h-0 relative sl-map-container">
-        <MapView
-          events={displayEvents}
-          selectedEventId={selectedEventId}
-          onMarkerClick={handleMarkerClick}
-          onMapClick={handleMapClick}
-          activeDepartment={activeDepartment}
-          userCoords={userCoords}
-          flyTarget={flyTarget}
-          onBoundsChange={handleBoundsChange}
-          selectedEvent={selectedEvent}
-        />
 
-        {displayEvents.length === 0 && !eventsLoading && (
-          <EmptyMapGuide
-            canAddEvent={canAddEvent}
-            onAddEvent={handleOpenNewEvent}
-            onResetFilters={() => {
-              setSportFilter(null);
-              setDateRangeFilter(null);
-              setNearbyFilter(false);
-              setUpcomingOnly(true);
-              setShowAllSports(true);
-            }}
+        {/* ── Vue carte (défaut) ── */}
+        <div className={viewMode === 'map' ? 'contents' : 'hidden'}>
+          <MapView
+            events={displayEvents}
+            selectedEventId={selectedEventId}
+            onMarkerClick={handleMarkerClick}
+            onMapClick={handleMapClick}
+            activeDepartment={activeDepartment}
+            userCoords={userCoords}
+            flyTarget={flyTarget}
+            onBoundsChange={handleBoundsChange}
+            selectedEvent={selectedEvent}
           />
-        )}
+          {displayEvents.length === 0 && !eventsLoading && (
+            <EmptyMapGuide
+              canAddEvent={canAddEvent}
+              onAddEvent={handleOpenNewEvent}
+              onResetFilters={() => {
+                setSportFilter(null);
+                setDateRangeFilter(null);
+                setNearbyFilter(false);
+                setUpcomingOnly(true);
+                setShowAllSports(true);
+              }}
+            />
+          )}
+        </div>
+
+        {/* ── Vue liste (mobile) ── */}
+        <AnimatePresence>
+          {viewMode === 'list' && (
+            <motion.div
+              key="list-view"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.18 }}
+              className="md:hidden absolute inset-0 overflow-y-auto"
+              style={{
+                backgroundColor: 'var(--sl-bg)',
+                paddingBottom: `calc(80px + env(safe-area-inset-bottom, 0px))`,
+              }}
+            >
+              {displayEvents.length === 0 && !eventsLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', textAlign: 'center' }}>
+                  <span style={{ fontSize: 36, marginBottom: 12 }}>🗺️</span>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--sl-t2)' }}>Aucun événement avec ces filtres</p>
+                </div>
+              ) : (
+                <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 4px 0' }}>
+                    {displayEvents.length} événement{displayEvents.length > 1 ? 's' : ''}
+                  </p>
+                  {displayEvents.map(event => {
+                    const sportData = SPORTS[event.sport];
+                    const isSelected = event.id === selectedEventId;
+                    return (
+                      <motion.button
+                        key={event.id}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedEventId(prev => prev === event.id ? null : event.id)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 12,
+                          padding: '12px 14px', borderRadius: 14,
+                          backgroundColor: isSelected ? `${sportData?.color ?? 'var(--sl-green)'}14` : 'var(--sl-card)',
+                          border: `1px solid ${isSelected ? (sportData?.color ?? 'var(--sl-green)') + '40' : 'var(--sl-border)'}`,
+                          cursor: 'pointer', textAlign: 'left', width: '100%',
+                          transition: 'all 0.12s',
+                        }}
+                      >
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                          backgroundColor: sportData ? `${sportData.color}18` : 'var(--sl-surface)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <SportIcon sport={event.sport} size={18} color={sportData?.color ?? 'var(--sl-t3)'} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', margin: 0, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {event.title ?? `${event.homeTeam ?? event.sport} — ${event.awayTeam ?? event.city}`}
+                          </p>
+                          <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span>{formatDate(event.date)}</span>
+                            {event.time && <><span style={{ opacity: 0.4 }}>·</span><span>{formatTime(event.time ?? event.date)}</span></>}
+                            {event.city && <><span style={{ opacity: 0.4 }}>·</span><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>{event.city}</span></>}
+                          </p>
+                        </div>
+                        {sportData && (
+                          <div style={{ width: 4, height: 28, borderRadius: 2, backgroundColor: sportData.color, flexShrink: 0, opacity: 0.7 }} />
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Desktop sidebar */}
         <div className="hidden md:contents">
@@ -364,31 +450,62 @@ export default function MapPage({
           </button>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-            {/* Recentrer */}
+            {/* Toggle carte/liste */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={handleRecentrer}
+              onClick={() => setViewMode(m => m === 'map' ? 'list' : 'map')}
               style={{
                 pointerEvents: 'auto',
                 width: 44, height: 44, borderRadius: 12,
-                backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+                backgroundColor: viewMode === 'list' ? 'var(--sl-blue)' : 'var(--sl-card)',
+                border: `1px solid ${viewMode === 'list' ? 'var(--sl-blue)' : 'var(--sl-border)'}`,
                 boxShadow: 'var(--sl-shadow)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                color: userCoords ? 'var(--sl-blue)' : 'var(--sl-t3)',
+                color: viewMode === 'list' ? '#fff' : 'var(--sl-t2)',
               }}
-              aria-label="Recentrer sur ma position"
-              title="Recentrer"
+              aria-label={viewMode === 'map' ? 'Afficher en liste' : 'Afficher sur la carte'}
+              title={viewMode === 'map' ? 'Vue liste' : 'Vue carte'}
             >
-              {geoLoading
-                ? <GeoLoader />
-                : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
-                  </svg>
-                )
-              }
+              {viewMode === 'map' ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                  <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                  <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+                </svg>
+              )}
             </motion.button>
+
+            {/* Recentrer */}
+            {viewMode === 'map' && (
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={handleRecentrer}
+                style={{
+                  pointerEvents: 'auto',
+                  width: 44, height: 44, borderRadius: 12,
+                  backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+                  boxShadow: 'var(--sl-shadow)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                  color: userCoords ? 'var(--sl-blue)' : 'var(--sl-t3)',
+                }}
+                aria-label="Recentrer sur ma position"
+                title="Recentrer"
+              >
+                {geoLoading
+                  ? <GeoLoader />
+                  : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+                    </svg>
+                  )
+                }
+              </motion.button>
+            )}
 
             {/* Ajouter */}
             {canAddEvent && (

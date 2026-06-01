@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-const DEFAULT = { import_count: 0, generate_count: 0, monthly_limit: 5 };
+// La limite mensuelle est désormais dérivée du plan via PLAN_QUOTAS (subscriptionFeatures.ts).
+// monthly_limit en DB est déprécié (conservé pour stats historiques uniquement).
+const DEFAULT = { import_count: 0, generate_count: 0 };
 
 export function useClubAIUsage(clubId) {
   const [usage, setUsage] = useState(DEFAULT);
@@ -12,7 +14,7 @@ export function useClubAIUsage(clubId) {
       .toISOString().slice(0, 10);
     supabase
       .from('club_ai_usage')
-      .select('import_count, generate_count, monthly_limit')
+      .select('import_count, generate_count')
       .eq('club_id', String(clubId))
       .eq('month', month)
       .maybeSingle()

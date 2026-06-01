@@ -80,9 +80,33 @@ export function useEventPhotos(eventId) {
 
   const deletePhoto = useCallback(async (photoId) => {
     const photo = photos.find(p => p.id === photoId);
+    if (!photo) return;
+
+    // Optimistic update
     setPhotos(prev => prev.filter(p => p.id !== photoId));
-    const { error } = await supabase.from('event_photos').delete().eq('id', photoId);
-    if (error && photo) setPhotos(prev => [...prev, photo]);
+
+    // Supprimer en DB
+    const { error: dbErr } = await supabase.from('event_photos').delete().eq('id', photoId);
+    if (dbErr) {
+      // Rollback
+      setPhotos(prev => [...prev, photo].sort((a, b) => a.created_at.localeCompare(b.created_at)));
+      return;
+    }
+
+    // Supprimer le fichier du Storage (dériver le path depuis l'URL publique)
+    try {
+      const url = new URL(photo.url);
+      // URL publique : .../storage/v1/object/public/event-photos/clubId/eventId/filename
+      const bucketPrefix = `/storage/v1/object/public/${BUCKET}/`;
+      const storagePath  = url.pathname.includes(bucketPrefix)
+        ? decodeURIComponent(url.pathname.split(bucketPrefix)[1])
+        : null;
+      if (storagePath) {
+        await supabase.storage.from(BUCKET).remove([storagePath]);
+      }
+    } catch {
+      // Échec Storage non bloquant — la DB est déjà nettoyée
+    }
   }, [photos]);
 
   return { photos, loading, uploading, uploadPhoto, deletePhoto, maxPhotos: MAX_PHOTOS };

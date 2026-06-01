@@ -87,12 +87,14 @@ export interface SponsorFeedItem extends BaseFeedItem {
 }
 
 // ── Plan d'abonnement "À la Une" ──────────────────────────────────────────────
-export type FeaturedPlan = 'starter' | 'pro' | 'elite';
+// Featured events disponibles à partir du plan Pro uniquement.
+// Quotas alignés sur PLAN_QUOTAS dans subscriptionFeatures.ts.
+export type FeaturedPlan = 'pro' | 'elite';
 
 /** Config visuelle + limites métier par plan */
 export const PLAN_CONFIG: Record<FeaturedPlan, {
   label: string;
-  /** Nb max d'événements mis en avant simultanément par ce club */
+  /** Nb max d'événements mis en avant par mois */
   maxFeatured: number;
   /** Durée max d'une mise en avant en jours */
   durationDays: number;
@@ -105,32 +107,23 @@ export const PLAN_CONFIG: Record<FeaturedPlan, {
   /** Halo CSS */
   glow: string;
 }> = {
-  starter: {
-    label:        'Starter',
-    maxFeatured:  1,
-    durationDays: 7,
-    accent:       '#94a3b8',
-    bg:           'rgba(148,163,184,0.06)',
-    border:       'rgba(148,163,184,0.2)',
-    glow:         'rgba(148,163,184,0.08)',
-  },
   pro: {
     label:        'Club Pro',
-    maxFeatured:  3,
+    maxFeatured:  5,
     durationDays: 30,
-    accent:       '#f59e0b',
-    bg:           'rgba(245,158,11,0.07)',
-    border:       'rgba(245,158,11,0.3)',
-    glow:         'rgba(245,158,11,0.12)',
+    accent:       '#8b5cf6',
+    bg:           'rgba(139,92,246,0.07)',
+    border:       'rgba(139,92,246,0.3)',
+    glow:         'rgba(139,92,246,0.12)',
   },
   elite: {
-    label:        'Élite',
-    maxFeatured:  5,
+    label:        'Elite',
+    maxFeatured:  15,
     durationDays: 60,
-    accent:       '#a855f7',
-    bg:           'rgba(168,85,247,0.08)',
-    border:       'rgba(168,85,247,0.35)',
-    glow:         'rgba(168,85,247,0.18)',
+    accent:       '#f59e0b',
+    bg:           'rgba(245,158,11,0.08)',
+    border:       'rgba(245,158,11,0.35)',
+    glow:         'rgba(245,158,11,0.18)',
   },
 };
 

@@ -2,12 +2,17 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useRides } from '../../hooks/useRides.js';
+import { useClubFeatures } from '../../hooks/useClubFeatures.js';
+import PlanGate from '../ui/PlanGate.jsx';
+import UpgradePrompt from '../ui/UpgradePrompt.jsx';
 import RideCard from './RideCard.jsx';
 import CreateRideModal from './CreateRideModal.jsx';
 import JoinRideModal from './JoinRideModal.jsx';
 
 export default function RideSection({ event, snapPoint }) {
   const { currentUser } = useAuth();
+  const features = useClubFeatures(event?.clubId);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const {
     rides, loading,
     createRide, cancelRide,
@@ -47,6 +52,38 @@ export default function RideSection({ event, snapPoint }) {
           )}
         </div>
       </div>
+    );
+  }
+
+  // ── Gate plan — covoiturage verrouillé en plan Gratuit ────────────────────
+  if (!features.loading && !features.can('CARPOOLING')) {
+    return (
+      <>
+        <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 16, marginTop: 8 }}>
+          <PlanGate
+            allowed={false}
+            feature="CARPOOLING"
+            mode="overlay"
+            onUpgrade={() => setShowUpgrade(true)}
+          >
+            <div style={{ padding: '4px 0 8px' }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 4 }}>
+                🚗 Covoiturages
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--sl-t3)', lineHeight: 1.5 }}>
+                Organisez des trajets partagés entre équipiers et supporters
+              </div>
+            </div>
+          </PlanGate>
+        </div>
+        <UpgradePrompt
+          open={showUpgrade}
+          onClose={() => setShowUpgrade(false)}
+          currentPlanId={features.planId}
+          featureLabel="le covoiturage"
+          requiredPlanId="starter"
+        />
+      </>
     );
   }
 
