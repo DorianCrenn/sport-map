@@ -664,22 +664,33 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
           <motion.p className="font-poppins mb-7 mx-auto relative"
             style={{ fontSize:15, color:'rgba(255,255,255,0.65)', maxWidth:300, lineHeight:1.6 }}
             initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.23 }}>
-            Trouve des clubs, des événements et des actualités sportives autour de toi.
+            Rejoignez votre club sportif local. Suivez les matchs, résultats et annonces — gratuit.
           </motion.p>
 
-          <motion.div className="flex gap-3 justify-center relative"
+          {/* CTA principal : inscription */}
+          <motion.div className="flex flex-col items-center gap-3 relative"
             initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.29 }}>
-            <motion.button whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }} onClick={() => onNavigate('map')}
-              className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer"
-              style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'12px 22px', fontSize:14 }}>
-              Voir la carte
+            <motion.button
+              whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }}
+              onClick={() => onNavigate('profil')}
+              className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer w-full justify-center"
+              style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'14px 22px', fontSize:15, maxWidth:300, boxShadow:'0 6px 24px rgba(34,217,106,0.4)' }}>
+              S'inscrire gratuitement
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </motion.button>
-            <motion.button whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }} onClick={() => onNavigate('clubs')}
-              className="font-semibold font-poppins border-2 cursor-pointer"
-              style={{ borderColor:'rgba(255,255,255,0.25)', color:'white', borderRadius:14, padding:'12px 22px', fontSize:14, backgroundColor:'rgba(255,255,255,0.08)' }}>
-              Les clubs
-            </motion.button>
+            <div className="flex gap-3">
+              <motion.button whileTap={{ scale:0.95 }} onClick={() => onNavigate('map')}
+                className="font-semibold font-poppins cursor-pointer"
+                style={{ color:'rgba(255,255,255,0.6)', background:'none', border:'none', fontSize:13, padding:'4px 0' }}>
+                Voir la carte →
+              </motion.button>
+              <span style={{ color:'rgba(255,255,255,0.25)', fontSize:13 }}>·</span>
+              <motion.button whileTap={{ scale:0.95 }} onClick={() => onNavigate('clubs')}
+                className="font-semibold font-poppins cursor-pointer"
+                style={{ color:'rgba(255,255,255,0.6)', background:'none', border:'none', fontSize:13, padding:'4px 0' }}>
+                Les clubs →
+              </motion.button>
+            </div>
           </motion.div>
 
           {/* Social proof */}
@@ -749,23 +760,26 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             {/* Sous-titre */}
             <p className="font-poppins mb-8"
               style={{ fontSize:18, color:'rgba(255,255,255,0.65)', maxWidth:440, lineHeight:1.65 }}>
-              Trouve des clubs, participe à des événements et suis l'actualité sportive autour de toi — tout en un seul endroit.
+              Rejoignez votre club sportif local. Suivez les matchs, résultats et annonces — le tout gratuitement.
             </p>
 
-            {/* Boutons */}
-            <div className="flex gap-4 mb-12">
-              <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('map')}
+            {/* Boutons — inscription en priorité */}
+            <div className="flex gap-4 mb-4">
+              <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('profil')}
                 className="font-bold font-poppins text-white flex items-center gap-2.5 cursor-pointer"
-                style={{ backgroundColor:'#22d96a', borderRadius:16, padding:'14px 28px', fontSize:16 }}>
-                Voir la carte
+                style={{ backgroundColor:'#22d96a', borderRadius:16, padding:'14px 28px', fontSize:16, boxShadow:'0 8px 28px rgba(34,217,106,0.45)' }}>
+                S'inscrire gratuitement
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </motion.button>
-              <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('clubs')}
+              <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('map')}
                 className="font-semibold font-poppins border-2 cursor-pointer"
                 style={{ borderColor:'rgba(255,255,255,0.3)', color:'white', borderRadius:16, padding:'14px 28px', fontSize:16, backgroundColor:'rgba(255,255,255,0.08)' }}>
-                Explorer les clubs
+                Voir la carte
               </motion.button>
             </div>
+            <p className="mb-8" style={{ fontSize:13, color:'rgba(255,255,255,0.35)' }}>
+              Inscription en 30 secondes · Aucune carte bancaire requise
+            </p>
 
             {/* Stats mini */}
             <div className="flex gap-8 mb-10">

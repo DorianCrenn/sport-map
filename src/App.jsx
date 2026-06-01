@@ -341,7 +341,7 @@ function AppInner() {
               <ErrorBoundary name="Accueil">
                 <HomeScreen
                   followedClubIds={followedClubs}
-                  onNavigate={setActiveTab}
+                  onNavigate={handleTabChange}
                   stats={homeStats}
                   clubs={allClubs}
                   allEvents={allEvents}
