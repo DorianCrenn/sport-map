@@ -104,6 +104,7 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
   const [editingSports, setEditingSports] = useState(false);
   const [selectedSports, setSelectedSports] = useState(new Set());
   const [previewBadges, setPreviewBadges] = useState(null);
+  const [profileTab, setProfileTab] = useState('profil'); // 'profil' | 'params' | 'stats'
   const favCount = favorites?.size ?? 0;
   const eventCount = userEvents?.length ?? 0;
   const favSports = currentUser?.favoriteSports ?? [];
@@ -287,7 +288,35 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
         </div>
       </div>
 
-      <div style={{ padding: '14px 14px calc(90px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* ── Barre d'onglets ── */}
+      <div style={{ flexShrink: 0, display: 'flex', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-bg)' }}>
+        {[
+          { key: 'profil',  label: 'Profil'      },
+          { key: 'params',  label: 'Paramètres'  },
+          { key: 'stats',   label: 'Stats'        },
+        ].map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setProfileTab(tab.key)}
+            style={{
+              flex: 1, padding: '12px 4px', fontSize: 13, fontWeight: 700,
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: profileTab === tab.key ? 'var(--sl-green)' : 'var(--sl-t3)',
+              borderBottom: `2px solid ${profileTab === tab.key ? 'var(--sl-green)' : 'transparent'}`,
+              transition: 'color 0.15s, border-color 0.15s',
+            }}
+            aria-selected={profileTab === tab.key}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px calc(90px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+        {/* ═══════════ ONGLET PROFIL ═══════════ */}
+        {profileTab === 'profil' && <>
+
         {/* Stats */}
         <div style={{
           borderRadius: 16, padding: '14px 10px',
@@ -295,7 +324,7 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
           backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
         }}>
           {[
-            { label: 'Favoris',  value: favCount,                                          color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
+            { label: 'Sauvegardés', value: favCount,                                       color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
             { label: 'Ajoutés',  value: eventCount,                                        color: 'var(--sl-blue)', bg: 'var(--sl-blue-dim)' },
             { label: 'Sports',   value: favSports.length || Object.keys(allSports).length, color: 'var(--sl-green)', bg: 'var(--sl-green-dim)' },
           ].map(({ label, value, color, bg }, i) => (
@@ -311,6 +340,11 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
             </motion.div>
           ))}
         </div>
+
+        </> /* /PROFIL */}
+
+        {/* ═══════════ ONGLET STATS ═══════════ */}
+        {profileTab === 'stats' && <>
 
         {/* XP / Level card */}
         <div style={{ borderRadius: 16, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
@@ -340,14 +374,19 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
           )}
         </div>
 
-        {/* Theme toggle */}
-        <ThemeToggle />
-
         {/* Classement XP utilisateurs */}
         <UserLeaderboard />
 
         {/* Classement clubs actifs */}
         <ClubLeaderboard />
+
+        </> /* /STATS */}
+
+        {/* ═══════════ ONGLET PARAMÈTRES ═══════════ */}
+        {profileTab === 'params' && <>
+
+        {/* Theme toggle */}
+        <ThemeToggle />
 
         {/* Admin shortcut */}
         {isAdmin && (
@@ -622,6 +661,9 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
         </button>
 
         <p className="text-xs text-center pt-1" style={{ color: 'var(--sl-t3)' }}>SportLink v1.0.0 · Finistère (29)</p>
+
+        </> /* /PARAMÈTRES */}
+
       </div>
 
       {/* Badge preview modal (temporary — dev only) */}

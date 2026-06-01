@@ -65,6 +65,23 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const [submitError, setSubmitError] = useState(null);
   const [createdEvent, setCreatedEvent] = useState(null);
 
+  // ── Stepper (uniquement pour la création, pas l'édition) ──────────────────
+  const useSteps = !isEdit;
+  const [step, setStep]       = useState(1);
+  const [stepDir, setStepDir] = useState(1); // 1=avant, -1=arrière
+
+  function goNext() {
+    setSubmitError(null);
+    setStepDir(1);
+    setStep(s => Math.min(s + 1, 3));
+    document.getElementById('event-form')?.scrollTo({ top: 0 });
+  }
+  function goPrev() {
+    setSubmitError(null);
+    setStepDir(-1);
+    setStep(s => Math.max(s - 1, 1));
+  }
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm(toFormValues(event, buildDefaults(event)));
@@ -166,42 +183,104 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
           </div>
 
           {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 14px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
-            <div>
-              <h2 id="event-form-heading" style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>
-                {isEdit ? 'Modifier l\'événement' : event?._isDuplicate ? 'Dupliquer l\'événement' : 'Nouvel événement'}
-              </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-                {useSmartMode && myClub && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'var(--sl-green)' }} />
-                    <span style={{ fontSize: 11, color: 'var(--sl-green)', fontWeight: 600 }}>{myClub.name}</span>
-                  </div>
-                )}
-                {event?._isNew && event?.defaultTeam && (
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.25)' }}>
-                    {event.defaultTeam}{event.defaultLevel ? ` · ${event.defaultLevel}` : ''}
-                  </span>
-                )}
+          <div style={{ flexShrink: 0, borderBottom: '1px solid var(--sl-border)' }}>
+            {/* Ligne titre + fermer */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 10px' }}>
+              <div>
+                <h2 id="event-form-heading" style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>
+                  {isEdit ? 'Modifier l\'événement' : event?._isDuplicate ? 'Dupliquer l\'événement' : 'Nouvel événement'}
+                </h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
+                  {useSmartMode && myClub && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'var(--sl-green)' }} />
+                      <span style={{ fontSize: 11, color: 'var(--sl-green)', fontWeight: 600 }}>{myClub.name}</span>
+                    </div>
+                  )}
+                  {event?._isNew && event?.defaultTeam && (
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.25)' }}>
+                      {event.defaultTeam}{event.defaultLevel ? ` · ${event.defaultLevel}` : ''}
+                    </span>
+                  )}
+                </div>
               </div>
+              <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
+
+            {/* Indicateur de progression (création uniquement) */}
+            {useSteps && (
+              <div style={{ display: 'flex', alignItems: 'center', padding: '0 20px 12px', gap: 0 }}>
+                {['Type', 'Équipe', 'Quand & Où'].map((label, i) => (
+                  <AnimatePresence key={i} mode="wait">
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => { if (i + 1 < step) { setStepDir(-1); setStep(i + 1); } }}
+                        style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                          background: 'none', border: 'none', padding: 0,
+                          cursor: i + 1 < step ? 'pointer' : 'default',
+                        }}
+                        aria-label={`Étape ${i + 1} : ${label}${i + 1 < step ? ' (revenir)' : ''}`}
+                      >
+                        <motion.div
+                          animate={{
+                            backgroundColor: i + 1 < step ? 'var(--sl-green)' : i + 1 === step ? '#6366f1' : 'var(--sl-surface)',
+                            borderColor: i + 1 <= step ? (i + 1 < step ? 'var(--sl-green)' : '#6366f1') : 'var(--sl-border)',
+                          }}
+                          transition={{ duration: 0.25 }}
+                          style={{
+                            width: 26, height: 26, borderRadius: '50%',
+                            border: '2px solid',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 10, fontWeight: 800,
+                            color: i + 1 <= step ? '#fff' : 'var(--sl-t3)',
+                          }}
+                        >
+                          {i + 1 < step
+                            ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            : i + 1}
+                        </motion.div>
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                          color: i + 1 === step ? '#6366f1' : i + 1 < step ? 'var(--sl-green)' : 'var(--sl-t3)',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {label}
+                        </span>
+                      </button>
+                      {i < 2 && (
+                        <motion.div
+                          animate={{ backgroundColor: i + 1 < step ? 'var(--sl-green)' : 'var(--sl-border)' }}
+                          transition={{ duration: 0.3 }}
+                          style={{ flex: 1, height: 2, margin: '0 6px 14px' }}
+                        />
+                      )}
+                    </>
+                  </AnimatePresence>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Form */}
           <form id="event-form" onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 8px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            {/* Type */}
-            <Field label="Type d'événement *">
-              <EventTypeRadio value={form.eventType} onChange={(v) => set('eventType', v)} />
-            </Field>
+            {/* ═══════════════════════════════════════════════
+                ÉTAPE 1 — TYPE D'ÉVÉNEMENT
+                (toujours visible en mode édition)
+            ═══════════════════════════════════════════════ */}
+            <div style={{ display: (!useSteps || step === 1) ? 'contents' : 'none' }}>
 
-            {useSmartMode && myClub ? (
-              <>
-                {/* SMART MODE */}
-                {/* Sport auto */}
+              {/* Type */}
+              <Field label="Type d'événement *">
+                <EventTypeRadio value={form.eventType} onChange={(v) => set('eventType', v)} />
+              </Field>
+
+              {/* Sport */}
+              {useSmartMode && myClub ? (
                 <Field label="Sport">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
                     <SportIcon sport={myClub.sport} size={16} color="var(--sl-green)" />
@@ -209,7 +288,24 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                     <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--sl-green)', fontWeight: 700 }}>AUTO</span>
                   </div>
                 </Field>
+              ) : (
+                <Field label="Sport *">
+                  <select value={form.sport} onChange={e => set('sport', e.target.value)} style={selectStyle}>
+                    {sportOptions.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </Field>
+              )}
 
+            </div>{/* /ÉTAPE 1 */}
+
+            {/* ═══════════════════════════════════════════════
+                ÉTAPE 2 — QUI JOUE ?
+            ═══════════════════════════════════════════════ */}
+            <div style={{ display: (!useSteps || step === 2) ? 'contents' : 'none' }}>
+
+            {useSmartMode && myClub ? (
+              <>
+                {/* SMART MODE */}
                 {form.eventType !== 'tournament' && (
                   <>
                     {/* Mon équipe */}
@@ -289,12 +385,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               </>
             ) : (
               <>
-                {/* FULL MODE */}
-                <Field label="Sport *">
-                  <select value={form.sport} onChange={e => set('sport', e.target.value)} style={selectStyle}>
-                    {sportOptions.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </Field>
+                {/* FULL MODE — Sport déjà sélectionné en étape 1 */}
                 {form.eventType !== 'tournament' && ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport) && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <Field label="Domicile">
@@ -338,7 +429,14 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               </>
             )}
 
-            {/* Common fields */}
+            </div>{/* /ÉTAPE 2 */}
+
+            {/* ═══════════════════════════════════════════════
+                ÉTAPE 3 — QUAND & OÙ ?
+            ═══════════════════════════════════════════════ */}
+            <div style={{ display: (!useSteps || step === 3) ? 'contents' : 'none' }}>
+
+            {/* Date + Heure */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <Field label="Date *">
                 <input type="date" required value={form.date} onChange={e => set('date', e.target.value)} style={{ ...inputStyle, colorScheme: 'dark' }} />
@@ -378,10 +476,10 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                       </Field>
                     </div>
                     {form.date && form.recurrenceUntil && (() => {
-                      const step = form.recurrenceFreq === 'biweekly' ? 14 : 7;
+                      const dayStep = form.recurrenceFreq === 'biweekly' ? 14 : 7;
                       const until = new Date(form.recurrenceUntil + 'T23:59:59');
                       let count = 0, cur = new Date(form.date);
-                      while (cur <= until && count < 52) { count++; cur = new Date(cur.getTime() + step * 86400000); }
+                      while (cur <= until && count < 52) { count++; cur = new Date(cur.getTime() + dayStep * 86400000); }
                       return count > 0 ? (
                         <p style={{ fontSize: 11, color: '#3b82f6', fontWeight: 600 }}>
                           {count} occurrence{count > 1 ? 's' : ''} seront créées
@@ -425,6 +523,8 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               <textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Informations complémentaires…" rows={3} style={{ ...inputStyle, resize: 'none' }} />
             </Field>
 
+            </div>{/* /ÉTAPE 3 */}
+
           </form>
 
           {/* Footer */}
@@ -435,12 +535,47 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               </div>
             )}
             <div style={{ display: 'flex', gap: 10 }}>
-              <button type="button" onClick={onClose} disabled={submitting} style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1 }}>
-                Annuler
-              </button>
-              <button type="submit" form="event-form" disabled={submitting} style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, boxShadow: submitting ? 'none' : '0 4px 12px rgba(34,217,106,0.3)' }}>
-                {submitting ? 'Enregistrement…' : isEdit ? 'Enregistrer' : 'Créer l\'événement'}
-              </button>
+              {/* Bouton gauche : Annuler (étape 1 ou édition) / Précédent (étapes 2-3) */}
+              {useSteps && step > 1 ? (
+                <button
+                  type="button"
+                  onClick={goPrev}
+                  style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  Précédent
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={submitting}
+                  style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+                >
+                  Annuler
+                </button>
+              )}
+
+              {/* Bouton droit : Suivant (étapes 1-2) / Créer ou Enregistrer (étape 3 ou édition) */}
+              {useSteps && step < 3 ? (
+                <button
+                  type="button"
+                  onClick={goNext}
+                  style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: 'none', backgroundColor: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 14px rgba(99,102,241,0.35)' }}
+                >
+                  Suivant
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  form="event-form"
+                  disabled={submitting}
+                  style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, boxShadow: submitting ? 'none' : '0 4px 12px rgba(34,217,106,0.3)' }}
+                >
+                  {submitting ? 'Enregistrement…' : isEdit ? 'Enregistrer' : 'Créer l\'événement'}
+                </button>
+              )}
             </div>
           </div>
 

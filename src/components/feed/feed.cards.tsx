@@ -3,6 +3,7 @@ import type {
   MatchFeedItem,
   CarpoolFeedItem,
   FlashFeedItem,
+  ResultFeedItem,
   SponsorFeedItem,
   FeaturedFeedItem,
   FlashBadge,
@@ -404,6 +405,106 @@ export function FlashCard({ item }: FlashCardProps) {
             <p className="text-[11px] text-[var(--sl-t3)] mt-2">— {item.author_name}</p>
           )}
         </div>
+      </div>
+    </article>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ResultCard — Carte résultat de match (score mis en avant)
+// ════════════════════════════════════════════════════════════════════════════
+
+interface ResultCardProps { item: ResultFeedItem }
+
+export function ResultCard({ item }: ResultCardProps) {
+  const { score_home: sh, score_away: sa } = item;
+
+  // Détermine l'issue du match du point de vue de l'équipe à domicile
+  type Outcome = 'win' | 'draw' | 'loss';
+  const outcome: Outcome = sh > sa ? 'win' : sh === sa ? 'draw' : 'loss';
+
+  const OUTCOME_CFG: Record<Outcome, { label: string; accent: string; bg: string; border: string }> = {
+    win:  { label: 'Victoire',  accent: '#22d96a', bg: 'rgba(34,217,106,0.07)',  border: 'rgba(34,217,106,0.25)'  },
+    draw: { label: 'Match nul', accent: '#94a3b8', bg: 'rgba(148,163,184,0.07)', border: 'rgba(148,163,184,0.25)' },
+    loss: { label: 'Défaite',   accent: '#f87171', bg: 'rgba(248,113,113,0.07)', border: 'rgba(248,113,113,0.25)' },
+  };
+
+  const cfg = OUTCOME_CFG[outcome];
+
+  return (
+    <article
+      className="rounded-2xl overflow-hidden shadow-sm"
+      style={{ border: `1px solid ${cfg.border}`, background: cfg.bg }}
+    >
+      {/* Barre d'accent couleur résultat */}
+      <div style={{ height: 3, background: `linear-gradient(to right, ${cfg.accent}, ${cfg.accent}40)` }} />
+
+      <div className="px-4 pt-3 pb-4">
+
+        {/* En-tête : club + sport + badge résultat */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            {item.club_logo_url ? (
+              <img src={item.club_logo_url} alt={item.club_name} className="w-6 h-6 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
+            ) : item.club_name ? (
+              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${cfg.accent}25` }}>
+                <span className="text-[9px] font-bold" style={{ color: cfg.accent }}>{item.club_name[0]}</span>
+              </div>
+            ) : null}
+            {item.club_name && (
+              <span className="text-[10px] font-bold text-[var(--sl-t3)] truncate max-w-[120px]">{item.club_name}</span>
+            )}
+          </div>
+          <span
+            className="text-[9px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md shrink-0"
+            style={{ backgroundColor: `${cfg.accent}18`, color: cfg.accent, border: `1px solid ${cfg.accent}35` }}
+          >
+            {cfg.label}
+          </span>
+        </div>
+
+        {/* Score — élément central, lisible d'un coup d'œil */}
+        <div className="flex items-center justify-between gap-2 py-1">
+
+          {/* Équipe domicile */}
+          <div className="flex-1 min-w-0 text-right">
+            <p className="text-[14px] font-black text-[var(--sl-t1)] leading-tight truncate">{item.home_team}</p>
+            <p className="text-[10px] text-[var(--sl-t3)] mt-0.5">Domicile</p>
+          </div>
+
+          {/* Score */}
+          <div className="flex items-center gap-2 shrink-0 px-3">
+            <span
+              className="text-[36px] font-black tabular-nums leading-none"
+              style={{ color: outcome === 'win' ? cfg.accent : outcome === 'loss' ? 'var(--sl-t2)' : 'var(--sl-t2)' }}
+            >
+              {sh}
+            </span>
+            <span className="text-[18px] font-black text-[var(--sl-t3)]">–</span>
+            <span
+              className="text-[36px] font-black tabular-nums leading-none"
+              style={{ color: outcome === 'loss' ? cfg.accent : outcome === 'win' ? 'var(--sl-t2)' : 'var(--sl-t2)' }}
+            >
+              {sa}
+            </span>
+          </div>
+
+          {/* Équipe extérieure */}
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-[14px] font-black text-[var(--sl-t1)] leading-tight truncate">{item.away_team}</p>
+            <p className="text-[10px] text-[var(--sl-t3)] mt-0.5">Extérieur</p>
+          </div>
+        </div>
+
+        {/* Métadonnées : sport + date */}
+        <div className="flex items-center gap-3 mt-3 pt-3" style={{ borderTop: '1px solid var(--sl-border)' }}>
+          <SportChip sport={item.sport} />
+          <span className="flex items-center gap-1 text-[10px] text-[var(--sl-t3)] ml-auto">
+            <CalIcon />
+            {fmtDate(item.date)}
+          </span>
+        </div>
+
       </div>
     </article>
   );

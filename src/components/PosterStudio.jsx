@@ -117,6 +117,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const [activeTab,     setActiveTab]     = useState('template');
   const [exportOpen,    setExportOpen]    = useState(false);
   const [quickBannerDismissed, setQuickBannerDismissed] = useState(false);
+  // Mode Simple : wizard 3 étapes (désactivé en quickMode / resultMode qui sont déjà des raccourcis)
+  const [simpleMode,    setSimpleMode]    = useState(!quickMode && !resultMode);
+  const [wizardStep,    setWizardStep]    = useState(1);
   const [watermarkVisible, setWatermarkVisible] = useState(true);
   const [editorOpen,    setEditorOpen]    = useState(false);
   const [previewFull,   setPreviewFull]   = useState(false);
@@ -206,6 +209,13 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     const t = setTimeout(() => setExportOpen(true), 900);
     return () => clearTimeout(t);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Mode Simple → ouvrir l'export quand l'utilisateur arrive à l'étape 3
+  useEffect(() => {
+    if (!simpleMode || wizardStep !== 3) return;
+    const t = setTimeout(() => setExportOpen(true), 250);
+    return () => clearTimeout(t);
+  }, [simpleMode, wizardStep]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const draftState = useMemo(() => {
     const { bgUrl: _, bgErr: __, ...rest } = poster;
@@ -713,6 +723,30 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Bascule Mode Simple ↔ Expert */}
+            <button
+              onClick={() => { setSimpleMode(v => !v); if (simpleMode) setActiveTab('template'); }}
+              title={simpleMode ? 'Passer en mode expert (tous les outils)' : 'Passer en mode simple (3 étapes)'}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '7px 10px', borderRadius: 10,
+                border: '1px solid var(--sl-border)',
+                backgroundColor: simpleMode ? 'var(--sl-surface)' : `${accentColor}15`,
+                cursor: 'pointer', fontSize: 11, fontWeight: 700,
+                color: simpleMode ? 'var(--sl-t2)' : accentColor, flexShrink: 0,
+              }}>
+              {simpleMode ? (
+                <>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  Expert
+                </>
+              ) : (
+                <>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+                  Simple
+                </>
+              )}
+            </button>
             <AnimatePresence>
               {restoredDraft && (
                 <motion.span key="restored" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -1004,8 +1038,43 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           )}
         </AnimatePresence>
 
-        {/* ── FORMAT + ACTIVE TEMPLATE ─────────────────────────────────────────── */}
-        <div style={{
+        {/* ── Indicateur de progression — mode Simple ──────────────────────────── */}
+        {simpleMode && (
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', padding: '8px 20px', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', gap: 0 }}>
+            {['Style', 'Infos', 'Exporter'].map((label, i) => (
+              <React.Fragment key={label}>
+                <button
+                  type="button"
+                  onClick={() => i + 1 < wizardStep && setWizardStep(i + 1)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: i + 1 < wizardStep ? 'pointer' : 'default' }}
+                  aria-label={`Étape ${i + 1} : ${label}${i + 1 < wizardStep ? ' (cliquer pour revenir)' : ''}`}
+                >
+                  <div style={{
+                    width: 26, height: 26, borderRadius: '50%',
+                    backgroundColor: i + 1 < wizardStep ? 'var(--sl-green)' : i + 1 === wizardStep ? accentColor : 'var(--sl-surface)',
+                    border: `2px solid ${i + 1 <= wizardStep ? (i + 1 < wizardStep ? 'var(--sl-green)' : accentColor) : 'var(--sl-border)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, fontWeight: 800, color: i + 1 <= wizardStep ? '#fff' : 'var(--sl-t3)',
+                    transition: 'all 0.2s',
+                  }}>
+                    {i + 1 < wizardStep
+                      ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      : i + 1}
+                  </div>
+                  <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: i + 1 === wizardStep ? accentColor : i + 1 < wizardStep ? 'var(--sl-green)' : 'var(--sl-t3)' }}>
+                    {label}
+                  </span>
+                </button>
+                {i < 2 && (
+                  <div style={{ flex: 1, height: 2, margin: '0 8px 16px', backgroundColor: i + 1 < wizardStep ? 'var(--sl-green)' : 'var(--sl-border)', transition: 'background-color 0.3s' }} />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+
+        {/* ── FORMAT + ACTIVE TEMPLATE — mode Expert uniquement ────────────────── */}
+        {!simpleMode && <div style={{
           flexShrink: 0, padding: '8px 14px', borderBottom: '1px solid var(--sl-border)',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
@@ -1050,7 +1119,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
 
           {/* Accent color dot */}
           <div style={{ width: 24, height: 24, borderRadius: 7, background: accentColor, flexShrink: 0, boxShadow: `0 0 8px ${accentColor}60` }} />
-        </div>
+        </div>}
 
         {/* ── CANVAS AREA ─────────────────────────────────────────────────────── */}
         <div
@@ -1144,8 +1213,105 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           }} />}
         </AnimatePresence>
 
-        {/* Tab panels */}
-        <AnimatePresence mode='wait'>
+        {/* ── Wizard panels — mode Simple ─────────────────────────────────────── */}
+        {simpleMode && (
+          <div style={{ flexShrink: 0, overflowY: 'auto', maxHeight: '44dvh', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+            <div style={{ padding: '16px 16px 8px' }}>
+
+              {/* ──── ÉTAPE 1 : Style ──── */}
+              {wizardStep === 1 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                  {/* Format */}
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)', margin: '0 0 8px' }}>Format</p>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {[{ id: 'post', label: 'Post 4:5' }, { id: 'story', label: 'Story 9:16' }].map(f => (
+                        <button key={f.id} onClick={() => set('format', f.id)} style={{ flex: 1, padding: '10px 0', borderRadius: 12, border: `2px solid ${format === f.id ? accentColor : 'var(--sl-border)'}`, backgroundColor: format === f.id ? `${accentColor}14` : 'var(--sl-surface)', color: format === f.id ? accentColor : 'var(--sl-t2)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Templates curatés */}
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)', margin: '0 0 8px' }}>Style de l'affiche</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                      {displayTemplates.slice(0, 8).map(tpl => (
+                        <button key={tpl.id} onClick={() => set('templateId', tpl.id)} style={{ padding: '8px 4px', borderRadius: 10, border: `2px solid ${templateId === tpl.id ? accentColor : 'var(--sl-border)'}`, backgroundColor: templateId === tpl.id ? `${accentColor}14` : 'var(--sl-surface)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                          <span style={{ fontSize: 16, lineHeight: 1 }}>{tpl.icon ?? '🎨'}</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: templateId === tpl.id ? accentColor : 'var(--sl-t2)', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{tpl.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Couleur principale */}
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)', margin: '0 0 8px' }}>Couleur principale</p>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                      {[...sportColors.slice(0, 2), ...COLOR_PRESETS.slice(0, 4).map(c => c.color)].map((col, i) => (
+                        <button key={i} onClick={() => set('accentColor', col)} aria-label={`Couleur ${col}`} style={{ width: 30, height: 30, borderRadius: '50%', border: `3px solid ${accentColor === col ? '#fff' : 'transparent'}`, backgroundColor: col, cursor: 'pointer', boxShadow: accentColor === col ? `0 0 0 2px ${col}` : `0 2px 6px ${col}60`, flexShrink: 0 }} />
+                      ))}
+                      {/* Color picker libre */}
+                      <label title="Couleur personnalisée" style={{ width: 30, height: 30, borderRadius: '50%', background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+                        <input type="color" value={accentColor} onChange={e => set('accentColor', e.target.value)} style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ──── ÉTAPE 2 : Infos ──── */}
+              {wizardStep === 2 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: '0 0 4px', lineHeight: 1.5 }}>
+                    Vérifiez ou modifiez les informations de l'affiche.
+                  </p>
+                  {!isTournamentEvent ? (
+                    <>
+                      <div>
+                        <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', margin: '0 0 6px' }}>Équipe domicile</p>
+                        <input type="text" value={homeName} onChange={e => set('homeName', e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', margin: '0 0 6px' }}>Équipe visiteur</p>
+                        <input type="text" value={awayName} onChange={e => set('awayName', e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
+                      </div>
+                    </>
+                  ) : (
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', margin: '0 0 6px' }}>Nom du tournoi</p>
+                      <input type="text" value={homeName} onChange={e => set('homeName', e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
+                    </div>
+                  )}
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', margin: '0 0 6px' }}>Compétition</p>
+                    <input type="text" value={championship} onChange={e => set('championship', e.target.value)} placeholder="Ex : Championnat Départemental…" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* ──── ÉTAPE 3 : Export ──── */}
+              {wizardStep === 3 && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '8px 0 4px' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: 'rgba(34,217,106,0.12)', border: '1px solid rgba(34,217,106,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--sl-t1)', textAlign: 'center', margin: 0 }}>Votre affiche est prête !</p>
+                  <p style={{ fontSize: 12, color: 'var(--sl-t3)', textAlign: 'center', margin: 0, lineHeight: 1.6 }}>
+                    Téléchargez-la ou partagez-la directement<br />sur WhatsApp ou Instagram.
+                  </p>
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+
+        {/* Tab panels — mode Expert uniquement */}
+        {!simpleMode && <AnimatePresence mode='wait'>
           {activeTab && (
             <motion.div key={activeTab}
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
@@ -1202,10 +1368,10 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </AnimatePresence>}
 
-        {/* ── BOTTOM NAV BAR ──────────────────────────────────────────────────── */}
-        <div style={{
+        {/* ── BOTTOM NAV BAR — mode Expert uniquement ─────────────────────────── */}
+        {!simpleMode && <div style={{
           flexShrink: 0, display: 'flex', alignItems: 'stretch',
           borderTop: '1px solid var(--sl-border)',
           backgroundColor: 'var(--sl-card)',
@@ -1253,7 +1419,54 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               </button>
             );
           })()}
-        </div>
+        </div>}
+
+        {/* ── Wizard footer — mode Simple ──────────────────────────────────────── */}
+        {simpleMode && (
+          <div style={{
+            flexShrink: 0, display: 'flex', gap: 10, padding: '12px 16px',
+            paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
+            borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)',
+          }}>
+            {/* Bouton gauche : Annuler (étape 1) ou Précédent (étapes 2-3) */}
+            {wizardStep > 1 ? (
+              <button
+                onClick={() => setWizardStep(s => s - 1)}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '1px solid var(--sl-border)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Précédent
+              </button>
+            ) : (
+              <button
+                onClick={onClose}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '1px solid var(--sl-border)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+              >
+                Annuler
+              </button>
+            )}
+
+            {/* Bouton droit : Suivant (étapes 1-2) ou Télécharger (étape 3) */}
+            {wizardStep < 3 ? (
+              <button
+                onClick={() => setWizardStep(s => s + 1)}
+                style={{ flex: 2, padding: '12px 0', borderRadius: 14, border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: `0 4px 16px ${accentColor}50` }}
+              >
+                Suivant
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            ) : (
+              <button
+                onClick={() => setExportOpen(true)}
+                style={{ flex: 2, padding: '12px 0', borderRadius: 14, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, boxShadow: '0 4px 14px rgba(34,217,106,0.4)' }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                Télécharger / Partager
+              </button>
+            )}
+          </div>
+        )}
+
         </div>
 
       </motion.div>

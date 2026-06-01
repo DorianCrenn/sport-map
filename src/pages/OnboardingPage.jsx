@@ -1,9 +1,321 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { supabase } from '../lib/supabase.js';
 import SportIcon from '../components/SportIcon.jsx';
 import CityAutocomplete from '../components/CityAutocomplete.jsx';
+
+// ── Emoji par sport (pour les cartes clubs) ───────────────────────────────────
+const SPORT_EMOJIS = {
+  Football: '⚽', Rugby: '🏉', Basketball: '🏀', Handball: '🤾',
+  Volleyball: '🏐', Tennis: '🎾', Trail: '🏃', Natation: '🏊',
+  Cyclisme: '🚴', Athlétisme: '🏃', Judo: '🥋', Badminton: '🏸',
+  Hockey: '🏑', Baseball: '⚾', Golf: '⛳',
+};
+
+// ── Étape 3 : Suggestions de clubs ───────────────────────────────────────────
+
+function ClubSuggestionsStep({ sports, selectedCity: initialCity, onFinish, onBack }) {
+  const { followClub } = useAuth();
+  const [clubs, setClubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [followed, setFollowed] = useState(new Set());
+  const [busy, setBusy] = useState(null); // clubId en cours de follow
+  // Ville résolue : depuis l'étape 2 ou depuis le GPS
+  const [resolvedCity, setResolvedCity] = useState(initialCity?.nom ?? null);
+  const [detectingGps, setDetectingGps] = useState(false);
+
+  // Détection GPS → reverse geocoding via geo.api.gouv.fr
+  async function detectGps() {
+    if (!navigator.geolocation) return;
+    setDetectingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const res = await fetch(
+            `https://geo.api.gouv.fr/communes?lat=${coords.latitude}&lon=${coords.longitude}&fields=nom&limit=1`
+          );
+          const data = await res.json();
+          if (data[0]?.nom) setResolvedCity(data[0].nom);
+        } catch (_) { /* silently ignore */ }
+        setDetectingGps(false);
+      },
+      () => setDetectingGps(false)
+    );
+  }
+
+  useEffect(() => {
+    let query = supabase
+      .from('clubs')
+      .select('id, name, sport, city, logo_url');
+
+    if (sports.length > 0) {
+      query = query.in('sport', sports);
+    }
+
+    query
+      .order('created_at', { ascending: false })
+      .limit(12) // on en prend plus pour le tri côté client
+      .then(({ data }) => {
+        let all = data ?? [];
+
+        // Trier : clubs de la ville résolue en premier
+        if (resolvedCity) {
+          const cityLow = resolvedCity.toLowerCase();
+          all = [...all].sort((a, b) => {
+            const aLocal = a.city?.toLowerCase().includes(cityLow) ? 0 : 1;
+            const bLocal = b.city?.toLowerCase().includes(cityLow) ? 0 : 1;
+            return aLocal - bLocal;
+          });
+        }
+
+        setClubs(all.slice(0, 8));
+        setLoading(false);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedCity]); // re-trier si la ville change (après GPS)
+
+  async function handleFollow(clubId) {
+    if (busy === clubId) return;
+    setBusy(clubId);
+    try {
+      if (followed.has(clubId)) {
+        setFollowed(prev => { const n = new Set(prev); n.delete(clubId); return n; });
+      } else {
+        await followClub(clubId, { teams: 'all', notif: { match: true, news: true } });
+        setFollowed(prev => new Set(prev).add(clubId));
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <>
+      {/* Bouton retour */}
+      <button
+        onClick={onBack}
+        style={{
+          alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6,
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, marginBottom: 24,
+        }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Retour
+      </button>
+
+      {/* Header */}
+      <div className="mb-6 text-center">
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 18 }}
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+          style={{ backgroundColor: 'rgba(34,197,94,0.2)', border: '1px solid rgba(34,197,94,0.3)' }}
+        >
+          <span className="text-3xl">🏟️</span>
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+          className="text-2xl font-bold text-white font-poppins mb-2"
+        >
+          Trouvez votre club
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+          className="text-sm font-medium"
+          style={{ color: '#64748b' }}
+        >
+          Suivez un club pour voir ses matchs et annonces.
+        </motion.p>
+      </div>
+
+      {/* Bouton GPS — si pas de ville résolue depuis l'étape 2 */}
+      {!resolvedCity && !loading && (
+        <motion.button
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          onClick={detectGps}
+          disabled={detectingGps}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            padding: '10px 16px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.12)',
+            backgroundColor: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)',
+            fontSize: 13, fontWeight: 600, cursor: detectingGps ? 'wait' : 'pointer',
+            marginBottom: 16, opacity: detectingGps ? 0.6 : 1,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          {detectingGps ? 'Localisation en cours…' : 'Détecter ma position'}
+        </motion.button>
+      )}
+
+      {/* Ville résolue — badge affiché */}
+      {resolvedCity && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '5px 12px', borderRadius: 999,
+            backgroundColor: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)',
+          }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#22C55E' }}>{resolvedCity}</span>
+          </div>
+          <button
+            onClick={() => setResolvedCity(null)}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: 11 }}
+          >
+            Effacer
+          </button>
+        </div>
+      )}
+
+      {/* Liste des clubs — séparée en "Près de vous" / "Autres" */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {loading ? (
+          <div className="space-y-3">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="h-16 rounded-2xl animate-pulse"
+                style={{ backgroundColor: 'rgba(255,255,255,0.06)' }} />
+            ))}
+          </div>
+        ) : clubs.length === 0 ? (
+          <div className="text-center py-8">
+            <span className="text-4xl mb-3 block">🔍</span>
+            <p style={{ color: '#64748b', fontSize: 13, lineHeight: 1.6 }}>
+              Aucun club disponible pour ces sports.<br />
+              Vous pourrez en rejoindre depuis l'onglet Clubs.
+            </p>
+          </div>
+        ) : (() => {
+          // Séparer clubs proches / autres
+          const cityLow = resolvedCity?.toLowerCase();
+          const nearby = cityLow
+            ? clubs.filter(c => c.city?.toLowerCase().includes(cityLow))
+            : [];
+          const others = cityLow
+            ? clubs.filter(c => !c.city?.toLowerCase().includes(cityLow))
+            : clubs;
+
+          let globalIdx = 0;
+
+          function renderClub(club) {
+            const i = globalIdx++;
+            const isFollowed = followed.has(club.id);
+            const isBusy = busy === club.id;
+            const emoji = SPORT_EMOJIS[club.sport] ?? '🏅';
+            return (
+              <motion.div
+                key={club.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.04 + i * 0.05 }}
+                className="flex items-center gap-3 p-3 rounded-2xl border transition-colors"
+                style={{
+                  backgroundColor: isFollowed ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.05)',
+                  borderColor: isFollowed ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.09)',
+                }}
+              >
+                {club.logo_url ? (
+                  <img src={club.logo_url} alt={club.name}
+                    className="w-11 h-11 rounded-xl object-contain flex-shrink-0"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.08)', padding: 4 }} />
+                ) : (
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.08)', fontSize: 20 }}>
+                    {emoji}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-white truncate leading-tight">{club.name}</p>
+                  <p className="text-xs truncate" style={{ color: '#64748b' }}>
+                    {emoji} {club.sport}{club.city ? ` · ${club.city}` : ''}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleFollow(club.id)}
+                  disabled={isBusy}
+                  aria-label={isFollowed ? `Ne plus suivre ${club.name}` : `Suivre ${club.name}`}
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all"
+                  style={{
+                    backgroundColor: isFollowed ? '#22C55E' : 'rgba(255,255,255,0.1)',
+                    color: isFollowed ? 'white' : 'rgba(255,255,255,0.7)',
+                    opacity: isBusy ? 0.6 : 1,
+                  }}
+                >
+                  {isFollowed ? (
+                    <>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Suivi
+                    </>
+                  ) : (isBusy ? '…' : '+ Suivre')}
+                </button>
+              </motion.div>
+            );
+          }
+
+          return (
+            <div className="space-y-2.5">
+              {/* Section "Près de chez vous" */}
+              {nearby.length > 0 && (
+                <>
+                  <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#22C55E', marginBottom: 8 }}>
+                    📍 Près de {resolvedCity}
+                  </p>
+                  {nearby.map(renderClub)}
+                </>
+              )}
+
+              {/* Section "Autres clubs" */}
+              {others.length > 0 && (
+                <>
+                  {nearby.length > 0 && (
+                    <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginTop: 16, marginBottom: 8 }}>
+                      Autres clubs
+                    </p>
+                  )}
+                  {others.map(renderClub)}
+                </>
+              )}
+            </div>
+          );
+        })()}
+      </div>
+
+      {/* CTA */}
+      <div className="mt-6 space-y-3">
+        <motion.button
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+          onClick={onFinish}
+          className="w-full py-4 rounded-2xl font-bold font-poppins text-sm text-white transition-all"
+          style={{
+            backgroundColor: '#22C55E',
+            boxShadow: followed.size > 0 ? '0 4px 20px rgba(34,197,94,0.35)' : 'none',
+          }}
+        >
+          {followed.size > 0
+            ? `Commencer sur SportLink →`
+            : 'Passer cette étape'}
+        </motion.button>
+        {followed.size === 0 && (
+          <p className="text-center text-xs" style={{ color: '#334155' }}>
+            Vous pourrez suivre des clubs depuis l'annuaire
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ── Page principale ───────────────────────────────────────────────────────────
 
 export default function OnboardingPage({ onDone }) {
   const { currentUser, updateProfile } = useAuth();
@@ -46,19 +358,20 @@ export default function OnboardingPage({ onDone }) {
       <div className="absolute top-0 right-0 w-72 h-72 rounded-full pointer-events-none"
         style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
 
-      {/* Step dots */}
+      {/* Step dots — 3 étapes */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 6, paddingTop: 20, flexShrink: 0 }}>
-        {[1, 2].map(s => (
+        {[1, 2, 3].map(s => (
           <div key={s} style={{
             width: step === s ? 18 : 6, height: 6, borderRadius: 3,
-            backgroundColor: step === s ? '#22C55E' : 'rgba(255,255,255,0.2)',
+            backgroundColor: step === s ? '#22C55E' : s < step ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.2)',
             transition: 'all 0.25s',
           }} />
         ))}
       </div>
 
       <AnimatePresence mode="wait">
-        {step === 1 ? (
+        {/* ── Étape 1 : Sports ── */}
+        {step === 1 && (
           <motion.div
             key="step1"
             initial={{ opacity: 0, x: -20 }}
@@ -160,7 +473,10 @@ export default function OnboardingPage({ onDone }) {
               )}
             </div>
           </motion.div>
-        ) : (
+        )}
+
+        {/* ── Étape 2 : Ville ── */}
+        {step === 2 && (
           <motion.div
             key="step2"
             initial={{ opacity: 0, x: 20 }}
@@ -248,25 +564,46 @@ export default function OnboardingPage({ onDone }) {
               </motion.div>
             )}
 
-            {/* CTA */}
+            {/* CTA → étape 3 (clubs) */}
             <div className="mt-auto space-y-3">
               <motion.button
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-                onClick={handleFinish}
+                onClick={() => setStep(3)}
                 className="w-full py-4 rounded-2xl font-bold font-poppins text-sm text-white transition-all"
                 style={{
                   backgroundColor: '#22C55E',
                   boxShadow: selectedCity ? '0 4px 20px rgba(34,197,94,0.35)' : 'none',
                 }}
               >
-                {selectedCity ? `Commencer sur SportLink` : 'Passer cette étape'}
+                Suivant →
               </motion.button>
-              {!selectedCity && (
-                <p className="text-center text-xs" style={{ color: '#334155' }}>
-                  La carte se centrera sur votre position GPS
-                </p>
-              )}
+              <button
+                onClick={() => setStep(3)}
+                style={{ background: 'none', border: 'none', width: '100%', textAlign: 'center', cursor: 'pointer', color: '#334155', fontSize: 12 }}
+              >
+                Passer cette étape
+              </button>
             </div>
+          </motion.div>
+        )}
+
+        {/* ── Étape 3 : Clubs suggérés ── */}
+        {step === 3 && (
+          <motion.div
+            key="step3"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col flex-1 px-5 pt-8 pb-8 min-h-0"
+            style={{ overflow: 'hidden' }}
+          >
+            <ClubSuggestionsStep
+              sports={[...selected]}
+              selectedCity={selectedCity}
+              onFinish={handleFinish}
+              onBack={() => setStep(2)}
+            />
           </motion.div>
         )}
       </AnimatePresence>

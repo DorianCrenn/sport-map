@@ -61,8 +61,9 @@ function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs } = useAuth();
   const [activeTab, _setActiveTab] = useState(() => {
     const stored = sessionStorage.getItem('sl-tab') || 'home';
-    // 'news' was a dead tab — redirect to 'home' which now shows the feed
-    return stored === 'news' ? 'home' : stored;
+    // Tabs that don't survive a reload — redirect to 'home'
+    if (stored === 'news' || stored === 'mon-club') return 'home';
+    return stored;
   });
   const setActiveTab = useCallback((tab) => {
     sessionStorage.setItem('sl-tab', tab);
@@ -245,6 +246,21 @@ function AppInner() {
       return;
     }
     if (tab === 'admin' && !isAdmin) return;
+    if (tab === 'mon-club') {
+      // Trouver le club de l'admin et l'ouvrir directement
+      const myClub = userClubs.find(c =>
+        c.userId === currentUser?.id ||
+        String(c.id) === String(currentUser?.clubId)
+      ) ?? userClubs[0] ?? null;
+      if (myClub) {
+        setSelectedSearchClub(myClub);
+        _setActiveTab('mon-club'); // état visuel actif, sans persister en sessionStorage
+      } else {
+        // Pas encore de club → amener sur l'annuaire pour en créer un
+        setActiveTab('clubs');
+      }
+      return;
+    }
     setActiveTab(tab);
   }
 
@@ -395,7 +411,11 @@ function AppInner() {
             key={selectedSearchClub.id}
             club={selectedSearchClub}
             allEvents={allEvents}
-            onBack={() => setSelectedSearchClub(null)}
+            onBack={() => {
+              setSelectedSearchClub(null);
+              // Si on vient du tab "Mon Club", retourner sur Accueil
+              if (activeTab === 'mon-club') setActiveTab('home');
+            }}
             onAddEvent={addEvent}
             canAddEvent={isAdmin || isClubAdmin}
             onArchiveSeason={archiveSeason}

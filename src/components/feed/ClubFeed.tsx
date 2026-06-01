@@ -16,7 +16,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import type { FeedItem, FeedFilter, SponsorFeedItem, FeaturedFeedItem } from './feed.types';
-import { MatchCard, CarpoolCard, FlashCard, SponsorCard, FeaturedGalleryCard } from './feed.cards';
+import { MatchCard, CarpoolCard, FlashCard, ResultCard, SponsorCard, FeaturedGalleryCard } from './feed.cards';
 import { MOCK_FEED_ITEMS, MOCK_SPONSORS, MOCK_FEATURED } from './feed.mock';
 import NextTrainingCard from '../NextTrainingCard.jsx';
 
@@ -85,10 +85,10 @@ function injectSponsors(
 // ════════════════════════════════════════════════════════════════════════════
 
 const FILTERS: { key: FeedFilter; label: string; emoji: string }[] = [
-  { key: 'all',     label: 'Tout',    emoji: '🗂️' },
-  { key: 'match',   label: 'Matchs',  emoji: '⚽' },
-  { key: 'carpool', label: 'Covoit',  emoji: '🚗' },
-  { key: 'flash',   label: 'Infos',   emoji: '📢' },
+  { key: 'all',     label: 'Tout',     emoji: '🗂️' },
+  { key: 'match',   label: 'Matchs',   emoji: '⚽' },
+  { key: 'flash',   label: 'Annonces', emoji: '📢' },
+  { key: 'carpool', label: 'Covoiturage', emoji: '🚗' },
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -119,10 +119,10 @@ function SkeletonCard({ tall = false }: { tall?: boolean }) {
 // ════════════════════════════════════════════════════════════════════════════
 
 const EMPTY_MSGS: Record<FeedFilter, { emoji: string; title: string; sub: string }> = {
-  all:     { emoji: '📭', title: "Aucune actualité pour l'instant",  sub: 'Les matchs, covoiturages et infos du club apparaîtront ici.' },
-  match:   { emoji: '⚽', title: 'Aucun match programmé',            sub: 'Les prochaines rencontres seront affichées dès leur ajout.' },
+  all:     { emoji: '📭', title: "Aucune actualité pour l'instant",  sub: 'Les matchs, covoiturages et annonces du club apparaîtront ici.' },
+  match:   { emoji: '⚽', title: 'Aucun match ni résultat',          sub: 'Les prochaines rencontres et leurs scores apparaîtront ici.' },
   carpool: { emoji: '🚗', title: 'Pas de covoiturage proposé',       sub: 'Aucun équipier ne propose de trajet pour l\'instant.' },
-  flash:   { emoji: '📢', title: 'Aucune info du club',              sub: 'Les annonces et résultats du staff apparaîtront ici.' },
+  flash:   { emoji: '📢', title: 'Aucune annonce du club',           sub: 'Les messages du staff apparaîtront ici dès leur envoi.' },
 };
 
 function EmptyState({ filter }: { filter: FeedFilter }) {
@@ -199,6 +199,12 @@ export default function ClubFeed({
   const feedItems = useMemo<FeedItem[]>(() => {
     const base = filter === 'all'
       ? sourceItems.filter(i => i.type !== 'sponsor' && i.type !== 'featured')
+      // "Matchs" = matchs à venir + résultats (tout ce qui concerne une rencontre)
+      : filter === 'match'
+      ? sourceItems.filter(i => i.type === 'match' || i.type === 'result')
+      // "Annonces" = uniquement les annonces club (pas les résultats)
+      : filter === 'flash'
+      ? sourceItems.filter(i => i.type === 'flash')
       : sourceItems.filter(i => i.type === filter);
 
     const sponsors = sponsorItems ?? mockSponsors;
@@ -295,7 +301,7 @@ export default function ClubFeed({
         {!loading && rotatedFeatured.length > 0 && (
           <div className="border-b border-[var(--sl-border)]">
             <p className="px-4 pt-3 pb-1.5 text-[9px] font-black tracking-[0.18em] uppercase text-[var(--sl-t3)]">
-              ⭐ À la Une
+              ⭐ En vedette
             </p>
             <div
               className="flex gap-2.5 px-4 pb-3 overflow-x-auto"
@@ -335,6 +341,9 @@ export default function ClubFeed({
               )}
               {item.type === 'flash' && (
                 <FlashCard item={item} />
+              )}
+              {item.type === 'result' && (
+                <ResultCard item={item} />
               )}
               {item.type === 'sponsor' && (
                 <SponsorCard item={item} />

@@ -46,8 +46,8 @@ export interface CarpoolFeedItem extends BaseFeedItem {
   event_id: string;
 }
 
-// ── Carte Flash Info / Résultat ───────────────────────────────────────────────
-// Source : table club_announcements
+// ── Carte Flash Info ──────────────────────────────────────────────────────────
+// Source : table club_announcements (type urgent/info/event)
 export interface FlashFeedItem extends BaseFeedItem {
   type: 'flash';
   announcement_id: string;
@@ -55,6 +55,21 @@ export interface FlashFeedItem extends BaseFeedItem {
   message: string;
   badge: FlashBadge;
   author_name?: string;
+}
+
+// ── Carte Résultat de match ───────────────────────────────────────────────────
+// Source : table events (score non-null)
+export interface ResultFeedItem extends BaseFeedItem {
+  type: 'result';
+  event_id: string;
+  home_team: string;
+  away_team: string;
+  score_home: number;
+  score_away: number;
+  sport: string;
+  date: string;           // ISO 8601
+  club_name?: string;
+  club_logo_url?: string;
 }
 
 // ── Carte Sponsor Local ───────────────────────────────────────────────────────
@@ -143,5 +158,6 @@ export type FeedItem =
   | MatchFeedItem
   | CarpoolFeedItem
   | FlashFeedItem
+  | ResultFeedItem
   | SponsorFeedItem
   | FeaturedFeedItem;

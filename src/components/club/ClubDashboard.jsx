@@ -152,7 +152,7 @@ function AnnouncementsSection({ club }) {
       <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}>
-            📢 Flash Info
+            📢 Annonces envoyées
           </div>
           <div style={{ fontSize: 12, color: 'var(--sl-t2)', marginTop: 2 }}>
             {loading ? 'Chargement…' : published.length === 0 ? 'Aucune annonce publiée' : `${published.length} publiée${published.length > 1 ? 's' : ''}`}

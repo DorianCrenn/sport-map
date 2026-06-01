@@ -231,6 +231,15 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
     });
   }
 
+  function handleCreateClubEvent() {
+    setTeamEventModal({
+      _isNew: true,
+      defaultSport: club.sport ?? undefined,
+      defaultCity:  club.city  ?? undefined,
+      defaultHomeOrAway: 'home',
+    });
+  }
+
   function handleTeamEventSave(formData) {
     if (onAddEvent) onAddEvent({ ...formData, clubId: club.id });
     setTeamEventModal(undefined);
@@ -292,6 +301,22 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
               }
               <span className="hidden sm:inline">{linkCopied ? 'Copié !' : 'Partager'}</span>
             </button>
+
+            {/* Bouton Nouvel événement — visible pour les admins pouvant ajouter des events */}
+            {canAddEvent && onAddEvent && (
+              <button
+                onClick={handleCreateClubEvent}
+                aria-label="Créer un nouvel événement pour ce club"
+                title="Créer un événement"
+                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer"
+                style={{ backgroundColor: 'rgba(34,217,106,0.2)', color: '#22d96a' }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span className="hidden sm:inline">Événement</span>
+              </button>
+            )}
 
             {canEdit && onUpdateClub && (
               <button
@@ -641,41 +666,82 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         </div>
       )}
 
-      {/* ── Internal nav (owner only) ── */}
+      {/* ── Barre de navigation administration (propriétaire uniquement) ── */}
       {isOwner && (
         <div style={{
-          flexShrink: 0, display: 'flex', gap: 6,
-          padding: '8px 16px',
+          flexShrink: 0,
           borderBottom: '1px solid var(--sl-border)',
-          backgroundColor: 'var(--sl-bg)',
+          backgroundColor: 'var(--sl-surface)',
         }}>
-          {[
-            { id: 'infos',   label: '📰 Infos'   },
-            { id: 'stats',   label: '📊 Stats'   },
-            { id: 'gestion', label: '⚙️ Gestion' },
-            { id: 'effectif', label: '📋 Effectif' },
-            { id: 'sponsors', label: '🤝 Partenaires' },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setClubInternalTab(tab.id);
-                if (tab.id === 'stats')    setShowDashboard(true);
-                if (tab.id === 'gestion')  setShowManagersPanel(true);
-                if (tab.id === 'effectif') setShowRosterPanel(true);
-                if (tab.id === 'sponsors') setShowSponsorsPanel(true);
-              }}
+          {/* Indicateur "Administration" */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '6px 16px 4px',
+          }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true" style={{ color: '#a78bfa', flexShrink: 0 }}>
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#a78bfa' }}>
+              Administration
+            </span>
+          </div>
+
+          {/* Onglets avec overflow scroll + fade hint */}
+          <div style={{ position: 'relative' }}>
+            <div
+              role="tablist"
+              aria-label="Outils d'administration du club"
               style={{
-                padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                cursor: 'pointer', transition: 'all 0.12s',
-                border: clubInternalTab === tab.id ? 'none' : '1px solid var(--sl-border)',
-                backgroundColor: clubInternalTab === tab.id ? '#6366f1' : 'var(--sl-pill-bg)',
-                color: clubInternalTab === tab.id ? '#fff' : 'var(--sl-pill-text)',
+                display: 'flex', gap: 6,
+                padding: '0 16px 8px',
+                overflowX: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
               }}
             >
-              {tab.label}
-            </button>
-          ))}
+              {[
+                { id: 'infos',    label: '📰 Ma page',        ariaLabel: 'Page publique du club'          },
+                { id: 'stats',    label: '📊 Statistiques',   ariaLabel: 'Statistiques et tableau de bord' },
+                { id: 'gestion',  label: '⚙️ Gestion',        ariaLabel: 'Gestion des administrateurs'    },
+                { id: 'effectif', label: '👥 Membres',         ariaLabel: 'Effectif et membres du club'    },
+                { id: 'sponsors', label: '🤝 Partenaires',    ariaLabel: 'Sponsors et partenaires'        },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={clubInternalTab === tab.id}
+                  aria-label={tab.ariaLabel}
+                  title={tab.ariaLabel}
+                  onClick={() => {
+                    setClubInternalTab(tab.id);
+                    if (tab.id === 'stats')    setShowDashboard(true);
+                    if (tab.id === 'gestion')  setShowManagersPanel(true);
+                    if (tab.id === 'effectif') setShowRosterPanel(true);
+                    if (tab.id === 'sponsors') setShowSponsorsPanel(true);
+                  }}
+                  style={{
+                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                    cursor: 'pointer', transition: 'all 0.12s',
+                    whiteSpace: 'nowrap', flexShrink: 0,
+                    border: clubInternalTab === tab.id ? 'none' : '1px solid var(--sl-border)',
+                    backgroundColor: clubInternalTab === tab.id ? '#6366f1' : 'var(--sl-pill-bg)',
+                    color: clubInternalTab === tab.id ? '#fff' : 'var(--sl-pill-text)',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            {/* Fade overflow hint — indique qu'il y a du contenu à droite */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute', right: 0, top: 0, bottom: 0,
+                width: 32, pointerEvents: 'none',
+                background: 'linear-gradient(to right, transparent, var(--sl-surface))',
+              }}
+            />
+          </div>
         </div>
       )}
 
@@ -920,7 +986,8 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           exit={{ scale: 0.8, opacity: 0 }}
           whileTap={{ scale: 0.93 }}
           onClick={() => setShowAnnouncement(true)}
-          aria-label="Envoyer une annonce aux abonnés"
+          aria-label="Envoyer une annonce aux abonnés du club"
+          title="Envoyer une annonce aux abonnés"
           style={{
             position: 'absolute', bottom: 'calc(78px + env(safe-area-inset-bottom, 0px))', right: 16, zIndex: 30,
             display: 'flex', alignItems: 'center', gap: 8,
@@ -948,7 +1015,8 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           exit={{ scale: 0.8, opacity: 0 }}
           whileTap={{ scale: 0.93 }}
           onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
-          aria-label={isEditing ? 'Terminer la modification' : 'Modifier la page du club'}
+          aria-label={isEditing ? 'Terminer la modification de la page' : 'Modifier les blocs de la page du club'}
+          title={isEditing ? 'Terminer la modification' : 'Modifier la page du club'}
           style={{
             position: 'absolute', bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))', right: 16, zIndex: 30,
             display: 'flex', alignItems: 'center', gap: 8,

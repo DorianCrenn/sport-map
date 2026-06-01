@@ -460,7 +460,7 @@ function MatchesSkeleton() {
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
-function MatchesEmpty({ subTab, statusFilter }) {
+function MatchesEmpty({ subTab, statusFilter, onNavigateClubs, hasFollowedClubs }) {
   const msgs = {
     all:          { emoji: '📅', title: 'Aucun match ce jour', sub: "Naviguez vers un autre jour ou ajoutez des sports favoris dans votre profil." },
     favorites:    { emoji: '⭐', title: 'Aucun match pour vos clubs', sub: 'Suivez plus de clubs pour voir leurs rencontres ici.' },
@@ -475,11 +475,33 @@ function MatchesEmpty({ subTab, statusFilter }) {
 
   const { emoji, title, sub } = statusFilter ? (statusMsgs[statusFilter] ?? msgs.all) : (msgs[subTab] ?? msgs.all);
 
+  // Onglet Favoris sans clubs suivis → CTA dédié
+  const showClubCta = subTab === 'favorites' && !hasFollowedClubs && !statusFilter && onNavigateClubs;
+
   return (
     <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
       <span className="text-5xl mb-4 select-none">{emoji}</span>
       <p className="text-[13px] font-semibold text-[var(--sl-t1)] mb-1.5">{title}</p>
       {sub && <p className="text-[12px] text-[var(--sl-t3)] max-w-[220px] leading-relaxed">{sub}</p>}
+      {showClubCta && (
+        <button
+          onClick={onNavigateClubs}
+          style={{
+            marginTop: 20,
+            padding: '12px 24px',
+            borderRadius: 14,
+            border: 'none',
+            background: '#6366f1',
+            color: '#fff',
+            fontSize: 14,
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 4px 18px rgba(99,102,241,0.35)',
+          }}
+        >
+          Découvrir les clubs
+        </button>
+      )}
     </div>
   );
 }
@@ -488,7 +510,7 @@ function MatchesEmpty({ subTab, statusFilter }) {
 
 const BASE_SUB_TABS = [
   { key: 'all',          label: 'Tous' },
-  { key: 'favorites',    label: 'Favoris' },
+  { key: 'favorites',    label: 'Mes clubs' },
   { key: 'competitions', label: 'Compétitions' },
 ];
 
@@ -498,10 +520,11 @@ const STATUS_FILTERS = [
   { key: 'upcoming', label: 'À venir' },
 ];
 
-export default function MatchesTab({ followedClubIds = [] }) {
+export default function MatchesTab({ followedClubIds = [], onNavigateClubs }) {
   const { currentUser } = useAuth();
   const { managedClubs } = useManagedClubs();
   const favoriteSports = currentUser?.favoriteSports ?? [];
+  const hasFollowedClubs = followedClubIds.length > 0;
 
   const managedClubIds = useMemo(
     () => managedClubs.map(c => String(c.id)),
@@ -515,7 +538,7 @@ export default function MatchesTab({ followedClubIds = [] }) {
     if (!isManager) return BASE_SUB_TABS;
     return [
       { key: 'all',          label: 'Tous' },
-      { key: 'favorites',    label: 'Favoris' },
+      { key: 'favorites',    label: 'Mes clubs' },
       { key: 'my-club',      label: 'Mon Club' },
       { key: 'competitions', label: 'Compétitions' },
     ];
@@ -768,7 +791,7 @@ export default function MatchesTab({ followedClubIds = [] }) {
           loading ? (
             <MatchesSkeleton />
           ) : myClubMatches.length === 0 ? (
-            <MatchesEmpty subTab="my-club" statusFilter={statusFilter} />
+            <MatchesEmpty subTab="my-club" statusFilter={statusFilter} onNavigateClubs={onNavigateClubs} hasFollowedClubs={hasFollowedClubs} />
           ) : (
             <>
               <div className="px-4 pt-3 pb-1">
@@ -791,7 +814,7 @@ export default function MatchesTab({ followedClubIds = [] }) {
           loading ? (
             <MatchesSkeleton />
           ) : groups.length === 0 ? (
-            <MatchesEmpty subTab={subTab} statusFilter={statusFilter} />
+            <MatchesEmpty subTab={subTab} statusFilter={statusFilter} onNavigateClubs={onNavigateClubs} hasFollowedClubs={hasFollowedClubs} />
           ) : (
             groups.flatMap(({ sport, matches }, idx) => {
               const nodes = [<SportGroup key={sport} sport={sport} matches={matches} />];

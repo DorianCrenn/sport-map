@@ -14,6 +14,7 @@ import type {
   FeedItem,
   MatchFeedItem,
   FlashFeedItem,
+  ResultFeedItem,
   CarpoolFeedItem,
   FlashBadge,
 } from '../components/feed/feed.types';
@@ -98,21 +99,36 @@ function mapRide(
   };
 }
 
-function mapResult(event: Record<string, unknown>): FlashFeedItem {
+function mapResult(event: Record<string, unknown>): ResultFeedItem {
   const sc = event.score as Record<string, number> | string | null;
-  const scoreStr = sc && typeof sc === 'object' && 'home' in sc
-    ? `${sc.home}–${sc.away}`
-    : typeof sc === 'string' ? sc : '?';
+  let scoreHome = 0, scoreAway = 0;
+  if (sc && typeof sc === 'object' && 'home' in sc) {
+    scoreHome = Number(sc.home) || 0;
+    scoreAway = Number(sc.away) || 0;
+  } else if (typeof sc === 'string') {
+    const m = sc.match(/(\d+)\D+(\d+)/);
+    if (m) { scoreHome = parseInt(m[1]); scoreAway = parseInt(m[2]); }
+  }
+
+  const title = (event.title as string) ?? '';
+  const parts = title.split(/\svs\.?\s/i);
+  const homeTeam = parts[0]?.trim() || title || 'Domicile';
+  const awayTeam = parts[1]?.trim() || 'Extérieur';
 
   return {
-    id:              `res-${event.id}`,
-    type:            'flash',
-    club_id:         String(event.club_id),
-    created_at:      event.date as string,
-    announcement_id: event.id as string,
-    title:           event.title as string,
-    message:         `Score final : ${scoreStr}`,
-    badge:           'success',
+    id:            `res-${event.id}`,
+    type:          'result',
+    club_id:       String(event.club_id),
+    created_at:    event.date as string,
+    event_id:      event.id as string,
+    home_team:     homeTeam,
+    away_team:     awayTeam,
+    score_home:    scoreHome,
+    score_away:    scoreAway,
+    sport:         (event.sport as string) ?? 'Football',
+    date:          event.date as string,
+    club_name:     (event.clubs as any)?.name     ?? undefined,
+    club_logo_url: (event.clubs as any)?.logo_url ?? undefined,
   };
 }
 
