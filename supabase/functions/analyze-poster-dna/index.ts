@@ -8,7 +8,31 @@
  *
  * Secrets required:
  *   ANTHROPIC_API_KEY  — from https://console.anthropic.com
+ *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
  */
+
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkClubAIPlan } from '../_shared/checkClubAIPlan.ts';
+
+async function checkRateLimit(
+  client: SupabaseClient,
+  userId: string,
+  endpoint: string,
+  maxRequests: number,
+  windowSeconds: number,
+): Promise<boolean> {
+  const key       = `${endpoint}:${userId}`;
+  const windowAgo = new Date(Date.now() - windowSeconds * 1000).toISOString();
+  const { count, error } = await client
+    .from('api_rate_limits')
+    .select('id', { count: 'exact', head: true })
+    .eq('key', key)
+    .gte('created_at', windowAgo);
+  if (error) return false;
+  if ((count ?? 0) >= maxRequests) return true;
+  await client.from('api_rate_limits').insert({ key, endpoint });
+  return false;
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,7 +70,50 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const { imageBase64 } = await req.json();
+    // ── Auth check — requis (coût Claude Vision ~$0.003/image) ───────────────
+    const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '');
+    if (!token) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+    const anonClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    );
+    const { data: { user }, error: authErr } = await anonClient.auth.getUser(token);
+    if (authErr || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // ── Rate limit : 5 analyses DNA / heure / utilisateur ────────────────────
+    const limited = await checkRateLimit(serviceClient, user.id, 'analyze-poster-dna', 5, 3600);
+    if (limited) {
+      return new Response(
+        JSON.stringify({ error: 'Trop d\'analyses. Réessayez dans une heure. (max 5/h)' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    const { imageBase64, clubId } = await req.json();
+
+    // ── Vérification plan club (POSTER_AI_BRANDING = Elite requis) ───────────
+    const planCheck = await checkClubAIPlan(serviceClient, clubId, user.id);
+    if (!planCheck.allowed) {
+      return new Response(
+        JSON.stringify({ error: planCheck.reason, plan: planCheck.plan }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY');
 
     if (!ANTHROPIC_KEY) {

@@ -16,10 +16,13 @@ import { useClubPlayers } from '../../hooks/useClubPlayers.js';
 export function Field({ label, children, hint }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--sl-t3)', marginBottom: 6 }}>
-        {label}
+      {/* label wraps children pour l'association implicite label↔input (WCAG 1.3.1 / 4.1.2) */}
+      <label style={{ display: 'block' }}>
+        <span style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--sl-t3)', marginBottom: 6 }}>
+          {label}
+        </span>
+        {children}
       </label>
-      {children}
       {hint && <p style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 4 }}>{hint}</p>}
     </div>
   );

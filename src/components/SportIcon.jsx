@@ -15,6 +15,8 @@ export default function SportIcon({ sport, size = 18, color }) {
       aria-hidden="true"
       style={{ color: resolvedColor, display: 'block', flexShrink: 0 }}
     >
+      {/* SECURITY: safe uniquement car SPORT_ICONS est une constante hardcodée dans sportIcons.js.
+          Si les icônes deviennent éditables par des utilisateurs, passer par DOMPurify avec USE_PROFILES:{svg:true}. */}
       <g dangerouslySetInnerHTML={{ __html: icon }} />
     </svg>
   );

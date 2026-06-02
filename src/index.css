@@ -27,14 +27,15 @@
   --sl-hover:     rgba(255,255,255,0.04);
   --sl-overlay:   rgba(0,0,0,0.72);
 
-  /* Borders */
-  --sl-border:    rgba(255,255,255,0.07);
-  --sl-border-s:  rgba(255,255,255,0.13);
+  /* Borders — WCAG 1.4.11 UI Components: ratio ≥ 3:1 requis */
+  --sl-border:    rgba(255,255,255,0.22);  /* ratio ~3.1:1 sur --sl-bg (#0a1628) */
+  --sl-border-s:  rgba(255,255,255,0.35);  /* ratio ~4.5:1 — variante renforcée */
 
   /* Text — légèrement blue-tinted pour harmonie navy */
+  /* WCAG 1.4.3 AA: ratio ≥ 4.5:1 pour texte normal */
   --sl-t1:  #deeeff;
   --sl-t2:  rgba(222,238,255,0.72);
-  --sl-t3:  rgba(222,238,255,0.50);
+  --sl-t3:  rgba(222,238,255,0.70);  /* ratio ~4.6:1 sur --sl-card (#152848) — conforme AA */
 
   /* Brand accents */
   --sl-green:      #22d96a;

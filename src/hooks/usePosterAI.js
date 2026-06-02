@@ -11,7 +11,7 @@ import { generateAIBackground, generateCustomBackground, generateCustomElement }
  * @param {boolean}  opts.aiGenerateBlocked — true when monthly quota exceeded
  * @param {function} [opts.onTrack]         — called after each successful generation (analytics)
  */
-export function usePosterAI({ aiGenerateBlocked, onTrack } = {}) {
+export function usePosterAI({ aiGenerateBlocked, onTrack, clubId } = {}) {
   const [aiBgLoading,   setAiBgLoading]   = useState(false);
   const [aiBgResult,    setAiBgResult]    = useState(null);
   const [customPrompt,  setCustomPrompt]  = useState('');
@@ -28,7 +28,7 @@ export function usePosterAI({ aiGenerateBlocked, onTrack } = {}) {
     setAiBgResult(null);
     const res = customPrompt.trim()
       ? await generateCustomBackground(customPrompt.trim())
-      : await generateAIBackground(dnaForBg, eventSport, supabase);
+      : await generateAIBackground(dnaForBg, eventSport, supabase, clubId);
     setAiBgResult(res);
     setAiBgLoading(false);
     if (res.imageUrl) {

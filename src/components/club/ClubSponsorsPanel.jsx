@@ -241,7 +241,7 @@ export default function ClubSponsorsPanel({ clubId, onClose }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 8, flexShrink: 0, overflow: 'hidden', backgroundColor: meta.color + '22', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {s.logo_url ? (
-                    <img src={s.logo_url} alt={s.sponsor_name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={e => { e.target.style.display = 'none'; }} />
+                    <img src={s.logo_url} alt={s.sponsor_name} loading="lazy" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={e => { e.target.style.display = 'none'; }} />
                   ) : (
                     <span style={{ fontSize: 14, fontWeight: 700, color: meta.color }}>{(s.sponsor_name ?? '?')[0].toUpperCase()}</span>
                   )}
@@ -292,7 +292,7 @@ export default function ClubSponsorsPanel({ clubId, onClose }) {
               {s.logo_white_url && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid var(--sl-border)' }}>
                   <div style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <img src={s.logo_white_url} alt="" style={{ maxWidth: 20, maxHeight: 20, objectFit: 'contain' }} onError={e => { e.target.style.display='none'; }} />
+                    <img src={s.logo_white_url} alt="" loading="lazy" style={{ maxWidth: 20, maxHeight: 20, objectFit: 'contain' }} onError={e => { e.target.style.display='none'; }} />
                   </div>
                   <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Logo blanc configuré ✓</span>
                 </div>

@@ -17,6 +17,28 @@ Avant tout commit/PR, vérifier chaque point :
 - [ ] Les opérations sensibles (delete, update) vérifient `userId` avant d'agir
 - [ ] Les RLS policies couvrent les nouvelles tables/opérations
 
+### Edge Functions (Supabase)
+
+- [ ] Toute Edge Function lit le Bearer token et valide via `anonClient.auth.getUser(token)`
+- [ ] Toute Edge Function appelle `checkRateLimit()` depuis `_shared/rateLimit.ts`
+- [ ] Aucune clé API dans le code — uniquement `Deno.env.get('...')` / `import.meta.env.VITE_...`
+- [ ] Les quotas IA (aiGeneratesPerMonth) sont vérifiés **côté serveur** avant l'appel API payant
+- [ ] `dangerouslySetInnerHTML` : la source est une **constante hardcodée** (jamais données utilisateur)
+
+### Accessibilité WCAG 2.2 AA
+
+- [ ] Boutons sans texte visible → `aria-label` présent (standard : le nom visible ou la description de l'action)
+- [ ] Nouveaux tokens CSS de couleur → contraste vérifié sur https://webaim.org/resources/contrastchecker/
+  - Texte normal : ratio ≥ 4.5:1 (AA) / ≥ 7:1 (AAA)
+  - Texte large (18px+ ou 14px+ bold) : ratio ≥ 3:1 (AA)
+  - Composants UI (borders, inputs) : ratio ≥ 3:1 (AA, critère 1.4.11)
+- [ ] Touch targets ≥ 44px en hauteur ET largeur (WCAG 2.5.5)
+  - Règle : `padding: '11px 12px'` sur un bouton 12px de fonte ≈ 44px de hauteur totale
+  - Pour les boutons icône : `minWidth: 44, minHeight: 44` dans le style
+- [ ] Images dynamiques (src venant de Supabase) → `loading="lazy"` présent
+- [ ] Modals → `role="dialog"`, `aria-modal="true"`, `aria-labelledby` pointant sur le titre
+- [ ] Images décoratives → `alt=""` ou SVG avec `aria-hidden="true"`
+
 ### Data & Supabase
 
 - [ ] Pas de `DELETE ALL + INSERT ALL` — utiliser UPSERT + DELETE ciblé
@@ -53,6 +75,16 @@ Avant tout commit/PR, vérifier chaque point :
 - [ ] Migration idempotente (`CREATE INDEX IF NOT EXISTS`, DO blocks pour contraintes)
 - [ ] `NOTIFY pgrst, 'reload schema';` en fin de migration
 - [ ] `ALTER TABLE ADD CONSTRAINT IF NOT EXISTS` → remplacé par DO block (non supporté par PG)
+- [ ] Nouvelle table → `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` + au moins 1 policy SELECT
+- [ ] Colonnes filtrées fréquemment (club_id, user_id, event_id) → `CREATE INDEX IF NOT EXISTS` présent
+- [ ] Migrations irréversibles → impact vérifié avant `supabase db push` en prod
+
+### Tests
+
+- [ ] Nouveaux hooks → fichier `src/__tests__/hooks/use*.test.js` avec cas positifs ET négatifs
+- [ ] Nouveaux composants → fichier `src/__tests__/components/*.test.jsx`
+- [ ] `npm run test:coverage` → couverture branches ≥ 60% (seuil Vitest configuré)
+- [ ] Pas de `vi.mock` qui désactive les vérifications de sécurité dans les tests (ex: mock useClubFeatures → toujours true)
 
 ---
 
@@ -137,3 +169,29 @@ vi.mock('../lib/supabase.js', () => ({
 3. **Est-ce que le cleanup est fait ?** (removeChannel, cancelled flag)
 4. **Est-ce que ça marche sur mobile 375px ?**
 5. **Est-ce que l'opération est idempotente ?** (peut-on la rejouer sans effet de bord ?)
+6. **Est-ce que la feature gating est vérifiée côté serveur** et pas uniquement via `can(featureKey)` frontend ?
+7. **Est-ce que les nouveaux boutons interactifs ont un aria-label** si le texte n'est pas visible ?
+
+---
+
+## Audit sécurité Edge Functions — points de contrôle
+
+Pour chaque nouvelle Edge Function :
+
+```typescript
+// ── 1. Auth obligatoire ─────────────────────────────────
+const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '');
+if (!token) return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401, ... });
+const { data: { user }, error } = await anonClient.auth.getUser(token);
+if (error || !user) return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401, ... });
+
+// ── 2. Rate limit obligatoire pour appels coûteux ───────
+const limited = await checkRateLimit(serviceClient, user.id, 'function-name', maxReqs, windowSec);
+if (limited) return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), { status: 429, ... });
+
+// ── 3. Validation input ────────────────────────────────
+const { field } = await req.json();
+if (!field || typeof field !== 'string') return new Response(JSON.stringify({ error: 'Invalid input' }), { status: 400, ... });
+```
+
+Pattern de référence : `supabase/functions/generate-variant-bg/index.ts`

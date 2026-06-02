@@ -1,16 +1,23 @@
+// REFACTORING PLAN (Batch 5 — voir plan d'audit 2026-06-02)
+// Ce composant doit être découpé en :
+//   1. src/hooks/usePosterState.js   — reducer + auto-save + draft restore
+//   2. src/hooks/usePosterAssets.js  — savedAiBgs, savedAiEls, overlays, player layers
+//   3. src/hooks/usePosterExport.js  — download, share, instagram, exportAll
+//   4. src/components/poster/PosterWizard.jsx — rendu mode Simple (étapes 1-3)
+// Faire la migration en session dédiée avec test visuel sur chaque extraction.
+// Les squelettes des hooks existent déjà dans src/hooks/.
+
 import { useRef, useState, useEffect, useMemo, useReducer, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toBlob } from 'html-to-image';
 import { useSports } from '../hooks/useSports.js';
 import { Z } from '../constants/zIndex.js';
-import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS, BG_PRESETS } from './poster/PosterRenderer.jsx';
+import PosterRenderer, { POSTER_TEMPLATES, BASE_DIMS } from './poster/PosterRenderer.jsx';
 import ExportPanel       from './poster/panels/ExportPanel.jsx';
 import TemplatePanelTab  from './poster/panels/TemplatePanelTab.jsx';
 import TeamsPanelTab     from './poster/panels/TeamsPanelTab.jsx';
 import StylePanelTab     from './poster/panels/StylePanelTab.jsx';
 import PlayersPanelTab   from './poster/panels/PlayersPanelTab.jsx';
 import BackgroundPanelTab from './poster/panels/BackgroundPanelTab.jsx';
-import { ELEMENT_LIBRARY } from './poster/posterElements.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
 import AiElementEditor from './poster/AiElementEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -27,18 +34,19 @@ import { useClubFeatures } from '../hooks/useClubFeatures.js';
 import { useClubAIUsage } from '../hooks/useClubAIUsage.js';
 import { usePosterAI } from '../hooks/usePosterAI.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
-import { generateVariants, generateAIBackground, generateCustomBackground, generateCustomElement, generateMatchPoster, BG_PROMPT_SUGGESTIONS, ELEMENT_PROMPT_SUGGESTIONS, POSTER_STYLE_SUGGESTIONS } from '../lib/posterVariants.js';
+import { generateMatchPoster } from '../lib/posterVariants.js';
 import { getBgCache, normalizeSport } from '../lib/sportBgCache.js';
 import { supabase } from '../lib/supabase.js';
-import { sanitizeFilename } from '../lib/sanitize.js';
 import {
-  SLabel, TextInput, ColorSwatch, MiniToggle,
+  MiniToggle,
   IcoExporter,
 } from './poster/PosterAtoms.jsx';
 import {
-  COLOR_PRESETS, SPORT_PALETTE, TINT_PALETTE, LAYER_BLOCKS, PANEL_TABS,
-  loadSavedBgs, persistSavedBgs, loadSavedEls, persistSavedEls,
+  SPORT_PALETTE, PANEL_TABS,
 } from './poster/posterConstants.js';
+import { usePosterAssets } from '../hooks/usePosterAssets.js';
+import { usePosterExport } from '../hooks/usePosterExport.js';
+import { WizardStepBar, WizardContent, WizardFooter } from './poster/PosterWizard.jsx';
 
 // ── Reducer ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +65,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   // Feature flags explicites — remplacent le booléen hasPremium générique
   const hasPremium       = features.can('POSTER_WATERMARK_REMOVE');  // Starter+
   const canUseAI         = features.can('POSTER_AI_BACKGROUND');      // Elite
-  const canUseSponsors   = features.can('POSTER_SPONSORS_LOGOS');     // Pro+
+  // eslint-disable-next-line no-unused-vars
+  const canUseSponsors   = features.can('POSTER_SPONSORS_LOGOS');     // Pro+ (réservé pour un futur check côté serveur)
 
   const posterRef           = useRef(null);
   const exportRef           = useRef(null);
@@ -81,8 +90,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const clubMedia  = useClubMedia(club?.id);
   const clubDNA    = useClubDNA(club?.id);
   const { usage: aiUsage, optimisticIncrement: aiIncrement } = useClubAIUsage(club?.id);
-  // Quota IA depuis le plan (plus depuis monthly_limit hardcodé en DB)
-  const { aiGeneratesPerMonth, aiImportsPerMonth } = features.quotas;
+  // Quota IA depuis le plan — aiImportsPerMonth passé aux panels via ps
+  const { aiImportsPerMonth } = features.quotas;
   const aiGenerateBlocked = !canUseAI || features.overQuota('aiGeneratesPerMonth', aiUsage.generate_count);
   const aiImportBlocked   = !canUseAI || features.overQuota('aiImportsPerMonth',   aiUsage.import_count);
 
@@ -137,9 +146,6 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const [watermarkVisible, setWatermarkVisible] = useState(true);
   const [editorOpen,    setEditorOpen]    = useState(false);
   const [previewFull,   setPreviewFull]   = useState(false);
-  const [downloading,   setDownloading]   = useState(false);
-  const [sharing,       setSharing]       = useState(false);
-  const [sharingIG,     setSharingIG]     = useState(false);
   const [lastSavedAt,   setLastSavedAt]   = useState(null);
   const [restoredDraft, setRestoredDraft] = useState(false);
   const [libName,       setLibName]       = useState('');
@@ -160,16 +166,20 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     aiBgLoading, aiBgResult,
     customPrompt, setCustomPrompt, generateBg,
     aiElLoading, elementPrompt, setElementPrompt, generateElement,
-  } = usePosterAI({ aiGenerateBlocked, onTrack: trackAIGeneration });
+  } = usePosterAI({ aiGenerateBlocked, onTrack: trackAIGeneration, clubId: club?.id });
   const [aiPosterLoading,  setAiPosterLoading]  = useState(false);
   const [aiPosterHint,     setAiPosterHint]     = useState('');
   const [aiPosterVariants, setAiPosterVariants] = useState([]);
-  const [exportingAll,    setExportingAll]    = useState(false);
-  const [linkCopied,      setLinkCopied]      = useState(false);
-  const [platformPreview, setPlatformPreview] = useState(null);
   const [aiElEditorUid, setAiElEditorUid] = useState(null);
-  const [savedAiBgs,    setSavedAiBgs]    = useState(() => loadSavedBgs(club?.id));
-  const [savedAiEls,    setSavedAiEls]    = useState(() => loadSavedEls(club?.id));
+
+  // ── Hooks extraits ─────────────────────────────────────────────────────────
+  const {
+    savedAiBgs, savedAiEls,
+    addSavedBg, removeSavedBg, addSavedEl, removeSavedEl,
+    addAiOverlay, removeAiOverlay, updateAiOverlay,
+    addOverlayElement, removeOverlayElement, updateOverlayElement,
+    addPlayerLayer, removePlayerLayer, updatePlayerLayer,
+  } = usePosterAssets({ clubId: club?.id, accentColor, dispatch, overlayElements, aiOverlayElements, playerLayers });
   const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
   const playerFileRef = useRef(null);
@@ -229,10 +239,11 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     if (!simpleMode || wizardStep !== 3) return;
     const t = setTimeout(() => setExportOpen(true), 250);
     return () => clearTimeout(t);
-  }, [simpleMode, wizardStep]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [simpleMode, wizardStep]);  
 
   const draftState = useMemo(() => {
-    const { bgUrl: _, bgErr: __, ...rest } = poster;
+    // eslint-disable-next-line no-unused-vars
+    const { bgUrl, bgErr, ...rest } = poster;
     return rest;
   }, [poster]);
 
@@ -244,40 +255,6 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     }, 2000);
     return () => clearTimeout(t);
   }, [draftState]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── AI background favorites helpers ──
-  function addSavedBg(bgEntry) {
-    const newBgs = [{ ...bgEntry, id: `bg-${Date.now()}`, savedAt: new Date().toISOString() }, ...savedAiBgs].slice(0, 12);
-    setSavedAiBgs(newBgs);
-    persistSavedBgs(club?.id, newBgs);
-  }
-  function removeSavedBg(bgId) {
-    const newBgs = savedAiBgs.filter(b => b.id !== bgId);
-    setSavedAiBgs(newBgs);
-    persistSavedBgs(club?.id, newBgs);
-  }
-
-  function addSavedEl(elEntry) {
-    const newEls = [{ ...elEntry, id: `el-${Date.now()}`, savedAt: new Date().toISOString() }, ...savedAiEls].slice(0, 12);
-    setSavedAiEls(newEls);
-    persistSavedEls(club?.id, newEls);
-  }
-  function removeSavedEl(elId) {
-    const newEls = savedAiEls.filter(e => e.id !== elId);
-    setSavedAiEls(newEls);
-    persistSavedEls(club?.id, newEls);
-  }
-
-  // ── AI overlay element helpers ──
-  function addAiOverlay(el) {
-    dispatch({ type: 'PATCH', payload: { aiOverlayElements: [...(aiOverlayElements || []), { uid: `ai-${Date.now()}`, above: false, opacity: 0.85, blendMode: 'screen', ...el }] } });
-  }
-  function removeAiOverlay(uid) {
-    dispatch({ type: 'PATCH', payload: { aiOverlayElements: (aiOverlayElements || []).filter(e => e.uid !== uid) } });
-  }
-  function updateAiOverlay(uid, patch) {
-    dispatch({ type: 'PATCH', payload: { aiOverlayElements: (aiOverlayElements || []).map(e => e.uid === uid ? { ...e, ...patch } : e) } });
-  }
 
   // ── Sport & club color palettes ──
   const sportColors = useMemo(() => {
@@ -318,42 +295,6 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   function resetLayers() { set('transforms', {}); }
   const hasLayerChanges = Object.values(transforms).some(t => t.visible === false || (t.opacity !== undefined && t.opacity < 1));
 
-  // ── Overlay element helpers ──
-  function addOverlayElement(type) {
-    const meta = ELEMENT_LIBRARY.find(e => e.id === type);
-    const uid = `el-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
-    const newEl = { uid, type, color: meta?.defaultColor ?? accentColor, opacity: 0.70, above: false };
-    set('overlayElements', [...(overlayElements || []), newEl]);
-  }
-  function removeOverlayElement(uid) {
-    set('overlayElements', (overlayElements || []).filter(e => e.uid !== uid));
-  }
-  function updateOverlayElement(uid, patch) {
-    set('overlayElements', (overlayElements || []).map(e => e.uid === uid ? { ...e, ...patch } : e));
-  }
-
-  // ── Player layer helpers ──
-  function addPlayerLayer(asset) {
-    const uid = `pl-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
-    const layer = {
-      uid,
-      assetId: asset.id,
-      assetUrl: asset.processedDataUrl,
-      thumbUrl: asset.thumbDataUrl,
-      name: asset.name,
-      x: 50, yBottom: 0, scale: 1.0,
-      opacity: 1.0, shadow: true, glow: false, flip: false,
-      zAbove: true,
-    };
-    set('playerLayers', [...(playerLayers || []), layer]);
-  }
-  function removePlayerLayer(uid) {
-    set('playerLayers', (playerLayers || []).filter(p => p.uid !== uid));
-  }
-  function updatePlayerLayer(uid, patch) {
-    set('playerLayers', (playerLayers || []).map(p => p.uid === uid ? { ...p, ...patch } : p));
-  }
-
   // ── Player upload handler ──
   async function handlePlayerFile(file) {
     if (!file) return;
@@ -363,7 +304,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
       setPlayerName('');
       addPlayerLayer(asset);
       trackAIImport();
-    } catch {}
+    } catch { /* upload échoué — silencieux */ }
   }
 
   // ── Drag & drop handlers ──
@@ -457,120 +398,13 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     supabase.rpc('increment_ai_import_count', { p_club_id: String(club.id) }).then(() => {});
   }
 
-  async function getBlob() {
-    const node = exportWrapperRef.current;
-    if (!node) return null;
-    let blob = await toBlob(node, { pixelRatio: 3, cacheBust: true });
-    // Safari iOS peut retourner un blob vide — retry après délai
-    if (!blob || blob.size < 10_000) {
-      await new Promise(r => setTimeout(r, 350));
-      blob = await toBlob(node, { pixelRatio: 3, cacheBust: true });
-    }
-    return blob;
-  }
-
-  async function handleDownload() {
-    setDownloading(true);
-    try {
-      const blob = await getBlob();
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `affiche-${sanitizeFilename(event?.title ?? 'match')}-${format}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-      trackExport('download');
-    } finally { setTimeout(() => setDownloading(false), 900); }
-  }
-
-  async function handleShareWhatsApp() {
-    setSharing(true);
-    try {
-      const blob = await getBlob();
-      if (!blob) return;
-      const d = new Date(event?.date);
-      const eventUrl = event?.id ? `${window.location.origin}${window.location.pathname}#event/${event.id}` : window.location.origin;
-      const text = `🏟️ *${event?.title || 'Match'}*\n📅 ${d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}\n⏰ ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}\n📍 ${event?.city ?? ''}\n\n${eventUrl}`;
-      const file = new File([blob], 'affiche-sportlink.png', { type: 'image/png' });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], text, title: event?.title });
-      } else {
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-      }
-      trackExport('whatsapp');
-    } catch {} finally { setSharing(false); }
-  }
-
-  async function handleShareIG() {
-    setSharingIG(true);
-    try {
-      const blob = await getBlob();
-      if (!blob) return;
-      const file = new File([blob], 'affiche-sportlink.png', { type: 'image/png' });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: event?.title ?? 'SportLink' });
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `affiche-sportlink-${format}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-      trackExport('instagram');
-    } catch {} finally { setSharingIG(false); }
-  }
-
-  function handleShareFacebook() {
-    const eventUrl = event?.id
-      ? `${window.location.origin}${window.location.pathname}#event/${event.id}`
-      : window.location.origin;
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(eventUrl)}`, '_blank', 'noopener,noreferrer,width=600,height=400');
-    trackExport('facebook');
-  }
-
-  async function handleDownloadAll() {
-    setExportingAll(true);
-    try {
-      const blob1 = await getBlob();
-      if (blob1) {
-        const url1 = URL.createObjectURL(blob1);
-        const a1 = document.createElement('a');
-        a1.href = url1;
-        a1.download = `affiche-${sanitizeFilename(event?.title ?? 'match')}-${format}.png`;
-        a1.click();
-        URL.revokeObjectURL(url1);
-      }
-      await new Promise(r => setTimeout(r, 400));
-      const altNode = altExportWrapperRef.current;
-      if (altNode) {
-        let blob2 = await toBlob(altNode, { pixelRatio: 3, cacheBust: true });
-        if (!blob2 || blob2.size < 10_000) {
-          await new Promise(r => setTimeout(r, 350));
-          blob2 = await toBlob(altNode, { pixelRatio: 3, cacheBust: true });
-        }
-        if (blob2) {
-          const url2 = URL.createObjectURL(blob2);
-          const a2 = document.createElement('a');
-          a2.href = url2;
-          a2.download = `affiche-${sanitizeFilename(event?.title ?? 'match')}-${altFormat}.png`;
-          a2.click();
-          URL.revokeObjectURL(url2);
-        }
-      }
-      trackExport('download_all');
-    } finally { setTimeout(() => setExportingAll(false), 900); }
-  }
-
-  function handleCopyLink() {
-    const url = event?.id
-      ? `${window.location.origin}${window.location.pathname}#event/${event.id}`
-      : window.location.origin;
-    navigator.clipboard.writeText(url).catch(() => {});
-    setLinkCopied(true);
-    setTimeout(() => setLinkCopied(false), 2000);
-  }
+  // ── Export/partage (extrait dans usePosterExport) ─────────────────────────
+  const {
+    downloading, sharing, sharingIG, exportingAll, linkCopied,
+    platformPreview, setPlatformPreview,
+    handleDownload, handleShareWhatsApp, handleShareIG,
+    handleShareFacebook, handleDownloadAll, handleCopyLink,
+  } = usePosterExport({ exportWrapperRef, altExportWrapperRef, format, altFormat, event, trackExport });
 
   function readFile(e, setter) {
     const f = e.target.files?.[0];
@@ -944,20 +778,31 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                 borderRadius: 20, boxShadow: '0 12px 40px rgba(0,0,0,0.3)', padding: 8,
               }}
             >
-              {/* Watermark toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px 4px' }}>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: hasPremium ? 'var(--sl-t1)' : 'var(--sl-t3)' }}>Masquer le watermark</div>
-                  {!hasPremium && <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Plan Club Pro requis</div>}
-                </div>
-                {hasPremium ? (
+              {/* Watermark toggle — Premium uniquement, sinon CTA upgrade cliquable */}
+              {hasPremium ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px 4px' }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)' }}>Masquer le watermark</div>
                   <MiniToggle value={!watermarkVisible} onChange={(v) => setWatermarkVisible(!v)} accent={accentColor} />
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowUpgradeModal(true)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', cursor: 'pointer', textAlign: 'left', gap: 10 }}
+                >
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                      Masquer le watermark
+                    </div>
+                    <div style={{ fontSize: 10, color: accentColor, fontWeight: 600, marginTop: 2 }}>Plan Starter — Passer au plan →</div>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                    <polyline points="9 18 15 12 9 6"/>
                   </svg>
-                )}
-              </div>
+                </button>
+              )}
               <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
 
               {/* PNG */}
@@ -1078,7 +923,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             clubMedia, clubDNA, pageSponsors, hasPremium, aiUsage,
             aiBgLoading, aiBgResult, customPrompt, setCustomPrompt, generateBg,
             aiElLoading, elementPrompt, setElementPrompt, generateElement,
-            aiGenerateBlocked, aiImportBlocked, isTournamentEvent,
+            aiGenerateBlocked, aiImportBlocked, aiImportsPerMonth, isTournamentEvent,
             favTplHook, libHook, defTplHook,
             posterData, activeBandLogos, posterEffects, sportColors, clubColors,
             displayTemplates, hasLayerChanges, activeTpl,
@@ -1117,39 +962,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         })()}
 
         {/* ── Indicateur de progression — mode Simple ──────────────────────────── */}
-        {simpleMode && (
-          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', padding: '8px 20px', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', gap: 0 }}>
-            {['Style', 'Infos', 'Exporter'].map((label, i) => (
-              <React.Fragment key={label}>
-                <button
-                  type="button"
-                  onClick={() => i + 1 < wizardStep && setWizardStep(i + 1)}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: i + 1 < wizardStep ? 'pointer' : 'default' }}
-                  aria-label={`Étape ${i + 1} : ${label}${i + 1 < wizardStep ? ' (cliquer pour revenir)' : ''}`}
-                >
-                  <div style={{
-                    width: 26, height: 26, borderRadius: '50%',
-                    backgroundColor: i + 1 < wizardStep ? 'var(--sl-green)' : i + 1 === wizardStep ? accentColor : 'var(--sl-surface)',
-                    border: `2px solid ${i + 1 <= wizardStep ? (i + 1 < wizardStep ? 'var(--sl-green)' : accentColor) : 'var(--sl-border)'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 10, fontWeight: 800, color: i + 1 <= wizardStep ? '#fff' : 'var(--sl-t3)',
-                    transition: 'all 0.2s',
-                  }}>
-                    {i + 1 < wizardStep
-                      ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      : i + 1}
-                  </div>
-                  <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: i + 1 === wizardStep ? accentColor : i + 1 < wizardStep ? 'var(--sl-green)' : 'var(--sl-t3)' }}>
-                    {label}
-                  </span>
-                </button>
-                {i < 2 && (
-                  <div style={{ flex: 1, height: 2, margin: '0 8px 16px', backgroundColor: i + 1 < wizardStep ? 'var(--sl-green)' : 'var(--sl-border)', transition: 'background-color 0.3s' }} />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        )}
+        {simpleMode && <WizardStepBar ps={{ wizardStep, setWizardStep, accentColor }} />}
 
         {/* ── FORMAT + ACTIVE TEMPLATE — mode Expert uniquement ────────────────── */}
         {!simpleMode && <div style={{
@@ -1292,101 +1105,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         </AnimatePresence>
 
         {/* ── Wizard panels — mode Simple ─────────────────────────────────────── */}
-        {simpleMode && (
-          <div style={{ flexShrink: 0, overflowY: 'auto', maxHeight: '44dvh', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
-            <div style={{ padding: '16px 16px 8px' }}>
-
-              {/* ──── ÉTAPE 1 : Style ──── */}
-              {wizardStep === 1 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-                  {/* Format */}
-                  <div>
-                    <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)', margin: '0 0 8px' }}>Format</p>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      {[{ id: 'post', label: 'Post 4:5' }, { id: 'story', label: 'Story 9:16' }].map(f => (
-                        <button key={f.id} onClick={() => set('format', f.id)} style={{ flex: 1, padding: '10px 0', borderRadius: 12, border: `2px solid ${format === f.id ? accentColor : 'var(--sl-border)'}`, backgroundColor: format === f.id ? `${accentColor}14` : 'var(--sl-surface)', color: format === f.id ? accentColor : 'var(--sl-t2)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                          {f.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Templates curatés */}
-                  <div>
-                    <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)', margin: '0 0 8px' }}>Style de l'affiche</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                      {displayTemplates.slice(0, 8).map(tpl => (
-                        <button key={tpl.id} onClick={() => set('templateId', tpl.id)} style={{ padding: '8px 4px', borderRadius: 10, border: `2px solid ${templateId === tpl.id ? accentColor : 'var(--sl-border)'}`, backgroundColor: templateId === tpl.id ? `${accentColor}14` : 'var(--sl-surface)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                          <span style={{ fontSize: 16, lineHeight: 1 }}>{tpl.icon ?? '🎨'}</span>
-                          <span style={{ fontSize: 9, fontWeight: 700, color: templateId === tpl.id ? accentColor : 'var(--sl-t2)', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{tpl.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Couleur principale */}
-                  <div>
-                    <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)', margin: '0 0 8px' }}>Couleur principale</p>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                      {[...sportColors.slice(0, 2), ...COLOR_PRESETS.slice(0, 4).map(c => c.color)].map((col, i) => (
-                        <button key={i} onClick={() => set('accentColor', col)} aria-label={`Couleur ${col}`} style={{ width: 30, height: 30, borderRadius: '50%', border: `3px solid ${accentColor === col ? '#fff' : 'transparent'}`, backgroundColor: col, cursor: 'pointer', boxShadow: accentColor === col ? `0 0 0 2px ${col}` : `0 2px 6px ${col}60`, flexShrink: 0 }} />
-                      ))}
-                      {/* Color picker libre */}
-                      <label title="Couleur personnalisée" style={{ width: 30, height: 30, borderRadius: '50%', background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
-                        <input type="color" value={accentColor} onChange={e => set('accentColor', e.target.value)} style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ──── ÉTAPE 2 : Infos ──── */}
-              {wizardStep === 2 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: '0 0 4px', lineHeight: 1.5 }}>
-                    Vérifiez ou modifiez les informations de l'affiche.
-                  </p>
-                  {!isTournamentEvent ? (
-                    <>
-                      <div>
-                        <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', margin: '0 0 6px' }}>Équipe domicile</p>
-                        <input type="text" value={homeName} onChange={e => set('homeName', e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
-                      </div>
-                      <div>
-                        <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', margin: '0 0 6px' }}>Équipe visiteur</p>
-                        <input type="text" value={awayName} onChange={e => set('awayName', e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
-                      </div>
-                    </>
-                  ) : (
-                    <div>
-                      <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', margin: '0 0 6px' }}>Nom du tournoi</p>
-                      <input type="text" value={homeName} onChange={e => set('homeName', e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
-                    </div>
-                  )}
-                  <div>
-                    <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', margin: '0 0 6px' }}>Compétition</p>
-                    <input type="text" value={championship} onChange={e => set('championship', e.target.value)} placeholder="Ex : Championnat Départemental…" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
-                  </div>
-                </div>
-              )}
-
-              {/* ──── ÉTAPE 3 : Export ──── */}
-              {wizardStep === 3 && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '8px 0 4px' }}>
-                  <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: 'rgba(34,217,106,0.12)', border: '1px solid rgba(34,217,106,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  </div>
-                  <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--sl-t1)', textAlign: 'center', margin: 0 }}>Votre affiche est prête !</p>
-                  <p style={{ fontSize: 12, color: 'var(--sl-t3)', textAlign: 'center', margin: 0, lineHeight: 1.6 }}>
-                    Téléchargez-la ou partagez-la directement<br />sur WhatsApp ou Instagram.
-                  </p>
-                </div>
-              )}
-
-            </div>
-          </div>
-        )}
+        {simpleMode && <WizardContent ps={{ wizardStep, set, format, accentColor, templateId, displayTemplates, sportColors, homeName, awayName, championship, isTournamentEvent }} />}
 
         {/* Tab panels — mode Expert uniquement */}
         {!simpleMode && <AnimatePresence mode='wait'>
@@ -1418,7 +1137,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                     clubMedia, clubDNA, pageSponsors, hasPremium, aiUsage,
                     aiBgLoading, aiBgResult, customPrompt, setCustomPrompt, generateBg,
                     aiElLoading, elementPrompt, setElementPrompt, generateElement,
-                    aiGenerateBlocked, aiImportBlocked, isTournamentEvent,
+                    aiGenerateBlocked, aiImportBlocked, aiImportsPerMonth, isTournamentEvent,
                     favTplHook, libHook, defTplHook,
                     posterData, activeBandLogos, posterEffects, sportColors, clubColors,
                     displayTemplates, hasLayerChanges, activeTpl,
@@ -1500,50 +1219,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         </div>}
 
         {/* ── Wizard footer — mode Simple ──────────────────────────────────────── */}
-        {simpleMode && (
-          <div style={{
-            flexShrink: 0, display: 'flex', gap: 10, padding: '12px 16px',
-            paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
-            borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)',
-          }}>
-            {/* Bouton gauche : Annuler (étape 1) ou Précédent (étapes 2-3) */}
-            {wizardStep > 1 ? (
-              <button
-                onClick={() => setWizardStep(s => s - 1)}
-                style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '1px solid var(--sl-border)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-                Précédent
-              </button>
-            ) : (
-              <button
-                onClick={onClose}
-                style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '1px solid var(--sl-border)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-              >
-                Annuler
-              </button>
-            )}
-
-            {/* Bouton droit : Suivant (étapes 1-2) ou Télécharger (étape 3) */}
-            {wizardStep < 3 ? (
-              <button
-                onClick={() => setWizardStep(s => s + 1)}
-                style={{ flex: 2, padding: '12px 0', borderRadius: 14, border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: `0 4px 16px ${accentColor}50` }}
-              >
-                Suivant
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
-            ) : (
-              <button
-                onClick={() => setExportOpen(true)}
-                style={{ flex: 2, padding: '12px 0', borderRadius: 14, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, boxShadow: '0 4px 14px rgba(34,217,106,0.4)' }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                Télécharger / Partager
-              </button>
-            )}
-          </div>
-        )}
+        {simpleMode && <WizardFooter ps={{ wizardStep, setWizardStep, onClose, accentColor, handleDownload, downloading }} />}
 
         </div>
 

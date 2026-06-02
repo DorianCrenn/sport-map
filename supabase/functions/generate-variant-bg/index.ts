@@ -12,6 +12,7 @@
  */
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkClubAIPlan } from '../_shared/checkClubAIPlan.ts';
 
 async function checkRateLimit(
   client: SupabaseClient,
@@ -85,7 +86,19 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const { style, mood, sport, accentColor } = await req.json();
+    const { style, mood, sport, accentColor, clubId } = await req.json();
+
+    // ── Vérification plan club (POSTER_AI_BACKGROUND = Elite requis) ─────────
+    // clubId est optionnel pour la rétro-compat — si absent, résolution via profil user
+    const resolvedUserId = userId !== 'anonymous' ? userId : null;
+    const planCheck = await checkClubAIPlan(serviceClient, clubId ?? null, resolvedUserId);
+    if (!planCheck.allowed) {
+      return new Response(
+        JSON.stringify({ error: planCheck.reason, plan: planCheck.plan }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     const FAL_KEY = Deno.env.get('FAL_API_KEY');
 
     const stylePrompt = STYLE_PROMPTS[style] ?? STYLE_PROMPTS.classic;

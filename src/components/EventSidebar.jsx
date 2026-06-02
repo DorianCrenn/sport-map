@@ -40,7 +40,7 @@ export default function EventSidebar({
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Reset pagination when event list changes
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+   
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [events]);
 
   // IntersectionObserver: load more when sentinel enters viewport
@@ -96,9 +96,9 @@ export default function EventSidebar({
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               fontSize: 12, fontWeight: 600,
-              padding: '6px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              padding: '11px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
               backgroundColor: 'var(--sl-blue-dim)', color: 'var(--sl-blue)',
-              opacity: geoLoading ? 0.5 : 1,
+              opacity: geoLoading ? 0.5 : 1, minHeight: 44,
             }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

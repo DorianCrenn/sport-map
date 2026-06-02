@@ -172,7 +172,7 @@ export default function EventPublicPage() {
       {/* Club info */}
       {club && (
         <div style={styles.clubRow}>
-          {club.logo_url && <img src={club.logo_url} alt={club.name} style={styles.clubLogo} />}
+          {club.logo_url && <img src={club.logo_url} alt={club.name} loading="lazy" style={styles.clubLogo} />}
           <span style={styles.clubName}>{club.name}</span>
         </div>
       )}

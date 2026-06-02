@@ -159,7 +159,7 @@ export const POSTER_STYLE_SUGGESTIONS = [
   'Abstrait coloré',
 ];
 
-export async function generateMatchPoster({ sport, homeTeam, awayTeam, championship, date, time, venue, isTournament, title }, userHint) {
+export async function generateMatchPoster({ sport, homeTeam, awayTeam, championship, venue, isTournament, title }, userHint) {
   const sportLabel = sport || 'sport';
   const home = homeTeam || '';
   const away = awayTeam || '';
@@ -203,7 +203,7 @@ export const ELEMENT_PROMPT_SUGGESTIONS = [
   'Néons flottants',
 ];
 
-export async function generateCustomElement(userPrompt, accentColor = '#ffffff') {
+export async function generateCustomElement(userPrompt) {
   const fullPrompt = `vertical portrait orientation, ${userPrompt}, isolated on pure black background, dramatic, vibrant, high contrast, centered composition, no people, no text, no logos, photorealistic`;
   const seed = Math.floor(Math.random() * 99999);
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=576&height=1024&model=flux&nologo=true&seed=${seed}`;
@@ -222,7 +222,7 @@ export async function generateCustomElement(userPrompt, accentColor = '#ffffff')
  * @param {import('../lib/supabase.js').supabase} supabaseClient
  * @returns {Promise<{imageUrl: string|null, prompt: string, apiMode: boolean}>}
  */
-export async function generateAIBackground(daProfile, sport, supabaseClient) {
+export async function generateAIBackground(daProfile, sport, supabaseClient, clubId = null) {
   try {
     const { data, error } = await supabaseClient.functions.invoke('generate-variant-bg', {
       body: {
@@ -230,6 +230,7 @@ export async function generateAIBackground(daProfile, sport, supabaseClient) {
         mood: daProfile.mood ?? [],
         sport: sport ?? '',
         accentColor: daProfile.colors?.accent ?? null,
+        clubId: clubId ?? undefined,
       },
     });
     if (error || data?.mockFallback || !data?.imageUrl) {
