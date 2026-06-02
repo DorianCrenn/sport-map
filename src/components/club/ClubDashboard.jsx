@@ -9,6 +9,7 @@ import { FeaturedSection } from './PromoteFeedModal.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 import UpgradeDiff from '../ui/UpgradeDiff.jsx';
 import PlansMiniModal from '../ui/PlansMiniModal.jsx';
+import SubscriptionExpiryBanner from '../ui/SubscriptionExpiryBanner.jsx';
 import { canUseFeature } from '../../lib/planHelpers.ts';
 
 function StatCard({ label, value, sub, color = 'var(--sl-t1)' }) {
@@ -275,6 +276,13 @@ function SubscriptionSection({ clubId }) {
 
   return (
     <>
+      {/* Bannière expiration (mode plein, visible dans le dashboard) */}
+      <SubscriptionExpiryBanner
+        periodEnd={periodEnd}
+        planId={planId}
+        planName={planMeta?.name}
+      />
+
       <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
         {/* Header plan */}
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--sl-border)' }}>

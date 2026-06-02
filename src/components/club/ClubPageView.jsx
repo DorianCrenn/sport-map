@@ -26,6 +26,8 @@ import { useClubManagers } from '../../hooks/useClubManagers.js';
 import { useClubTrainings } from '../../hooks/useClubTrainings.js';
 import { useShare } from '../../hooks/useShare.js';
 import { useClubEvents } from '../../hooks/useClubEvents.js';
+import { useClubPlan } from '../../hooks/useClubPlan.js';
+import SubscriptionExpiryBanner from '../ui/SubscriptionExpiryBanner.jsx';
 
 // ── Checklist post-création ────────────────────────────────────────────────────
 
@@ -202,6 +204,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
   const canEdit     = isOwner || isManager(currentUser?.email);
   // Les managers (manager/editor) peuvent aussi créer des événements
   const canAddEvent = (canAddEventProp ?? (isAdmin || isClubAdmin)) || isManager(currentUser?.email);
+  const { periodEnd: clubPeriodEnd, plan: clubPlan, planMeta: clubPlanMeta } = useClubPlan(club.id);
   const [showFollowModal, setShowFollowModal] = useState(false);
   const [loginHint, setLoginHint] = useState(false);
   const checklistKey = `sl-club-checklist-dismissed-${club.id}`;
@@ -810,6 +813,16 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             />
           )}
         </div>
+      )}
+
+      {/* ── Bannière expiration abonnement (isOwner, compact) ── */}
+      {isOwner && (
+        <SubscriptionExpiryBanner
+          periodEnd={clubPeriodEnd}
+          planId={clubPlan}
+          planName={clubPlanMeta?.name}
+          compact
+        />
       )}
 
       {/* ── Barre de navigation administration (propriétaire uniquement) ── */}
