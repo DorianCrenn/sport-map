@@ -4,8 +4,12 @@ import { Z } from '../../constants/zIndex.js';
 import { useClubDashboard } from '../../hooks/useClubDashboard.js';
 import { useClubBrandKit } from '../../hooks/useClubBrandKit.js';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
+import { useClubFeatures } from '../../hooks/useClubFeatures.js';
 import { FeaturedSection } from './PromoteFeedModal.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
+import UpgradeDiff from '../ui/UpgradeDiff.jsx';
+import PlansMiniModal from '../ui/PlansMiniModal.jsx';
+import { canUseFeature } from '../../lib/planHelpers.ts';
 
 function StatCard({ label, value, sub, color = 'var(--sl-t1)' }) {
   return (
@@ -249,6 +253,102 @@ function AnnouncementsSection({ club }) {
         />
       )}
     </div>
+  );
+}
+
+function SubscriptionSection({ clubId }) {
+  const features = useClubFeatures(clubId);
+  const [showPlans, setShowPlans] = useState(false);
+
+  if (features.loading) return null;
+
+  const { planMeta, planId, nextPlanId, nextPlanMeta, isUpgradeable, periodEnd } = features;
+
+  const DASHBOARD_ROWS = [
+    { key: 'POSTER_EXPERT',           label: 'Mode Expert PosterStudio' },
+    { key: 'POSTER_WATERMARK_REMOVE', label: 'Sans filigrane'           },
+    { key: 'POSTER_AI_BACKGROUND',    label: 'IA génération affiches'   },
+    { key: 'CARPOOLING_ALL_TEAMS',    label: 'Covoiturage toutes équipes'},
+    { key: 'FEATURED_EVENTS',         label: 'Événements À la Une'      },
+    { key: 'AUTOMATIONS',             label: 'Automatisations IA'       },
+  ];
+
+  return (
+    <>
+      <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+        {/* Header plan */}
+        <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--sl-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>{planMeta.badge}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: planMeta.color }}>{planMeta.name}</div>
+              <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>
+                {planMeta.price === 0 ? 'Gratuit' : `${planMeta.price} €/mois`}
+                {periodEnd && ` · Renouvellement ${new Date(periodEnd).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowPlans(true)}
+            style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-blue)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 8, backgroundColor: 'rgba(77,166,255,0.08)' }}
+          >
+            Voir les plans
+          </button>
+        </div>
+
+        {/* Features ✓/✗ */}
+        <div style={{ padding: '10px 16px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {DASHBOARD_ROWS.map(({ key, label }) => {
+            const allowed = canUseFeature(key, planId);
+            return (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+                  backgroundColor: allowed ? `${planMeta.color}18` : 'var(--sl-surface)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {allowed ? (
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={planMeta.color} strokeWidth="3.5" strokeLinecap="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  ) : (
+                    <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="3" strokeLinecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  )}
+                </div>
+                <span style={{ fontSize: 12, color: allowed ? 'var(--sl-t1)' : 'var(--sl-t3)', fontWeight: allowed ? 500 : 400 }}>
+                  {label}
+                </span>
+                {!allowed && nextPlanMeta && (
+                  <span style={{ fontSize: 10, color: nextPlanMeta.color, fontWeight: 700, marginLeft: 'auto', flexShrink: 0 }}>
+                    → {nextPlanMeta.name}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* UpgradeDiff si upgradeable */}
+        {isUpgradeable && nextPlanId && (
+          <div style={{ borderTop: '1px solid var(--sl-border)', padding: '12px 16px' }}>
+            <UpgradeDiff
+              currentPlanId={planId}
+              nextPlanId={nextPlanId}
+              onUpgrade={() => setShowPlans(true)}
+            />
+          </div>
+        )}
+      </div>
+
+      <PlansMiniModal
+        open={showPlans}
+        onClose={() => setShowPlans(false)}
+        currentPlanId={planId}
+        nextPlanId={nextPlanId}
+      />
+    </>
   );
 }
 
@@ -525,6 +625,8 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
               clubEventIds={clubEventIds}
               onArchiveSeason={onArchiveSeason}
             />
+
+            <SubscriptionSection clubId={club.id} />
 
             {isEmpty && (
               <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--sl-t3)', fontSize: 13, lineHeight: 1.7 }}>

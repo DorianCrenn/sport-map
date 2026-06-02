@@ -5,6 +5,7 @@ import { useRides } from '../../hooks/useRides.js';
 import { useClubFeatures } from '../../hooks/useClubFeatures.js';
 import PlanGate from '../ui/PlanGate.jsx';
 import UpgradePrompt from '../ui/UpgradePrompt.jsx';
+import PlansMiniModal from '../ui/PlansMiniModal.jsx';
 import RideCard from './RideCard.jsx';
 import CreateRideModal from './CreateRideModal.jsx';
 import JoinRideModal from './JoinRideModal.jsx';
@@ -13,6 +14,7 @@ export default function RideSection({ event, snapPoint }) {
   const { currentUser } = useAuth();
   const features = useClubFeatures(event?.clubId);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [showPlans,   setShowPlans]   = useState(false);
   const {
     rides, loading,
     createRide, cancelRide,
@@ -82,6 +84,12 @@ export default function RideSection({ event, snapPoint }) {
           currentPlanId={features.planId}
           featureLabel="le covoiturage"
           requiredPlanId="starter"
+          onViewPlans={() => setShowPlans(true)}
+        />
+        <PlansMiniModal
+          open={showPlans}
+          onClose={() => setShowPlans(false)}
+          currentPlanId={features.planId}
         />
       </>
     );
