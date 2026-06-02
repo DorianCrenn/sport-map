@@ -99,6 +99,19 @@ function renderModal(props = {}) {
   return render(<EventFormModal {...defaultProps} {...props} />);
 }
 
+// Navigate through the 3-step form: step1 → step2 (optionally fill teams) → step3
+async function goToStep3({ homeTeam = '', awayTeam = '' } = {}) {
+  // Step 1 → 2
+  const next1 = screen.getByRole('button', { name: /suivant/i });
+  await userEvent.click(next1);
+  // Fill team names in step 2 (Football full mode)
+  if (homeTeam) fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: homeTeam } });
+  if (awayTeam) fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: awayTeam } });
+  // Step 2 → 3
+  const next2 = screen.getByRole('button', { name: /suivant/i });
+  await userEvent.click(next2);
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -156,7 +169,8 @@ describe('EventFormModal — validation Zod', () => {
     const onSave = vi.fn();
     renderModal({ onSave });
 
-    // Submit without filling date
+    // Navigate to step 3 (date field) without filling the date
+    await goToStep3();
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
 
@@ -170,12 +184,10 @@ describe('EventFormModal — validation Zod', () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     renderModal({ onSave });
 
+    // Navigate: step1 → step2 (fill teams) → step3 (fill date)
+    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
-
-    // Football requires homeTeam + awayTeam to generate a title
-    fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: 'FC Brest' } });
-    fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: 'FC Quimper' } });
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
@@ -187,7 +199,6 @@ describe('EventFormModal — validation Zod', () => {
     const arg = onSave.mock.calls[0][0];
     expect(arg).toMatchObject({
       sport: 'Football',
-      // buildEvent ajoute le décalage timezone local — on vérifie le préfixe uniquement
       date: expect.stringContaining('2026-06-15T15:00:00'),
     });
   });
@@ -196,20 +207,14 @@ describe('EventFormModal — validation Zod', () => {
     const onSave = vi.fn(() => new Promise(r => setTimeout(r, 500)));
     renderModal({ onSave });
 
+    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
 
-    // Fill team names to generate a valid title
-    fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: 'FC Brest' } });
-    fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: 'FC Quimper' } });
-
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
-
-    // Click twice quickly
     await userEvent.click(submitBtn);
     await userEvent.click(submitBtn);
 
-    // Should only call once despite two clicks
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 });
@@ -221,24 +226,22 @@ describe('EventFormModal — récurrence', () => {
     const onBulkSave = vi.fn().mockResolvedValue(undefined);
     renderModal({ onBulkSave });
 
-    // Fill date
+    // Navigate to step 3 with teams filled
+    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
+
+    // Fill date (step 3)
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-09-01' } });
 
-    // Fill team names (Football sport requires them to generate a title)
-    fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: 'FC Brest' } });
-    fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: 'FC Quimper' } });
-
-    // Enable recurrence
+    // Enable recurrence (step 3 button)
     const recurrenceBtn = screen.getByRole('button', { name: /récurrence/i });
     await userEvent.click(recurrenceBtn);
 
-    // Set end date (4 weeks later)
+    // Set end date
     const allDateInputs = document.querySelectorAll('input[type="date"]');
     const untilInput = allDateInputs[allDateInputs.length - 1];
     fireEvent.change(untilInput, { target: { value: '2026-09-22' } });
 
-    // Submit
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
 
@@ -249,13 +252,14 @@ describe('EventFormModal — récurrence', () => {
     const events = onBulkSave.mock.calls[0][0];
     expect(Array.isArray(events)).toBe(true);
     expect(events.length).toBeGreaterThanOrEqual(4);
-    // All events should share the same seriesId
     const seriesIds = new Set(events.map(e => e.seriesId));
     expect(seriesIds.size).toBe(1);
   });
 
   it('compte le bon nombre d\'occurrences dans l\'aperçu', async () => {
     renderModal();
+
+    await goToStep3();
 
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-09-01' } });
@@ -267,7 +271,6 @@ describe('EventFormModal — récurrence', () => {
     const untilInput = allDateInputs[allDateInputs.length - 1];
     fireEvent.change(untilInput, { target: { value: '2026-09-22' } });
 
-    // Should show "4 occurrences seront créées"
     await waitFor(() => {
       expect(screen.getByText(/4 occurrence/i)).toBeInTheDocument();
     });
@@ -281,12 +284,10 @@ describe('EventFormModal — erreur lors de la sauvegarde', () => {
     const onSave = vi.fn().mockRejectedValue(new Error('Connexion refusée'));
     renderModal({ onSave });
 
+    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
+
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
-
-    // Football requires team names to generate a title
-    fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: 'FC Brest' } });
-    fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: 'FC Quimper' } });
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
@@ -304,11 +305,11 @@ describe('EventFormModal — titre vide bloqué', () => {
     const onSave = vi.fn();
     renderModal({ onSave });
 
-    // Football is default — fill date but leave homeTeam/awayTeam AND title empty
+    // Navigate to step 3 WITHOUT filling homeTeam/awayTeam → title will be empty
+    await goToStep3();
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
 
-    // Don't fill homeTeam/awayTeam → buildEvent returns title='' → blocked
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
 
@@ -326,14 +327,11 @@ describe('EventFormModal — structure des données envoyées', () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     renderModal({ onSave });
 
+    // step1 → step2 (fill teams) → step3 (fill date)
+    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
+
     const dateInputEl = document.querySelector('input[type="date"]');
     fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
-
-    // Fill team names so title is auto-generated
-    const homeTeamInput = screen.getByPlaceholderText(/fc brest/i);
-    const awayTeamInput = screen.getByPlaceholderText(/fc quimper/i);
-    fireEvent.change(homeTeamInput, { target: { value: 'FC Brest' } });
-    fireEvent.change(awayTeamInput, { target: { value: 'FC Quimper' } });
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
@@ -341,7 +339,6 @@ describe('EventFormModal — structure des données envoyées', () => {
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
 
     const arg = onSave.mock.calls[0][0];
-    // All fields that mapToDB needs must be present in the buildEvent output
     expect(arg).toMatchObject({
       sport:      'Football',
       date:       expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),

@@ -49,6 +49,8 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
   const [saving,      setSaving]      = useState(false);
   const [error,       setError]       = useState('');
   const [scheduled,   setScheduled]   = useState(false);
+  const [aiLoading,   setAiLoading]   = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState([]);
   const [scheduleAt,  setScheduleAt]  = useState(() => {
     const d = new Date(Date.now() + 60 * 60 * 1000);
     d.setSeconds(0, 0);
@@ -57,6 +59,25 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
   });
 
   const selectedType = TYPE_OPTIONS.find(t => t.key === type);
+
+  async function handleAISuggest() {
+    setAiLoading(true);
+    setAiSuggestions([]);
+    try {
+      const { data, error: fnErr } = await import('../../lib/supabase.js').then(m =>
+        m.supabase.functions.invoke('generate-announcement', {
+          body: { clubName: club.name, type },
+        })
+      );
+      if (fnErr) throw fnErr;
+      setAiSuggestions(data?.suggestions ?? []);
+    } catch {
+      setAiSuggestions([]);
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
   const allTeams = (club.categories ?? []).flatMap(cat =>
     (cat.teams ?? []).map(team => ({ id: team.id ?? team.name, name: team.name, catName: cat.name }))
   );
@@ -145,6 +166,35 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* IA suggestions */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--sl-t3)' }}>✨ Suggestions IA</div>
+              <button
+                onClick={handleAISuggest}
+                disabled={aiLoading}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 20, border: `1.5px solid ${selectedType?.color}40`, backgroundColor: aiLoading ? 'var(--sl-surface)' : `${selectedType?.color ?? '#a855f7'}12`, color: aiLoading ? 'var(--sl-t3)' : (selectedType?.color ?? '#a855f7'), fontSize: 11, fontWeight: 700, cursor: aiLoading ? 'default' : 'pointer', transition: 'all 0.15s' }}
+              >
+                {aiLoading
+                  ? <><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', border: '2px solid currentColor', borderTopColor: 'transparent', animation: 'sl-spin 0.6s linear infinite' }}/>Génération…</>
+                  : '✨ Générer'}
+              </button>
+            </div>
+            {aiSuggestions.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {aiSuggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setMessage(s); setAiSuggestions([]); }}
+                    style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${selectedType?.color ?? '#a855f7'}30`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 12, cursor: 'pointer', lineHeight: 1.5, fontFamily: 'Inter, sans-serif', transition: 'all 0.12s' }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Message */}

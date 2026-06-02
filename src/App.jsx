@@ -17,6 +17,7 @@ import Header from './components/Header.jsx';
 import ReminderBanner from './components/ReminderBanner.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import ClubPageView from './components/club/ClubPageView.jsx';
+import UserPublicView from './components/UserPublicView.jsx';
 import HomeScreen from './pages/HomeScreen.tsx';
 import MapPage from './pages/MapPage.jsx';
 import FavorisPage from './pages/FavorisPage.jsx';
@@ -86,6 +87,7 @@ function AppInner() {
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [, setClubOverlayOpen] = useState(false);
   const [clubOverlayLoading, setClubOverlayLoading] = useState(false);
+  const [publicUserId, setPublicUserId] = useState(null);
 
   const allClubsRef = useRef([]);
 
@@ -149,7 +151,9 @@ function AppInner() {
   useEffect(() => {
     const clubMatch  = window.location.hash.match(/^#club\/(.+)$/);
     const eventMatch = window.location.hash.match(/^#event\/(.+)$/);
+    const userMatch  = window.location.hash.match(/^#user\/(.+)$/);
     if (eventMatch) pendingEventDeepLink.current = eventMatch[1];
+    if (userMatch) setPublicUserId(userMatch[1]);
 
     if (clubMatch) {
       const id = clubMatch[1];
@@ -404,6 +408,20 @@ function AppInner() {
         )}
         {/* Spinner pendant le chargement d'un club via deep link #club/:id */}
         {clubOverlayLoading && <ModalLoader />}
+
+        {/* UserPublicView — deep link #user/:id */}
+        {publicUserId && (
+          <AnimatePresence>
+            <UserPublicView
+              key={publicUserId}
+              userId={publicUserId}
+              onClose={() => {
+                setPublicUserId(null);
+                window.history.replaceState(null, '', window.location.pathname);
+              }}
+            />
+          </AnimatePresence>
+        )}
 
         {/* ClubPageView inside the content area so BottomNav stays visible (same pattern as MyRidesPage) */}
         {selectedSearchClub && (

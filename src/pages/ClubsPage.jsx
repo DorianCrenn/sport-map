@@ -8,6 +8,7 @@ import { useClubLeaderboard } from '../hooks/useClubLeaderboard.js';
 import SportIcon from '../components/SportIcon.jsx';
 import ClubPageView from '../components/club/ClubPageView.jsx';
 import ClubFormModal from '../components/club/ClubFormModal.jsx';
+import ClubCreationWizard from '../components/club/ClubCreationWizard.jsx';
 import ClubRequestModal from '../components/club/ClubRequestModal.jsx';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { SkeletonClubCard } from '../components/Skeleton.jsx';
@@ -124,10 +125,21 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
         )}
       </AnimatePresence>
 
+      {/* Création nouveau club → wizard 6 étapes */}
       <AnimatePresence>
-        {formClub !== null && (
+        {formClub === true && (
+          <ClubCreationWizard
+            onSave={handleSave}
+            onClose={() => setFormClub(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Édition club existant → modal simple */}
+      <AnimatePresence>
+        {formClub !== null && formClub !== true && (
           <ClubFormModal
-            club={formClub === true ? null : formClub}
+            club={formClub}
             onSave={handleSave}
             onClose={() => setFormClub(null)}
           />

@@ -40,11 +40,11 @@ beforeEach(() => {
 // ── Navigation principale ─────────────────────────────────────────────────────
 
 describe('MatchesTab — sous-onglets', () => {
-  it('affiche les 3 onglets de base (Tous, Favoris, Compétitions)', () => {
+  it('affiche les 3 onglets de base (Tous, Mes clubs, Compétitions)', () => {
     render(<MatchesTab followedClubIds={[]} />);
 
     expect(screen.getByText('Tous')).toBeDefined();
-    expect(screen.getByText('Favoris')).toBeDefined();
+    expect(screen.getByText('Mes clubs')).toBeDefined();
     expect(screen.getByText('Compétitions')).toBeDefined();
   });
 

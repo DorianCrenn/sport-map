@@ -5,6 +5,8 @@ import { useClubDashboard } from '../../hooks/useClubDashboard.js';
 import { useClubBrandKit } from '../../hooks/useClubBrandKit.js';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import { useClubFeatures } from '../../hooks/useClubFeatures.js';
+import { useClubChallenges } from '../../hooks/useClubChallenges.js';
+import { useClubs } from '../../hooks/useClubs.js';
 import { FeaturedSection } from './PromoteFeedModal.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 import UpgradeDiff from '../ui/UpgradeDiff.jsx';
@@ -484,6 +486,183 @@ function NotifPrefsSection({ clubId }) {
   );
 }
 
+const CHALLENGE_TYPE_OPTS = [
+  { key: 'match',      label: 'Match amical',   icon: '⚽' },
+  { key: 'tournament', label: 'Tournoi',         icon: '🏆' },
+  { key: 'training',   label: 'Entraînement',   icon: '🏃' },
+];
+const STATUS_META = {
+  pending:   { label: 'En attente',  color: '#f59e0b' },
+  accepted:  { label: 'Accepté',     color: '#22d96a' },
+  declined:  { label: 'Refusé',      color: '#ef4444' },
+  cancelled: { label: 'Annulé',      color: 'var(--sl-t3)' },
+};
+
+function ChallengesSection({ club }) {
+  const { challenges, received, sent, pendingReceived, loading, sendChallenge, respond } = useClubChallenges(club.id);
+  const { userClubs } = useClubs();
+  const otherClubs = (userClubs ?? []).filter(c => String(c.id) !== String(club.id));
+
+  const [showForm, setShowForm]     = useState(false);
+  const [targetClubId, setTargetClubId] = useState('');
+  const [chalType, setChalType]     = useState('match');
+  const [chalMsg, setChalMsg]       = useState('');
+  const [sending, setSending]       = useState(false);
+  const [respondingId, setRespondingId] = useState(null);
+  const [tab, setTab]               = useState('received'); // 'received' | 'sent'
+
+  async function handleSend() {
+    if (!targetClubId) return;
+    setSending(true);
+    try { await sendChallenge(targetClubId, chalType, chalMsg); setShowForm(false); setChalMsg(''); }
+    catch {}
+    finally { setSending(false); }
+  }
+
+  async function handleRespond(id, status) {
+    setRespondingId(id);
+    try { await respond(id, status); }
+    catch {}
+    finally { setRespondingId(null); }
+  }
+
+  const displayList = tab === 'received' ? received : sent;
+
+  return (
+    <div style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+      {/* Header */}
+      <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)' }}>
+            ⚔️ Défis inter-clubs
+            {pendingReceived.length > 0 && (
+              <span style={{ marginLeft: 6, backgroundColor: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, borderRadius: 20, padding: '1px 6px' }}>
+                {pendingReceived.length}
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>Lancez ou répondez à un défi sportif</div>
+        </div>
+        <button
+          onClick={() => setShowForm(v => !v)}
+          style={{ padding: '7px 12px', borderRadius: 10, border: 'none', backgroundColor: showForm ? 'var(--sl-surface)' : '#3b82f6', color: showForm ? 'var(--sl-t2)' : '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+        >
+          {showForm ? 'Annuler' : '+ Défi'}
+        </button>
+      </div>
+
+      {/* Formulaire envoi */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+            style={{ overflow: 'hidden', borderBottom: '1px solid var(--sl-border)' }}
+          >
+            <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <select
+                value={targetClubId}
+                onChange={e => setTargetClubId(e.target.value)}
+                style={{ width: '100%', padding: '9px 11px', borderRadius: 10, fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
+              >
+                <option value="">Sélectionner un club à défier…</option>
+                {otherClubs.map(c => (
+                  <option key={c.id} value={c.id}>{c.name} — {c.sport}</option>
+                ))}
+              </select>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {CHALLENGE_TYPE_OPTS.map(opt => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setChalType(opt.key)}
+                    style={{ flex: 1, padding: '8px 4px', borderRadius: 10, border: `1.5px solid ${chalType === opt.key ? '#3b82f6' : 'var(--sl-border)'}`, backgroundColor: chalType === opt.key ? 'rgba(59,130,246,0.1)' : 'var(--sl-surface)', color: chalType === opt.key ? '#3b82f6' : 'var(--sl-t2)', fontSize: 11, fontWeight: 700, cursor: 'pointer', textAlign: 'center' }}
+                  >
+                    <div>{opt.icon}</div>
+                    <div style={{ fontSize: 9, marginTop: 2 }}>{opt.label}</div>
+                  </button>
+                ))}
+              </div>
+              <input
+                value={chalMsg}
+                onChange={e => setChalMsg(e.target.value)}
+                placeholder="Message optionnel (ex : match retour, terrain neutre…)"
+                style={{ width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 10, fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif' }}
+              />
+              <button
+                onClick={handleSend}
+                disabled={!targetClubId || sending}
+                style={{ padding: '11px', borderRadius: 10, border: 'none', backgroundColor: !targetClubId || sending ? 'var(--sl-surface)' : '#3b82f6', color: !targetClubId || sending ? 'var(--sl-t3)' : '#fff', fontSize: 12, fontWeight: 700, cursor: !targetClubId || sending ? 'default' : 'pointer' }}
+              >
+                {sending ? 'Envoi…' : '⚔️ Lancer le défi'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Tabs */}
+      {challenges.length > 0 && (
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--sl-border)' }}>
+          {[['received', `Reçus (${received.length})`], ['sent', `Envoyés (${sent.length})`]].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              style={{ flex: 1, padding: '9px', border: 'none', borderBottom: `2px solid ${tab === key ? '#3b82f6' : 'transparent'}`, backgroundColor: 'transparent', color: tab === key ? '#3b82f6' : 'var(--sl-t3)', fontSize: 11, fontWeight: tab === key ? 700 : 500, cursor: 'pointer', transition: 'all 0.15s' }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Liste */}
+      <div style={{ padding: '8px 0' }}>
+        {loading ? (
+          <div style={{ padding: '12px 16px', fontSize: 11, color: 'var(--sl-t3)', textAlign: 'center' }}>Chargement…</div>
+        ) : displayList.length === 0 ? (
+          <div style={{ padding: '16px', textAlign: 'center', fontSize: 11, color: 'var(--sl-t3)' }}>
+            {tab === 'received' ? 'Aucun défi reçu pour l\'instant.' : 'Aucun défi envoyé.'}
+          </div>
+        ) : (
+          displayList.map(ch => {
+            const opponent = tab === 'received' ? ch.challenger : ch.challenged;
+            const statusMeta = STATUS_META[ch.status] ?? STATUS_META.pending;
+            const typeOpt = CHALLENGE_TYPE_OPTS.find(o => o.key === ch.type);
+            return (
+              <div key={ch.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 2 }}>
+                    {typeOpt?.icon} {opponent?.name ?? '—'}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>
+                    {typeOpt?.label} · {new Date(ch.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                  </div>
+                  {ch.message && <div style={{ fontSize: 10, color: 'var(--sl-t2)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.message}</div>}
+                </div>
+                {tab === 'received' && ch.status === 'pending' ? (
+                  <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+                    <button
+                      onClick={() => handleRespond(ch.id, 'accepted')}
+                      disabled={respondingId === ch.id}
+                      style={{ padding: '5px 10px', borderRadius: 8, border: 'none', backgroundColor: 'rgba(34,217,106,0.15)', color: '#22d96a', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}
+                    >✓ Oui</button>
+                    <button
+                      onClick={() => handleRespond(ch.id, 'declined')}
+                      disabled={respondingId === ch.id}
+                      style={{ padding: '5px 10px', borderRadius: 8, border: 'none', backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}
+                    >✕ Non</button>
+                  </div>
+                ) : (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: statusMeta.color, flexShrink: 0 }}>{statusMeta.label}</span>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, onArchiveSeason }) {
   const data = useClubDashboard(club.id, clubEventIds);
   const isEmpty = !data.loading && data.followers === 0 && data.pageViews.total === 0 && data.attendees.total === 0 && data.posterExports === 0 && data.posterShares === 0;
@@ -619,6 +798,8 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
             />
 
             <AnnouncementsSection club={club} />
+
+            <ChallengesSection club={club} />
 
             <CalendrierEditorial
               upcomingEvents={clubUpcomingEvents}

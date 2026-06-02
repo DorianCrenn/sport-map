@@ -1,5 +1,35 @@
 const CACHE_NAME   = 'sportlink-v3';
+const DATA_CACHE   = 'sportlink-data-v3';  // Données Supabase REST
+const IMG_CACHE    = 'sportlink-img-v3';   // Images Supabase Storage + logos
 const OFFLINE_URL  = '/offline.html';
+
+// NetworkFirst pour Supabase REST : essaie le réseau, fallback cache (pas de limite d'âge en offline)
+async function supabaseNetworkFirst(request) {
+  const cache = await caches.open(DATA_CACHE);
+  try {
+    const res = await fetch(request);
+    if (res.ok) cache.put(request, res.clone());
+    return res;
+  } catch {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    throw new Error('offline — no cached data');
+  }
+}
+
+// CacheFirst pour les images (logos, affiches)
+async function imgCacheFirst(request) {
+  const cache = await caches.open(IMG_CACHE);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  try {
+    const res = await fetch(request);
+    if (res.ok) cache.put(request, res.clone());
+    return res;
+  } catch {
+    return new Response('', { status: 503 });
+  }
+}
 
 // ── Install : pré-cache le shell ──────────────────────────────────────────────
 self.addEventListener('install', e => {
@@ -11,9 +41,10 @@ self.addEventListener('install', e => {
 
 // ── Activate : purge anciens caches ──────────────────────────────────────────
 self.addEventListener('activate', e => {
+  const KEEP = new Set([CACHE_NAME, DATA_CACHE, IMG_CACHE]);
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => !KEEP.has(k)).map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
@@ -26,8 +57,38 @@ self.addEventListener('fetch', e => {
 
   const url = new URL(request.url);
 
-  // Ne jamais intercepter les appels Supabase / externes
-  if (!url.origin.startsWith(self.location.origin)) return;
+  // ── Supabase REST API : NetworkFirst + fallback cache ────────────────────
+  if (url.hostname.endsWith('.supabase.co') || url.hostname.endsWith('.supabase.io')) {
+    // Skip : auth, functions (Edge Functions), realtime (websockets)
+    if (
+      url.pathname.includes('/auth/') ||
+      url.pathname.includes('/functions/') ||
+      url.pathname.includes('/realtime/')
+    ) return;
+
+    // Supabase Storage (images, logos, affiches) → CacheFirst
+    if (url.pathname.includes('/storage/')) {
+      e.respondWith(imgCacheFirst(request));
+      return;
+    }
+
+    // Supabase REST (events, clubs, profiles…) → NetworkFirst + offline fallback
+    e.respondWith(supabaseNetworkFirst(request));
+    return;
+  }
+
+  // ── Images CDN externes (logos clubs, Cloudflare CDN) ───────────────────
+  if (
+    url.hostname.includes('cloudflare') ||
+    url.hostname.includes('cdninstagram') ||
+    url.hostname.endsWith('.r2.dev')
+  ) {
+    e.respondWith(imgCacheFirst(request));
+    return;
+  }
+
+  // Ne jamais intercepter les autres appels externes non listés
+  if (url.origin !== self.location.origin) return;
 
   // Ne jamais intercepter les callbacks OAuth (PKCE)
   const isOAuth = url.searchParams.has('code') || url.searchParams.has('error') || url.hash.includes('access_token');

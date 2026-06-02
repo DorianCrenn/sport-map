@@ -1,14 +1,13 @@
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { useDynamicMeta } from '../../hooks/useDynamicMeta.js';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
-import { useClubPage, useClubAnalytics, FONT_OPTIONS, HERO_STYLE_OPTIONS, getHeroBackground } from '../../hooks/useClubPage.js';
+import {
+  useClubPage, useClubAnalytics, getHeroBackground,
+} from '../../hooks/useClubPage.js';
 import { supabase } from '../../lib/supabase.js';
-import SportIcon from '../SportIcon.jsx';
 import FollowModal from '../FollowModal.jsx';
-import UpcomingEventsBlock from './blocks/UpcomingEventsBlock.jsx';
-import AddBlockMenu from './AddBlockMenu.jsx';
 import ClubManagersPanel from './ClubManagersPanel.jsx';
 import ClubDashboard from './ClubDashboard.jsx';
 import ClubRosterPanel from './ClubRosterPanel.jsx';
@@ -16,291 +15,171 @@ import ClubSponsorsPanel from './ClubSponsorsPanel.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import ClubFormModal from './ClubFormModal.jsx';
-import { DraggableRow, getRows, PlusIcon } from './ClubPageBuilder.jsx';
-import TeamView from './ClubTeamSection.jsx';
-import ClubSimpleEditor from './ClubSimpleEditor.jsx';
-const EventFormModal = lazy(() => import('../EventFormModal.jsx'));
-const PosterStudio   = lazy(() => import('../PosterStudio.jsx'));
-import { downloadClubICS } from '../../utils/exportICS.js';
+import { getRows } from './ClubPageBuilder.jsx';
+import SubscriptionExpiryBanner from '../ui/SubscriptionExpiryBanner.jsx';
 import { useClubManagers } from '../../hooks/useClubManagers.js';
 import { useClubTrainings } from '../../hooks/useClubTrainings.js';
 import { useShare } from '../../hooks/useShare.js';
 import { useClubEvents } from '../../hooks/useClubEvents.js';
 import { useClubPlan } from '../../hooks/useClubPlan.js';
-import SubscriptionExpiryBanner from '../ui/SubscriptionExpiryBanner.jsx';
+import { downloadClubICS } from '../../utils/exportICS.js';
 
-// ── Checklist post-création ────────────────────────────────────────────────────
+// New UI components
+import ClubHero from './ClubHero.jsx';
+import ClubAdminDrawer from './ClubAdminDrawer.jsx';
+import ClubHomeTab from './tabs/ClubHomeTab.jsx';
+import ClubNewsTab from './tabs/ClubNewsTab.jsx';
+import ClubMatchesTab from './tabs/ClubMatchesTab.jsx';
+import ClubRosterTab from './tabs/ClubRosterTab.jsx';
+import ClubInfoTab from './tabs/ClubInfoTab.jsx';
 
-function ClubSetupChecklist({ club, blocks, events, canEdit, onDismiss, onEditPage, onCreateEvent, onSendAnnouncement }) {
-  const hasBlocks     = blocks.length > 0;
-  const hasEvents     = events.length > 0;
-  const hasMembers    = (club.members ?? 0) > 0;
-  const done          = [hasBlocks, hasEvents, hasMembers].filter(Boolean).length;
-  const total         = 3;
-  const pct           = Math.round((done / total) * 100);
+const EventFormModal = lazy(() => import('../EventFormModal.jsx'));
+const PosterStudio   = lazy(() => import('../PosterStudio.jsx'));
 
-  if (!canEdit) return null;
+// ── Win/draw/loss from blocks ─────────────────────────────────────────────────
+function useMatchStats(blocks) {
+  return useMemo(() => {
+    const matches = blocks
+      .filter(b => b.type === 'matches')
+      .flatMap(b => b.data?.matches ?? []);
+    const played = matches.filter(m => m.date && new Date(m.date + 'T23:59:59') < new Date() && m.scoreHome !== null && m.scoreHome !== undefined);
+    let W = 0, D = 0, L = 0;
+    for (const m of played) {
+      const h = Number(m.scoreHome), a = Number(m.scoreAway);
+      if (h === a) { D++; continue; }
+      const won = m.isHome ? h > a : a > h;
+      won ? W++ : L++;
+    }
+    return { W, D, L, played: played.length };
+  }, [blocks]);
+}
 
-  const items = [
-    {
-      done: hasBlocks,
-      label: 'Personnaliser la page du club',
-      desc: 'Ajoutez des blocs (présentation, événements, photos…)',
-      action: onEditPage,
-      actionLabel: 'Modifier la page',
-    },
-    {
-      done: hasEvents,
-      label: 'Créer votre premier événement',
-      desc: 'Match, tournoi ou entraînement',
-      action: onCreateEvent,
-      actionLabel: '+ Événement',
-    },
-    {
-      done: hasMembers,
-      label: 'Inviter vos membres',
-      desc: 'Partagez le lien du club pour que vos joueurs vous suivent',
-      action: null,
-      actionLabel: null,
-    },
-  ];
+// ── Tabs config ────────────────────────────────────────────────────────────────
+const TABS = [
+  { id: 'accueil',  label: 'Accueil' },
+  { id: 'news',     label: 'Actualités' },
+  { id: 'matchs',   label: 'Matchs' },
+  { id: 'effectif', label: 'Effectif' },
+  { id: 'infos',    label: 'Infos' },
+];
 
+// ── Tab navigation ─────────────────────────────────────────────────────────────
+function TabNav({ activeTab, onTabChange, accentColor, announcementsCount }) {
   return (
     <div style={{
-      margin: '12px 0 4px',
-      borderRadius: 16, overflow: 'hidden',
-      border: '1px solid rgba(99,102,241,0.25)',
-      backgroundColor: 'rgba(99,102,241,0.06)',
+      flexShrink: 0,
+      display: 'flex', overflowX: 'auto',
+      backgroundColor: 'var(--sl-card)',
+      borderBottom: '1px solid var(--sl-border)',
+      scrollbarWidth: 'none',
     }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px 8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-            </svg>
-          </div>
-          <div>
-            <p style={{ fontSize: 12, fontWeight: 800, color: '#6366f1', margin: 0, lineHeight: 1.2 }}>Configuration du club</p>
-            <p style={{ fontSize: 10, color: 'var(--sl-t3)', margin: 0 }}>{done}/{total} étapes complétées</p>
-          </div>
-        </div>
-        <button
-          onClick={onDismiss}
-          aria-label="Fermer la checklist"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t3)', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6 }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-
-      {/* Barre de progression */}
-      <div style={{ height: 3, backgroundColor: 'var(--sl-border)', margin: '0 14px 10px' }}>
-        <div style={{ height: '100%', backgroundColor: pct === 100 ? '#22d96a' : '#6366f1', borderRadius: 2, width: `${pct}%`, transition: 'width 0.4s ease' }} />
-      </div>
-
-      {/* Items */}
-      <div style={{ padding: '0 10px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {items.map((item, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '8px 10px', borderRadius: 10,
-            backgroundColor: item.done ? 'rgba(34,217,106,0.06)' : 'transparent',
-          }}>
-            <div style={{
-              width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-              backgroundColor: item.done ? '#22d96a' : 'var(--sl-border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              {item.done && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              )}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: item.done ? 'var(--sl-t3)' : 'var(--sl-t1)', margin: 0, textDecoration: item.done ? 'line-through' : 'none', lineHeight: 1.3 }}>
-                {item.label}
-              </p>
-              {!item.done && (
-                <p style={{ fontSize: 10, color: 'var(--sl-t3)', margin: '1px 0 0', lineHeight: 1.4 }}>{item.desc}</p>
-              )}
-            </div>
-            {!item.done && item.action && (
-              <button
-                onClick={item.action}
-                style={{
-                  flexShrink: 0, padding: '5px 10px', borderRadius: 8,
-                  border: '1px solid rgba(99,102,241,0.3)',
-                  backgroundColor: 'rgba(99,102,241,0.1)',
-                  color: '#6366f1', fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {item.actionLabel}
-              </button>
+      {TABS.map(tab => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            role="tab"
+            aria-selected={isActive}
+            style={{
+              flexShrink: 0, padding: '11px 14px',
+              border: 'none', background: 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: isActive ? 800 : 600,
+              color: isActive ? 'var(--sl-t1)' : 'var(--sl-t3)',
+              borderBottom: `2.5px solid ${isActive ? accentColor : 'transparent'}`,
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+              position: 'relative',
+              minHeight: 44,
+            }}
+          >
+            {tab.label}
+            {tab.id === 'news' && announcementsCount > 0 && (
+              <span style={{
+                position: 'absolute', top: 6, right: 4,
+                width: 6, height: 6, borderRadius: '50%',
+                backgroundColor: '#ef4444',
+              }} />
             )}
-          </div>
-        ))}
-      </div>
+          </button>
+        );
+      })}
+      <div style={{ flexShrink: 0, width: 8 }} />
     </div>
   );
 }
 
-function useMatchStats(blocks) {
-  const matches = blocks
-    .filter(b => b.type === 'matches')
-    .flatMap(b => b.data?.matches ?? []);
-  const played = matches.filter(m => m.date && new Date(m.date + 'T23:59:59') < new Date() && m.scoreHome !== null && m.scoreHome !== undefined);
-  let W = 0, D = 0, L = 0;
-  for (const m of played) {
-    const h = Number(m.scoreHome), a = Number(m.scoreAway);
-    if (h === a) { D++; continue; }
-    const won = m.isHome ? h > a : a > h;
-    won ? W++ : L++;
-  }
-  return { W, D, L, played: played.length };
-}
-
-function usePendingResults(blocks) {
-  return useMemo(() => {
-    const now = new Date();
-    return blocks
-      .filter(b => b.type === 'matches')
-      .flatMap(b => b.data?.matches ?? [])
-      .filter(m => m.date && new Date(m.date + 'T23:59:59') < now && (m.scoreHome === null || m.scoreHome === undefined)).length;
-  }, [blocks]);
-}
-
-function PendingResultsBanner({ count, isEditing }) {
-  if (!isEditing || count === 0) return null;
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-      className="mx-4 mt-4 mb-0 rounded-2xl px-4 py-3 flex items-center gap-3 border"
-      style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderColor: '#fcd34d' }}
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      <p className="text-xs font-semibold flex-1" style={{ color: '#92400e' }}>
-        {count} match{count > 1 ? 's' : ''} passé{count > 1 ? 's' : ''} sans score — pensez à les saisir !
-      </p>
-    </motion.div>
-  );
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
-export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canAddEvent: canAddEventProp, onUpdateClub, onArchiveSeason }) {
+// ── Main component ─────────────────────────────────────────────────────────────
+export default function ClubPageView({
+  club, allEvents, onBack, onAddEvent,
+  canAddEvent: canAddEventProp, onUpdateClub, onArchiveSeason,
+}) {
   const { allSports: SPORTS } = useSports();
-  const { isAdmin, isClubAdmin, currentUser, isLoggedIn, follows, followClub, unfollowClub, updateFollow, isFollowingClub, getFollow } = useAuth();
+  const {
+    isAdmin, isClubAdmin, currentUser, isLoggedIn,
+    followClub, unfollowClub, updateFollow, isFollowingClub, getFollow,
+  } = useAuth();
   const { share } = useShare();
+
+  // ── Permissions ────────────────────────────────────────────────────────────
   const isOwner = isAdmin
     || club.userId === currentUser?.id
     || (isClubAdmin && currentUser?.clubId === club.id);
   const { managers, addManager, removeManager, updateManagerRole, isManager } = useClubManagers(club.id);
   const canEdit     = isOwner || isManager(currentUser?.email);
-  // Les managers (manager/editor) peuvent aussi créer des événements
   const canAddEvent = (canAddEventProp ?? (isAdmin || isClubAdmin)) || isManager(currentUser?.email);
+
   const { periodEnd: clubPeriodEnd, plan: clubPlan, planMeta: clubPlanMeta } = useClubPlan(club.id);
-  const [showFollowModal, setShowFollowModal] = useState(false);
-  const [loginHint, setLoginHint] = useState(false);
-  const checklistKey = `sl-club-checklist-dismissed-${club.id}`;
-  const [checklistDismissed, setChecklistDismissed] = useState(() => !!localStorage.getItem(checklistKey));
+
+  // ── Follow state ───────────────────────────────────────────────────────────
   const isFollowing = isFollowingClub(club.id);
   const currentFollow = getFollow(club.id);
+  const [loginHint, setLoginHint] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
-  const pageViews = useClubAnalytics(club.id);
-
+  // ── Page blocks ────────────────────────────────────────────────────────────
   const {
     blocks, isEditing, setIsEditing,
     addBlock, addBlockToRow,
     updateBlock, setBlockSpan, moveBlockInRow,
     deleteBlock, reorderRows, toggleBlock,
-    typography, setTypography,
-    theme, setTheme,
+    typography, theme,
   } = useClubPage(club);
 
+  const pageViews = useClubAnalytics(club.id);
+  const rows = useMemo(() => getRows(blocks), [blocks]);
+  const stats = useMatchStats(blocks);
+
+  // ── Tab state ──────────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState('accueil');
+  const [simpleMode, setSimpleMode] = useState(() => blocks.length === 0);
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
-  const [simpleMode, setSimpleMode]   = useState(() => blocks.length === 0);
-  const [optionsOpen, setOptionsOpen] = useState(false);
-  const [showManagersPanel, setShowManagersPanel] = useState(false);
+
+  // ── Modals state ───────────────────────────────────────────────────────────
+  const [showFollowModal, setShowFollowModal] = useState(false);
+  const [showAdminDrawer, setShowAdminDrawer] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
-  const [showAnnouncement, setShowAnnouncement] = useState(false);
-  const [clubInternalTab, setClubInternalTab] = useState('infos');
+  const [showManagersPanel, setShowManagersPanel] = useState(false);
   const [showRosterPanel, setShowRosterPanel] = useState(false);
   const [showSponsorsPanel, setShowSponsorsPanel] = useState(false);
-  const [activeTeamId, setActiveTeamId] = useState(null);
-  const tabBarRef = useRef(null);
-
-  // Auto-scroll active tab into view when switching teams
-  useEffect(() => {
-    const container = tabBarRef.current;
-    if (!container) return;
-    const active = container.querySelector('[data-active="true"]');
-    active?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, [activeTeamId]);
-
-  const { sendAnnouncement } = useClubAnnouncements(canEdit ? club.id : null);
-  const [teamEventModal, setTeamEventModal] = useState(undefined); // undefined=closed
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [showEditInfo, setShowEditInfo] = useState(false);
   const [showPoster, setShowPoster] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [showEditInfo, setShowEditInfo]     = useState(false);
+  const [teamEventModal, setTeamEventModal] = useState(undefined);
 
-  async function handleShareClub() {
-    const url = `${window.location.origin}/clubs/${club.id}`;
-    const result = await share({
-      title: club.name,
-      text: `${club.name} — ${club.city}`,
-      url,
-    });
-    if (result.success) {
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2200);
-    }
-  }
+  const checklistKey = `sl-club-checklist-dismissed-${club.id}`;
+  const [checklistDismissed, setChecklistDismissed] = useState(() => !!localStorage.getItem(checklistKey));
 
+  // ── Hooks ──────────────────────────────────────────────────────────────────
+  const { announcements, sendAnnouncement } = useClubAnnouncements(club.id);
   const [teamTrainings, setTeamTrainings] = useClubTrainings(club.id);
 
-  useEffect(() => {
-    if (!canEdit && isEditing) setIsEditing(false);
-  }, [canEdit, isEditing, setIsEditing]);
-
-  // Track page view to Supabase — throttled to 1 per session per club
-  useEffect(() => {
-    const sessionKey = `cpv_${club.id}`;
-    if (sessionStorage.getItem(sessionKey)) return;
-    sessionStorage.setItem(sessionKey, '1');
-    supabase
-      .from('club_page_views')
-      .insert({ club_id: String(club.id), user_id: currentUser?.id ?? null, session_id: sessionKey })
-      .then(({ error }) => {
-        if (error) console.warn('[ClubPageView] view track failed:', error.message);
-      });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [club.id]);
-
-  // OpenGraph / document title via hook centralisé
-  const clubUrl = `${window.location.origin}/clubs/${club.id}`;
-  const clubDesc = club.description || `${club.name} — club de ${club.sport}${club.city ? ` à ${club.city}` : ''}`;
-  useDynamicMeta({
-    title:       club.name,
-    description: clubDesc,
-    image:       club.logo_url || undefined,
-    url:         clubUrl,
-  });
-
-  // ── Live events depuis Supabase (prioritaires sur allEvents localStorage) ──
+  // ── Live events ────────────────────────────────────────────────────────────
   const liveEvents = useClubEvents(club.id);
   const effectiveEvents = useMemo(() => {
     if (!liveEvents.length) return allEvents ?? [];
     const liveIds = new Set(liveEvents.map(e => e.id));
-    return [
-      ...liveEvents,
-      ...(allEvents ?? []).filter(e => !liveIds.has(e.id)),
-    ];
+    return [...liveEvents, ...(allEvents ?? []).filter(e => !liveIds.has(e.id))];
   }, [liveEvents, allEvents]);
 
   const clubEventIds = useMemo(
@@ -313,509 +192,145 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
     [club.categories]
   );
 
-  const activeTeam = allTeams.find(t => t.id === activeTeamId) ?? null;
+  // ── Visual ────────────────────────────────────────────────────────────────
   const sportData = SPORTS[club.sport];
   const accentColor = theme.accent ?? sportData?.color ?? '#22C55E';
+  const heroBackground = getHeroBackground(theme.primary, accentColor, theme.heroStyle ?? 'solid');
 
   const posterEvent = useMemo(() => {
     const now = new Date();
     const next = effectiveEvents
-      .filter(e => e.clubId === club.id && new Date(e.date) >= now)
+      .filter(e => String(e.clubId) === String(club.id) && new Date(e.date) >= now)
       .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
-    if (next) return next;
-    return {
+    return next ?? {
       id: `club-poster-${club.id}`,
-      sport: club.sport,
-      title: club.name,
+      sport: club.sport, title: club.name,
       date: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 16),
-      city: club.city,
-      eventType: 'friendly',
+      city: club.city, eventType: 'friendly',
     };
   }, [effectiveEvents, club]);
-  const rows = getRows(blocks);
-  const stats = useMatchStats(blocks);
-  const pendingCount = usePendingResults(blocks);
 
-  function handleAddBlock(type, afterRowId) {
-    const rowBlocks = blocks.filter(b => b.rowId === afterRowId);
-    const lastId    = rowBlocks[rowBlocks.length - 1]?.id ?? null;
-    addBlock(type, lastId);
-    setOpenMenuAfter(null);
+  // ── SEO ───────────────────────────────────────────────────────────────────
+  const clubUrl = `${window.location.origin}/clubs/${club.id}`;
+  useDynamicMeta({
+    title: club.name,
+    description: club.description || `${club.name} — club de ${club.sport}${club.city ? ` à ${club.city}` : ''}`,
+    image: club.logo_url || undefined,
+    url: clubUrl,
+  });
+
+  // ── Analytics ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const key = `cpv_${club.id}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+    supabase.from('club_page_views').insert({
+      club_id: String(club.id), user_id: currentUser?.id ?? null, session_id: key,
+    }).then(() => {});
+  }, [club.id, currentUser?.id]);
+
+  // Reset editing if user loses permissions
+  useEffect(() => {
+    if (!canEdit && isEditing) setIsEditing(false);
+  }, [canEdit, isEditing, setIsEditing]);
+
+  // ── Event handlers ─────────────────────────────────────────────────────────
+  async function handleShare() {
+    const result = await share({ title: club.name, text: `${club.name} — ${club.city}`, url: clubUrl });
+    if (result.success) { setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2200); }
   }
 
-  function handleAddEventForTeam(team) {
-    const parentCat = (club.categories ?? []).find(cat =>
-      cat.teams?.some(t => t.id === team.id)
-    );
-    setTeamEventModal({
-      _isNew: true,
-      defaultTeam:     team.name,
-      defaultCategory: parentCat?.name ?? team.category ?? '',
-      defaultLevel:    team.level ?? '',
-      defaultSport:    club.sport,
-      defaultCity:     club.city,
-      defaultHomeOrAway: 'home',
-    });
+  function handleCopyLink() {
+    navigator.clipboard?.writeText(`${window.location.origin}#club/${club.id}`)
+      .then(() => { setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2200); });
+  }
+
+  function handleFollow() {
+    if (isLoggedIn) {
+      setShowFollowModal(true);
+    } else {
+      setLoginHint(true);
+      setTimeout(() => setLoginHint(false), 2200);
+    }
   }
 
   function handleCreateClubEvent() {
+    setTeamEventModal({ _isNew: true, defaultSport: club.sport, defaultCity: club.city, defaultHomeOrAway: 'home' });
+  }
+
+  function handleAddEventForTeam(team) {
+    const cat = (club.categories ?? []).find(c => c.teams?.some(t => t.id === team.id));
     setTeamEventModal({
-      _isNew: true,
-      defaultSport: club.sport ?? undefined,
-      defaultCity:  club.city  ?? undefined,
-      defaultHomeOrAway: 'home',
+      _isNew: true, defaultTeam: team.name,
+      defaultCategory: cat?.name ?? '', defaultLevel: team.level ?? '',
+      defaultSport: club.sport, defaultCity: club.city, defaultHomeOrAway: 'home',
     });
   }
 
-  function handleTeamEventSave(formData) {
-    if (onAddEvent) onAddEvent({ ...formData, clubId: club.id });
-    setTeamEventModal(undefined);
+  function handleAdminAction(actionId) {
+    switch (actionId) {
+      case 'dashboard':   setShowDashboard(true); break;
+      case 'edit-page':   setIsEditing(e => !e); setActiveTab('accueil'); break;
+      case 'event':       handleCreateClubEvent(); break;
+      case 'announce':    setShowAnnouncement(true); break;
+      case 'edit-info':   setShowEditInfo(true); break;
+      case 'managers':    setShowManagersPanel(true); break;
+      case 'roster':      setShowRosterPanel(true); break;
+      case 'sponsors':    setShowSponsorsPanel(true); break;
+    }
   }
 
-  async function handleBulkTeamEventSave(events) {
-    if (onAddEvent) for (const ev of events) await onAddEvent({ ...ev, clubId: club.id });
-    setTeamEventModal(undefined);
-  }
-
-  function handleExportICS() {
-    const now = new Date();
-    const upcoming = effectiveEvents.filter(e => e.clubId === club.id && new Date(e.date) >= now);
-    downloadClubICS(upcoming, club.name);
-  }
-
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.18, ease: 'easeOut' }}
-      className="absolute inset-0 flex flex-col z-20"
-      style={{ backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}
+      transition={{ duration: 0.18 }}
+      style={{
+        position: 'absolute', inset: 0, zIndex: 20,
+        display: 'flex', flexDirection: 'column',
+        backgroundColor: 'var(--sl-bg)',
+        overflow: 'hidden',
+        fontFamily: `"${typography.bodyFont}", sans-serif`,
+      }}
+      role="main"
+      aria-label={`Page du club ${club.name}`}
     >
-      {/* ── Header ── */}
-      <div className="flex-shrink-0 relative text-white" style={getHeroBackground(theme.primary, accentColor, theme.heroStyle ?? 'solid')}>
-        {/* accent glow overlay — toned down on gradient/aurora styles */}
-        {!['gradient', 'aurora'].includes(theme.heroStyle) && (
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: `linear-gradient(135deg, transparent 35%, ${accentColor}1A 100%)`,
-          }} />
-        )}
+
+      {/* ── Hero ── */}
+      <ClubHero
+        club={club}
+        accentColor={accentColor}
+        heroBackground={heroBackground}
+        isFollowing={isFollowing}
+        onBack={onBack}
+        onFollow={handleFollow}
+        onShare={handleShare}
+        onCopyLink={handleCopyLink}
+        onPoster={() => setShowPoster(true)}
+        onExportICS={() => {
+          const upcoming = effectiveEvents.filter(e => e.clubId === club.id && new Date(e.date) >= new Date());
+          downloadClubICS(upcoming, club.name);
+        }}
+        onContact={club.contact ? () => window.location.href = `mailto:${club.contact}` : null}
+        linkCopied={linkCopied}
+      />
+
+      {/* Login hint tooltip */}
+      {loginHint && (
         <div style={{
-          position: 'absolute', top: '-40%', right: '-8%', width: 240, height: 240,
-          borderRadius: '50%', pointerEvents: 'none',
-          background: `radial-gradient(circle, ${accentColor}22 0%, transparent 65%)`,
-        }} />
-        <div className="flex items-center justify-between px-4 pt-4 pb-3">
-          <button onClick={onBack} aria-label="Retour à la liste des clubs" className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm transition-colors cursor-pointer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-            Clubs
-          </button>
-          <div className="flex items-center gap-2">
-            {/* Share / deeplink button */}
-            <button
-              onClick={handleShareClub}
-              aria-label="Copier le lien du club"
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
-              style={{
-                backgroundColor: linkCopied ? 'rgba(34,217,106,0.25)' : 'rgba(255,255,255,0.1)',
-                color: linkCopied ? '#22d96a' : 'rgba(255,255,255,0.7)',
-              }}
-            >
-              {linkCopied
-                ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-              }
-              <span className="hidden sm:inline">{linkCopied ? 'Copié !' : 'Partager'}</span>
-            </button>
-
-            {/* Bouton Nouvel événement — visible pour les admins pouvant ajouter des events */}
-            {canAddEvent && onAddEvent && (
-              <button
-                onClick={handleCreateClubEvent}
-                aria-label="Créer un nouvel événement pour ce club"
-                title="Créer un événement"
-                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer"
-                style={{ backgroundColor: 'rgba(34,217,106,0.2)', color: '#22d96a' }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                <span className="hidden sm:inline">Événement</span>
-              </button>
-            )}
-
-            {canEdit && onUpdateClub && (
-              <button
-                onClick={() => setShowEditInfo(true)}
-                aria-label="Modifier les informations et équipes du club"
-                className="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors cursor-pointer bg-slate-600 text-slate-200 hover:bg-slate-500"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
-                </svg>
-                <span className="hidden sm:inline">Modifier</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="px-4 pb-2 flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center font-bold text-white text-base font-oswald flex-shrink-0"
-            style={{ backgroundColor: club.logo ? '#fff' : accentColor, boxShadow: '0 0 0 2.5px rgba(255,255,255,0.75)', padding: club.logo ? 4 : 0 }}>
-            {club.logo
-              ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.style.backgroundColor = accentColor; e.currentTarget.parentElement.textContent = club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3); }} />
-              : club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold font-oswald tracking-wide leading-tight">{club.name}</h1>
-            <div className="flex items-center gap-1.5 mt-1 text-slate-300 text-sm">
-              <SportIcon sport={club.sport} size={13} color="#cbd5e1" />
-              <span>{club.sport}</span>
-              <span className="text-slate-500">·</span>
-              <span>{club.city}</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {club.categories?.length > 0 ? (
-                <>
-                  {club.categories.slice(0, 6).map(cat => (
-                    <span key={cat.id} className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">
-                      {cat.name}
-                    </span>
-                  ))}
-                  {club.categories.length > 6 && (
-                    <span className="text-[10px] bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full">
-                      +{club.categories.length - 6}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">{club.level}</span>
-              )}
-              <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">{club.members} membres</span>
-              {stats.played > 0 && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
-                  style={{ backgroundColor: '#1e3a5f', color: '#94a3b8' }}>
-                  <span style={{ color: '#22C55E' }}>{stats.W}V</span>
-                  <span>·</span>
-                  <span style={{ color: '#f59e0b' }}>{stats.D}N</span>
-                  <span>·</span>
-                  <span style={{ color: '#ef4444' }}>{stats.L}D</span>
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Action buttons — own row so the club name area gets full width */}
-        <div className="px-4 pb-4 flex gap-2">
-          {/* Follow */}
-          <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => {
-                if (isLoggedIn) {
-                  setShowFollowModal(true);
-                } else {
-                  setLoginHint(true);
-                  setTimeout(() => setLoginHint(false), 2200);
-                }
-              }}
-              aria-label={isFollowing ? 'Modifier les préférences de suivi du club' : 'Suivre ce club'}
-              title={isFollowing ? 'Modifier le suivi' : 'Suivre ce club'}
-              className="flex flex-col items-center gap-1 p-2 rounded-xl transition-colors cursor-pointer"
-              style={{ backgroundColor: isFollowing ? `${accentColor}25` : 'rgba(255,255,255,0.08)' }}
-            >
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: isFollowing ? `${accentColor}30` : 'rgba(255,255,255,0.1)' }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill={isFollowing ? accentColor : 'none'} stroke={isFollowing ? accentColor : '#cbd5e1'} strokeWidth="2" strokeLinecap="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-              </div>
-              <span className="text-[9px] font-medium" style={{ color: isFollowing ? accentColor : '#94a3b8' }}>
-                {isFollowing ? 'Suivi' : 'Suivre'}
-              </span>
-            </button>
-            {loginHint && (
-              <div style={{
-                position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)',
-                backgroundColor: 'rgba(15,23,42,0.95)', color: '#f1f5f9',
-                fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
-                padding: '5px 10px', borderRadius: 8,
-                pointerEvents: 'none', zIndex: 10,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-              }}>
-                Connecte-toi pour suivre
-              </div>
-            )}
-          </div>
-
-          {/* Poster */}
-          <button
-            onClick={() => setShowPoster(true)}
-            className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors cursor-pointer"
-            title="Créer l'affiche du prochain match"
-          >
-            <div className="w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-              </svg>
-            </div>
-            <span className="text-[9px] font-medium text-slate-400">Affiche</span>
-          </button>
-
-          {/* ICS export */}
-          <button
-            onClick={handleExportICS}
-            className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors cursor-pointer"
-            title="Exporter le calendrier .ics"
-          >
-            <div className="w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-            </div>
-            <span className="text-[9px] text-slate-400 font-medium">Agenda</span>
-          </button>
-
-          {/* Contact */}
-          {club.contact && (
-            <a href={`mailto:${club.contact}`}
-              className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-700 transition-colors"
-              title={`Contacter ${club.name}`}>
-              <div className="w-9 h-9 rounded-xl bg-slate-700 hover:bg-slate-600 flex items-center justify-center transition-colors">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-              </div>
-              <span className="text-[9px] text-slate-400 font-medium">Contact</span>
-            </a>
-          )}
-        </div>
-
-        {isEditing && (
-          <div className="px-4 py-2 flex items-center justify-between" style={{ backgroundColor: '#d97706' }}>
-            <span className="text-white text-xs font-medium opacity-90 flex-1 min-w-0 mr-3 truncate">
-              {simpleMode ? 'Mode rapide' : 'Avancé — glissez ⠿ pour réordonner'}
-            </span>
-            <button
-              type="button"
-              onClick={() => setOptionsOpen(o => !o)}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors"
-              style={{ backgroundColor: optionsOpen ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)', color: '#fff' }}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-              </svg>
-              Options
-            </button>
-          </div>
-        )}
-      </div>
-
-      <PendingResultsBanner count={pendingCount} isEditing={isEditing} />
-
-      {/* ── Options drawer (edit mode) ── */}
-      <AnimatePresence>
-        {isEditing && optionsOpen && (
-          <motion.div
-            key="options-drawer"
-            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden flex-shrink-0"
-            style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', maxHeight: '52dvh' }}
-          >
-            <div className="px-4 py-4" style={{ display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto', maxHeight: '52dvh' }}>
-
-              {/* ── Mode d'édition ── */}
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Mode d'édition</div>
-                <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid var(--sl-border)', width: 'fit-content' }}>
-                  <button type="button" onClick={() => setSimpleMode(true)}
-                    className="px-4 py-2 text-xs font-bold transition-colors cursor-pointer"
-                    style={{ backgroundColor: simpleMode ? 'var(--sl-t1)' : 'transparent', color: simpleMode ? 'var(--sl-bg)' : 'var(--sl-t2)' }}>
-                    Rapide
-                  </button>
-                  <button type="button" onClick={() => setSimpleMode(false)}
-                    className="px-4 py-2 text-xs font-bold transition-colors cursor-pointer"
-                    style={{ backgroundColor: !simpleMode ? 'var(--sl-t1)' : 'transparent', color: !simpleMode ? 'var(--sl-bg)' : 'var(--sl-t2)' }}>
-                    Avancé
-                  </button>
-                </div>
-                <p className="text-[10px] mt-1.5" style={{ color: 'var(--sl-t3)' }}>
-                  {simpleMode ? 'Ajoutez les sections essentielles en un clic' : 'Glissez ⠿ pour réordonner · Réduisez un bloc pour le mettre côte-à-côte'}
-                </p>
-              </div>
-
-              {/* ── Style du bandeau hero ── */}
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Style du bandeau</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                  {HERO_STYLE_OPTIONS.map(opt => {
-                    const bg = getHeroBackground(theme.primary, accentColor, opt.key);
-                    const isActive = (theme.heroStyle ?? 'solid') === opt.key;
-                    return (
-                      <button
-                        key={opt.key}
-                        onClick={() => setTheme({ heroStyle: opt.key })}
-                        style={{
-                          borderRadius: 10, overflow: 'hidden', cursor: 'pointer', height: 48,
-                          border: `2px solid ${isActive ? accentColor : 'var(--sl-border)'}`,
-                          padding: 0, position: 'relative', ...bg,
-                        }}
-                      >
-                        {/* mini radial glow preview */}
-                        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 80% 30%, ${accentColor}33 0%, transparent 60%)` }} />
-                        <span style={{
-                          position: 'relative', fontSize: 9, fontWeight: 700,
-                          color: 'rgba(255,255,255,0.9)', display: 'block', paddingLeft: 7, paddingTop: 6,
-                          textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-                        }}>{opt.label}</span>
-                        {isActive && (
-                          <div style={{
-                            position: 'absolute', bottom: 5, right: 6,
-                            width: 12, height: 12, borderRadius: '50%',
-                            backgroundColor: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          }}>
-                            <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* ── Typographie ── */}
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Typographie</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {['titleFont', 'bodyFont'].map(key => (
-                    <div key={key}>
-                      <div className="text-[10px] mb-1.5 font-medium" style={{ color: 'var(--sl-t3)' }}>
-                        {key === 'titleFont' ? 'Titres' : 'Corps de texte'}
-                      </div>
-                      <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-                        {FONT_OPTIONS.map(font => (
-                          <button
-                            key={font.key}
-                            onClick={() => setTypography({ [key]: font.key })}
-                            className="flex-shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                            style={{
-                              fontFamily: `"${font.key}", sans-serif`,
-                              backgroundColor: typography[key] === font.key ? '#0F1E3A' : 'var(--sl-card)',
-                              color: typography[key] === font.key ? 'white' : 'var(--sl-t2)',
-                              border: `1px solid ${typography[key] === font.key ? '#0F1E3A' : 'var(--sl-border)'}`,
-                            }}
-                          >
-                            {font.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── Couleurs du club ── */}
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--sl-t3)' }}>Couleurs du club</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: 5, cursor: 'pointer' }}>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)' }}>Couleur principale (header)</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <input
-                        type="color"
-                        value={theme.primary}
-                        onChange={e => setTheme({ primary: e.target.value })}
-                        style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--sl-border-s)', cursor: 'pointer', padding: 2, backgroundColor: 'transparent' }}
-                      />
-                      <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--sl-t2)' }}>{theme.primary}</span>
-                    </div>
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: 5, cursor: 'pointer' }}>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)' }}>Couleur d'accent (boutons)</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <input
-                        type="color"
-                        value={theme.accent ?? (sportData?.color ?? '#22C55E')}
-                        onChange={e => setTheme({ accent: e.target.value })}
-                        style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--sl-border-s)', cursor: 'pointer', padding: 2, backgroundColor: 'transparent' }}
-                      />
-                      <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--sl-t2)' }}>{theme.accent ?? (sportData?.color ?? '#22C55E')}</span>
-                      {theme.accent && (
-                        <button
-                          onClick={() => setTheme({ accent: null })}
-                          style={{ fontSize: 10, color: 'var(--sl-t3)', padding: '2px 6px', borderRadius: 6, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', cursor: 'pointer' }}
-                        >
-                          Réinitialiser
-                        </button>
-                      )}
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* ── Vues ── */}
-              <div className="flex items-center gap-1.5">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                <span className="text-[10px] font-semibold" style={{ color: 'var(--sl-t3)' }}>{pageViews ?? 0} vue{(pageViews ?? 0) !== 1 ? 's' : ''} sur cette page</span>
-              </div>
-
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Tab bar ── */}
-      {allTeams.length > 0 && (
-        <div className="flex-shrink-0 relative" style={{ borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
-          <div
-            ref={tabBarRef}
-            className="flex overflow-x-auto"
-            style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x', scrollBehavior: 'smooth' }}
-          >
-            <button
-              data-active={activeTeamId === null}
-              onClick={() => setActiveTeamId(null)}
-              className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer"
-              style={activeTeamId === null
-                ? { borderColor: accentColor, color: 'var(--sl-t1)' }
-                : { borderColor: 'transparent', color: 'var(--sl-t3)' }}
-            >
-              Général
-            </button>
-            {allTeams.map(team => (
-              <button
-                key={team.id}
-                data-active={activeTeamId === team.id}
-                onClick={() => setActiveTeamId(team.id)}
-                className="flex-shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer"
-                style={activeTeamId === team.id
-                  ? { borderColor: accentColor, color: 'var(--sl-t1)' }
-                  : { borderColor: 'transparent', color: 'var(--sl-t3)' }}
-              >
-                {team.name}
-              </button>
-            ))}
-            {/* Spacer so last tab doesn't sit at the very edge */}
-            <div className="flex-shrink-0 w-4" />
-          </div>
-          {/* Right-fade overflow hint — hidden via CSS when scrolled to end */}
-          {allTeams.length > 2 && (
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute', right: 0, top: 0, bottom: 1,
-                width: 32, pointerEvents: 'none',
-                background: 'linear-gradient(to right, transparent, var(--sl-card))',
-              }}
-            />
-          )}
+          position: 'absolute', top: 120, left: '50%', transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(15,23,42,0.95)', color: '#f1f5f9',
+          fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+          padding: '7px 14px', borderRadius: 10, zIndex: 100,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+        }}>
+          Connecte-toi pour suivre ce club
         </div>
       )}
 
-      {/* ── Bannière expiration abonnement (isOwner, compact) ── */}
+      {/* Subscription banner */}
       {isOwner && (
         <SubscriptionExpiryBanner
           periodEnd={clubPeriodEnd}
@@ -825,270 +340,194 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         />
       )}
 
-      {/* ── Barre de navigation administration (propriétaire uniquement) ── */}
-      {isOwner && (
+      {/* Editing mode banner */}
+      {isEditing && (
         <div style={{
-          flexShrink: 0,
-          borderBottom: '1px solid var(--sl-border)',
-          backgroundColor: 'var(--sl-surface)',
+          flexShrink: 0, padding: '8px 16px',
+          backgroundColor: '#d97706',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 8,
         }}>
-          {/* Indicateur "Administration" */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '6px 16px 4px',
-          }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true" style={{ color: '#a78bfa', flexShrink: 0 }}>
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#a78bfa' }}>
-              Administration
-            </span>
-          </div>
-
-          {/* Onglets avec overflow scroll + fade hint */}
-          <div style={{ position: 'relative' }}>
-            <div
-              role="tablist"
-              aria-label="Outils d'administration du club"
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', opacity: 0.9 }}>
+            ✏️ {simpleMode ? 'Mode rapide' : 'Mode avancé — glissez pour réordonner'}
+          </span>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              onClick={() => setSimpleMode(v => !v)}
               style={{
-                display: 'flex', gap: 6,
-                padding: '0 16px 8px',
-                overflowX: 'auto',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
+                fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 8,
+                border: 'none', cursor: 'pointer',
+                backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff',
               }}
             >
-              {[
-                { id: 'infos',    label: '📰 Ma page',       ariaLabel: 'Page publique du club',           isPanel: false },
-                { id: 'stats',    label: '📊 Statistiques',  ariaLabel: 'Statistiques et tableau de bord', isPanel: true  },
-                { id: 'gestion',  label: '⚙️ Gestion',       ariaLabel: 'Gestion des administrateurs',     isPanel: true  },
-                { id: 'effectif', label: '👥 Membres',        ariaLabel: 'Effectif et membres du club',     isPanel: true  },
-                { id: 'sponsors', label: '🤝 Partenaires',   ariaLabel: 'Sponsors et partenaires',         isPanel: true  },
-              ].map(tab => {
-                const isActive = clubInternalTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-label={tab.ariaLabel}
-                    title={tab.ariaLabel}
-                    onClick={() => {
-                      setClubInternalTab(tab.id);
-                      if (tab.id === 'stats')    setShowDashboard(true);
-                      if (tab.id === 'gestion')  setShowManagersPanel(true);
-                      if (tab.id === 'effectif') setShowRosterPanel(true);
-                      if (tab.id === 'sponsors') setShowSponsorsPanel(true);
-                    }}
-                    style={{
-                      padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                      cursor: 'pointer', transition: 'all 0.12s',
-                      whiteSpace: 'nowrap', flexShrink: 0,
-                      display: 'flex', alignItems: 'center', gap: 4,
-                      border: isActive ? 'none' : '1px solid var(--sl-border)',
-                      backgroundColor: isActive
-                        ? (tab.isPanel ? '#0f172a' : '#6366f1')
-                        : 'var(--sl-pill-bg)',
-                      color: isActive ? '#fff' : 'var(--sl-pill-text)',
-                    }}
-                  >
-                    {tab.label}
-                    {tab.isPanel && (
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true" style={{ opacity: isActive ? 0.7 : 0.35, flexShrink: 0 }}>
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                        <polyline points="15 3 21 3 21 9"/>
-                        <line x1="10" y1="14" x2="21" y2="3"/>
-                      </svg>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            {/* Fade overflow hint — indique qu'il y a du contenu à droite */}
-            <div
-              aria-hidden="true"
+              {simpleMode ? 'Mode avancé' : 'Mode rapide'}
+            </button>
+            <button
+              onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }}
               style={{
-                position: 'absolute', right: 0, top: 0, bottom: 0,
-                width: 32, pointerEvents: 'none',
-                background: 'linear-gradient(to right, transparent, var(--sl-surface))',
+                fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 8,
+                border: 'none', cursor: 'pointer',
+                backgroundColor: 'rgba(255,255,255,0.9)', color: '#d97706',
               }}
-            />
+            >
+              ✓ Terminé
+            </button>
           </div>
         </div>
       )}
 
-      {/* ── Content ── */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ overscrollBehavior: 'contain', '--club-font-title': `"${typography.titleFont}", sans-serif`, '--club-font-body': `"${typography.bodyFont}", sans-serif`, paddingBottom: canEdit && !showEditInfo && !showAnnouncement && !showDashboard ? `calc(${isEditing ? 80 : 160}px + env(safe-area-inset-bottom, 0px))` : undefined }}>
-        {activeTeam ? (
-          <TeamView
-            key={activeTeam.id}
-            team={activeTeam}
+      {/* ── Tab Navigation ── */}
+      <TabNav
+        activeTab={activeTab}
+        onTabChange={tab => { setActiveTab(tab); setOpenMenuAfter(null); }}
+        accentColor={accentColor}
+        announcementsCount={announcements.length}
+      />
+
+      {/* ── Tab content ── */}
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', overscrollBehavior: 'contain' }}>
+        {activeTab === 'accueil' && (
+          <ClubHomeTab
+            club={club}
+            blocks={blocks}
+            rows={rows}
+            isEditing={isEditing}
+            simpleMode={simpleMode}
+            accentColor={accentColor}
+            openMenuAfter={openMenuAfter}
+            onSetOpenMenuAfter={setOpenMenuAfter}
+            effectiveEvents={effectiveEvents}
+            announcements={announcements}
+            canEdit={canEdit}
+            checklistDismissed={checklistDismissed}
+            onDismissChecklist={() => { localStorage.setItem(checklistKey, '1'); setChecklistDismissed(true); }}
+            onEditPage={() => { setIsEditing(true); setActiveTab('accueil'); }}
+            onCreateEvent={handleCreateClubEvent}
+            onSendAnnouncement={() => setShowAnnouncement(true)}
+            onTabChange={setActiveTab}
+            updateBlock={updateBlock}
+            deleteBlock={deleteBlock}
+            toggleBlock={toggleBlock}
+            setBlockSpan={setBlockSpan}
+            moveBlockInRow={moveBlockInRow}
+            addBlockToRow={addBlockToRow}
+            addBlock={addBlock}
+            reorderRows={reorderRows}
+            currentUser={currentUser}
+          />
+        )}
+
+        {activeTab === 'news' && (
+          <ClubNewsTab
+            announcements={announcements}
+            canEdit={canEdit}
+            onNewAnnouncement={() => setShowAnnouncement(true)}
+          />
+        )}
+
+        {activeTab === 'matchs' && (
+          <ClubMatchesTab
+            effectiveEvents={effectiveEvents}
+            club={club}
+            accentColor={accentColor}
+            canAddEvent={canAddEvent && !!onAddEvent}
+            onCreateEvent={handleCreateClubEvent}
+          />
+        )}
+
+        {activeTab === 'effectif' && (
+          <ClubRosterTab
+            club={club}
+            allTeams={allTeams}
             blocks={blocks}
             isEditing={isEditing}
             updateBlock={updateBlock}
             addBlock={addBlock}
-            club={club}
-            allEvents={effectiveEvents}
+            effectiveEvents={effectiveEvents}
             trainings={teamTrainings}
             onUpdateTrainings={setTeamTrainings}
             onAddEventForTeam={handleAddEventForTeam}
             canAddEvent={canAddEvent && !!onAddEvent}
-            onBulkAddTrainingEvents={handleBulkTeamEventSave}
-          />
-        ) : isEditing && simpleMode ? (
-          <ClubSimpleEditor
-            blocks={blocks}
-            onAddBlock={type => addBlock(type, null)}
-            onAdvanced={() => setSimpleMode(false)}
-            club={club}
+            onBulkAddTrainingEvents={async (events) => {
+              for (const ev of events) await onAddEvent?.({ ...ev, clubId: club.id });
+            }}
+            currentUser={currentUser}
             accentColor={accentColor}
           />
-        ) : (
-          <div className="px-4 py-5 overflow-x-hidden">
-            {/* Checklist post-création — visible tant que non dismissed */}
-            {canEdit && !isEditing && !checklistDismissed && (
-              <ClubSetupChecklist
-                club={club}
-                blocks={blocks}
-                events={effectiveEvents.filter(e => String(e.clubId) === String(club.id))}
-                canEdit={canEdit}
-                onDismiss={() => { localStorage.setItem(checklistKey, '1'); setChecklistDismissed(true); }}
-                onEditPage={() => setIsEditing(true)}
-                onCreateEvent={handleCreateClubEvent}
-                onSendAnnouncement={() => setShowAnnouncement(true)}
-              />
-            )}
-            <Reorder.Group axis="y" values={rows} onReorder={reorderRows} as="div">
-              {rows.map(row => (
-                <div key={row.rowId}>
-                  <DraggableRow
-                    row={row}
-                    isEditing={isEditing}
-                    onUpdate={updateBlock}
-                    onDelete={deleteBlock}
-                    onToggle={toggleBlock}
-                    onSetSpan={setBlockSpan}
-                    onMoveLeft={id => moveBlockInRow(id, 'left')}
-                    onMoveRight={id => moveBlockInRow(id, 'right')}
-                    onAddToRow={addBlockToRow}
-                    allEvents={effectiveEvents}
-                    club={club}
-                    currentUser={currentUser}
-                  />
+        )}
 
-                  {isEditing && (
-                    <AnimatePresence>
-                      {openMenuAfter === row.rowId ? (
-                        <AddBlockMenu
-                          key={`menu-${row.rowId}`}
-                          onAdd={type => handleAddBlock(type, row.rowId)}
-                          onCancel={() => setOpenMenuAfter(null)}
-                        />
-                      ) : (
-                        <button
-                          onClick={() => setOpenMenuAfter(row.rowId)}
-                          className="flex items-center justify-center gap-1 w-full mb-3 py-1.5 text-xs rounded-xl transition-colors cursor-pointer"
-                          style={{ color: 'var(--sl-t3)' }}
-                          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--sl-hover)'; e.currentTarget.style.color = 'var(--sl-t2)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--sl-t3)'; }}
-                        >
-                          <PlusIcon /> Ajouter une ligne ici
-                        </button>
-                      )}
-                    </AnimatePresence>
-                  )}
-                </div>
-              ))}
-            </Reorder.Group>
-
-            {blocks.length === 0 && isEditing && (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'var(--sl-surface)' }}>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round">
-                    <rect x="3" y="3" width="18" height="18" rx="3"/>
-                    <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-                  </svg>
-                </div>
-                <p className="font-medium text-sm mb-4" style={{ color: 'var(--sl-t2)' }}>Page vide — ajoutez votre premier bloc</p>
-                <button onClick={() => addBlock('title', null)}
-                  className="px-4 py-2 text-white text-sm rounded-xl transition-colors cursor-pointer"
-                  style={{ backgroundColor: '#1e293b' }}>
-                  + Ajouter un bloc
-                </button>
-              </div>
-            )}
-
-            {blocks.length === 0 && !isEditing && (() => {
-              const now = new Date();
-              const hasUpcoming = effectiveEvents.some(
-                e => String(e.clubId) === String(club.id) && new Date(e.date) >= now
-              );
-              return (
-                <>
-                  {hasUpcoming && (
-                    <div style={{ padding: '0 0 16px' }}>
-                      <UpcomingEventsBlock data={{}} allEvents={effectiveEvents} club={club} isEditing={false} onUpdate={() => {}} />
-                    </div>
-                  )}
-                  {!hasUpcoming && (
-                    <div style={{ padding: '24px 0 16px', textAlign: 'center' }}>
-                      <div style={{
-                        borderRadius: 16, padding: '28px 20px',
-                        backgroundColor: 'var(--sl-surface)',
-                        border: '1px solid var(--sl-border)',
-                      }}>
-                        <div style={{
-                          width: 52, height: 52, borderRadius: 14,
-                          backgroundColor: 'var(--sl-card)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          margin: '0 auto 14px',
-                        }}>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <rect x="3" y="3" width="18" height="18" rx="3"/>
-                            <path d="M9 9h6M9 13h4"/>
-                          </svg>
-                        </div>
-                        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--sl-t1)', marginBottom: 6 }}>
-                          Ce club n'a pas encore publié de contenu
-                        </p>
-                        {club.description ? (
-                          <p style={{ fontSize: 12, color: 'var(--sl-t3)', lineHeight: 1.6, margin: 0 }}>
-                            {club.description}
-                          </p>
-                        ) : (
-                          <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: 0 }}>
-                            Revenez bientôt pour voir les actualités de ce club.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </>
-              );
-            })()}
-
-            {isEditing && blocks.length > 0 && openMenuAfter === null && (
-              <button onClick={() => setOpenMenuAfter('__end__')}
-                className="flex items-center justify-center gap-2 w-full py-3 mt-1 rounded-2xl text-sm transition-colors cursor-pointer"
-                style={{ border: '2px dashed var(--sl-border)', color: 'var(--sl-t3)' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sl-border-s)'; e.currentTarget.style.color = 'var(--sl-t2)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.color = 'var(--sl-t3)'; }}>
-                <PlusIcon /> Ajouter un bloc à la fin
-              </button>
-            )}
-            <AnimatePresence>
-              {openMenuAfter === '__end__' && (
-                <AddBlockMenu
-                  onAdd={type => { addBlock(type, null); setOpenMenuAfter(null); }}
-                  onCancel={() => setOpenMenuAfter(null)}
-                />
-              )}
-            </AnimatePresence>
-          </div>
+        {activeTab === 'infos' && (
+          <ClubInfoTab club={club} accentColor={accentColor} />
         )}
       </div>
 
-      {/* Edit club info modal (name, categories, teams…) */}
+      {/* ── Admin FAB ── */}
+      {canEdit && !isEditing && !showAdminDrawer && (
+        <motion.button
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileTap={{ scale: 0.92 }}
+          onClick={() => setShowAdminDrawer(true)}
+          aria-label="Ouvrir les outils d'administration"
+          style={{
+            position: 'absolute',
+            bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            right: 16, zIndex: 30,
+            display: 'flex', alignItems: 'center', gap: 7,
+            padding: '11px 18px', borderRadius: 18, border: 'none',
+            cursor: 'pointer', fontSize: 13, fontWeight: 700,
+            backgroundColor: 'rgba(15,23,42,0.92)',
+            color: '#cbd5e1',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+          Admin
+        </motion.button>
+      )}
+
+      {/* Done button when editing */}
+      {isEditing && (
+        <motion.button
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileTap={{ scale: 0.92 }}
+          onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }}
+          aria-label="Terminer l'édition de la page"
+          style={{
+            position: 'absolute',
+            bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            right: 16, zIndex: 30,
+            display: 'flex', alignItems: 'center', gap: 7,
+            padding: '12px 22px', borderRadius: 18, border: 'none',
+            cursor: 'pointer', fontSize: 14, fontWeight: 800,
+            backgroundColor: 'var(--sl-green)',
+            color: '#fff',
+            boxShadow: '0 4px 20px rgba(34,217,106,0.45)',
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Terminé
+        </motion.button>
+      )}
+
+      {/* ── Admin Drawer ── */}
+      <ClubAdminDrawer
+        open={showAdminDrawer}
+        onClose={() => setShowAdminDrawer(false)}
+        onAction={handleAdminAction}
+        isEditing={isEditing}
+      />
+
+      {/* ── Modals ── */}
+
+      {/* Edit club info */}
       {showEditInfo && onUpdateClub && (
         <ClubFormModal
           club={club}
@@ -1097,19 +536,19 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         />
       )}
 
-      {/* Team event modal */}
+      {/* Event creation */}
       {teamEventModal !== undefined && (
         <Suspense fallback={null}>
           <EventFormModal
             event={teamEventModal}
-            onSave={handleTeamEventSave}
-            onBulkSave={handleBulkTeamEventSave}
+            onSave={formData => { onAddEvent?.({ ...formData, clubId: club.id }); setTeamEventModal(undefined); }}
+            onBulkSave={async events => { for (const ev of events) await onAddEvent?.({ ...ev, clubId: club.id }); setTeamEventModal(undefined); }}
             onClose={() => setTeamEventModal(undefined)}
           />
         </Suspense>
       )}
 
-      {/* Poster studio modal */}
+      {/* Poster studio */}
       {showPoster && (
         <Suspense fallback={null}>
           <PosterStudio event={posterEvent} club={club} onClose={() => setShowPoster(false)} />
@@ -1125,26 +564,24 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           onAdd={addManager}
           onRemove={removeManager}
           onRoleChange={updateManagerRole}
-          onClose={() => { setShowManagersPanel(false); setClubInternalTab('infos'); }}
+          onClose={() => setShowManagersPanel(false)}
         />
       )}
 
       {/* Roster panel */}
       {showRosterPanel && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 50, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, backgroundColor: 'var(--sl-card)' }}>
             <button
-              onClick={() => { setShowRosterPanel(false); setClubInternalTab('infos'); }}
-              aria-label="Retour à la page du club"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t1)', borderRadius: 8, padding: 0 }}
+              onClick={() => setShowRosterPanel(false)}
+              aria-label="Retour"
+              style={{ width: 40, height: 40, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <polyline points="15 18 9 12 15 6"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--sl-t1)' }}>Membres</span>
+            <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--sl-t1)', letterSpacing: '-0.02em' }}>Membres</span>
           </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
             <ClubRosterPanel clubId={String(club.id)} teams={allTeams} />
           </div>
         </div>
@@ -1154,7 +591,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
       {showSponsorsPanel && (
         <ClubSponsorsPanel
           clubId={String(club.id)}
-          onClose={() => { setShowSponsorsPanel(false); setClubInternalTab('infos'); }}
+          onClose={() => setShowSponsorsPanel(false)}
         />
       )}
 
@@ -1165,11 +602,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
           allEvents={effectiveEvents}
           currentFollow={currentFollow}
           onSave={(options) => {
-            if (isFollowing) {
-              updateFollow(club.id, options);
-            } else {
-              followClub(club.id, options);
-            }
+            if (isFollowing) { updateFollow(club.id, options); } else { followClub(club.id, options); }
             setShowFollowModal(false);
           }}
           onClose={() => setShowFollowModal(false)}
@@ -1188,7 +621,7 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
         )}
       </AnimatePresence>
 
-      {/* Club dashboard slide-in */}
+      {/* Dashboard */}
       <AnimatePresence>
         {showDashboard && (
           <ClubDashboard
@@ -1197,81 +630,10 @@ export default function ClubPageView({ club, allEvents, onBack, onAddEvent, canA
             clubEventIds={clubEventIds}
             allEvents={effectiveEvents}
             onArchiveSeason={onArchiveSeason}
-            onClose={() => { setShowDashboard(false); setClubInternalTab('infos'); }}
+            onClose={() => setShowDashboard(false)}
           />
         )}
       </AnimatePresence>
-
-      {/* Floating announcement FAB */}
-      {canEdit && !isEditing && !showEditInfo && !showAnnouncement && !showDashboard && (
-        <motion.button
-          initial={{ scale: 0.8, opacity: 0, y: 8 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.8, opacity: 0 }}
-          whileTap={{ scale: 0.93 }}
-          onClick={() => setShowAnnouncement(true)}
-          aria-label="Envoyer une annonce aux abonnés du club"
-          title="Envoyer une annonce aux abonnés"
-          style={{
-            position: 'absolute', bottom: 'calc(78px + env(safe-area-inset-bottom, 0px))', right: 16, zIndex: 30,
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '10px 16px', borderRadius: 18, border: 'none', cursor: 'pointer',
-            fontSize: 12, fontWeight: 700,
-            backgroundColor: 'rgba(59,130,246,0.9)',
-            color: '#fff',
-            boxShadow: '0 4px 20px rgba(59,130,246,0.4)',
-            backdropFilter: 'blur(12px)',
-          }}
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 11l19-9-9 19-2-8-8-2z"/>
-          </svg>
-          📢 Annonce
-        </motion.button>
-      )}
-
-      {/* Floating edit FAB */}
-      {canEdit && !showEditInfo && !showAnnouncement && !showDashboard && (
-        <motion.button
-          key={isEditing ? 'done' : 'edit'}
-          initial={{ scale: 0.8, opacity: 0, y: 8 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.8, opacity: 0 }}
-          whileTap={{ scale: 0.93 }}
-          onClick={() => { setIsEditing(e => !e); setOpenMenuAfter(null); }}
-          aria-label={isEditing ? 'Terminer la modification de la page' : 'Modifier les blocs de la page du club'}
-          title={isEditing ? 'Terminer la modification' : 'Modifier la page du club'}
-          style={{
-            position: 'absolute', bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))', right: 16, zIndex: 30,
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '12px 20px', borderRadius: 18, border: 'none', cursor: 'pointer',
-            fontSize: 13, fontWeight: 700,
-            backgroundColor: isEditing ? 'var(--sl-green)' : 'rgba(15,30,58,0.92)',
-            color: isEditing ? '#fff' : '#cbd5e1',
-            boxShadow: isEditing
-              ? '0 4px 20px rgba(34,217,106,0.45)'
-              : '0 4px 24px rgba(0,0,0,0.55)',
-            backdropFilter: 'blur(12px)',
-          }}
-        >
-          {isEditing ? (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              Terminé
-            </>
-          ) : (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
-              </svg>
-              Modifier la page
-            </>
-          )}
-        </motion.button>
-      )}
     </motion.div>
   );
 }

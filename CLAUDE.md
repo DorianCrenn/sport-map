@@ -385,23 +385,25 @@ Générés via **Pollinations.ai Flux** (`576×1024` px = ratio 9:16 exact).
 
 ## 9. Ce qui est en attente (⬜ backlog)
 
-Voir `docs/BACKLOG.md` pour le détail complet. Points clés non implémentés :
+**PosterStudio — tout implémenté :**
+- ✅ `PS-RND-004` — Drag & drop joueur dans PosterEditor (handles oranges, pointerdown/move/up)
+- ✅ `PS-API-002` — Fallback Fal.ai BRIA RMBG 2.0 (Edge Function remove-background)
+- ✅ `PS-API-003` — Badge quota imports restants (PlayersPanelTab lignes 39-51)
+- ✅ `PS-LIB-001→004` — Tags / versions / remplacement / dossiers (useClubMedia + PlayersPanelTab)
 
-**PosterStudio :**
-- `PS-RND-004` — Drag & drop position joueur dans PosterEditor
-- `PS-API-002` — Fallback Fal.ai BRIA RMBG 2.0 (si Remove.bg quota épuisé)
-- `PS-API-003` — UI quota imports restants (club_ai_usage)
-- `PS-LIB-001→004` — Tags, versions, remplacement, dossiers assets joueurs
-- `PS-AUDIT-001→004` — Audits UX/perf mobile
+**App générale — tout implémenté :**
+- ✅ `DISTRIB-001` — SEO + OG (useDynamicMeta, og-preview.png, generateClubShareText)
+- ✅ `ROLES-001` — canAddEvent inclut isManager
+- ✅ `MEDIA-001` — Photos événements (bucket event-photos, EventPhotoGallery)
 
-**App générale :**
-- `DISTRIB-001` — Distribution : SEO, partage réseaux sociaux, Open Graph
-- `ROLES-001` — Rôles avancés : club_manager via email (table club_managers)
-- `PUSH-PROD-001` — Notifications push : code déployé mais nécessite 3 étapes manuelles prod
-- `VIRAL-002/003` — Viral : lien profil public, challenge inter-clubs
-- `MEDIA-001` — Photos d'événements (upload + galerie)
+**Reste à faire :**
+- `PUSH-PROD-001` — Notifications push : code déployé, nécessite 3 étapes manuelles prod
+- `FAL_API_KEY` — Configurer dans Supabase Secrets (Edge Functions)
+- ✅ `VIRAL-002` — Profil public (`UserPublicView.jsx` + deep link `#user/:id`)
+- ✅ `VIRAL-003` — Défis inter-clubs (`club_challenges` table + `useClubChallenges.js` + section dans ClubDashboard)
+- ✅ IA suggestions annonces — Edge Function `generate-announcement` + bouton IA dans `SendAnnouncementModal`
 - Offline handling complet (PWA cache Supabase)
-- IA & automatisation (suggestions, génération texte annonces)
+- Tests automatisés (aucune couverture actuellement)
 
 **Déploiement prod push notifications :**
 ```bash
