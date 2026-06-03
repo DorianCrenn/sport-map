@@ -26,6 +26,9 @@ vi.mock('framer-motion', async (importOriginal) => {
       span: React.forwardRef(({ children, ...rest }, ref) =>
         <span ref={ref} {...rest}>{children}</span>
       ),
+      article: React.forwardRef(({ children, ...rest }, ref) =>
+        <article ref={ref} {...rest}>{children}</article>
+      ),
     },
   };
 });

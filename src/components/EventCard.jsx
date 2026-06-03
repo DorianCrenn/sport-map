@@ -570,32 +570,46 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
   const isTournament = event.eventType === 'tournament';
   const accentColor = isTournament ? TOURNAMENT_COLOR : sportColor;
 
+  const cardTitle = event.tournamentName || event.title;
+
   return (
     <>
-    <motion.div
+    {/* motion.article évite nested-interactive (WCAG 4.1.2).
+        Un bouton transparent en absolu (z-index 0) gère la sélection.
+        Le contenu réel est à z-index 1 et capture ses propres clics. */}
+    <motion.article
       ref={ref}
       layout
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.16 }}
-      onClick={onSelect}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect?.(); } }}
-      tabIndex={0}
-      role="button"
-      aria-pressed={isSelected}
-      aria-label={event.tournamentName || event.title}
-      className="event-card-focusable"
+      aria-label={cardTitle}
       style={{
+        position: 'relative',
         backgroundColor: 'var(--sl-card)',
-        borderRadius: 14, padding: '12px 12px 12px 0', marginBottom: 8,
-        cursor: 'pointer',
+        borderRadius: 14, marginBottom: 8,
         border: `1.5px solid ${isSelected ? accentColor : isTournament ? `${TOURNAMENT_COLOR}30` : 'var(--sl-border)'}`,
         boxShadow: isSelected ? `0 0 0 1px ${accentColor}25, 0 4px 16px ${accentColor}15` : 'none',
-        display: 'flex', alignItems: 'stretch', gap: 0, overflow: 'hidden',
-        outline: 'none',
+        overflow: 'hidden',
       }}
     >
+      {/* Bouton invisible de sélection — z:0, derrière le contenu (z:1) */}
+      <button
+        className="event-card-select-btn"
+        onClick={onSelect}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect?.(); } }}
+        tabIndex={0}
+        aria-pressed={isSelected}
+        aria-label={isSelected ? `Sélectionné — ${cardTitle}` : cardTitle}
+        style={{
+          position: 'absolute', inset: 0, zIndex: 0,
+          background: 'transparent', border: 'none', cursor: 'pointer',
+        }}
+      />
+
+      {/* Contenu visible — z:1 capture ses propres interactions */}
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'stretch', gap: 0, padding: '12px 12px 12px 0' }}>
       {/* Accent bar — purple for tournaments */}
       <div style={{ width: 3, minHeight: 40, flexShrink: 0, backgroundColor: accentColor, borderRadius: '0 3px 3px 0', marginRight: 10, alignSelf: 'stretch' }} />
 
@@ -788,7 +802,8 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
       </button>
-    </motion.div>
+      </div>{/* fin contenu z:1 */}
+    </motion.article>
 
     {(showPoster || resultScore) && (
       <PosterStudio

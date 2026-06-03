@@ -22,7 +22,7 @@ export function usePosterAssets({ clubId, accentColor, dispatch, overlayElements
 
   // ── Fonds IA favoris ─────────────────────────────────────────────────────
   function addSavedBg(bgEntry) {
-    const next = [{ ...bgEntry, id: `bg-${Date.now()}`, savedAt: new Date().toISOString() }, ...savedAiBgs].slice(0, 12);
+    const next = [{ ...bgEntry, id: `bg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, savedAt: new Date().toISOString() }, ...savedAiBgs].slice(0, 12);
     setSavedAiBgs(next);
     persistSavedBgs(clubId, next);
   }
@@ -32,7 +32,7 @@ export function usePosterAssets({ clubId, accentColor, dispatch, overlayElements
     persistSavedBgs(clubId, next);
   }
   function addSavedEl(elEntry) {
-    const next = [{ ...elEntry, id: `el-${Date.now()}`, savedAt: new Date().toISOString() }, ...savedAiEls].slice(0, 12);
+    const next = [{ ...elEntry, id: `el-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, savedAt: new Date().toISOString() }, ...savedAiEls].slice(0, 12);
     setSavedAiEls(next);
     persistSavedEls(clubId, next);
   }
