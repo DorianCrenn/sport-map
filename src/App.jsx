@@ -242,8 +242,11 @@ function AppInner() {
     };
   }, [userClubs, allEvents, allSports]);
 
-  // Onboarding déclenché si : (a) juste après signup via AuthPage OU (b) utilisateur connecté mais onboarding jamais terminé
-  const shouldShowOnboarding = !!currentUser && (pendingOnboarding || currentUser.onboardingDone === false) && !showAuth;
+  // Onboarding déclenché si : (a) juste après signup via AuthPage OU (b) profil chargé ET onboarding jamais terminé
+  // Guard !loading : évite le flash pendant la résolution du profil (currentUser existe mais profile=null)
+  // Guard localStorage : si updateProfile a échoué en DB, le flag local évite la boucle
+  const onboardingLocalDone = currentUser ? !!localStorage.getItem(`sl_onboarded_${currentUser.id}`) : false;
+  const shouldShowOnboarding = !!currentUser && !loading && (pendingOnboarding || (currentUser.onboardingDone === false && !onboardingLocalDone)) && !showAuth;
 
   function handleTabChange(tab) {
     if (tab === 'profil' && !currentUser) {
