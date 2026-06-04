@@ -10,6 +10,17 @@
 -- ============================================================
 
 -- ── FIX-001 : club_managers ───────────────────────────────────────────────────
+-- auth.email() n'est pas disponible dans toutes les versions Supabase.
+-- On utilise une fonction SECURITY DEFINER qui peut lire auth.users.
+
+CREATE OR REPLACE FUNCTION public.sl_email_is_current_user(check_email TEXT)
+RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM auth.users
+    WHERE id = auth.uid()
+      AND lower(email) = lower(check_email)
+  )
+$$;
 
 GRANT SELECT ON public.club_managers TO authenticated;
 
@@ -18,15 +29,12 @@ DROP POLICY IF EXISTS "managers_select_own_or_owner" ON public.club_managers;
 CREATE POLICY "managers_select_own_or_owner"
   ON public.club_managers FOR SELECT
   USING (
-    -- L'utilisateur voit ses propres lignes via auth.email() (pas de JOIN auth.users)
-    lower(email) = lower(auth.email())
-    -- Le propriétaire du club voit ses gestionnaires
+    public.sl_email_is_current_user(email)
     OR EXISTS (
       SELECT 1 FROM public.clubs
       WHERE clubs.id::text = club_managers.club_id
         AND clubs.user_id = auth.uid()
     )
-    -- Les admins plateforme voient tout
     OR public.sl_is_admin()
   );
 
