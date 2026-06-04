@@ -116,6 +116,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                     <FabAction icon="📢" label="Envoyer une annonce" desc="Tous les abonnés ou une équipe"       color="#3b82f6" onClick={() => handleClubAdminFabAction('announce')} />
                     <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 6px' }} />
                     <FabAction icon="📋" label="Infos du club"      desc="Nom, sport, ville, équipes"            color="#0ea5e9" onClick={() => handleClubAdminFabAction('edit-info')} />
+                    <FabAction icon="👕" label="Créer une équipe"   desc="Ajouter une catégorie ou une équipe"   color="#22d96a" onClick={() => handleClubAdminFabAction('add-team')} />
                     <FabAction icon="⚙️" label="Administrateurs"    desc="Gérer les accès au club"               color="#8b5cf6" onClick={() => handleClubAdminFabAction('managers')} />
                     <FabAction icon="👥" label="Membres"            desc="Effectif et rôles"                     color="#22d96a" onClick={() => handleClubAdminFabAction('roster')} />
                     <FabAction icon="🤝" label="Partenaires"        desc="Logos et liens sponsors"               color="#f59e0b" onClick={() => handleClubAdminFabAction('sponsors')} />

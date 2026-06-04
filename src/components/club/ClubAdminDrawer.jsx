@@ -7,6 +7,7 @@ const ITEMS = [
   { id: 'announce',     icon: '📢', label: 'Envoyer une annonce', desc: 'Tous les abonnés ou une équipe' },
   { id: 'divider' },
   { id: 'edit-info',    icon: '📋', label: 'Infos du club',       desc: 'Nom, sport, ville, équipes' },
+  { id: 'add-team',     icon: '👕', label: 'Créer une équipe',    desc: 'Ajouter une catégorie ou une équipe' },
   { id: 'managers',     icon: '⚙️', label: 'Administrateurs',    desc: 'Gérer les accès au club' },
   { id: 'roster',       icon: '👥', label: 'Membres',             desc: 'Effectif et rôles' },
   { id: 'sponsors',     icon: '🤝', label: 'Partenaires',         desc: 'Logos et liens sponsors' },

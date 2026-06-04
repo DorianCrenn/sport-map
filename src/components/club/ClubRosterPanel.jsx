@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useClubPlayers } from '../../hooks/useClubPlayers.js';
+import QuickAddTeamModal from './QuickAddTeamModal.jsx';
 
 const POSITIONS = ['Gardien', 'Défenseur', 'Milieu', 'Attaquant'];
 const EMPTY_FORM = { name: '', number: '', position: 'Milieu', photo_url: '', email: '', team_id: '' };
@@ -15,12 +17,13 @@ const XIcon = () => (
   </svg>
 );
 
-export default function ClubRosterPanel({ clubId, teams = [] }) {
-  const { players, loading, claims, addPlayer, removePlayer, updatePlayer, approveClaim, rejectClaim } = useClubPlayers(clubId);
+export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub }) {
+  const { players, loading, claims, addPlayer, removePlayer, approveClaim, rejectClaim } = useClubPlayers(clubId);
   const [form, setForm]         = useState(EMPTY_FORM);
   const [adding, setAdding]     = useState(false);
   const [saving, setSaving]     = useState(false);
   const [filterTeam, setFilter] = useState('all');
+  const [showAddTeam, setShowAddTeam] = useState(false);
 
   function setField(k, v) { setForm(f => ({ ...f, [k]: v })); }
 
@@ -46,7 +49,16 @@ export default function ClubRosterPanel({ clubId, teams = [] }) {
     : players.filter(p => p.team_id === filterTeam);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" style={{ position: 'relative' }}>
+      <AnimatePresence>
+        {showAddTeam && club && onUpdateClub && (
+          <QuickAddTeamModal
+            club={club}
+            onSave={async (patch) => { await onUpdateClub(patch); setShowAddTeam(false); }}
+            onClose={() => setShowAddTeam(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Claims en attente */}
       {claims.length > 0 && (
@@ -80,23 +92,33 @@ export default function ClubRosterPanel({ clubId, teams = [] }) {
         </div>
       )}
 
-      {/* Filtre équipe */}
-      {teams.length > 0 && (
-        <div className="flex gap-1.5 flex-wrap">
-          <button onClick={() => setFilter('all')}
-            className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-            style={filterTeam === 'all' ? { backgroundColor: '#0F1E3A', color: 'white' } : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
-            Tous
-          </button>
-          {teams.map(t => (
-            <button key={t.id} onClick={() => setFilter(t.id)}
+      {/* Filtre équipe + bouton créer */}
+      <div className="flex gap-1.5 flex-wrap items-center">
+        {teams.length > 0 && (
+          <>
+            <button onClick={() => setFilter('all')}
               className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-              style={filterTeam === t.id ? { backgroundColor: '#0F1E3A', color: 'white' } : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
-              {t.name}
+              style={filterTeam === 'all' ? { backgroundColor: '#0F1E3A', color: 'white' } : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
+              Tous
             </button>
-          ))}
-        </div>
-      )}
+            {teams.map(t => (
+              <button key={t.id} onClick={() => setFilter(t.id)}
+                className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
+                style={filterTeam === t.id ? { backgroundColor: '#0F1E3A', color: 'white' } : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
+                {t.name}
+              </button>
+            ))}
+          </>
+        )}
+        {onUpdateClub && club && (
+          <button
+            onClick={() => setShowAddTeam(true)}
+            className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors flex items-center gap-1"
+            style={{ backgroundColor: 'rgba(34,217,106,0.12)', color: 'var(--sl-green)' }}>
+            + Créer une équipe
+          </button>
+        )}
+      </div>
 
       {/* Liste joueurs */}
       {loading

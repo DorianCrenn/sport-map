@@ -15,6 +15,7 @@ import ClubSponsorsPanel from './ClubSponsorsPanel.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import ClubFormModal from './ClubFormModal.jsx';
+import QuickAddTeamModal from './QuickAddTeamModal.jsx';
 import { getRows } from './ClubPageBuilder.jsx';
 import SubscriptionExpiryBanner from '../ui/SubscriptionExpiryBanner.jsx';
 import { useClubManagers } from '../../hooks/useClubManagers.js';
@@ -141,6 +142,7 @@ export default function ClubPageView({
   // ── Modals state ───────────────────────────────────────────────────────────
   const [showFollowModal, setShowFollowModal] = useState(false);
   const [showAdminDrawer, setShowAdminDrawer] = useState(false);
+  const [showAddTeam,     setShowAddTeam]     = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showManagersPanel, setShowManagersPanel] = useState(false);
   const [showRosterPanel, setShowRosterPanel] = useState(false);
@@ -268,6 +270,7 @@ export default function ClubPageView({
       case 'edit-info':   setShowEditInfo(true); break;
       case 'managers':    setShowManagersPanel(true); break;
       case 'roster':      setShowRosterPanel(true); break;
+      case 'add-team':    setShowAddTeam(true); break;
       case 'sponsors':    setShowSponsorsPanel(true); break;
     }
   }
@@ -525,6 +528,17 @@ export default function ClubPageView({
         </motion.button>
       )}
 
+      {/* ── Quick Add Team ── */}
+      <AnimatePresence>
+        {showAddTeam && onUpdateClub && (
+          <QuickAddTeamModal
+            club={club}
+            onSave={async (patch) => { await onUpdateClub({ ...club, ...patch }); setShowAddTeam(false); }}
+            onClose={() => setShowAddTeam(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── Admin Drawer ── */}
       <ClubAdminDrawer
         open={showAdminDrawer}
@@ -590,7 +604,14 @@ export default function ClubPageView({
             <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--sl-t1)', letterSpacing: '-0.02em' }}>Membres</span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-            <ClubRosterPanel clubId={String(club.id)} teams={allTeams} />
+            <ClubRosterPanel
+              clubId={String(club.id)}
+              teams={allTeams}
+              club={canEdit ? club : undefined}
+              onUpdateClub={canEdit && onUpdateClub ? async (patch) => {
+                await onUpdateClub({ ...club, ...patch });
+              } : undefined}
+            />
           </div>
         </div>
       )}
