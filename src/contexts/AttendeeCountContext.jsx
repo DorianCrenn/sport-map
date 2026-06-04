@@ -3,12 +3,14 @@ import { supabase } from '../lib/supabase.js';
 
 const AttendeeCountContext = createContext(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAttendeeCount(eventId) {
   const ctx = useContext(AttendeeCountContext);
   if (!ctx) return 0;
   return ctx.getCount(String(eventId));
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAttendeeCountActions() {
   const ctx = useContext(AttendeeCountContext);
   if (!ctx) return () => {};
@@ -50,9 +52,21 @@ export function AttendeeCountProvider({ children }) {
 
     load();
 
+    // No visible events — skip Realtime subscription entirely
+    if (knownIds !== null && knownIds.length === 0) {
+      return () => { cancelled = true; };
+    }
+
+    // Scope the Realtime subscription to visible events only (server-side filter).
+    // Cap at 50 IDs to keep the filter string reasonable.
+    const pgConfig = { event: '*', schema: 'public', table: 'attendees' };
+    if (knownIds && knownIds.length > 0) {
+      pgConfig.filter = `event_id=in.(${knownIds.slice(0, 50).join(',')})`;
+    }
+
     const channel = supabase
       .channel('attendee-count-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendees' }, (payload) => {
+      .on('postgres_changes', pgConfig, (payload) => {
         const row = payload.new?.event_id ? payload.new : payload.old;
         if (!row?.event_id) { load(); return; }
         const id = String(row.event_id);

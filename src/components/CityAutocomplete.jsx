@@ -33,7 +33,7 @@ export default function CityAutocomplete({
     timer.current = setTimeout(async () => {
       try {
         const res  = await fetch(
-          `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(val.trim())}&limit=7&boost=population&fields=nom,centre,codeDepartement`
+          `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(val.trim())}&limit=7&boost=population&fields=nom,centre,codeDepartement,codesPostaux,codeRegion`
         );
         const data = await res.json();
         setSuggestions(data);
@@ -42,7 +42,14 @@ export default function CityAutocomplete({
         if (exact) {
           setStatus('valid');
           onValidChange?.(true);
-          onSelect?.({ nom: exact.nom, lat: exact.centre?.coordinates[1], lng: exact.centre?.coordinates[0] });
+          onSelect?.({
+            nom:          exact.nom,
+            lat:          exact.centre?.coordinates[1],
+            lng:          exact.centre?.coordinates[0],
+            codesPostaux: exact.codesPostaux ?? [],
+            codeRegion:   exact.codeRegion   ?? '',
+            codeDepartement: exact.codeDepartement ?? '',
+          });
         } else {
           setStatus(data.length === 0 ? 'invalid' : 'partial');
           onValidChange?.(false);
@@ -58,9 +65,12 @@ export default function CityAutocomplete({
     setStatus('valid');
     onValidChange?.(true);
     onSelect?.({
-      nom: commune.nom,
-      lat: commune.centre?.coordinates[1],
-      lng: commune.centre?.coordinates[0],
+      nom:          commune.nom,
+      lat:          commune.centre?.coordinates[1],
+      lng:          commune.centre?.coordinates[0],
+      codesPostaux: commune.codesPostaux ?? [],
+      codeRegion:   commune.codeRegion   ?? '',
+      codeDepartement: commune.codeDepartement ?? '',
     });
   }
 

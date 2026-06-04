@@ -351,17 +351,39 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
               {mode === 'confirm-email' && (
                 <motion.div key="confirm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 py-4 text-center">
                   <div className="text-5xl">📬</div>
-                  <h3 className="font-bold text-white text-lg font-oswald tracking-wide">Vérifiez votre email</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">
-                    Un lien de confirmation a été envoyé à votre adresse email.<br/>
-                    Cliquez dessus pour activer votre compte.
-                  </p>
+                  <h3 className="font-bold text-white text-lg font-oswald tracking-wide">Confirmez votre email</h3>
+                  {form.email && (
+                    <div className="text-xs text-slate-400 px-3 py-2 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      Un lien a été envoyé à <span className="text-white font-semibold">{form.email}</span>
+                    </div>
+                  )}
+                  <div className="text-left space-y-2 text-sm text-slate-400">
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-green-400 mt-0.5 flex-shrink-0">1.</span>
+                      <span>Ouvrez votre boîte mail et trouvez l'email de SportLink</span>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-green-400 mt-0.5 flex-shrink-0">2.</span>
+                      <span>Cliquez sur le lien de confirmation</span>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-green-400 mt-0.5 flex-shrink-0">3.</span>
+                      <span>Revenez ici et connectez-vous</span>
+                    </div>
+                    <p className="text-xs text-slate-500 pt-1">Vérifiez vos spams si vous ne trouvez pas l'email.</p>
+                  </div>
                   <button
                     onClick={() => switchMode('login')}
                     className="w-full py-3 rounded-xl font-bold text-sm text-white mt-2"
                     style={{ backgroundColor: '#22C55E' }}
                   >
-                    Retour à la connexion
+                    J'ai confirmé — Me connecter
+                  </button>
+                  <button
+                    onClick={() => switchMode('register')}
+                    className="w-full py-2.5 rounded-xl text-xs text-slate-400 hover:text-white transition-colors"
+                  >
+                    Recommencer l'inscription
                   </button>
                 </motion.div>
               )}

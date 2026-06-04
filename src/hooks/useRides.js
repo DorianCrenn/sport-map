@@ -135,6 +135,17 @@ export function useRides(eventId) {
 
   const requestRide = useCallback(async (rideId, message) => {
     if (!currentUser) throw new Error('not authenticated');
+    // Guard : ne pas insérer si le trajet est plein ou annulé
+    const ride = rides.find(r => r.id === rideId);
+    if (ride) {
+      if (ride.status === 'full' || ride.status === 'cancelled') {
+        throw new Error('Ce trajet n\'est plus disponible');
+      }
+      const accepted = (ride.requests ?? []).filter(r => r.status === 'accepted').length;
+      if (accepted >= ride.availableSeats) {
+        throw new Error('Plus de places disponibles');
+      }
+    }
     const { data: saved, error } = await supabase
       .from('ride_requests')
       .insert({
@@ -147,8 +158,7 @@ export function useRides(eventId) {
       .select()
       .single();
     if (error) throw error;
-    // Notify driver
-    const ride = rides.find(r => r.id === rideId);
+    // Notify driver (réutilise la variable ride déjà trouvée en haut)
     if (ride) {
       await supabase.from('ride_notifications').insert({
         user_id: ride.driverId, type: 'new_request',
@@ -178,7 +188,7 @@ export function useRides(eventId) {
     await fetchRides();
   }, [currentUser, rides, fetchRides]);
 
-  const acceptRequest = useCallback(async (requestId, rideId, passengerId, passengerName) => {
+  const acceptRequest = useCallback(async (requestId, rideId, passengerId) => {
     const { error } = await supabase
       .from('ride_requests')
       .update({ status: 'accepted' })
@@ -190,9 +200,16 @@ export function useRides(eventId) {
       ride_id: rideId, request_id: requestId,
       data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
     });
-    // Mark ride as full if needed
+    // Mark ride as full if needed + refuser automatiquement les demandes pending restantes
     if (ride && ride.takenSeats + 1 >= ride.availableSeats) {
       await supabase.from('rides').update({ status: 'full' }).eq('id', rideId);
+      // Refus automatique des demandes encore en attente
+      await supabase
+        .from('ride_requests')
+        .update({ status: 'rejected' })
+        .eq('ride_id', rideId)
+        .eq('status', 'pending')
+        .neq('id', requestId);
     }
     await fetchRides();
   }, [currentUser, rides, fetchRides]);

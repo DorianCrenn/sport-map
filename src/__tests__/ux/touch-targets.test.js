@@ -17,7 +17,7 @@ import { describe, it, expect } from 'vitest';
 
 // ── Configuration ──────────────────────────────────────────────────────────────
 
-const SRC_DIR   = resolve(process.cwd(), 'src');
+const SRC_DIR   = resolve(new URL('../../src', import.meta.url).pathname);
 const MIN_PX    = 36;   // seuil général : < 36 px = violation
 const MIN_PX_44 = 44;   // seuil strict pour les boutons primaires
 
@@ -52,7 +52,6 @@ const SCAN_FILES = [
   'components/EventFormModal.jsx',
   'components/BadgeUnlockModal.jsx',
   'components/club/ClubFormModal.jsx',
-  'components/club/ClubRequestModal.jsx',
   'components/club/SendAnnouncementModal.jsx',
   // Covoiturage
   'components/rides/RideCard.jsx',

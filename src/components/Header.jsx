@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
-import { useClubRequests } from '../hooks/useClubRequests.js';
+import { useClubNotifications } from '../hooks/useClubNotifications.js';
 import SportLinkLogo from './SportLinkLogo.jsx';
 
 export default function Header({
@@ -14,9 +14,8 @@ export default function Header({
   const { allSports } = useSports();
   const { currentUser, isAdmin, isClubAdmin, logout,
           devRole, setDevRole, devClubId, setDevClubId } = useAuth();
-  const { pendingRequests } = useClubRequests();
-  const pendingCount = isAdmin ? pendingRequests.length : 0;
-  const totalBadge = pendingCount + rideNotifCount;
+  const { unreadCount: clubNotifUnread } = useClubNotifications();
+  const totalBadge = clubNotifUnread + rideNotifCount;
   const { theme, toggleTheme } = useTheme();
   const [query, setQuery] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
@@ -483,7 +482,7 @@ export default function Header({
               <span style={{
                 position: 'absolute', top: -3, right: -3,
                 minWidth: 16, height: 16, borderRadius: 8, padding: '0 4px',
-                backgroundColor: rideNotifCount > 0 && pendingCount === 0 ? 'var(--sl-green)' : '#ef4444',
+                backgroundColor: rideNotifCount > 0 && clubNotifUnread === 0 ? 'var(--sl-green)' : '#ef4444',
                 color: '#fff',
                 fontSize: 9, fontWeight: 800, lineHeight: '16px', textAlign: 'center',
                 border: '2px solid var(--sl-bg)',
@@ -564,8 +563,8 @@ export default function Header({
                 {isAdmin && (
                   <DropdownItem
                     icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>}
-                    label={pendingCount > 0 ? `Dashboard admin · ${pendingCount} demande${pendingCount > 1 ? 's' : ''}` : 'Dashboard admin'}
-                    labelColor={pendingCount > 0 ? '#f59e0b' : undefined}
+                    label={clubNotifUnread > 0 ? `Dashboard admin · ${clubNotifUnread} nouveau${clubNotifUnread > 1 ? 'x' : ''}` : 'Dashboard admin'}
+                    labelColor={clubNotifUnread > 0 ? '#f59e0b' : undefined}
                     onClick={() => { setProfileOpen(false); onTabChange?.('admin'); }}
                   />
                 )}

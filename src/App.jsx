@@ -16,8 +16,8 @@ import { useCommunes } from './hooks/useCommunes.js';
 import Header from './components/Header.jsx';
 import ReminderBanner from './components/ReminderBanner.jsx';
 import BottomNav from './components/BottomNav.jsx';
-import ClubPageView from './components/club/ClubPageView.jsx';
-import UserPublicView from './components/UserPublicView.jsx';
+const ClubPageView   = lazy(() => import('./components/club/ClubPageView.jsx'));
+const UserPublicView = lazy(() => import('./components/UserPublicView.jsx'));
 import HomeScreen from './pages/HomeScreen.tsx';
 import MapPage from './pages/MapPage.jsx';
 import FavorisPage from './pages/FavorisPage.jsx';
@@ -140,7 +140,7 @@ function AppInner() {
   }, [allEvents, setKnownAttendeeIds]);
 
   const allClubs = useMemo(() => userClubs, [userClubs]);
-  // eslint-disable-next-line react-hooks/refs
+   
   allClubsRef.current = allClubs;
 
   const { earned: earnedBadges, newBadges, markSeen } = useBadges({ attending, allEvents });
@@ -159,7 +159,7 @@ function AppInner() {
       const id = clubMatch[1];
       // Fetch Supabase club directly — don't wait for allClubs
       pendingDeepLink.current = id;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setClubOverlayLoading(true);
       supabase.from('clubs').select('*').eq('id', id).maybeSingle()
         .then(({ data }) => {
@@ -242,7 +242,8 @@ function AppInner() {
     };
   }, [userClubs, allEvents, allSports]);
 
-  const shouldShowOnboarding = !!currentUser && pendingOnboarding && !currentUser.onboardingDone && !showAuth;
+  // Onboarding déclenché si : (a) juste après signup via AuthPage OU (b) utilisateur connecté mais onboarding jamais terminé
+  const shouldShowOnboarding = !!currentUser && (pendingOnboarding || currentUser.onboardingDone === false) && !showAuth;
 
   function handleTabChange(tab) {
     if (tab === 'profil' && !currentUser) {
@@ -412,36 +413,40 @@ function AppInner() {
         {/* UserPublicView — deep link #user/:id */}
         {publicUserId && (
           <AnimatePresence>
-            <UserPublicView
-              key={publicUserId}
-              userId={publicUserId}
-              onClose={() => {
-                setPublicUserId(null);
-                window.history.replaceState(null, '', window.location.pathname);
-              }}
-            />
+            <Suspense fallback={<ModalLoader />}>
+              <UserPublicView
+                key={publicUserId}
+                userId={publicUserId}
+                onClose={() => {
+                  setPublicUserId(null);
+                  window.history.replaceState(null, '', window.location.pathname);
+                }}
+              />
+            </Suspense>
           </AnimatePresence>
         )}
 
         {/* ClubPageView inside the content area so BottomNav stays visible (same pattern as MyRidesPage) */}
         {selectedSearchClub && (
-          <ClubPageView
-            key={selectedSearchClub.id}
-            club={selectedSearchClub}
-            allEvents={allEvents}
-            onBack={() => {
-              setSelectedSearchClub(null);
-              // Si on vient du tab "Mon Club", retourner sur Accueil
-              if (activeTab === 'mon-club') setActiveTab('home');
-            }}
-            onAddEvent={addEvent}
-            canAddEvent={isAdmin || isClubAdmin}
-            onArchiveSeason={archiveSeason}
-            onUpdateClub={async (data) => {
-              await updateClub(selectedSearchClub.id, data);
-              setSelectedSearchClub(prev => ({ ...prev, ...data }));
-            }}
-          />
+          <Suspense fallback={<ModalLoader />}>
+            <ClubPageView
+              key={selectedSearchClub.id}
+              club={selectedSearchClub}
+              allEvents={allEvents}
+              onBack={() => {
+                setSelectedSearchClub(null);
+                // Si on vient du tab "Mon Club", retourner sur Accueil
+                if (activeTab === 'mon-club') setActiveTab('home');
+              }}
+              onAddEvent={addEvent}
+              canAddEvent={isAdmin || isClubAdmin}
+              onArchiveSeason={archiveSeason}
+              onUpdateClub={async (data) => {
+                await updateClub(selectedSearchClub.id, data);
+                setSelectedSearchClub(prev => ({ ...prev, ...data }));
+              }}
+            />
+          </Suspense>
         )}
       </div>
 

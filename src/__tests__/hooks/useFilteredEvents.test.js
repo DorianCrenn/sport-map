@@ -7,12 +7,9 @@ import { useFilteredEvents } from '../../hooks/useFilteredEvents.js';
 const today = new Date();
 const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
 
-// Trouver un jour ouvrable (Lun-Ven) 2+ jours dans le futur
-// pour éviter qu'il coïncide avec le week-end et fausse le test "weekend"
-const inTwoDays = new Date(today);
-inTwoDays.setDate(today.getDate() + 2);
-if (inTwoDays.getDay() === 6) inTwoDays.setDate(inTwoDays.getDate() + 2); // Sam → Lun
-if (inTwoDays.getDay() === 0) inTwoDays.setDate(inTwoDays.getDate() + 1); // Dim → Lun
+// +10 jours — toujours après nextSaturday (≤7 jours)
+const inTenDays = new Date(today);
+inTenDays.setDate(today.getDate() + 10);
 
 // Prochain samedi
 function nextSaturday() {
@@ -26,10 +23,10 @@ function nextSaturday() {
 function iso(date) { return date.toISOString(); }
 
 const EVENTS = [
-  { id: '1', sport: 'Football', city: 'Brest', date: iso(today),    lat: 48.39, lng: -4.49 },
-  { id: '2', sport: 'Rugby',    city: 'Quimper', date: iso(tomorrow), lat: 47.99, lng: -4.10 },
-  { id: '3', sport: 'Football', city: 'Brest', date: iso(inTwoDays), lat: 48.39, lng: -4.49 },
-  { id: '4', sport: 'Basket',   city: 'Morlaix', date: iso(nextSaturday()), lat: 48.58, lng: -3.83 },
+  { id: '1', sport: 'Football', city: 'Brest',   date: iso(today),         lat: 48.39, lng: -4.49 },
+  { id: '2', sport: 'Rugby',    city: 'Quimper',  date: iso(tomorrow),      lat: 47.99, lng: -4.10 },
+  { id: '3', sport: 'Basket',   city: 'Morlaix',  date: iso(nextSaturday()), lat: 48.58, lng: -3.83 },
+  { id: '4', sport: 'Football', city: 'Brest',   date: iso(inTenDays),     lat: 48.39, lng: -4.49 },
 ];
 
 // ── Helper ────────────────────────────────────────────────────────────────────
@@ -46,9 +43,11 @@ describe('useFilteredEvents — sans filtre', () => {
   it('retourne tous les événements triés par date', () => {
     const result = filter(EVENTS);
     expect(result).toHaveLength(4);
-    expect(result[0].id).toBe('1'); // today
+    expect(result[0].id).toBe('1'); // today (le plus tôt)
     expect(result[1].id).toBe('2'); // tomorrow
-    expect(result[2].id).toBe('3'); // in 2 days
+    // id '3' (nextSaturday ≤7j) avant id '4' (+10j) — tri chronologique stable
+    expect(result[2].id).toBe('3');
+    expect(result[3].id).toBe('4');
   });
 
   it('retourne un tableau vide si aucun événement', () => {
@@ -112,7 +111,7 @@ describe('useFilteredEvents — filtre par date', () => {
   it('"weekend" retourne le samedi prochain', () => {
     const result = filter(EVENTS, { dateRange: 'weekend' });
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('4');
+    expect(result[0].id).toBe('3'); // id '3' est maintenant le nextSaturday
   });
 
   it('"week" retourne les 7 prochains jours', () => {
