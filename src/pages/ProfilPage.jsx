@@ -93,7 +93,7 @@ function ThemeToggle() {
 }
 
 export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, onShowAuth, onMyRides, rideNotifCount = 0 }) {
-  const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs } = useAuth();
+  const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs, requestPasswordReset } = useAuth();
   const { toast } = useToast();
   const { favorites } = useFavoritesContext();
   const { allSports } = useSports();
@@ -105,6 +105,10 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
   const [selectedSports, setSelectedSports] = useState(new Set());
   const [previewBadges, setPreviewBadges] = useState(null);
   const [profileTab, setProfileTab] = useState('profil'); // 'profil' | 'params' | 'stats'
+  const [deleteConfirm, setDeleteConfirm] = useState(''); // champ de saisie confirmation suppression
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [pwResetSent, setPwResetSent] = useState(false);
   const favCount = favorites?.size ?? 0;
   const eventCount = userEvents?.length ?? 0;
   const favSports = currentUser?.favoriteSports ?? [];
@@ -644,6 +648,40 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
           </div>
         </motion.button>
 
+        {/* Changer le mot de passe */}
+        {currentUser?.authProvider !== 'google' && (
+          <button
+            onClick={async () => {
+              if (pwResetSent) return;
+              try {
+                await requestPasswordReset(currentUser.email);
+                setPwResetSent(true);
+                toast({ message: 'Email de réinitialisation envoyé !', type: 'success' });
+                setTimeout(() => setPwResetSent(false), 30000);
+              } catch {
+                toast({ message: 'Erreur lors de l\'envoi. Réessayez.', type: 'error' });
+              }
+            }}
+            className="w-full rounded-2xl p-4 flex items-center gap-3 transition-colors"
+            style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)', opacity: pwResetSent ? 0.6 : 1 }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(59,130,246,0.12)' }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <div className="flex-1 text-left">
+              <div className="text-sm font-semibold font-poppins" style={{ color: 'var(--sl-t1)' }}>
+                {pwResetSent ? 'Email envoyé !' : 'Changer mon mot de passe'}
+              </div>
+              <div className="text-xs" style={{ color: 'var(--sl-t2)' }}>
+                {pwResetSent ? 'Vérifiez votre boîte mail' : 'Recevoir un lien par email'}
+              </div>
+            </div>
+          </button>
+        )}
+
         {/* Logout */}
         <button
           onClick={() => { logout(); toast({ message: 'À bientôt !', type: 'info' }); }}
@@ -660,11 +698,100 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
           <span className="text-sm font-semibold font-poppins text-red-500">Se déconnecter</span>
         </button>
 
+        {/* Zone dangereuse — suppression de compte */}
+        <div style={{ marginTop: 8, padding: '14px', borderRadius: 16, border: '1px solid rgba(239,68,68,0.2)', backgroundColor: 'rgba(239,68,68,0.04)' }}>
+          <p className="text-xs font-bold mb-2" style={{ color: '#ef4444', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Zone dangereuse</p>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="text-xs font-semibold"
+            style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+          >
+            Supprimer mon compte
+          </button>
+        </div>
+
         <p className="text-xs text-center pt-1" style={{ color: 'var(--sl-t3)' }}>SportLink v1.0.0 · Finistère (29)</p>
 
         </> /* /PARAMÈTRES */}
 
       </div>
+
+      {/* Modal suppression de compte */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 9000, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+            onClick={e => e.target === e.currentTarget && setShowDeleteModal(false)}
+          >
+            <motion.div
+              initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 360, damping: 34 }}
+              style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--sl-card)', borderRadius: '22px 22px 0 0', border: '1px solid var(--sl-border)', borderBottom: 'none', padding: '24px 20px 32px' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>⚠️</div>
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#ef4444', margin: '0 0 8px' }}>Supprimer mon compte</h2>
+                <p style={{ fontSize: 13, color: 'var(--sl-t2)', lineHeight: 1.6, margin: 0 }}>
+                  Cette action est <strong>irréversible</strong>. Toutes vos données seront supprimées : profil, favoris, événements, covoiturages.
+                </p>
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t3)', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Tapez <strong style={{ color: '#ef4444' }}>SUPPRIMER</strong> pour confirmer
+                </label>
+                <input
+                  value={deleteConfirm}
+                  onChange={e => setDeleteConfirm(e.target.value)}
+                  placeholder="SUPPRIMER"
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 12, fontSize: 14, border: `1.5px solid ${deleteConfirm === 'SUPPRIMER' ? '#ef4444' : 'var(--sl-border)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  onClick={() => { setShowDeleteModal(false); setDeleteConfirm(''); }}
+                  style={{ flex: 1, padding: '13px', borderRadius: 14, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Annuler
+                </button>
+                <button
+                  disabled={deleteConfirm !== 'SUPPRIMER' || deleteLoading}
+                  onClick={async () => {
+                    setDeleteLoading(true);
+                    try {
+                      // Suppression via Supabase Auth (l'utilisateur supprime son propre compte)
+                      const { error } = await import('../lib/supabase.js')
+                        .then(({ supabase }) => supabase.rpc('delete_own_account'));
+                      if (error) throw error;
+                      logout();
+                      toast({ message: 'Compte supprimé. À bientôt.', type: 'info' });
+                    } catch {
+                      // Fallback : déconnexion et notification admin
+                      toast({ message: 'Contactez le support pour supprimer votre compte.', type: 'error' });
+                    } finally {
+                      setDeleteLoading(false);
+                      setShowDeleteModal(false);
+                      setDeleteConfirm('');
+                    }
+                  }}
+                  style={{
+                    flex: 1, padding: '13px', borderRadius: 14, border: 'none',
+                    backgroundColor: deleteConfirm === 'SUPPRIMER' && !deleteLoading ? '#ef4444' : 'var(--sl-surface)',
+                    color: deleteConfirm === 'SUPPRIMER' && !deleteLoading ? '#fff' : 'var(--sl-t3)',
+                    fontSize: 14, fontWeight: 700, cursor: deleteConfirm === 'SUPPRIMER' ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {deleteLoading ? 'Suppression…' : 'Supprimer'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Badge preview modal (temporary — dev only) */}
       <AnimatePresence>

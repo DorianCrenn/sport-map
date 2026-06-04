@@ -1,21 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
-import { useClubRequests } from '../hooks/useClubRequests.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useClubLeaderboard } from '../hooks/useClubLeaderboard.js';
 import SportIcon from '../components/SportIcon.jsx';
-import ClubPageView from '../components/club/ClubPageView.jsx';
+const ClubPageView = lazy(() => import('../components/club/ClubPageView.jsx'));
 import ClubFormModal from '../components/club/ClubFormModal.jsx';
 import ClubCreationWizard from '../components/club/ClubCreationWizard.jsx';
-import ClubRequestModal from '../components/club/ClubRequestModal.jsx';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { SkeletonClubCard } from '../components/Skeleton.jsx';
 export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent, onClubOverlayChange, onArchiveSeason }) {
   const { allSports: SPORTS } = useSports();
-  const { userClubs, loading: clubsLoading, addClub, updateClub, deleteClub } = useClubs();
-  const { requests, submitRequest } = useClubRequests();
+  const { userClubs, loading: clubsLoading, addClubAndNotify, updateClub, deleteClub } = useClubs();
   const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub, refetchProfile } = useAuth();
 
   const [search, setSearch]               = useState('');
@@ -26,7 +23,6 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
   const [leaderboardOpen, setLeaderboardOpen]   = useState(false);
   const [formClub, setFormClub]           = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [showRequestModal, setShowRequestModal] = useState(false);
 
   useEffect(() => {
     onClubOverlayChange?.(!!selectedClub);
@@ -54,18 +50,14 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
     ? userClubs.find(c => c.id === currentUser.clubId)
     : null;
 
-  const myRequest = currentUser
-    ? requests.find(r => r.userId === currentUser.id)
-    : null;
-
   async function handleSave(data) {
     if (formClub && formClub !== true) {
       await updateClub(formClub.id, data);
     } else {
-      const created = await addClub(data);
+      const created = await addClubAndNotify(data);
       setSelectedClub(created);
-      // Refresh profile so role=club_admin and clubId are up-to-date immediately
-      refetchProfile();
+      // Await le refresh pour que role=club_admin et clubId soient à jour avant le rendu
+      await refetchProfile();
     }
     setFormClub(null);
   }
@@ -74,18 +66,6 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
     deleteClub(club.id);
     setConfirmDelete(null);
     if (selectedClub?.id === club.id) setSelectedClub(null);
-  }
-
-  function handleRequest(form) {
-    if (!currentUser) return;
-    submitRequest({
-      userId: currentUser.id,
-      userName: currentUser.name,
-      clubName: form.clubName,
-      sport: form.sport,
-      city: form.city,
-      description: form.description,
-    });
   }
 
   function isOwnClub(club) {
@@ -109,19 +89,21 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
 
       <AnimatePresence>
         {selectedClub && (
-          <ClubPageView
-            key={selectedClub.id}
-            club={selectedClub}
-            allEvents={allEvents ?? []}
-            onBack={() => setSelectedClub(null)}
-            onAddEvent={onAddEvent}
-            canAddEvent={canAddEvent}
-            onArchiveSeason={onArchiveSeason}
-            onUpdateClub={async (data) => {
-              await updateClub(selectedClub.id, data);
-              setSelectedClub(prev => ({ ...prev, ...data }));
-            }}
-          />
+          <Suspense fallback={null}>
+            <ClubPageView
+              key={selectedClub.id}
+              club={selectedClub}
+              allEvents={allEvents ?? []}
+              onBack={() => setSelectedClub(null)}
+              onAddEvent={onAddEvent}
+              canAddEvent={canAddEvent}
+              onArchiveSeason={onArchiveSeason}
+              onUpdateClub={async (data) => {
+                await updateClub(selectedClub.id, data);
+                setSelectedClub(prev => ({ ...prev, ...data }));
+              }}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 
@@ -146,15 +128,6 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showRequestModal && (
-          <ClubRequestModal
-            onSubmit={handleRequest}
-            onClose={() => setShowRequestModal(false)}
-          />
-        )}
-      </AnimatePresence>
-
       <ConfirmDialog
         open={!!confirmDelete}
         title="Supprimer le club ?"
@@ -174,7 +147,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
           <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
             Clubs
           </span>
-          {isAdmin && (
+          {currentUser && !isClubAdmin && (
             <button
               onClick={() => setFormClub(true)}
               style={{
@@ -186,7 +159,18 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Ajouter
+              Créer un club
+            </button>
+          )}
+          {!currentUser && (
+            <button
+              onClick={() => onShowAuth?.()}
+              style={{
+                fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 10,
+                backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border)', cursor: 'pointer',
+              }}
+            >
+              Se connecter
             </button>
           )}
         </div>
@@ -382,104 +366,26 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
           </motion.div>
         )}
 
-        {/* Request banner */}
-        {!isClubAdmin && !isAdmin && (
-          <>
-            {!myRequest ? (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                style={{
-                  marginBottom: 10, borderRadius: 14, padding: '12px 14px',
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  backgroundColor: 'var(--sl-green-dim)', border: '1px solid rgba(34,217,106,0.3)',
-                }}
-              >
-                <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: 'var(--sl-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--sl-green)' }}>Vous représentez un club ?</div>
-                  <div style={{ fontSize: 11, color: 'var(--sl-t2)' }}>Faites une demande pour gérer votre page.</div>
-                </div>
-                <button
-                  onClick={() => currentUser ? setShowRequestModal(true) : onShowAuth?.()}
-                  style={{
-                    fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 8,
-                    backgroundColor: 'var(--sl-green)', color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0,
-                  }}
-                >
-                  {currentUser ? 'Demander' : 'Se connecter'}
-                </button>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                style={{
-                  marginBottom: 10, borderRadius: 14, padding: '12px 14px',
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  backgroundColor: myRequest.status === 'pending'
-                    ? 'rgba(245,158,11,0.1)'
-                    : myRequest.status === 'rejected'
-                      ? 'rgba(239,68,68,0.08)'
-                      : 'rgba(34,197,94,0.08)',
-                  border: `1px solid ${
-                    myRequest.status === 'pending'
-                      ? 'rgba(245,158,11,0.3)'
-                      : myRequest.status === 'rejected'
-                        ? 'rgba(239,68,68,0.25)'
-                        : 'rgba(34,197,94,0.25)'
-                  }`,
-                }}
-              >
-                <div style={{
-                  width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  backgroundColor: myRequest.status === 'pending'
-                    ? '#f59e0b'
-                    : myRequest.status === 'rejected'
-                      ? '#ef4444'
-                      : '#22c55e',
-                }}>
-                  {myRequest.status === 'pending' ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                  ) : myRequest.status === 'rejected' ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                      <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-                    </svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                      <circle cx="12" cy="12" r="10"/><polyline points="16 8 11 14 8 11"/>
-                    </svg>
-                  )}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontWeight: 700, fontSize: 13,
-                    color: myRequest.status === 'pending'
-                      ? '#f59e0b'
-                      : myRequest.status === 'rejected'
-                        ? '#ef4444'
-                        : '#22c55e',
-                  }}>
-                    {myRequest.status === 'pending'
-                      ? "Demande en cours d'examen"
-                      : myRequest.status === 'rejected'
-                        ? 'Demande refusée'
-                        : 'Demande approuvée — synchronisation en cours'}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--sl-t2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {myRequest.clubName}
-                    {myRequest.reviewNote && ` · ${myRequest.reviewNote}`}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </>
+        {/* Banner de vérification — visible par le propriétaire tant que le club n'est pas vérifié */}
+        {myClub && myClub.status === 'pending_verification' && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+            style={{
+              marginBottom: 10, borderRadius: 14, padding: '12px 14px',
+              display: 'flex', alignItems: 'center', gap: 12,
+              backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)',
+            }}
+          >
+            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(245,158,11,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: 12, color: '#92400e' }}>Club en cours de vérification</div>
+              <div style={{ fontSize: 11, color: '#78350f', lineHeight: 1.5 }}>Vous pouvez utiliser SportLink dès maintenant. Validation sous 48h.</div>
+            </div>
+          </motion.div>
         )}
 
         {/* Skeleton while clubs load from Supabase (only if list is empty) */}

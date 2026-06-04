@@ -10,6 +10,8 @@
  *   ANTHROPIC_API_KEY
  */
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -26,6 +28,40 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    // ── Auth guard : doit être un utilisateur authentifié avec rôle club_admin ou admin ──
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Authentification requise' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const anonKey    = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const caller     = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authErr } = await caller.auth.getUser();
+    if (authErr || !user) {
+      return new Response(JSON.stringify({ error: 'Token invalide' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Vérifier que l'utilisateur a un rôle autorisé
+    const serviceClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    const { data: profile } = await serviceClient
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!profile || !['club_admin', 'admin', 'superadmin'].includes(profile.role)) {
+      return new Response(JSON.stringify({ error: 'Accès réservé aux gestionnaires de club' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { clubName, type, context } = await req.json() as {
       clubName?: string;
       type?: string;
