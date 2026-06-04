@@ -457,6 +457,10 @@ export default function ClubPageView({
             }}
             currentUser={currentUser}
             accentColor={accentColor}
+            canEdit={canEdit}
+            onUpdateClub={onUpdateClub ? async (patch) => {
+              await onUpdateClub({ ...club, ...patch });
+            } : undefined}
           />
         )}
 
