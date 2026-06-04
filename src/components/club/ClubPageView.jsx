@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useDynamicMeta } from '../../hooks/useDynamicMeta.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
@@ -36,23 +36,6 @@ import ClubInfoTab from './tabs/ClubInfoTab.jsx';
 const EventFormModal = lazy(() => import('../EventFormModal.jsx'));
 const PosterStudio   = lazy(() => import('../PosterStudio.jsx'));
 
-// ── Win/draw/loss from blocks ─────────────────────────────────────────────────
-function useMatchStats(blocks) {
-  return useMemo(() => {
-    const matches = blocks
-      .filter(b => b.type === 'matches')
-      .flatMap(b => b.data?.matches ?? []);
-    const played = matches.filter(m => m.date && new Date(m.date + 'T23:59:59') < new Date() && m.scoreHome !== null && m.scoreHome !== undefined);
-    let W = 0, D = 0, L = 0;
-    for (const m of played) {
-      const h = Number(m.scoreHome), a = Number(m.scoreAway);
-      if (h === a) { D++; continue; }
-      const won = m.isHome ? h > a : a > h;
-      won ? W++ : L++;
-    }
-    return { W, D, L, played: played.length };
-  }, [blocks]);
-}
 
 // ── Tabs config ────────────────────────────────────────────────────────────────
 const TABS = [
@@ -117,7 +100,7 @@ export default function ClubPageView({
   const { allSports: SPORTS } = useSports();
   const {
     isAdmin, isClubAdmin, currentUser, isLoggedIn,
-    followClub, unfollowClub, updateFollow, isFollowingClub, getFollow,
+    followClub, updateFollow, isFollowingClub, getFollow,
   } = useAuth();
   const { share } = useShare();
 
@@ -146,9 +129,8 @@ export default function ClubPageView({
     typography, theme,
   } = useClubPage(club);
 
-  const pageViews = useClubAnalytics(club.id);
+  useClubAnalytics(club.id);
   const rows = useMemo(() => getRows(blocks), [blocks]);
-  const stats = useMatchStats(blocks);
 
   // ── Tab state ──────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState('accueil');
@@ -197,6 +179,15 @@ export default function ClubPageView({
   const accentColor = theme.accent ?? sportData?.color ?? '#22C55E';
   const heroBackground = getHeroBackground(theme.primary, accentColor, theme.heroStyle ?? 'solid');
 
+  // Comptage des matchs de la saison en cours (août N → juillet N+1)
+  const seasonMatchesCount = useMemo(() => {
+    const now = new Date();
+    const seasonStart = new Date(now.getFullYear() - (now.getMonth() < 7 ? 1 : 0), 7, 1);
+    return effectiveEvents.filter(e =>
+      String(e.clubId) === String(club.id) && new Date(e.date) >= seasonStart
+    ).length;
+  }, [effectiveEvents, club.id]);
+
   const posterEvent = useMemo(() => {
     const now = new Date();
     const next = effectiveEvents
@@ -205,7 +196,7 @@ export default function ClubPageView({
     return next ?? {
       id: `club-poster-${club.id}`,
       sport: club.sport, title: club.name,
-      date: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 16),
+      date: new Date(new Date().getTime() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 16),
       city: club.city, eventType: 'friendly',
     };
   }, [effectiveEvents, club]);
@@ -289,9 +280,9 @@ export default function ClubPageView({
       transition={{ duration: 0.18 }}
       style={{
         position: 'absolute', inset: 0, zIndex: 20,
-        display: 'flex', flexDirection: 'column',
+        overflowY: 'auto', overflowX: 'hidden',
+        overscrollBehavior: 'contain',
         backgroundColor: 'var(--sl-bg)',
-        overflow: 'hidden',
         fontFamily: `"${typography.bodyFont}", sans-serif`,
       }}
       role="main"
@@ -313,8 +304,10 @@ export default function ClubPageView({
           const upcoming = effectiveEvents.filter(e => e.clubId === club.id && new Date(e.date) >= new Date());
           downloadClubICS(upcoming, club.name);
         }}
-        onContact={club.contact ? () => window.location.href = `mailto:${club.contact}` : null}
+        onContact={club.email ? () => window.open(`mailto:${club.email}`) : null}
         linkCopied={linkCopied}
+        matchesCount={seasonMatchesCount}
+        onViewOnMap={(club.lat && club.lng) ? onBack : undefined}
       />
 
       {/* Login hint tooltip */}
@@ -332,12 +325,14 @@ export default function ClubPageView({
 
       {/* Subscription banner */}
       {isOwner && (
-        <SubscriptionExpiryBanner
-          periodEnd={clubPeriodEnd}
-          planId={clubPlan}
-          planName={clubPlanMeta?.name}
-          compact
-        />
+        <div style={{ position: 'sticky', top: 0, zIndex: 14 }}>
+          <SubscriptionExpiryBanner
+            periodEnd={clubPeriodEnd}
+            planId={clubPlan}
+            planName={clubPlanMeta?.name}
+            compact
+          />
+        </div>
       )}
 
       {/* Editing mode banner */}
@@ -376,16 +371,18 @@ export default function ClubPageView({
         </div>
       )}
 
-      {/* ── Tab Navigation ── */}
-      <TabNav
-        activeTab={activeTab}
-        onTabChange={tab => { setActiveTab(tab); setOpenMenuAfter(null); }}
-        accentColor={accentColor}
-        announcementsCount={announcements.length}
-      />
+      {/* ── Tab Navigation (sticky) ── */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 15 }}>
+        <TabNav
+          activeTab={activeTab}
+          onTabChange={tab => { setActiveTab(tab); setOpenMenuAfter(null); }}
+          accentColor={accentColor}
+          announcementsCount={announcements.length}
+        />
+      </div>
 
       {/* ── Tab content ── */}
-      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', overscrollBehavior: 'contain' }}>
+      <div style={{ minHeight: 0 }}>
         {activeTab === 'accueil' && (
           <ClubHomeTab
             club={club}
