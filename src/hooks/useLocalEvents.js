@@ -140,8 +140,9 @@ export function useLocalEvents() {
 
   // ── Realtime ─────────────────────────────────────────────────────────────
   useEffect(() => {
+    const key = Math.random().toString(36).slice(2, 7);
     const channel = supabase
-      .channel('events-realtime')
+      .channel(`events-rt-${key}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, ({ new: row }) => {
         // Suppress realtime echo for events we are in the middle of inserting optimistically
         if (pendingInserts.current.has(row.id)) return;

@@ -21,6 +21,10 @@ export async function getPushSubscription() {
 }
 
 export async function subscribeToPush(userId) {
+  if (!VAPID_PUBLIC_KEY) {
+    console.warn('[Push] VITE_VAPID_PUBLIC_KEY manquante — push désactivé');
+    return null;
+  }
   if (!window.Notification) throw new Error('Notifications not supported');
 
   const permission = await Notification.requestPermission();

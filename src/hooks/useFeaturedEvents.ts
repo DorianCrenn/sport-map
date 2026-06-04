@@ -101,7 +101,7 @@ export function useFeaturedEvents({
             created_at:  row.starts_at,
             featured_id: row.id,
             event_id:    ev.id,
-            club_name:   row.clubs.name,
+            club_name:   row.clubs?.name ?? '',
             plan:        row.plan as FeaturedPlan,
             title:       ev.title    ?? '',
             date:        (ev.date as string | undefined)?.slice(0, 10) ?? '',

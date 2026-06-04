@@ -338,7 +338,7 @@ function MonthCalendar({ sessions, clubId, onOpenDetail }) {
 }
 
 // ── List view ─────────────────────────────────────────────────────────────────
-function ListView({ sessions, clubId, onOpenDetail }) {
+function ListView({ sessions }) {
   const sorted = [...sessions].sort((a, b) => {
     const di = DAYS.indexOf(a.day) - DAYS.indexOf(b.day);
     return di !== 0 ? di : a.time.localeCompare(b.time);
@@ -491,7 +491,9 @@ function TrainingSessionDetailLazy({ sessionRef, date, clubId, currentUser, isMa
   const [dbSession, setDbSession] = useState(null);
 
   useEffect(() => {
-    import('../TrainingSessionDetail.jsx').then(m => setComp(() => m.default));
+    import('../TrainingSessionDetail.jsx')
+      .then(m => setComp(() => m.default))
+      .catch(err => console.warn('[TrainingBlock] import failed:', err.message));
     // Fetch or create the training_sessions row for this date
     const dateStr = typeof date === 'number'
       ? new Date(new Date().getFullYear(), new Date().getMonth(), date).toISOString().slice(0, 10)

@@ -100,8 +100,9 @@ export function useNewsFeed({ followedClubIds = [], follows = [], managedClubIds
     const clubIdSet = new Set(followedClubIds.map(String));
 
     // Realtime sur les annonces + événements (scores + nouveaux matchs)
+    const key = Math.random().toString(36).slice(2, 7);
     const channel = supabase
-      .channel('news-feed-live')
+      .channel(`news-feed-${key}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
