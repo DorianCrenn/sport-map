@@ -1,9 +1,34 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../../../lib/supabase.js';
 
 function uid() { return `m_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`; }
 
-const BLANK = { id: '', date: '', time: '15:00', opponent: '', isHome: true, competition: '', teamId: '', teamName: '', venue: '', scoreHome: '', scoreAway: '', publishedOnMap: true };
+const BLANK = { id: '', date: '', time: '15:00', opponent: '', isHome: true, competition: '', teamId: '', teamName: '', venue: '', scoreHome: '', scoreAway: '', publishedOnMap: true, supabaseEventId: null };
+
+// Convertit un match MatchesBlock en enregistrement events Supabase
+function matchToEvent(m, club) {
+  const homeTeam = m.isHome ? (club.name ?? 'Domicile') : (m.opponent || 'Extérieur');
+  const awayTeam = m.isHome ? (m.opponent || 'Extérieur') : (club.name ?? 'Domicile');
+  const hasScore = m.scoreHome !== '' && m.scoreHome !== null &&
+                   m.scoreAway !== '' && m.scoreAway !== null;
+  return {
+    title:        `${homeTeam} vs ${awayTeam}`,
+    sport:        club.sport ?? 'Football',
+    date:         m.date ? `${m.date}T${m.time || '15:00'}:00` : null,
+    venue:        m.venue || club.city || '',
+    city:         club.city ?? '',
+    lat:          club.lat  ?? null,
+    lng:          club.lng  ?? null,
+    club_id:      String(club.id),
+    event_type:   m.competition ? 'championship' : 'friendly',
+    team_name:    m.teamName || null,
+    home_or_away: m.isHome ? 'home' : 'away',
+    level:        m.competition || null,
+    score:        hasScore ? { home: Number(m.scoreHome), away: Number(m.scoreAway) } : null,
+    source:       'user',
+  };
+}
 
 function isUpcoming(match) {
   if (!match.date) return true;
@@ -329,8 +354,27 @@ export default function MatchesBlock({ data, onUpdate, isEditing, club, filterTe
     setShowForm(true);
   }
 
-  function handleSave(f) {
-    const cleaned = { ...f, scoreHome: f.scoreHome === '' ? null : Number(f.scoreHome), scoreAway: f.scoreAway === '' ? null : Number(f.scoreAway) };
+  async function handleSave(f) {
+    let cleaned = { ...f, scoreHome: f.scoreHome === '' ? null : Number(f.scoreHome), scoreAway: f.scoreAway === '' ? null : Number(f.scoreAway) };
+
+    if (club) {
+      if (cleaned.publishedOnMap && cleaned.isHome && cleaned.date) {
+        const eventData = matchToEvent(cleaned, club);
+        if (cleaned.supabaseEventId) {
+          // UPDATE de l'event existant
+          await supabase.from('events').update(eventData).eq('id', cleaned.supabaseEventId);
+        } else {
+          // INSERT → on récupère l'ID généré
+          const { data } = await supabase.from('events').insert(eventData).select('id').single();
+          if (data?.id) cleaned = { ...cleaned, supabaseEventId: data.id };
+        }
+      } else if (!cleaned.publishedOnMap && cleaned.supabaseEventId) {
+        // Dépublié → on supprime le vrai event
+        await supabase.from('events').delete().eq('id', cleaned.supabaseEventId);
+        cleaned = { ...cleaned, supabaseEventId: null };
+      }
+    }
+
     if (editingId) {
       onUpdate({ matches: manualMatches.map(m => m.id === editingId ? cleaned : m) });
     } else {
@@ -339,7 +383,11 @@ export default function MatchesBlock({ data, onUpdate, isEditing, club, filterTe
     setShowForm(false);
   }
 
-  function remove(id) {
+  async function remove(id) {
+    const match = manualMatches.find(m => m.id === id);
+    if (match?.supabaseEventId) {
+      await supabase.from('events').delete().eq('id', match.supabaseEventId);
+    }
     onUpdate({ matches: manualMatches.filter(m => m.id !== id) });
   }
 

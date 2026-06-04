@@ -19,7 +19,6 @@ const CITY_COORDS = {
   lesneven:        [48.5734, -4.3252],
   landivisiau:     [48.5082, -4.0666],
   quimperlé:       [47.8719, -3.5494],
-  brest:           [48.3904, -4.4861],
 };
 
 function getCoords(city) {
@@ -54,7 +53,8 @@ export function useClubMatches() {
         const matches = block.data?.matches ?? [];
 
         for (const match of matches) {
-          if (!match.date || !match.isHome || match.publishedOnMap === false) continue;
+          // Skip si déjà synchronisé vers Supabase events (affiché via useLocalEvents)
+          if (!match.date || !match.isHome || match.publishedOnMap === false || match.supabaseEventId) continue;
           const coords = getCoords(club.city);
           const hasScore = match.scoreHome !== null && match.scoreHome !== undefined &&
                            match.scoreAway !== null && match.scoreAway !== undefined;

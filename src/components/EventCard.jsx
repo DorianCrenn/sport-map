@@ -7,6 +7,7 @@ import { useAttendeeCount } from '../contexts/AttendeeCountContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
 import { useClubPlayers } from '../hooks/useClubPlayers.js';
+import { useClubAnnouncements } from '../hooks/useClubAnnouncements.js';
 import EventReactions from './EventReactions.jsx';
 import EventComments from './EventComments.jsx';
 import { useEventPredictionCount } from '../hooks/useEventPredictions.js';
@@ -224,12 +225,15 @@ function NavBtn({ event }) {
   );
 }
 
-function QuickScoreEdit({ event, onUpdateEvent, onPosterResult }) {
+function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult }) {
   const [home, setHome]   = useState(String(event.score?.home ?? ''));
   const [away, setAway]   = useState(String(event.score?.away ?? ''));
   const [motm, setMotm]   = useState(event.man_of_match ?? '');
   const [saved, setSaved] = useState(false);
   const [motmOpen, setMotmOpen] = useState(false);
+  const [scoreForAnnounce, setScoreForAnnounce] = useState(null);
+  const [announced, setAnnounced] = useState(false);
+  const [announcing, setAnnouncing] = useState(false);
   const { players } = useClubPlayers(event.clubId);
 
   useEffect(() => {
@@ -247,7 +251,20 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult }) {
     if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
     onUpdateEvent(event.id, { score: { home: h, away: a }, man_of_match: motm.trim() || null });
     setSaved(true);
+    setScoreForAnnounce({ home: h, away: a });
     setTimeout(() => setSaved(false), 5000);
+  }
+
+  async function handleAnnounce(e) {
+    e.stopPropagation();
+    if (!scoreForAnnounce || !onAnnounceResult) return;
+    setAnnouncing(true);
+    try {
+      await onAnnounceResult(scoreForAnnounce);
+      setAnnounced(true);
+    } finally {
+      setAnnouncing(false);
+    }
   }
 
   const filteredPlayers = players.filter(p =>
@@ -344,6 +361,30 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult }) {
             </svg>
             Créer l'affiche résultat
           </motion.button>
+        )}
+        {saved && onAnnounceResult && !announced && (
+          <motion.button
+            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+            onClick={handleAnnounce}
+            disabled={announcing}
+            style={{
+              width: '100%', marginTop: 6, padding: '9px 0', borderRadius: 9, border: 'none',
+              cursor: announcing ? 'wait' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+              color: 'white', fontSize: 12, fontWeight: 800, opacity: announcing ? 0.7 : 1,
+            }}
+          >
+            {announcing ? 'Envoi…' : '📢 Notifier les abonnés'}
+          </motion.button>
+        )}
+        {announced && (
+          <motion.p
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)', textAlign: 'center', marginTop: 6 }}
+          >
+            ✓ Résultat annoncé aux abonnés
+          </motion.p>
         )}
       </AnimatePresence>
     </div>
@@ -552,6 +593,7 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const attendeeCount = useAttendeeCount(event.id);
   const predictionCount = useEventPredictionCount(event.eventType !== 'tournament' && new Date(event.date) > new Date() ? event.id : null);
+  const { sendAnnouncement } = useClubAnnouncements(event.clubId);
   const [showPoster, setShowPoster] = useState(false);
   const [posterInitBg, setPosterInitBg] = useState(null);
   const [resultScore, setResultScore] = useState(null);
@@ -751,7 +793,23 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
                 </div>
 
                 {canEditThis && isPast && onUpdateEvent && (
-                  <QuickScoreEdit event={event} onUpdateEvent={onUpdateEvent} onPosterResult={score => setResultScore(score)} />
+                  <QuickScoreEdit
+                    event={event}
+                    onUpdateEvent={onUpdateEvent}
+                    onPosterResult={score => setResultScore(score)}
+                    onAnnounceResult={club ? async (score) => {
+                      const parts = (event.title ?? '').split(/\svs\.?\s/i);
+                      const homeTeam = parts[0]?.trim() || (event.title ?? 'Domicile');
+                      const awayTeam = parts[1]?.trim() || 'Extérieur';
+                      await sendAnnouncement({
+                        type: 'result',
+                        title: `Résultat — ${event.title ?? ''}`,
+                        message: `${homeTeam} ${score.home} – ${score.away} ${awayTeam}`,
+                        targetTeams: event.teamName ? [event.teamName] : [],
+                        clubName: club.name,
+                      });
+                    } : undefined}
+                  />
                 )}
 
                 {hasStandings && (

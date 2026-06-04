@@ -1,14 +1,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyAnnouncements } from '../hooks/useMyAnnouncements.js';
-import { timeAgo } from '../lib/dateUtils.js';
-
-const TYPE_META = {
-  urgent: { label: 'URGENT', color: '#ef4444', bg: 'rgba(239,68,68,0.12)', icon: '🚨' },
-  info:   { label: 'INFO',   color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', icon: 'ℹ️' },
-  result: { label: 'RÉSULTAT', color: '#22d96a', bg: 'rgba(34,217,106,0.12)', icon: '⚽' },
-  event:  { label: 'ÉVÉNEMENT', color: '#a855f7', bg: 'rgba(168,85,247,0.12)', icon: '🎉' },
-};
+import AnnouncementCard from './AnnouncementCard.jsx';
 
 export default function AnnouncementsCenter({ onClose }) {
   const { announcements, readIds, unreadCount, loading, markRead, markAllRead } = useMyAnnouncements();
@@ -65,56 +58,15 @@ export default function AnnouncementsCenter({ onClose }) {
           </div>
         ) : (
           <AnimatePresence initial={false}>
-            {announcements.map((ann, i) => {
-              const meta = TYPE_META[ann.type] ?? TYPE_META.info;
-              const isRead = readIds.has(ann.id);
-              return (
-                <motion.div
-                  key={ann.id}
-                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  onClick={() => !isRead && markRead(ann.id)}
-                  style={{
-                    borderRadius: 16, padding: '14px', marginBottom: 10,
-                    backgroundColor: isRead ? 'var(--sl-surface)' : 'var(--sl-card)',
-                    border: `1px solid ${isRead ? 'var(--sl-border)' : meta.color + '30'}`,
-                    cursor: isRead ? 'default' : 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  {/* Club + time */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: 'var(--sl-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: 'var(--sl-t2)', flexShrink: 0 }}>
-                        {(ann.clubName ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
-                      </div>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t2)' }}>{ann.clubName}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, backgroundColor: meta.bg, color: meta.color }}>
-                        {meta.icon} {meta.label}
-                      </span>
-                      {!isRead && <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: meta.color, flexShrink: 0 }} />}
-                    </div>
-                  </div>
-
-                  {/* Message */}
-                  <p style={{ fontSize: 14, fontWeight: isRead ? 400 : 600, color: 'var(--sl-t1)', margin: 0, lineHeight: 1.5 }}>
-                    {ann.message}
-                  </p>
-
-                  {/* Target + time */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-                    {ann.targetTeams.length > 0 ? (
-                      <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>→ {ann.targetTeams.join(', ')}</span>
-                    ) : (
-                      <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Tous les abonnés</span>
-                    )}
-                    <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{timeAgo(ann.createdAt)}</span>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {announcements.map((ann) => (
+              <AnnouncementCard
+                key={ann.id}
+                ann={ann}
+                variant="center"
+                isRead={readIds.has(ann.id)}
+                onRead={markRead}
+              />
+            ))}
           </AnimatePresence>
         )}
       </div>

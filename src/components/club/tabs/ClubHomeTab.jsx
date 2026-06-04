@@ -1,96 +1,10 @@
-import { useMemo } from 'react';
 import { AnimatePresence, Reorder } from 'framer-motion';
 import { motion } from 'framer-motion';
-import SportIcon from '../../SportIcon.jsx';
-import { DraggableRow, getRows, PlusIcon } from '../ClubPageBuilder.jsx';
+import { DraggableRow, PlusIcon } from '../ClubPageBuilder.jsx';
 import AddBlockMenu from '../AddBlockMenu.jsx';
 import ClubSimpleEditor from '../ClubSimpleEditor.jsx';
+import NextMatchBlock from '../blocks/NextMatchBlock.jsx';
 import { timeAgo } from '../../../lib/dateUtils.js';
-
-// ── Prochain match ────────────────────────────────────────────────────────────
-
-function NextMatchCard({ event, accentColor }) {
-  if (!event) return null;
-  const eventDate = new Date(event.date);
-  const isToday = new Date().toDateString() === eventDate.toDateString();
-  const isTomorrow = (() => {
-    const t = new Date(); t.setDate(t.getDate() + 1);
-    return t.toDateString() === eventDate.toDateString();
-  })();
-
-  const dateLabel = isToday ? 'Aujourd\'hui'
-    : isTomorrow ? 'Demain'
-    : eventDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-
-  return (
-    <div style={{
-      borderRadius: 16, overflow: 'hidden',
-      backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
-      marginBottom: 12,
-    }}>
-      {/* Badge */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '8px 14px',
-        backgroundColor: `${accentColor}12`,
-        borderBottom: `1px solid ${accentColor}20`,
-      }}>
-        <span style={{ fontSize: 10, fontWeight: 800, color: accentColor, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          ⚡ Prochain match
-        </span>
-        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)' }}>{dateLabel}</span>
-      </div>
-
-      {/* Teams */}
-      <div style={{ padding: '14px 14px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 2 }}>
-              {event.homeTeam || 'Domicile'}
-            </div>
-          </div>
-          <div style={{
-            flexShrink: 0, padding: '4px 10px', borderRadius: 8,
-            backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
-            fontSize: 12, fontWeight: 800, color: 'var(--sl-t3)',
-          }}>
-            VS
-          </div>
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 2 }}>
-              {event.awayTeam || 'Visiteur'}
-            </div>
-          </div>
-        </div>
-
-        {/* Meta */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-          {event.time && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--sl-t3)' }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-              </svg>
-              {event.time}
-            </div>
-          )}
-          {event.venue && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--sl-t3)' }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-              </svg>
-              {event.venue}
-            </div>
-          )}
-          {(event.championship || event.eventType) && (
-            <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>
-              {event.championship || event.eventType}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── Annonce preview ───────────────────────────────────────────────────────────
 
@@ -120,7 +34,7 @@ function AnnouncementPreviewCard({ ann, accentColor }) {
         </div>
       </div>
       <div style={{ fontSize: 10, color: 'var(--sl-t3)', flexShrink: 0, marginTop: 1 }}>
-        {timeAgo(ann.created_at)}
+        {timeAgo(ann.createdAt)}
       </div>
     </div>
   );
@@ -150,14 +64,6 @@ export default function ClubHomeTab({
   updateBlock, deleteBlock, toggleBlock, setBlockSpan, moveBlockInRow, addBlockToRow, addBlock, reorderRows,
   currentUser,
 }) {
-  const now = new Date();
-
-  const nextMatch = useMemo(() => {
-    return effectiveEvents
-      .filter(e => String(e.clubId) === String(club.id) && new Date(e.date) >= now)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))[0] ?? null;
-  }, [effectiveEvents, club.id]);
-
   const recentAnnouncements = (announcements ?? []).slice(0, 3);
 
   function handleAddBlock(type, afterRowId) {
@@ -196,8 +102,10 @@ export default function ClubHomeTab({
       )}
 
       {/* Prochain match */}
-      {!isEditing && nextMatch && (
-        <NextMatchCard event={nextMatch} accentColor={accentColor} />
+      {!isEditing && (
+        <div style={{ marginBottom: 12 }}>
+          <NextMatchBlock allEvents={effectiveEvents} club={club} />
+        </div>
       )}
 
       {/* Annonces récentes */}
@@ -296,7 +204,7 @@ export default function ClubHomeTab({
       </AnimatePresence>
 
       {/* Empty state */}
-      {blocks.length === 0 && !isEditing && !nextMatch && recentAnnouncements.length === 0 && (
+      {blocks.length === 0 && !isEditing && recentAnnouncements.length === 0 && (
         <div style={{
           textAlign: 'center', padding: '32px 20px',
           borderRadius: 16, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
@@ -343,7 +251,7 @@ export default function ClubHomeTab({
 
 // ── Checklist inlined ─────────────────────────────────────────────────────────
 
-function ClubSetupChecklist({ club, blocks, events, onDismiss, onEditPage, onCreateEvent, onSendAnnouncement, accentColor }) {
+function ClubSetupChecklist({ club, blocks, events, onDismiss, onEditPage, onCreateEvent }) {
   const hasBlocks = blocks.length > 0;
   const hasEvents = events.length > 0;
   const hasMembers = (club.members ?? 0) > 0;

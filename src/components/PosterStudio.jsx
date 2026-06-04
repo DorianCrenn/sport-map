@@ -1,13 +1,4 @@
-// REFACTORING PLAN (Batch 5 — voir plan d'audit 2026-06-02)
-// Ce composant doit être découpé en :
-//   1. src/hooks/usePosterState.js   — reducer + auto-save + draft restore
-//   2. src/hooks/usePosterAssets.js  — savedAiBgs, savedAiEls, overlays, player layers
-//   3. src/hooks/usePosterExport.js  — download, share, instagram, exportAll
-//   4. src/components/poster/PosterWizard.jsx — rendu mode Simple (étapes 1-3)
-// Faire la migration en session dédiée avec test visuel sur chaque extraction.
-// Les squelettes des hooks existent déjà dans src/hooks/.
-
-import { useRef, useState, useEffect, useMemo, useReducer, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { Z } from '../constants/zIndex.js';
@@ -21,39 +12,24 @@ import BackgroundPanelTab from './poster/panels/BackgroundPanelTab.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
 import AiElementEditor from './poster/AiElementEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import {
-  usePosterDraft,
-  usePosterLibrary,
-  useFavoriteTemplates,
-  useDefaultTemplate,
-} from '../hooks/usePosterDraft.js';
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
 import { useClubSponsorsPage } from '../hooks/useClubSponsorsPage.js';
 import { useClubFeatures } from '../hooks/useClubFeatures.js';
 import { useClubAIUsage } from '../hooks/useClubAIUsage.js';
 import { usePosterAI } from '../hooks/usePosterAI.js';
+import { usePosterState } from '../hooks/usePosterState.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
 import { generateMatchPoster } from '../lib/posterVariants.js';
-import { getBgCache, normalizeSport } from '../lib/sportBgCache.js';
 import { supabase } from '../lib/supabase.js';
-import {
-  MiniToggle,
-  IcoExporter,
-} from './poster/PosterAtoms.jsx';
+import { IcoExporter } from './poster/PosterAtoms.jsx';
 import {
   SPORT_PALETTE, PANEL_TABS,
 } from './poster/posterConstants.js';
 import { usePosterAssets } from '../hooks/usePosterAssets.js';
 import { usePosterExport } from '../hooks/usePosterExport.js';
 import { WizardStepBar, WizardContent, WizardFooter } from './poster/PosterWizard.jsx';
-
-// ── Reducer ────────────────────────────────────────────────────────────────────
-
-function posterReducer(state, action) {
-  if (action.type === 'PATCH') return { ...state, ...action.payload };
-  return { ...state, [action.type]: action.value };
-}
+import PlatformPreviewPanel from './poster/PlatformPreviewPanel.jsx';
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -83,10 +59,12 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const initialAccent = clubAccent ?? (isTournamentEvent ? '#8b5cf6' : sportColor);
   const initialFields = deriveInitialFields(event, club);
 
-  const draftHook  = usePosterDraft(event?.id);
-  const libHook    = usePosterLibrary();
-  const favTplHook = useFavoriteTemplates();
-  const defTplHook = useDefaultTemplate(club?.id);
+  const {
+    poster, dispatch, set,
+    draftState, lastSavedAt, restoredDraft,
+    libHook, favTplHook, defTplHook,
+  } = usePosterState({ event, club, initialAccent, initialFields, initialBgSrc, isTournamentEvent, resultMode });
+
   const clubMedia  = useClubMedia(club?.id);
   const clubDNA    = useClubDNA(club?.id);
   const { usage: aiUsage, optimisticIncrement: aiIncrement } = useClubAIUsage(club?.id);
@@ -100,23 +78,6 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const [selectedSponsorIds, setSelectedSponsorIds] = useState(new Set());
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  const [poster, dispatch] = useReducer(posterReducer, {
-    format: 'story', templateId: isTournamentEvent ? 'tr-premium' : (resultMode ? 'impact' : 'simple'),
-    accentColor: initialAccent,
-    scoreHome: resultMode?.home !== undefined ? resultMode.home : undefined,
-    scoreAway: resultMode?.away !== undefined ? resultMode.away : undefined,
-    bgSrc: '', bgUrl: '', bgErr: false, bgMode: 'color',
-    bgPreset: '',
-    bgTint: '', bgTintOp: 0,
-    overlayElements: [],
-    aiOverlayElements: [],
-    playerLayers: [],
-    homeName: initialFields.homeName, awayName: initialFields.awayName,
-    homeLogo: initialFields.homeLogo, awayLogo: initialFields.awayLogo,
-    championship: initialFields.championship, tagline: initialFields.tagline,
-    sponsorSrc: '', transforms: {},
-  });
-
   const {
     format, templateId, accentColor, bgSrc, bgUrl, bgErr, bgMode, bgPreset,
     bgTint, bgTintOp,
@@ -124,7 +85,6 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     sponsorSrc, transforms, overlayElements, aiOverlayElements, playerLayers,
     scoreHome, scoreAway,
   } = poster;
-  const set = (key, value) => dispatch({ type: key, value });
   const altFormat = format === 'story' ? 'post' : 'story';
   const { w: altW, h: altH } = BASE_DIMS[altFormat];
 
@@ -146,8 +106,6 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const [watermarkVisible, setWatermarkVisible] = useState(true);
   const [editorOpen,    setEditorOpen]    = useState(false);
   const [previewFull,   setPreviewFull]   = useState(false);
-  const [lastSavedAt,   setLastSavedAt]   = useState(null);
-  const [restoredDraft, setRestoredDraft] = useState(false);
   const [libName,       setLibName]       = useState('');
   const [libFilter,     setLibFilter]     = useState('all');
   const [favVersion,    setFavVersion]    = useState(0);
@@ -180,45 +138,11 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     addOverlayElement, removeOverlayElement, updateOverlayElement,
     addPlayerLayer, removePlayerLayer, updatePlayerLayer,
   } = usePosterAssets({ clubId: club?.id, accentColor, dispatch, overlayElements, aiOverlayElements, playerLayers });
-  const skipAutoSave  = useRef(true);
   const canvasAreaRef = useRef(null);
   const playerFileRef = useRef(null);
   const replaceFileRef = useRef(null);
   const replaceTargetId = useRef(null);
   const dnaFileRef    = useRef(null);
-
-  useEffect(() => {
-    favTplHook.loadFromDB();
-    const draft = draftHook.loadDraft();
-    const sportKey = normalizeSport(event?.sport || '');
-    const cachedSportBg = getBgCache(sportKey);
-    if (draft?.state) {
-      const merged = { ...draft.state };
-      if (!merged.homeLogo && initialFields.homeLogo) merged.homeLogo = initialFields.homeLogo;
-      if (!merged.awayLogo && initialFields.awayLogo) merged.awayLogo = initialFields.awayLogo;
-      if (initialBgSrc) {
-        merged.bgSrc = initialBgSrc;
-        merged.bgMode = 'url';
-        merged.bgErr = false;
-        merged.bgPreset = '';
-      } else if (!merged.bgSrc && !merged.bgPreset && cachedSportBg) {
-        merged.bgSrc = cachedSportBg;
-        merged.bgMode = 'url';
-      }
-      dispatch({ type: 'PATCH', payload: merged });
-      setRestoredDraft(true);
-      setTimeout(() => setRestoredDraft(false), 3000);
-    } else {
-      const defaultTpl = defTplHook.get();
-      if (defaultTpl) set('templateId', defaultTpl);
-      if (initialBgSrc) {
-        dispatch({ type: 'PATCH', payload: { bgSrc: initialBgSrc, bgMode: 'url', bgErr: false, bgPreset: '' } });
-      } else if (cachedSportBg) {
-        dispatch({ type: 'PATCH', payload: { bgSrc: cachedSportBg, bgMode: 'url', bgErr: false } });
-      }
-    }
-    setTimeout(() => { skipAutoSave.current = false; }, 150);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const el = canvasAreaRef.current;
@@ -240,21 +164,6 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     const t = setTimeout(() => setExportOpen(true), 250);
     return () => clearTimeout(t);
   }, [simpleMode, wizardStep]);  
-
-  const draftState = useMemo(() => {
-    // eslint-disable-next-line no-unused-vars
-    const { bgUrl, bgErr, ...rest } = poster;
-    return rest;
-  }, [poster]);
-
-  useEffect(() => {
-    if (skipAutoSave.current) return;
-    const t = setTimeout(() => {
-      draftHook.saveDraft(draftState);
-      setLastSavedAt(new Date().toISOString());
-    }, 2000);
-    return () => clearTimeout(t);
-  }, [draftState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Sport & club color palettes ──
   const sportColors = useMemo(() => {
@@ -660,244 +569,22 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         {/* Platform preview overlay — DISTRIB-001c */}
         <AnimatePresence>
           {platformPreview && (
-            <motion.div key="platform-preview"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 42, backgroundColor: 'var(--sl-card)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Aperçu plateformes</span>
-                <button onClick={() => setPlatformPreview(null)}
-                  style={{ width: 32, height: 32, borderRadius: 9, border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              </div>
-              {/* Tabs */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '10px 16px', flexShrink: 0, borderBottom: '1px solid var(--sl-border)' }}>
-                {[
-                  { id: 'ig-story', label: 'Story IG',  color: '#E1306C' },
-                  { id: 'ig-post',  label: 'Post IG',   color: '#E1306C' },
-                  { id: 'whatsapp', label: 'WhatsApp',  color: '#25D366' },
-                ].map(p => (
-                  <button key={p.id} onClick={() => setPlatformPreview(p.id)}
-                    style={{ padding: '7px 16px', borderRadius: 10, border: `1.5px solid ${platformPreview === p.id ? p.color : 'var(--sl-border)'}`, backgroundColor: platformPreview === p.id ? `${p.color}16` : 'transparent', fontSize: 12, fontWeight: 700, color: platformPreview === p.id ? p.color : 'var(--sl-t2)', cursor: 'pointer' }}>
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-              {/* Preview area */}
-              <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 16px' }}>
-                {platformPreview === 'ig-story' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 11, color: '#E1306C', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Instagram Story · 9:16</span>
-                    <div style={{ width: 240, height: 427, borderRadius: 20, overflow: 'hidden', position: 'relative', boxShadow: '0 0 0 3px #E1306C66, 0 28px 70px rgba(0,0,0,0.6)', backgroundColor: '#000', flexShrink: 0 }}>
-                      <PosterRenderer templateId={templateId} data={posterData} format="story" previewWidth={240} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} showWatermark={!hasPremium} />
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 48, background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)', zIndex: 10, display: 'flex', alignItems: 'flex-start', padding: '10px 12px 0', gap: 7 }}>
-                        <div style={{ flex: 1, height: 2.5, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginTop: 6 }} />
-                        <div style={{ width: 26, height: 26, borderRadius: '50%', border: '2px solid white', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                          {club?.logo ? <img src={club.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 9, fontWeight: 900, color: 'white' }}>{(club?.name || 'C')[0]}</span>}
-                        </div>
-                        <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.9)', fontWeight: 700, lineHeight: '26px', maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club?.name || 'Votre club'}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {platformPreview === 'ig-post' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 11, color: '#E1306C', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Instagram Post · 4:5</span>
-                    <div style={{ width: 290, backgroundColor: 'var(--sl-card)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.35)', border: '1px solid var(--sl-border)', flexShrink: 0 }}>
-                      <div style={{ padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 2 }}>
-                          <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', backgroundColor: 'var(--sl-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {club?.logo ? <img src={club.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 11, fontWeight: 900, color: 'var(--sl-t1)' }}>{(club?.name || 'C')[0]}</span>}
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t1)' }}>{club?.name || 'Votre club'}</div>
-                          <div style={{ fontSize: 9, color: 'var(--sl-t3)' }}>Bretagne · SportLink</div>
-                        </div>
-                        <svg style={{ marginLeft: 'auto' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                      </div>
-                      <div style={{ overflow: 'hidden' }}>
-                        <PosterRenderer templateId={templateId} data={posterData} format="post" previewWidth={290} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} showWatermark={!hasPremium} />
-                      </div>
-                      <div style={{ padding: '8px 12px 10px', display: 'flex', gap: 14, alignItems: 'center' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                        <svg style={{ marginLeft: 'auto' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {platformPreview === 'whatsapp' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 11, color: '#25D366', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>WhatsApp</span>
-                    <div style={{ width: 290, backgroundColor: '#111b21', borderRadius: 18, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.6)', flexShrink: 0 }}>
-                      <div style={{ padding: '11px 14px', backgroundColor: '#202c33', display: 'flex', alignItems: 'center', gap: 9 }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
-                        <div style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: '#2a3942', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {club?.logo ? <img src={club.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 10, fontWeight: 900, color: '#aebac1' }}>{(club?.name || 'C')[0]}</span>}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 12, color: '#e9edef', fontWeight: 700 }}>{club?.name || 'Votre club'}</div>
-                          <div style={{ fontSize: 9.5, color: '#8696a0' }}>en ligne</div>
-                        </div>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                      </div>
-                      <div style={{ padding: '14px 10px 14px', backgroundColor: '#0b141a' }}>
-                        <div style={{ maxWidth: '88%', marginLeft: 'auto', backgroundColor: '#005c4b', borderRadius: '10px 2px 10px 10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
-                          <div style={{ overflow: 'hidden' }}>
-                            <PosterRenderer templateId={templateId} data={posterData} format="post" previewWidth={232} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} showWatermark={!hasPremium} />
-                          </div>
-                          <div style={{ padding: '4px 10px 6px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 4 }}>
-                            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>maintenant</span>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#53bdeb" strokeWidth="2.5" strokeLinecap="round"><polyline points="1 12 5 16 11 8"/><polyline points="7 12 11 16 17 8"/></svg>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Export popover */}
-        <AnimatePresence>
-          {exportOpen && (
-            <motion.div
-              key="exportpopover"
-              initial={{ opacity: 0, y: 10, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.97 }}
-              transition={{ duration: 0.16, ease: 'easeOut' }}
-              style={{
-                position: 'absolute', bottom: 'calc(62px + env(safe-area-inset-bottom, 0px))', right: 12, left: 12, zIndex: 30,
-                backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
-                borderRadius: 20, boxShadow: '0 12px 40px rgba(0,0,0,0.3)', padding: 8,
-              }}
-            >
-              {/* Watermark toggle — Premium uniquement, sinon CTA upgrade cliquable */}
-              {hasPremium ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px 4px' }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)' }}>Masquer le watermark</div>
-                  <MiniToggle value={!watermarkVisible} onChange={(v) => setWatermarkVisible(!v)} accent={accentColor} />
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowUpgradeModal(true)}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', cursor: 'pointer', textAlign: 'left', gap: 10 }}
-                >
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
-                      Masquer le watermark
-                    </div>
-                    <div style={{ fontSize: 10, color: accentColor, fontWeight: 600, marginTop: 2 }}>Plan Starter — Passer au plan →</div>
-                  </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                    <polyline points="9 18 15 12 9 6"/>
-                  </svg>
-                </button>
-              )}
-              <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
-
-              {/* PNG */}
-              <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleDownload(); setExportOpen(false); }} disabled={downloading}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: `${accentColor}10` }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: `${accentColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>{downloading ? 'Téléchargement…' : 'Télécharger en PNG'}</div>
-                  <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>HD 3× — prêt pour Instagram</div>
-                </div>
-              </motion.button>
-
-              {/* Tout télécharger — DISTRIB-001a */}
-              <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleDownloadAll(); setExportOpen(false); }} disabled={exportingAll}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: `${accentColor}10` }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: `${accentColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                  <div style={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, borderRadius: '50%', backgroundColor: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: 7, fontWeight: 900, color: '#fff', lineHeight: 1 }}>2</span>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>{exportingAll ? 'Téléchargement…' : 'Tout télécharger'}</div>
-                  <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Story 9:16 + Post 4:5 · HD 3×</div>
-                </div>
-              </motion.button>
-
-              <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
-
-              {/* WhatsApp */}
-              <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleShareWhatsApp(); setExportOpen(false); }} disabled={sharing}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: 'rgba(37,211,102,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="#25D366">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.122 1.528 5.855L.057 23.882l6.233-1.635A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894c-1.897 0-3.66-.51-5.182-1.398l-.371-.22-3.851 1.01 1.029-3.763-.242-.387A9.855 9.855 0 012.106 12c0-5.457 4.437-9.894 9.894-9.894 5.457 0 9.894 4.437 9.894 9.894 0 5.457-4.437 9.894-9.894 9.894z"/>
-                  </svg>
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>{sharing ? 'Partage…' : 'Partager sur WhatsApp'}</div>
-                  <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Image + texte de l'événement</div>
-                </div>
-              </motion.button>
-
-              {/* Instagram */}
-              <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleShareIG(); setExportOpen(false); }} disabled={sharingIG}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: 'rgba(225,48,108,0.13)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E1306C" strokeWidth="2.3" strokeLinecap="round">
-                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
-                  </svg>
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>{sharingIG ? 'Partage…' : 'Partager sur Instagram'}</div>
-                  <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Via le partage natif ou téléchargement</div>
-                </div>
-              </motion.button>
-
-              {/* Facebook */}
-              <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleShareFacebook(); setExportOpen(false); }}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: 'rgba(24,119,242,0.13)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="#1877F2">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Partager sur Facebook</div>
-                  <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Partage du lien de l'événement</div>
-                </div>
-              </motion.button>
-
-              <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
-
-              {/* Copier le lien — DISTRIB-001b */}
-              <motion.button whileTap={{ scale: 0.97 }} onClick={handleCopyLink}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: linkCopied ? 'rgba(34,217,106,0.14)' : 'rgba(148,163,184,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.2s' }}>
-                  {linkCopied ? (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#22D96A" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  ) : (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                  )}
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: linkCopied ? 'var(--sl-green)' : 'var(--sl-t1)', transition: 'color 0.2s' }}>{linkCopied ? 'Lien copié !' : 'Copier le lien'}</div>
-                  <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Lien vers l'événement SportLink</div>
-                </div>
-              </motion.button>
-            </motion.div>
+            <PlatformPreviewPanel
+              platformPreview={platformPreview}
+              setPlatformPreview={setPlatformPreview}
+              templateId={templateId}
+              posterData={posterData}
+              format={format}
+              transforms={transforms}
+              bgPreset={bgPreset}
+              effects={posterEffects}
+              overlayElements={overlayElements}
+              aiOverlayElements={aiOverlayElements}
+              playerLayers={playerLayers}
+              activeBandLogos={activeBandLogos}
+              hasPremium={hasPremium}
+              club={club}
+            />
           )}
         </AnimatePresence>
 

@@ -36,7 +36,7 @@ function ShareBtn({ event }) {
   const [copied, setCopied] = useState(false);
   async function handle() {
     const dateObj = new Date(event.date);
-    const eventUrl = `${window.location.origin}${window.location.pathname}#event/${event.id}`;
+    const eventUrl = `${window.location.origin}/event-page.html?id=${event.id}`;
     const r = await share({
       title: event.title,
       text: `${event.title}\n📅 ${dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}\n📍 ${event.venue || event.city || ''}`,
