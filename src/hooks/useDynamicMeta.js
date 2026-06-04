@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
-const DEFAULT_TITLE = 'SportLink — Sport en Finistère';
-const DEFAULT_DESC  = 'Trouvez les événements sportifs près de chez vous en Finistère.';
+const DEFAULT_TITLE = 'SportLink — Sport partout en France';
+const DEFAULT_DESC  = 'Trouvez les événements sportifs près de chez vous partout en France.';
 const DEFAULT_IMAGE = '/og-default.png';
 
 /**

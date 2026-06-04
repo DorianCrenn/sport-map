@@ -1,7 +1,7 @@
 {
   "name": "SportLink — Le sport près de toi",
   "short_name": "SportLink",
-  "description": "Trouve des clubs, des matchs et des événements sportifs autour de toi en Finistère.",
+  "description": "Trouve des clubs, des matchs et des événements sportifs autour de toi partout en France.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

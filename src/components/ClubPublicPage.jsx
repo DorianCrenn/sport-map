@@ -147,7 +147,7 @@ export default function ClubPublicPage() {
       )}
 
       <div style={styles.footer}>
-        Propulsé par <strong>SportLink</strong> — La communauté sport en Finistère
+        Propulsé par <strong>SportLink</strong> — La communauté sportive
       </div>
     </div>
   );

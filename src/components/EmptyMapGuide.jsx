@@ -6,7 +6,7 @@ export default function EmptyMapGuide({ canAddEvent, onAddEvent, onResetFilters 
     if (navigator.share) {
       navigator.share({
         title: 'SportLink',
-        text: 'Rejoins SportLink pour suivre les événements sportifs en Finistère !',
+        text: 'Rejoins SportLink pour suivre les événements sportifs près de chez toi !',
         url,
       }).catch(() => {});
     } else {
@@ -85,7 +85,7 @@ export default function EmptyMapGuide({ canAddEvent, onAddEvent, onResetFilters 
               Aucun événement dans cette zone
             </div>
             <div style={{ fontSize: 12, color: 'var(--sl-t3)', marginBottom: 20, lineHeight: 1.5 }}>
-              Pas encore de club SportLink près de chez vous — explorez la Bretagne ou invitez votre club !
+              Pas encore de club SportLink près de chez vous — explorez la carte ou invitez votre club !
             </div>
             <button
               onClick={onResetFilters}

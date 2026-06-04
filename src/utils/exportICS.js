@@ -38,7 +38,7 @@ function triggerDownload(lines, filename) {
 export function downloadICS(event) {
   const now = new Date();
   triggerDownload([
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SportLink//Finistère//FR', 'CALSCALE:GREGORIAN',
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SportLink//France//FR', 'CALSCALE:GREGORIAN',
     ...buildVEvent(event, now),
     'END:VCALENDAR',
   ], `${event.title.replace(/[^a-z0-9]/gi, '_')}.ics`);

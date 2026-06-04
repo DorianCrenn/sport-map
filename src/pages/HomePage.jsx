@@ -308,7 +308,7 @@ function HowItWorks() {
         Comment ça marche ?
       </h3>
       <div className="space-y-4">
-        {steps.map(({ n, color, bg, title, desc, icon }, i) => (
+        {steps.map(({ n, color, title, desc }, i) => (
           <FadeUp key={n} delay={i * 0.1}>
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold font-poppins text-white text-sm"
@@ -563,7 +563,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
       {/* Feature cards */}
       <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-3 md:gap-5">
         {[
-          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'rgba(34,217,106,0.10)', title:'Trouve un club', desc:'Parcours les clubs sportifs du Finistère par sport ou par ville.' },
+          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'rgba(34,217,106,0.10)', title:'Trouve un club', desc:'Parcours les clubs sportifs près de chez toi par sport ou par ville.' },
           { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'rgba(61,165,255,0.10)', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois — tous les événements sur la carte.' },
           { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'rgba(168,85,247,0.10)', title:'Vis ta passion', desc:'Rejoins une communauté de passionnés de sport local.' },
         ].map(({ icon, bg, title, desc }, i) => (
@@ -589,15 +589,8 @@ function FeaturesSection({ stats = {}, onNavigate }) {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1 rounded-full font-bold" style={{ fontSize: 11, padding: '3px 10px', backgroundColor: 'rgba(34,217,106,0.15)', color: '#22d96a' }}>
-            ✓ Finistère (29)
+            ✓ Toute la France
           </span>
-          <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>·</span>
-          <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Bientôt :</span>
-          {['Côtes-d\'Armor (22)', 'Morbihan (56)', 'Ille-et-Vilaine (35)'].map(dep => (
-            <span key={dep} className="inline-flex items-center rounded-full" style={{ fontSize: 11, padding: '3px 10px', backgroundColor: 'var(--sl-border)', color: 'var(--sl-t3)' }}>
-              {dep}
-            </span>
-          ))}
         </div>
       </div>
       <div className="text-center mt-4">
@@ -656,7 +649,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             style={{ backgroundColor:'rgba(34,217,106,0.15)', border:'1px solid rgba(34,217,106,0.3)' }}
             initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.09 }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span className="font-semibold font-poppins" style={{ fontSize:12, color:'#22d96a' }}>Sport en Finistère</span>
+            <span className="font-semibold font-poppins" style={{ fontSize:12, color:'#22d96a' }}>Sport partout en France</span>
           </motion.div>
 
           <motion.h1 className="font-extrabold font-poppins text-white mb-4 relative"
@@ -751,7 +744,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
               style={{ backgroundColor:'rgba(34,217,106,0.15)', border:'1px solid rgba(34,217,106,0.3)' }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span className="font-semibold font-poppins" style={{ fontSize:13, color:'#22d96a' }}>La plateforme sportive du Finistère</span>
+              <span className="font-semibold font-poppins" style={{ fontSize:13, color:'#22d96a' }}>La plateforme sportive locale</span>
             </div>
 
             {/* Titre */}
@@ -843,7 +836,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
                   { n:'1', color:'#22d96a', bg:'rgba(34,217,106,0.10)', title:'Crée ton compte & choisis tes sports', desc:"Inscris-toi en 30 secondes et sélectionne tes disciplines favorites. La carte et les clubs se filtrent automatiquement selon tes préférences." },
                   { n:'2', color:'#3B82F6', bg:'rgba(61,165,255,0.10)', title:'Explore la carte interactive', desc:"Visualise tous les événements — matchs, trails, tournois — sur une carte en temps réel. Active la géolocalisation pour voir ce qui se passe près de toi." },
                   { n:'3', color:'#a855f7', bg:'rgba(168,85,247,0.10)', title:'Rejoins un club, suis ses matchs', desc:"Consulte les pages des clubs, leur calendrier par équipe, leurs résultats et contacte-les directement depuis l'app." },
-                ].map(({ n, color, bg, title, desc }, i) => (
+                ].map(({ n, color, title, desc }, i) => (
                   <motion.div key={n}
                     initial={{ opacity:0, y:18 }}
                     whileInView={{ opacity:1, y:0 }}
@@ -903,10 +896,10 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             </div>
             <div className="grid grid-cols-3 gap-6 px-12 pb-12">
               {[
-                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'rgba(34,217,106,0.10)', color:'#22d96a', title:'Trouve un club', desc:'Parcours tous les clubs sportifs du Finistère, filtre par sport ou par ville et contacte-les directement.' },
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'rgba(34,217,106,0.10)', color:'#22d96a', title:'Trouve un club', desc:'Parcours tous les clubs sportifs près de chez toi, filtre par sport ou par ville et contacte-les directement.' },
                 { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'rgba(61,165,255,0.10)', color:'#3B82F6', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois, cyclosportives — tous les événements locaux visibles sur la carte.' },
                 { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'rgba(168,85,247,0.10)', color:'#a855f7', title:'Vis ta passion', desc:"Rejoins une communauté de passionnés, suis l'actualité sportive et reste connecté à ton sport." },
-              ].map(({ icon, bg, color, title, desc }, i) => (
+              ].map(({ icon, bg, title, desc }, i) => (
                 <motion.div key={title}
                   initial={{ opacity:0, y:18 }}
                   whileInView={{ opacity:1, y:0 }}
@@ -925,7 +918,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             </div>
 
             <div className="text-center pb-8">
-              <p style={{ fontSize:12, color:'var(--sl-t3)' }}>Finistère (29) · Version 1.0.0</p>
+              <p style={{ fontSize:12, color:'var(--sl-t3)' }}>Version 1.0.0</p>
             </div>
           </div>
         </div>

@@ -178,9 +178,9 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
               <SportLinkLogo size={110} variant="full" />
             </div>
             <p style={{ fontSize: 12, lineHeight: 1.5, textAlign: 'center', color: 'var(--sl-t2)', margin: 0 }}>
-              Application communautaire pour trouver les clubs et événements sportifs du Finistère.
+              Application communautaire pour trouver les clubs et événements sportifs près de chez vous.
             </p>
-            <p style={{ fontSize: 12, marginTop: 8, textAlign: 'center', color: 'var(--sl-t3)' }}>Version 1.0.0 · Finistère (29)</p>
+            <p style={{ fontSize: 12, marginTop: 8, textAlign: 'center', color: 'var(--sl-t3)' }}>Version 1.0.0</p>
           </div>
         </div>
       </div>
@@ -710,7 +710,7 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
           </button>
         </div>
 
-        <p className="text-xs text-center pt-1" style={{ color: 'var(--sl-t3)' }}>SportLink v1.0.0 · Finistère (29)</p>
+        <p className="text-xs text-center pt-1" style={{ color: 'var(--sl-t3)' }}>SportLink v1.0.0</p>
 
         </> /* /PARAMÈTRES */}
 
