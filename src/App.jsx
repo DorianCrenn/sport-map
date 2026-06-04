@@ -269,6 +269,7 @@ function AppInner() {
       }
       return;
     }
+    setSelectedSearchClub(null);
     setActiveTab(tab);
   }
 
