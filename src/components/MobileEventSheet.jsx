@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
@@ -32,76 +32,6 @@ const STATUS_META = {
 function getEffectiveStatus(event) {
   if (event.status && event.status !== 'upcoming') return event.status;
   return new Date(event.date) < new Date() ? 'done' : 'upcoming';
-}
-
-function QuickScoreEdit({ event, onUpdateEvent }) {
-  const [home, setHome] = useState(String(event.score?.home ?? ''));
-  const [away, setAway] = useState(String(event.score?.away ?? ''));
-  const [motm, setMotm] = useState(event.man_of_match ?? '');
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    setHome(String(event.score?.home ?? ''));
-    setAway(String(event.score?.away ?? ''));
-    setMotm(event.man_of_match ?? '');
-  }, [event.score?.home, event.score?.away, event.man_of_match]);
-
-  function handleSave() {
-    const h = parseInt(home, 10);
-    const a = parseInt(away, 10);
-    if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
-    onUpdateEvent(event.id, { score: { home: h, away: a }, man_of_match: motm.trim() || null });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
-
-  const inp = { padding: '7px 10px', borderRadius: 8, fontSize: 12, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', width: '100%', boxSizing: 'border-box' };
-
-  return (
-    <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 14, marginBottom: 14 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-        {event.score != null ? 'Modifier le score' : 'Saisir le score'}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <input
-          type="number" min="0" max="99" value={home}
-          onChange={e => setHome(e.target.value)}
-          aria-label="Score domicile"
-          style={{ width: 60, textAlign: 'center', fontWeight: 800, fontSize: 22, padding: '8px 0', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}
-        />
-        <span style={{ fontWeight: 800, fontSize: 18, color: 'var(--sl-t3)' }}>—</span>
-        <input
-          type="number" min="0" max="99" value={away}
-          onChange={e => setAway(e.target.value)}
-          aria-label="Score extérieur"
-          style={{ width: 60, textAlign: 'center', fontWeight: 800, fontSize: 22, padding: '8px 0', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}
-        />
-        <button
-          onClick={handleSave}
-          style={{
-            flex: 1, padding: '10px 0', borderRadius: 12,
-            border: saved ? '1px solid var(--sl-green)' : 'none',
-            cursor: 'pointer', fontSize: 14, fontWeight: 700,
-            backgroundColor: saved ? 'var(--sl-green-dim)' : 'var(--sl-green)',
-            color: saved ? 'var(--sl-green)' : '#fff', transition: 'all 0.15s',
-          }}
-        >
-          {saved ? '✓ Enregistré' : 'Enregistrer'}
-        </button>
-      </div>
-      <div style={{ marginTop: 10 }}>
-        <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 4 }}>
-          Joueur du match
-        </label>
-        <input
-          value={motm}
-          onChange={e => setMotm(e.target.value)}
-          placeholder="Nom du joueur (optionnel)"
-          style={inp}
-        />
-      </div>
-    </div>
-  );
 }
 
 function FollowClubButton({ event, compact = false }) {
@@ -271,14 +201,14 @@ export default function MobileEventSheet({
       }}
     >
       {/* Sticky header: drag handle + always-visible close + collapse */}
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 12px 6px', position: 'relative' }}>
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, padding: '0 12px', position: 'relative' }}>
         {/* Collapse chevron — left, only when full */}
         {snapPoint === 'full' ? (
           <button
             onClick={() => setSnapPoint('detail')}
             aria-label="Réduire"
             style={{
-              position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+              position: 'absolute', left: 8, top: 4,
               width: 44, height: 44, borderRadius: 12,
               backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -299,7 +229,7 @@ export default function MobileEventSheet({
           onClick={onClose}
           aria-label="Fermer"
           style={{
-            position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+            position: 'absolute', right: 8, top: 4,
             width: 44, height: 44, borderRadius: 12,
             backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
