@@ -42,21 +42,21 @@ const MON_CLUB = {
   ),
 };
 
-export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV, onOpenTrainings, overlayOpen = false }) {
+export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV, onOpenTrainings, onClubAdminAction, overlayOpen = false }) {
   const { isAdmin, isClubAdmin, currentUser } = useAuth();
   const { managedClubs } = useManagedClubs();
   const isClubAdminOnly = isClubAdmin && !isAdmin;
   const isCoach = !isAdmin && !isClubAdmin && managedClubs.length > 0;
-  const canFab = isAdmin || isCoach; // club_admin gets a dedicated tab instead
+  const canFab = isAdmin || isCoach || isClubAdminOnly;
   const HOME = currentUser ? HOME_FEED : HOME_VISITOR;
   const [fabOpen, setFabOpen] = useState(false);
 
   useEffect(() => { if (overlayOpen) setFabOpen(false); }, [overlayOpen]);
 
-  // club_admin gets Mon Club tab in the center slot (no FAB)
-  // admin / coach keep the FAB
+  // club_admin : FAB au centre, Mon Club à droite (Profil retiré)
+  // admin / coach : FAB au centre, Profil à droite
   const tabs = isClubAdminOnly
-    ? [HOME, MAP, MON_CLUB, CLUBS, PROFIL]
+    ? [HOME, MAP, null /* FAB slot */, CLUBS, MON_CLUB]
     : canFab
     ? [HOME, MAP, null /* FAB slot */, CLUBS, PROFIL]
     : [HOME, MAP, FAVORIS, CLUBS, PROFIL];
@@ -68,6 +68,11 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
     if (action === 'trainings') onOpenTrainings?.();
     if (action === 'clubs')     onTabChange?.('clubs');
     if (action === 'map')       onTabChange?.('map');
+  }
+
+  function handleClubAdminFabAction(actionId) {
+    setFabOpen(false);
+    onClubAdminAction?.(actionId);
   }
 
   return (
@@ -94,8 +99,8 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
               style={{
                 position: 'fixed',
                 bottom: 'calc(env(safe-area-inset-bottom, 0px) + 82px)',
-                left: 'calc(50% - 124px)',
-                width: 248, zIndex: 1002,
+                left: isClubAdminOnly ? 'calc(50% - 148px)' : 'calc(50% - 124px)',
+                width: isClubAdminOnly ? 296 : 248, zIndex: 1002,
                 backgroundColor: 'var(--sl-card)', borderRadius: 20,
                 border: '1px solid var(--sl-border-s)',
                 boxShadow: 'var(--sl-shadow-xl)',
@@ -103,38 +108,54 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
               }}
             >
               <div style={{ padding: 6 }}>
-                <FabAction
-                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
-                  label="Créer un événement"
-                  color="var(--sl-green)"
-                  onClick={() => handleFabAction('event')}
-                />
-                <FabAction
-                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
-                  label="Mes entraînements"
-                  color="#22c55e"
-                  onClick={() => handleFabAction('trainings')}
-                />
-                {!isCoach && (
+                {isClubAdminOnly ? (
+                  <>
+                    <FabAction icon="📊" label="Tableau de bord"    desc="Stats, vues, conversions"              color="#6366f1" onClick={() => handleClubAdminFabAction('dashboard')} />
+                    <FabAction icon="✏️" label="Modifier la page"   desc="Blocs, design, typographie"            color="#f59e0b" onClick={() => handleClubAdminFabAction('edit-page')} />
+                    <FabAction icon="📅" label="Créer un événement" desc="Match, tournoi, entraînement"          color="var(--sl-green)" onClick={() => handleClubAdminFabAction('event')} />
+                    <FabAction icon="📢" label="Envoyer une annonce" desc="Tous les abonnés ou une équipe"       color="#3b82f6" onClick={() => handleClubAdminFabAction('announce')} />
+                    <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 6px' }} />
+                    <FabAction icon="📋" label="Infos du club"      desc="Nom, sport, ville, équipes"            color="#0ea5e9" onClick={() => handleClubAdminFabAction('edit-info')} />
+                    <FabAction icon="⚙️" label="Administrateurs"    desc="Gérer les accès au club"               color="#8b5cf6" onClick={() => handleClubAdminFabAction('managers')} />
+                    <FabAction icon="👥" label="Membres"            desc="Effectif et rôles"                     color="#22d96a" onClick={() => handleClubAdminFabAction('roster')} />
+                    <FabAction icon="🤝" label="Partenaires"        desc="Logos et liens sponsors"               color="#f59e0b" onClick={() => handleClubAdminFabAction('sponsors')} />
+                  </>
+                ) : (
                   <>
                     <FabAction
-                      icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
-                      label="Mon club"
-                      color="var(--sl-blue)"
-                      onClick={() => handleFabAction('clubs')}
+                      icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
+                      label="Créer un événement"
+                      color="var(--sl-green)"
+                      onClick={() => handleFabAction('event')}
                     />
                     <FabAction
-                      icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>}
-                      label="Importer un CSV"
-                      color="#a855f7"
-                      onClick={() => handleFabAction('csv')}
+                      icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+                      label="Mes entraînements"
+                      color="#22c55e"
+                      onClick={() => handleFabAction('trainings')}
                     />
-                    <FabAction
-                      icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>}
-                      label="Voir la carte"
-                      color="#f59e0b"
-                      onClick={() => handleFabAction('map')}
-                    />
+                    {!isCoach && (
+                      <>
+                        <FabAction
+                          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
+                          label="Mon club"
+                          color="var(--sl-blue)"
+                          onClick={() => handleFabAction('clubs')}
+                        />
+                        <FabAction
+                          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>}
+                          label="Importer un CSV"
+                          color="#a855f7"
+                          onClick={() => handleFabAction('csv')}
+                        />
+                        <FabAction
+                          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>}
+                          label="Voir la carte"
+                          color="#f59e0b"
+                          onClick={() => handleFabAction('map')}
+                        />
+                      </>
+                    )}
                   </>
                 )}
               </div>
@@ -154,7 +175,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
         overflow: 'visible',
         position: 'relative',
       }}>
-        {tabs.map((tab, i) => {
+        {tabs.map((tab) => {
           if (tab === null) {
             // FAB slot
             return (
@@ -247,8 +268,9 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
   );
 }
 
-function FabAction({ icon, label, color, onClick }) {
+function FabAction({ icon, label, desc, color, onClick }) {
   const [hover, setHover] = useState(false);
+  const isEmoji = typeof icon === 'string';
   return (
     <button
       onClick={onClick}
@@ -265,11 +287,14 @@ function FabAction({ icon, label, color, onClick }) {
         width: 34, height: 34, borderRadius: 10, flexShrink: 0,
         backgroundColor: `${color}18`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color,
+        color, fontSize: isEmoji ? 17 : undefined,
       }}>
         {icon}
       </div>
-      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)' }}>{label}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)' }}>{label}</div>
+        {desc && <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>{desc}</div>}
+      </div>
     </button>
   );
 }

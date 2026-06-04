@@ -96,6 +96,7 @@ function TabNav({ activeTab, onTabChange, accentColor, announcementsCount }) {
 export default function ClubPageView({
   club, allEvents, onBack, onAddEvent,
   canAddEvent: canAddEventProp, onUpdateClub, onArchiveSeason,
+  initialAction, onInitialActionConsumed,
 }) {
   const { allSports: SPORTS } = useSports();
   const {
@@ -270,6 +271,12 @@ export default function ClubPageView({
       case 'sponsors':    setShowSponsorsPanel(true); break;
     }
   }
+
+  useEffect(() => {
+    if (!initialAction) return;
+    handleAdminAction(initialAction);
+    onInitialActionConsumed?.();
+  }, [initialAction]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (

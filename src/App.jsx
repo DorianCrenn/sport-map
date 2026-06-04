@@ -88,6 +88,7 @@ function AppInner() {
   const [, setClubOverlayOpen] = useState(false);
   const [clubOverlayLoading, setClubOverlayLoading] = useState(false);
   const [publicUserId, setPublicUserId] = useState(null);
+  const [pendingClubAction, setPendingClubAction] = useState(null);
 
   const allClubsRef = useRef([]);
 
@@ -273,6 +274,18 @@ function AppInner() {
     setActiveTab(tab);
   }
 
+  function handleClubAdminFabAction(actionId) {
+    const myClub = userClubs.find(c =>
+      c.userId === currentUser?.id ||
+      String(c.id) === String(currentUser?.clubId)
+    ) ?? userClubs[0] ?? null;
+    if (myClub) {
+      setSelectedSearchClub(myClub);
+      _setActiveTab('mon-club');
+      setPendingClubAction(actionId);
+    }
+  }
+
   function handleAuthClose() {
     setShowAuth(false);
   }
@@ -449,13 +462,15 @@ function AppInner() {
                 await updateClub(selectedSearchClub.id, data);
                 setSelectedSearchClub(prev => ({ ...prev, ...data }));
               }}
+              initialAction={pendingClubAction}
+              onInitialActionConsumed={() => setPendingClubAction(null)}
             />
           </Suspense>
         )}
       </div>
 
       <ErrorBoundary name="BottomNav">
-        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides} />
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} onClubAdminAction={handleClubAdminFabAction} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides} />
       </ErrorBoundary>
 
       <Suspense fallback={<ModalLoader />}>

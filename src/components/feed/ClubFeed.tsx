@@ -19,6 +19,7 @@ import type { FeedItem, FeedFilter, SponsorFeedItem, FeaturedFeedItem } from './
 import { MatchCard, CarpoolCard, FlashCard, ResultCard, SponsorCard, FeaturedGalleryCard } from './feed.cards';
 import { MOCK_FEED_ITEMS, MOCK_SPONSORS, MOCK_FEATURED } from './feed.mock';
 import NextTrainingCard from '../NextTrainingCard.jsx';
+import UpcomingAgendaSection from './UpcomingAgendaSection.jsx';
 
 // ════════════════════════════════════════════════════════════════════════════
 // Props
@@ -294,10 +295,11 @@ export default function ClubFeed({
         {/* ── Slot header optionnel (ex: QuickSetupCard) ── */}
         {headerSlot && <div className="px-4 pt-3">{headerSlot}</div>}
 
-        {/* ── Widget prochain entraînement ── */}
+        {/* ── Widget prochain entraînement + agenda joueur/parent ── */}
         {!loading && currentUser && (
           <div className="px-4 pt-3">
             <NextTrainingCard currentUser={currentUser} onNavigateClubs={onNavigateClubs} onOpenTrainings={onOpenTrainings} />
+            <UpcomingAgendaSection currentUser={currentUser} />
           </div>
         )}
 
