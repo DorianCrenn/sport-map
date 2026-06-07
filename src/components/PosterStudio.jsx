@@ -36,7 +36,8 @@ import PlatformPreviewPanel from './poster/PlatformPreviewPanel.jsx';
 
 export default function PosterStudio({ event, onClose, club, quickMode = false, resultMode = null, initialBgSrc = null }) {
   const { allSports } = useSports();
-  const { currentUser } = useAuth();
+  const { currentUser, isAdmin, isClubAdmin } = useAuth();
+  const canExpert = isAdmin || isClubAdmin;
   const features = useClubFeatures(club?.id);
 
   // Feature flags explicites — remplacent le booléen hasPremium générique
@@ -187,12 +188,17 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     return () => document.removeEventListener('keydown', onKey);
   }, [editorOpen, previewFull, aiElEditorUid, exportOpen, showUpgradeModal, onClose]);
 
+  // Si l'utilisateur n'a pas les droits Expert, forcer le mode Simple
+  useEffect(() => {
+    if (!canExpert && !simpleMode && !quickMode && !resultMode) setSimpleMode(true);
+  }, [canExpert, simpleMode, quickMode, resultMode]);
+
   // Mode Simple → ouvrir l'export quand l'utilisateur arrive à l'étape 3
   useEffect(() => {
     if (!simpleMode || wizardStep !== 3) return;
     const t = setTimeout(() => setExportOpen(true), 250);
     return () => clearTimeout(t);
-  }, [simpleMode, wizardStep]);  
+  }, [simpleMode, wizardStep]);
 
   // ── Sport & club color palettes ──
   const sportColors = useMemo(() => {
@@ -395,6 +401,13 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         }}
         onClick={e => e.stopPropagation()}
       >
+        {/* Drag handle — mobile uniquement, donne du souffle entre le bord arrondi et le header */}
+        {!isDesktop && (
+          <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4 }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border)' }} />
+          </div>
+        )}
+
         {/* Hidden HD renderer for export */}
         <div style={{ position: 'fixed', left: -9999, top: 0, pointerEvents: 'none', zIndex: -1 }}>
           <div ref={exportWrapperRef} style={{ position: 'relative', width: w, height: h, overflow: 'hidden' }}>
@@ -516,30 +529,62 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
 
           {/* Droite : actions — icon-only sur mobile pour éviter le débordement */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginLeft: 8 }}>
-            {/* Bascule Mode Simple ↔ Expert */}
-            <button
-              onClick={() => { setSimpleMode(v => !v); if (simpleMode) setActiveTab('template'); }}
-              title={simpleMode ? 'Passer en mode expert (tous les outils)' : 'Passer en mode simple (3 étapes)'}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 4,
-                padding: isDesktop ? '7px 10px' : '7px 8px', borderRadius: 10,
-                border: '1px solid var(--sl-border)',
-                backgroundColor: simpleMode ? 'var(--sl-surface)' : `${accentColor}15`,
-                cursor: 'pointer', fontSize: 11, fontWeight: 700,
-                color: simpleMode ? 'var(--sl-t2)' : accentColor, flexShrink: 0,
-              }}>
-              {simpleMode ? (
-                <>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  {isDesktop && 'Expert'}
-                </>
-              ) : (
-                <>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
-                  {isDesktop && 'Simple'}
-                </>
-              )}
-            </button>
+            {/* Segmented control Simple ↔ Expert */}
+            <div style={{
+              display: 'flex', flexShrink: 0,
+              borderRadius: 10, border: '1px solid var(--sl-border)',
+              backgroundColor: 'var(--sl-surface)', overflow: 'hidden',
+            }}>
+              {/* Simple */}
+              <button
+                onClick={() => { setSimpleMode(true); }}
+                title="Mode guidé en 3 étapes"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '6px 9px', border: 'none', cursor: 'pointer',
+                  backgroundColor: simpleMode ? 'var(--sl-card)' : 'transparent',
+                  color: simpleMode ? 'var(--sl-t1)' : 'var(--sl-t3)',
+                  fontSize: 11, fontWeight: 700,
+                  boxShadow: simpleMode ? 'inset 0 0 0 1px var(--sl-border)' : 'none',
+                  borderRadius: simpleMode ? 9 : 0,
+                  transition: 'all 0.15s',
+                }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+                </svg>
+                Simple
+              </button>
+
+              {/* Expert — gate derrière club_admin / admin */}
+              <button
+                onClick={() => {
+                  if (canExpert) { setSimpleMode(false); setActiveTab('template'); }
+                }}
+                title={canExpert ? 'Mode expert — tous les outils' : 'Réservé aux gestionnaires de club'}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '6px 9px', border: 'none',
+                  cursor: canExpert ? 'pointer' : 'default',
+                  backgroundColor: !simpleMode ? `${accentColor}18` : 'transparent',
+                  color: !simpleMode ? accentColor : canExpert ? 'var(--sl-t3)' : 'var(--sl-t4)',
+                  fontSize: 11, fontWeight: 700,
+                  boxShadow: !simpleMode ? `inset 0 0 0 1px ${accentColor}40` : 'none',
+                  borderRadius: !simpleMode ? 9 : 0,
+                  transition: 'all 0.15s',
+                  borderLeft: '1px solid var(--sl-border)',
+                  opacity: canExpert ? 1 : 0.55,
+                }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                Expert
+                {!canExpert && (
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                )}
+              </button>
+            </div>
 
             {/* Badge sauvegarde — masqué sur mobile pour gagner de la place */}
             <AnimatePresence>
