@@ -479,80 +479,88 @@ export default function ClubPageView({
         )}
       </div>
 
-      {/* ── Admin FAB — position:fixed pour rester visible au scroll ── */}
-      {canEdit && !isEditing && !showAdminDrawer && (
-        <motion.button
-          initial={{ scale: 0.85, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          whileTap={{ scale: 0.92 }}
-          onClick={() => setShowAdminDrawer(true)}
-          aria-label="Ouvrir les outils d'administration"
-          style={{
-            position: 'fixed',
-            bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
-            right: 16, zIndex: 30,
-            display: 'flex', alignItems: 'center', gap: 7,
-            padding: '11px 18px', borderRadius: 18, border: 'none',
-            cursor: 'pointer', fontSize: 13, fontWeight: 700,
-            backgroundColor: 'rgba(15,23,42,0.92)',
-            color: '#cbd5e1',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(12px)',
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-          </svg>
-          Admin
-        </motion.button>
-      )}
+      {/*
+        ── Contrôles flottants — position:sticky dans le conteneur scroll ──
+        Contrairement à position:fixed (viewport global), position:sticky colle
+        au bas de la zone visible de CE conteneur (ClubPageView overflow-y:auto).
+        Le FAB et la barre d'édition restent donc strictement dans la page du club,
+        sans jamais déborder sur la BottomNav ou d'autres éléments de navigation.
+      */}
+      <div style={{ position: 'sticky', bottom: 0, zIndex: 30, pointerEvents: 'none' }}>
 
-      {/* Barre édition fixe en bas — accessible depuis n'importe où sur la page ── */}
-      {isEditing && (
-        <motion.div
-          initial={{ y: 80, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 80, opacity: 0 }}
-          style={{
-            position: 'fixed',
-            bottom: 0, left: 0, right: 0, zIndex: 35,
-            backgroundColor: '#d97706',
-            padding: '10px 14px',
-            paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-            boxShadow: '0 -4px 20px rgba(0,0,0,0.25)',
-          }}
-        >
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', opacity: 0.9, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            ✏️ {simpleMode ? 'Mode rapide' : 'Mode avancé'}
-          </span>
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-            <button
-              onClick={() => setSimpleMode(v => !v)}
+        {/* Admin FAB */}
+        {canEdit && !isEditing && !showAdminDrawer && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 16px calc(20px + env(safe-area-inset-bottom, 0px)) 0', pointerEvents: 'none' }}>
+            <motion.button
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              whileTap={{ scale: 0.92 }}
+              onClick={() => setShowAdminDrawer(true)}
+              aria-label="Ouvrir les outils d'administration"
               style={{
-                fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 10,
-                border: 'none', cursor: 'pointer',
-                backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff',
-                whiteSpace: 'nowrap',
+                pointerEvents: 'auto',
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '11px 18px', borderRadius: 18, border: 'none',
+                cursor: 'pointer', fontSize: 13, fontWeight: 700,
+                backgroundColor: 'rgba(15,23,42,0.92)',
+                color: '#cbd5e1',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+                backdropFilter: 'blur(12px)',
               }}
             >
-              {simpleMode ? '⚡ Mode avancé' : '○ Mode rapide'}
-            </button>
-            <button
-              onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }}
-              style={{
-                fontSize: 12, fontWeight: 800, padding: '6px 16px', borderRadius: 10,
-                border: 'none', cursor: 'pointer',
-                backgroundColor: 'rgba(255,255,255,0.95)', color: '#d97706',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              ✓ Terminé
-            </button>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+              </svg>
+              Admin
+            </motion.button>
           </div>
-        </motion.div>
-      )}
+        )}
+
+        {/* Barre édition */}
+        {isEditing && (
+          <motion.div
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            style={{
+              pointerEvents: 'auto',
+              backgroundColor: '#d97706',
+              padding: '10px 14px',
+              paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+              boxShadow: '0 -4px 20px rgba(0,0,0,0.2)',
+            }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', opacity: 0.9, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              ✏️ {simpleMode ? 'Mode rapide' : 'Mode avancé'}
+            </span>
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              <button
+                onClick={() => setSimpleMode(v => !v)}
+                style={{
+                  fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 10,
+                  border: 'none', cursor: 'pointer',
+                  backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {simpleMode ? '⚡ Avancé' : '○ Rapide'}
+              </button>
+              <button
+                onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }}
+                style={{
+                  fontSize: 12, fontWeight: 800, padding: '6px 16px', borderRadius: 10,
+                  border: 'none', cursor: 'pointer',
+                  backgroundColor: 'rgba(255,255,255,0.95)', color: '#d97706',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                ✓ Terminé
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </div>
 
       {/* ── Quick Add Team ── */}
       <AnimatePresence>
