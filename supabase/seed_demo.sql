@@ -617,7 +617,7 @@ SELECT
   'Stade Brestois FC', 'Responsable U15',
   'info', 'Convocations U15 — Stage de fin de saison 20-22 juin',
   'Les U15 sont conviés au stage de fin de saison du vendredi 20 au dimanche 22 juin au Centre Sportif de Kérinou. Hébergement sur place. Coût : 30€ par joueur. Liste des convoqués affichée au vestiaire. Retour des fiches d''autorisation avant le 14 juin.',
-  '["sbf-u15"]', NOW() - INTERVAL '2 days'
+  ARRAY['sbf-u15'], NOW() - INTERVAL '2 days'
 WHERE EXISTS (SELECT 1 FROM public.clubs WHERE static_id = 'sbf-29');
 
 -- HBC Brest Métropole
@@ -648,7 +648,7 @@ SELECT
   'HBC Brest Métropole', 'Responsable U18',
   'event', 'Tournoi U18 — Samedi 27 juin à Landerneau',
   'Les U18 Masculins sont qualifiés pour le Tournoi Régional U18 à Landerneau le samedi 27 juin. Départ en bus depuis le Palais des Sports à 8h30. Retour prévu vers 20h. Convocations individuelles envoyées par email. Prévoir tenue de match complète + tenue d''échauffement.',
-  '["hbcbm-u18m"]', NOW() - INTERVAL '3 days'
+  ARRAY['hbcbm-u18m'], NOW() - INTERVAL '3 days'
 WHERE EXISTS (SELECT 1 FROM public.clubs WHERE static_id = 'hbcbm-29');
 
 -- Trail Club de Crozon
