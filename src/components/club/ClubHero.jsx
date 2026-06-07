@@ -163,8 +163,27 @@ export default function ClubHero({
   const fullAddress   = addressParts.join(', ');
   const shortLocation = [venue, club.city].filter(Boolean).join(' · ') || club.city || '';
   const mapsQuery     = encodeURIComponent(fullAddress || shortLocation);
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
-  const wazeUrl       = `https://waze.com/ul?q=${mapsQuery}&navigate=yes`;
+
+  // Détection plateforme pour choisir l'app maps native
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  const isApple = /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && navigator.maxTouchPoints > 1);
+
+  const googleMapsUrl  = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+  const appleMapsUrl   = `https://maps.apple.com/?q=${mapsQuery}`;
+  const wazeUrl        = `https://waze.com/ul?q=${mapsQuery}&navigate=yes`;
+
+  // Options triées selon la plateforme
+  const mapsOptions = isApple
+    ? [
+        { icon: '🗺️', label: 'Plans',        sub: 'Apple Maps',    href: appleMapsUrl },
+        { icon: '🚗', label: 'Waze',          sub: 'Waze',          href: wazeUrl },
+        { icon: '📍', label: 'Google Maps',   sub: 'Google Maps',   href: googleMapsUrl },
+      ]
+    : [
+        { icon: '🗺️', label: 'Google Maps',  sub: 'Google Maps',   href: googleMapsUrl },
+        { icon: '🚗', label: 'Waze',          sub: 'Waze',          href: wazeUrl },
+        { icon: '🍎', label: 'Plans',         sub: 'Apple Maps',    href: appleMapsUrl },
+      ];
 
   const overflowItems = [
     { icon: '🔗', label: linkCopied ? 'Lien copié !' : 'Copier le lien', action: onCopyLink },
@@ -221,47 +240,30 @@ export default function ClubHero({
                 </div>
               </div>
 
-              {/* Actions */}
+              {/* Actions — ordre adapté à la plateforme */}
               <div style={{ padding: '8px 12px 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <a
-                  href={googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setMapsOpen(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '13px 14px', borderRadius: 13,
-                    backgroundColor: 'var(--sl-surface)', textDecoration: 'none',
-                    border: '1px solid var(--sl-border-s)',
-                    color: 'var(--sl-t1)',
-                  }}
-                >
-                  <span style={{ fontSize: 20, lineHeight: 1 }}>🗺️</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>Google Maps</div>
-                    <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Ouvrir dans Google Maps</div>
-                  </div>
-                </a>
-
-                <a
-                  href={wazeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setMapsOpen(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '13px 14px', borderRadius: 13,
-                    backgroundColor: 'var(--sl-surface)', textDecoration: 'none',
-                    border: '1px solid var(--sl-border-s)',
-                    color: 'var(--sl-t1)',
-                  }}
-                >
-                  <span style={{ fontSize: 20, lineHeight: 1 }}>🚗</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>Waze</div>
-                    <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Itinéraire avec Waze</div>
-                  </div>
-                </a>
+                {mapsOptions.map(opt => (
+                  <a
+                    key={opt.href}
+                    href={opt.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMapsOpen(false)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '13px 14px', borderRadius: 13,
+                      backgroundColor: 'var(--sl-surface)', textDecoration: 'none',
+                      border: '1px solid var(--sl-border-s)',
+                      color: 'var(--sl-t1)',
+                    }}
+                  >
+                    <span style={{ fontSize: 20, lineHeight: 1 }}>{opt.icon}</span>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700 }}>{opt.label}</div>
+                      <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Ouvrir dans {opt.sub}</div>
+                    </div>
+                  </a>
+                ))}
 
                 {onViewOnMap && (
                   <button
