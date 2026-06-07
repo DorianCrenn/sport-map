@@ -46,49 +46,73 @@ function ClubLogoInitials({ club, accentColor, size = 72 }) {
 
 // ── Overflow menu ─────────────────────────────────────────────────────────────
 
+// Bottom sheet — position:fixed pour passer au-dessus du overflow:hidden du hero
 function OverflowMenu({ items, open, onClose }) {
   return (
     <AnimatePresence>
       {open && (
         <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 80 }} onClick={onClose} />
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: -6 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: -6 }}
-            transition={{ duration: 0.12 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 310, backgroundColor: 'rgba(0,0,0,0.45)' }}
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 340, damping: 34 }}
             style={{
-              position: 'absolute', top: 'calc(100% + 6px)', right: 0,
-              zIndex: 90, minWidth: 200,
+              position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 311,
               backgroundColor: 'var(--sl-card)',
+              borderRadius: '18px 18px 0 0',
               border: '1px solid var(--sl-border)',
-              borderRadius: 14, overflow: 'hidden',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+              borderBottom: 'none',
+              padding: '0 0 calc(8px + env(safe-area-inset-bottom, 0px))',
+              boxShadow: '0 -8px 40px rgba(0,0,0,0.25)',
             }}
             onClick={e => e.stopPropagation()}
           >
-            {items.map((item, i) => (
-              item === 'divider' ? (
-                <div key={i} style={{ height: 1, backgroundColor: 'var(--sl-border)' }} />
-              ) : (
-                <button
-                  key={i}
-                  onClick={() => { item.action(); onClose(); }}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '11px 14px', border: 'none', background: 'none',
-                    cursor: 'pointer', color: item.danger ? '#ef4444' : 'var(--sl-t1)',
-                    fontSize: 13, fontWeight: 600, textAlign: 'left',
-                    transition: 'background 0.1s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--sl-hover)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                >
-                  <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>{item.icon}</span>
-                  {item.label}
-                </button>
-              )
-            ))}
+            {/* Drag handle */}
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border)' }} />
+            </div>
+
+            {/* Items */}
+            <div style={{ padding: '4px 12px 0' }}>
+              {items.map((item, i) => (
+                item === 'divider' ? (
+                  <div key={i} style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
+                ) : (
+                  <button
+                    key={i}
+                    onClick={() => { item.action(); onClose(); }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '13px 14px', borderRadius: 13,
+                      border: 'none', background: 'none',
+                      cursor: 'pointer', color: item.danger ? '#ef4444' : 'var(--sl-t1)',
+                      fontSize: 14, fontWeight: 600, textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ fontSize: 18, lineHeight: 1, width: 24, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
+                    {item.label}
+                  </button>
+                )
+              ))}
+
+              {/* Annuler */}
+              <button
+                onClick={onClose}
+                style={{
+                  width: '100%', marginTop: 4,
+                  padding: '13px 14px', borderRadius: 13,
+                  border: 'none', backgroundColor: 'var(--sl-surface)',
+                  cursor: 'pointer', fontSize: 14, fontWeight: 700,
+                  color: 'var(--sl-t2)',
+                }}
+              >
+                Annuler
+              </button>
+            </div>
           </motion.div>
         </>
       )}

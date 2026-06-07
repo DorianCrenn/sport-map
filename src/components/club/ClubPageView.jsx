@@ -372,39 +372,19 @@ export default function ClubPageView({
         </div>
       )}
 
-      {/* Editing mode banner */}
+      {/* Indicateur édition en haut — boutons déplacés dans la barre fixe du bas */}
       {isEditing && (
         <div style={{
-          flexShrink: 0, padding: '8px 16px',
+          flexShrink: 0, padding: '7px 16px',
           backgroundColor: '#d97706',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 8,
+          display: 'flex', alignItems: 'center', gap: 8,
         }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
           <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', opacity: 0.9 }}>
-            ✏️ {simpleMode ? 'Mode rapide' : 'Mode avancé — glissez pour réordonner'}
+            {simpleMode ? 'Mode rapide' : 'Mode avancé — glissez pour réordonner'}
           </span>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              onClick={() => setSimpleMode(v => !v)}
-              style={{
-                fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 8,
-                border: 'none', cursor: 'pointer',
-                backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff',
-              }}
-            >
-              {simpleMode ? 'Mode avancé' : 'Mode rapide'}
-            </button>
-            <button
-              onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }}
-              style={{
-                fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 8,
-                border: 'none', cursor: 'pointer',
-                backgroundColor: 'rgba(255,255,255,0.9)', color: '#d97706',
-              }}
-            >
-              ✓ Terminé
-            </button>
-          </div>
         </div>
       )}
 
@@ -499,7 +479,7 @@ export default function ClubPageView({
         )}
       </div>
 
-      {/* ── Admin FAB ── */}
+      {/* ── Admin FAB — position:fixed pour rester visible au scroll ── */}
       {canEdit && !isEditing && !showAdminDrawer && (
         <motion.button
           initial={{ scale: 0.85, opacity: 0 }}
@@ -508,8 +488,8 @@ export default function ClubPageView({
           onClick={() => setShowAdminDrawer(true)}
           aria-label="Ouvrir les outils d'administration"
           style={{
-            position: 'absolute',
-            bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            position: 'fixed',
+            bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
             right: 16, zIndex: 30,
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '11px 18px', borderRadius: 18, border: 'none',
@@ -528,31 +508,50 @@ export default function ClubPageView({
         </motion.button>
       )}
 
-      {/* Done button when editing */}
+      {/* Barre édition fixe en bas — accessible depuis n'importe où sur la page ── */}
       {isEditing && (
-        <motion.button
-          initial={{ scale: 0.85, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          whileTap={{ scale: 0.92 }}
-          onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }}
-          aria-label="Terminer l'édition de la page"
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
           style={{
-            position: 'absolute',
-            bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-            right: 16, zIndex: 30,
-            display: 'flex', alignItems: 'center', gap: 7,
-            padding: '12px 22px', borderRadius: 18, border: 'none',
-            cursor: 'pointer', fontSize: 14, fontWeight: 800,
-            backgroundColor: 'var(--sl-green)',
-            color: '#fff',
-            boxShadow: '0 4px 20px rgba(34,217,106,0.45)',
+            position: 'fixed',
+            bottom: 0, left: 0, right: 0, zIndex: 35,
+            backgroundColor: '#d97706',
+            padding: '10px 14px',
+            paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+            boxShadow: '0 -4px 20px rgba(0,0,0,0.25)',
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-          Terminé
-        </motion.button>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', opacity: 0.9, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            ✏️ {simpleMode ? 'Mode rapide' : 'Mode avancé'}
+          </span>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <button
+              onClick={() => setSimpleMode(v => !v)}
+              style={{
+                fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 10,
+                border: 'none', cursor: 'pointer',
+                backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {simpleMode ? '⚡ Mode avancé' : '○ Mode rapide'}
+            </button>
+            <button
+              onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }}
+              style={{
+                fontSize: 12, fontWeight: 800, padding: '6px 16px', borderRadius: 10,
+                border: 'none', cursor: 'pointer',
+                backgroundColor: 'rgba(255,255,255,0.95)', color: '#d97706',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              ✓ Terminé
+            </button>
+          </div>
+        </motion.div>
       )}
 
       {/* ── Quick Add Team ── */}
