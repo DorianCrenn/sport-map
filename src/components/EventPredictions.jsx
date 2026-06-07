@@ -1,6 +1,12 @@
 import { motion } from 'framer-motion';
 import { useEventPredictions } from '../hooks/useEventPredictions.js';
 
+// Sports individuels : pas de pronostic possible
+const INDIVIDUAL_SPORTS = ['Trail', 'Running', 'Cyclisme', 'Natation', 'Triathlon', 'Athlétisme'];
+
+// Sports où le match nul n'existe pas (victoire/défaite seulement)
+const NO_DRAW_SPORTS = ['Basketball', 'Volleyball', 'Tennis', 'Badminton', 'Squash', 'Baseball'];
+
 const COLORS = {
   home: { main: '#3b82f6', dim: 'rgba(59,130,246,0.18)', border: '#3b82f6' },
   draw: { main: '#94a3b8', dim: 'rgba(148,163,184,0.15)', border: '#64748b' },
@@ -8,21 +14,30 @@ const COLORS = {
 };
 
 export default function EventPredictions({ eventId, event }) {
+  const sport      = event?.sport ?? '';
+  const adversaire = event?.adversaire ?? '';
+
+  const shouldShow = !INDIVIDUAL_SPORTS.includes(sport) && !!adversaire;
+  const showDraw   = !NO_DRAW_SPORTS.includes(sport);
+  const choices    = showDraw ? ['home', 'draw', 'away'] : ['home', 'away'];
+
   const homeTeam = event?.homeTeam || event?.teamName || 'Domicile';
-  const awayTeam = event?.awayTeam || 'Visiteur';
+  const awayTeam = adversaire || 'Visiteur';
+  const labels   = { home: homeTeam, draw: 'Nul', away: awayTeam };
 
-  const labels = {
-    home: homeTeam,
-    draw: 'Nul',
-    away: awayTeam,
-  };
-
+  // Hook toujours appelé — null désactive le fetch si shouldShow=false
   const { counts, mine, vote, loading, isLocked, total, isLoggedIn } =
-    useEventPredictions(eventId, event?.date);
+    useEventPredictions(shouldShow ? eventId : null, event?.date);
 
-  if (loading) return null;
+  // Guards APRÈS les hooks (règle React)
+  if (!shouldShow || loading) return null;
 
-  const showPct = total > 0;
+  // Pour les sports sans nul, on exclut les votes "draw" du total affiché
+  const displayTotal = showDraw
+    ? total
+    : (counts.home ?? 0) + (counts.away ?? 0);
+
+  const showPct = displayTotal > 0;
 
   return (
     <div style={{
@@ -36,10 +51,12 @@ export default function EventPredictions({ eventId, event }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13 }}>⚡</span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)' }}>Qui va gagner ?</span>
-          {total > 0 && (
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)' }}>
+            {showDraw ? 'Qui va gagner ?' : 'Qui l\'emporte ?'}
+          </span>
+          {displayTotal > 0 && (
             <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>
-              · {total >= 1000 ? `${(total / 1000).toFixed(1)}k` : total} vote{total > 1 ? 's' : ''}
+              · {displayTotal >= 1000 ? `${(displayTotal / 1000).toFixed(1)}k` : displayTotal} vote{displayTotal > 1 ? 's' : ''}
             </span>
           )}
         </div>
@@ -52,13 +69,21 @@ export default function EventPredictions({ eventId, event }) {
         ) : null}
       </div>
 
-      {/* ── 3 colonnes ── */}
+      {/* ── Colonnes ── */}
       <div style={{ display: 'flex', gap: 5 }}>
-        {(['home', 'draw', 'away']).map(choice => {
-          const pct     = showPct ? Math.round((counts[choice] ?? 0) / total * 100) : 0;
+        {choices.map(choice => {
+          const rawCount = counts[choice] ?? 0;
+          const pct = showPct
+            ? Math.round(rawCount / displayTotal * 100)
+            : 0;
           const isVoted = mine === choice;
-          const color   = COLORS[choice];
-          const isLeading = showPct && pct === Math.max(counts.home, counts.draw, counts.away) / total * 100;
+          const color = COLORS[choice];
+          const leadingCount = Math.max(
+            counts.home ?? 0,
+            showDraw ? (counts.draw ?? 0) : 0,
+            counts.away ?? 0,
+          );
+          const isLeading = showPct && rawCount === leadingCount && rawCount > 0;
 
           return (
             <button
@@ -70,7 +95,7 @@ export default function EventPredictions({ eventId, event }) {
                 position: 'relative',
                 minHeight: 56,
                 borderRadius: 10,
-                border: `1.5px solid ${isVoted ? color.border : isLeading && showPct ? `${color.main}55` : 'var(--sl-border-s)'}`,
+                border: `1.5px solid ${isVoted ? color.border : isLeading ? `${color.main}55` : 'var(--sl-border-s)'}`,
                 backgroundColor: isVoted ? color.dim : 'var(--sl-surface)',
                 overflow: 'hidden',
                 cursor: isLocked || !isLoggedIn ? 'default' : 'pointer',
@@ -81,7 +106,7 @@ export default function EventPredictions({ eventId, event }) {
                 gap: 2,
               }}
             >
-              {/* Barre de progression horizontale en fond */}
+              {/* Barre de progression en fond */}
               {showPct && (
                 <motion.div
                   initial={{ width: 0 }}
@@ -95,11 +120,11 @@ export default function EventPredictions({ eventId, event }) {
                 />
               )}
 
-              {/* Nom de l'équipe / X */}
+              {/* Label */}
               <span style={{
                 fontSize: choice === 'draw' ? 15 : 10,
                 fontWeight: choice === 'draw' ? 800 : 700,
-                color: isVoted ? color.main : isLeading && showPct ? color.main : 'var(--sl-t2)',
+                color: isVoted ? color.main : isLeading ? color.main : 'var(--sl-t2)',
                 textAlign: 'center',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 width: '100%', paddingInline: 2,
@@ -112,7 +137,7 @@ export default function EventPredictions({ eventId, event }) {
               {/* Pourcentage */}
               <span style={{
                 fontSize: 14, fontWeight: 800,
-                color: isVoted ? color.main : isLeading && showPct ? color.main : 'var(--sl-t3)',
+                color: isVoted ? color.main : isLeading ? color.main : 'var(--sl-t3)',
                 position: 'relative', zIndex: 1,
                 lineHeight: 1,
               }}>

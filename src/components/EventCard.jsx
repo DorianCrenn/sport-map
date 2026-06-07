@@ -592,7 +592,9 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
   const { toast } = useToast();
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const attendeeCount = useAttendeeCount(event.id);
-  const predictionCount = useEventPredictionCount(event.eventType !== 'tournament' && new Date(event.date) > new Date() ? event.id : null);
+  const INDIVIDUAL_SPORTS_EC = ['Trail', 'Running', 'Cyclisme', 'Natation', 'Triathlon', 'Athlétisme'];
+  const canHavePrediction = !INDIVIDUAL_SPORTS_EC.includes(event.sport) && !!event.adversaire && new Date(event.date) > new Date();
+  const predictionCount = useEventPredictionCount(canHavePrediction ? event.id : null);
   const { sendAnnouncement } = useClubAnnouncements(event.clubId);
   const [showPoster, setShowPoster] = useState(false);
   const [posterInitBg, setPosterInitBg] = useState(null);

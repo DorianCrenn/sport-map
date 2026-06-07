@@ -354,8 +354,8 @@ export default function MobileEventSheet({
           {event.clubId && <FollowClubButton event={event} compact />}
         </div>
 
-        {/* Pronostic — tous les modes, matchs futurs uniquement */}
-        {event.eventType !== 'tournament' && !isPast && (
+        {/* Pronostic — la logique sport/adversaire est dans EventPredictions */}
+        {!isPast && (
           <EventPredictions eventId={event.id} event={event} />
         )}
 
