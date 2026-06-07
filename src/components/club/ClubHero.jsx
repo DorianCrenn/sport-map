@@ -135,7 +135,8 @@ export default function ClubHero({
   matchesCount = 0,
   onViewOnMap,
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen,    setMenuOpen]    = useState(false);
+  const [mapsOpen,    setMapsOpen]    = useState(false);
   const [followersCount, setFollowersCount] = useState(null);
 
   // Fetch du nombre d'abonnés
@@ -148,11 +149,22 @@ export default function ClubHero({
       .then(({ count }) => { if (count != null) setFollowersCount(count); });
   }, [club.id]);
 
-  const teamCount = (club.categories ?? []).flatMap(c => c.teams ?? []).length;
-  const venue    = club.venue || null;
-  const location = [venue, club.city].filter(Boolean).join(' · ');
-  const clubEmail = club.email || null;
+  const teamCount    = (club.categories ?? []).flatMap(c => c.teams ?? []).length;
+  const venue        = club.venue || null;
+  const clubEmail    = club.email || null;
   const foundingYear = club.foundingYear || club.founding_year || null;
+
+  // Adresse complète pour affichage et liens maps
+  const addressParts = [
+    venue,
+    club.address,
+    [club.postalCode, club.city].filter(Boolean).join(' '),
+  ].filter(Boolean);
+  const fullAddress   = addressParts.join(', ');
+  const shortLocation = [venue, club.city].filter(Boolean).join(' · ') || club.city || '';
+  const mapsQuery     = encodeURIComponent(fullAddress || shortLocation);
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+  const wazeUrl       = `https://waze.com/ul?q=${mapsQuery}&navigate=yes`;
 
   const overflowItems = [
     { icon: '🔗', label: linkCopied ? 'Lien copié !' : 'Copier le lien', action: onCopyLink },
@@ -164,6 +176,128 @@ export default function ClubHero({
 
   return (
     <div role="banner">
+
+      {/* ── Sheet Maps (position fixed pour passer au-dessus du overflow:hidden hero) ── */}
+      <AnimatePresence>
+        {mapsOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: 'fixed', inset: 0, zIndex: 300, backgroundColor: 'rgba(0,0,0,0.45)' }}
+              onClick={() => setMapsOpen(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 340, damping: 34 }}
+              style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301,
+                backgroundColor: 'var(--sl-card)',
+                borderRadius: '18px 18px 0 0',
+                border: '1px solid var(--sl-border)',
+                borderBottom: 'none',
+                padding: '0 0 calc(16px + env(safe-area-inset-bottom, 0px))',
+                boxShadow: '0 -8px 40px rgba(0,0,0,0.25)',
+              }}
+            >
+              {/* Drag handle */}
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 6px' }}>
+                <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border)' }} />
+              </div>
+
+              {/* Adresse */}
+              <div style={{ padding: '4px 18px 14px', borderBottom: '1px solid var(--sl-border)' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Adresse</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)', lineHeight: 1.4 }}>
+                  {venue && <div>{venue}</div>}
+                  {club.address && <div style={{ fontWeight: 500, color: 'var(--sl-t2)' }}>{club.address}</div>}
+                  {(club.postalCode || club.city) && (
+                    <div style={{ fontWeight: 500, color: 'var(--sl-t2)' }}>
+                      {[club.postalCode, club.city].filter(Boolean).join(' ')}
+                    </div>
+                  )}
+                  {!venue && !club.address && !club.postalCode && club.city && (
+                    <div>{club.city}</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ padding: '8px 12px 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <a
+                  href={googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMapsOpen(false)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '13px 14px', borderRadius: 13,
+                    backgroundColor: 'var(--sl-surface)', textDecoration: 'none',
+                    border: '1px solid var(--sl-border-s)',
+                    color: 'var(--sl-t1)',
+                  }}
+                >
+                  <span style={{ fontSize: 20, lineHeight: 1 }}>🗺️</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>Google Maps</div>
+                    <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Ouvrir dans Google Maps</div>
+                  </div>
+                </a>
+
+                <a
+                  href={wazeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMapsOpen(false)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '13px 14px', borderRadius: 13,
+                    backgroundColor: 'var(--sl-surface)', textDecoration: 'none',
+                    border: '1px solid var(--sl-border-s)',
+                    color: 'var(--sl-t1)',
+                  }}
+                >
+                  <span style={{ fontSize: 20, lineHeight: 1 }}>🚗</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>Waze</div>
+                    <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Itinéraire avec Waze</div>
+                  </div>
+                </a>
+
+                {onViewOnMap && (
+                  <button
+                    onClick={() => { setMapsOpen(false); onViewOnMap(); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '13px 14px', borderRadius: 13,
+                      backgroundColor: 'var(--sl-surface)',
+                      border: '1px solid var(--sl-border-s)',
+                      cursor: 'pointer', color: 'var(--sl-t1)',
+                    }}
+                  >
+                    <span style={{ fontSize: 20, lineHeight: 1 }}>📍</span>
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700 }}>Voir sur la carte</div>
+                      <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Carte SportLink</div>
+                    </div>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setMapsOpen(false)}
+                  style={{
+                    marginTop: 4, padding: '13px 14px', borderRadius: 13,
+                    border: 'none', backgroundColor: 'var(--sl-surface)',
+                    cursor: 'pointer', fontSize: 14, fontWeight: 700,
+                    color: 'var(--sl-t2)',
+                  }}
+                >
+                  Annuler
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* ── Bannière hero ── */}
       <div style={{ position: 'relative', minHeight: 130, ...heroBackground, overflow: 'hidden' }}>
@@ -240,14 +374,42 @@ export default function ClubHero({
             }}>
               {club.name}
             </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 500 }}>
-              <SportIcon sport={club.sport} size={12} color="rgba(255,255,255,0.7)" />
-              <span>{club.sport}</span>
-              <span style={{ color: 'rgba(255,255,255,0.4)' }}>·</span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-              </svg>
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club.city}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {/* Sport + niveau */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 500 }}>
+                <SportIcon sport={club.sport} size={12} color="rgba(255,255,255,0.7)" />
+                <span>{club.sport}</span>
+                {club.level && (
+                  <>
+                    <span style={{ color: 'rgba(255,255,255,0.4)' }}>·</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club.level}</span>
+                  </>
+                )}
+              </div>
+              {/* Adresse cliquable → sheet maps */}
+              {shortLocation && (
+                <button
+                  onClick={() => setMapsOpen(true)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    background: 'none', border: 'none', padding: 0,
+                    cursor: 'pointer', textAlign: 'left',
+                    color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: 500,
+                  }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: 'underline', textDecorationColor: 'rgba(255,255,255,0.35)', textUnderlineOffset: 2 }}>
+                    {shortLocation}
+                  </span>
+                  {fullAddress && (
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0, opacity: 0.6 }}>
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -310,32 +472,7 @@ export default function ClubHero({
           )}
         </div>
 
-        {/* Lieu */}
-        {location && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-              </svg>
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)' }}>{location}</span>
-            </div>
-            {(onViewOnMap || (club.lat && club.lng)) && (
-              <button
-                onClick={onViewOnMap}
-                style={{
-                  fontSize: 11, fontWeight: 700, color: accentColor,
-                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                  display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0,
-                }}
-              >
-                Voir sur la carte
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-              </button>
-            )}
-          </div>
-        )}
+        {/* Lieu supprimé ici — affiché dans le hero avec lien maps */}
 
         {/* Stats 4 cards */}
         <div style={{
