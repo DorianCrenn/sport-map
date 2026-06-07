@@ -27,7 +27,7 @@ import { useClubPlan } from '../../hooks/useClubPlan.js';
 import { downloadClubICS } from '../../utils/exportICS.js';
 
 // New UI components
-import ClubHero from './ClubHero.jsx';
+import ClubHero, { OverflowMenu } from './ClubHero.jsx';
 import ClubAdminDrawer from './ClubAdminDrawer.jsx';
 import ClubHomeTab from './tabs/ClubHomeTab.jsx';
 import ClubNewsTab from './tabs/ClubNewsTab.jsx';
@@ -120,8 +120,9 @@ export default function ClubPageView({
   // ── Follow state ───────────────────────────────────────────────────────────
   const isFollowing = isFollowingClub(club.id);
   const currentFollow = getFollow(club.id);
-  const [loginHint, setLoginHint] = useState(false);
+  const [loginHint,  setLoginHint]  = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [heroMenuOpen, setHeroMenuOpen] = useState(false);
 
   // ── Page blocks ────────────────────────────────────────────────────────────
   const {
@@ -335,16 +336,9 @@ export default function ClubPageView({
         onBack={onBack}
         onFollow={handleFollow}
         onShare={handleShare}
-        onCopyLink={handleCopyLink}
-        onPoster={() => setShowPoster(true)}
-        onExportICS={() => {
-          const upcoming = effectiveEvents.filter(e => e.clubId === club.id && new Date(e.date) >= new Date());
-          downloadClubICS(upcoming, club.name);
-        }}
-        onContact={club.email ? () => window.open(`mailto:${club.email}`) : null}
-        linkCopied={linkCopied}
         matchesCount={seasonMatchesCount}
         onViewOnMap={(club.lat && club.lng) ? onBack : undefined}
+        onMenuOpen={() => setHeroMenuOpen(true)}
       />
 
       {/* Login hint tooltip */}
@@ -561,6 +555,23 @@ export default function ClubPageView({
           </motion.div>
         )}
       </div>
+
+      {/* ── Overflow menu du hero (⋯) — rendu ICI, après le sticky FAB,
+            pour garantir qu'il s'affiche par-dessus dans l'ordre du DOM ── */}
+      <OverflowMenu
+        open={heroMenuOpen}
+        onClose={() => setHeroMenuOpen(false)}
+        items={[
+          { icon: '🔗', label: linkCopied ? 'Lien copié !' : 'Copier le lien', action: handleCopyLink },
+          { icon: '📤', label: 'Partager', action: handleShare },
+          { icon: '🎨', label: "Créer l'affiche", action: () => setShowPoster(true) },
+          { icon: '📅', label: 'Exporter le calendrier', action: () => {
+            const upcoming = effectiveEvents.filter(e => e.clubId === club.id && new Date(e.date) >= new Date());
+            downloadClubICS(upcoming, club.name);
+          }},
+          ...(club.email ? [{ icon: '✉️', label: `Contacter ${club.name}`, action: () => window.open(`mailto:${club.email}`) }] : []),
+        ]}
+      />
 
       {/* ── Quick Add Team ── */}
       <AnimatePresence>

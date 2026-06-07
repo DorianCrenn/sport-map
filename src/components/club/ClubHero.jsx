@@ -46,8 +46,8 @@ function ClubLogoInitials({ club, accentColor, size = 72 }) {
 
 // ── Overflow menu ─────────────────────────────────────────────────────────────
 
-// Bottom sheet — position:fixed pour passer au-dessus du overflow:hidden du hero
-function OverflowMenu({ items, open, onClose }) {
+// Bottom sheet — exporté pour être rendu dans ClubPageView (après le sticky FAB)
+export function OverflowMenu({ items, open, onClose }) {
   return (
     <AnimatePresence>
       {open && (
@@ -151,16 +151,11 @@ export default function ClubHero({
   onBack,
   onFollow,
   onShare,
-  onCopyLink,
-  onPoster,
-  onExportICS,
-  onContact,
-  linkCopied,
   matchesCount = 0,
   onViewOnMap,
+  onMenuOpen,
 }) {
-  const [menuOpen,    setMenuOpen]    = useState(false);
-  const [mapsOpen,    setMapsOpen]    = useState(false);
+  const [mapsOpen, setMapsOpen] = useState(false);
   const [followersCount, setFollowersCount] = useState(null);
 
   // Fetch du nombre d'abonnés
@@ -209,13 +204,7 @@ export default function ClubHero({
         { icon: '🍎', label: 'Plans',         sub: 'Apple Maps',    href: appleMapsUrl },
       ];
 
-  const overflowItems = [
-    { icon: '🔗', label: linkCopied ? 'Lien copié !' : 'Copier le lien', action: onCopyLink },
-    { icon: '📤', label: 'Partager', action: onShare },
-    { icon: '🎨', label: "Créer l'affiche", action: onPoster },
-    { icon: '📅', label: 'Exporter le calendrier', action: onExportICS },
-    ...(clubEmail ? [{ icon: '✉️', label: `Contacter ${club.name}`, action: onContact ?? (() => window.open(`mailto:${clubEmail}`)) }] : []),
-  ];
+  // overflowItems géré dans ClubPageView
 
   return (
     <div role="banner">
@@ -367,11 +356,10 @@ export default function ClubHero({
               </svg>
             </button>
 
-            {/* Overflow */}
+            {/* Overflow — state géré dans ClubPageView */}
             <button
-              onClick={() => setMenuOpen(v => !v)}
+              onClick={onMenuOpen}
               aria-label="Plus d'actions"
-              aria-expanded={menuOpen}
               style={{
                 width: 36, height: 36, borderRadius: 10, border: 'none',
                 background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(8px)',
@@ -383,7 +371,6 @@ export default function ClubHero({
                 <circle cx="2" cy="2" r="2"/><circle cx="10" cy="2" r="2"/><circle cx="18" cy="2" r="2"/>
               </svg>
             </button>
-            <OverflowMenu items={overflowItems} open={menuOpen} onClose={() => setMenuOpen(false)} />
           </div>
         </div>
 
