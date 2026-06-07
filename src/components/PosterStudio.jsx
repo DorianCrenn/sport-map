@@ -734,7 +734,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           style={{ flex: 1, minHeight: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-bg)', position: 'relative', overflow: 'hidden' }}
           onClick={() => exportOpen && setExportOpen(false)}
         >
-          <div style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 10 }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
             <div style={{
               width: PREVIEW_W, height: previewH,
               borderRadius: 12, overflow: 'hidden', flexShrink: 0, position: 'relative',
@@ -785,8 +785,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               )}
             </div>
 
-            {/* Floating action buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
+            {/* Floating action buttons — absolus à droite du poster, ne débordent pas du flex */}
+            <div style={{ position: 'absolute', left: PREVIEW_W + 8, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 8 }}>
               <button onClick={() => setPreviewFull(true)} title="Aperçu plein écran"
                 style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t2)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
