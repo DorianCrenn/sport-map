@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap.js';
+import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 import { motion } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 import VenueAutocomplete from '../VenueAutocomplete.jsx';
@@ -49,7 +51,16 @@ export default function CreateRideModal({ event, onSave, onClose }) {
     detourFlexibility: 'none',
     notes:             '',
   });
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef);
+  useAndroidBack(true, onClose);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
   const [error,  setError]  = useState('');
 
   function set(field, value) {
@@ -89,6 +100,10 @@ export default function CreateRideModal({ event, onSave, onClose }) {
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <motion.div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Proposer un trajet"
         initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 350, damping: 34 }}
         style={{
@@ -116,6 +131,7 @@ export default function CreateRideModal({ event, onSave, onClose }) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Fermer"
             style={{ width: 44, height: 44, borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

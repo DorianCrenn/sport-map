@@ -6,6 +6,7 @@ import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
+import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import CityAutocomplete from './CityAutocomplete.jsx';
 import VenueAutocomplete from './VenueAutocomplete.jsx';
 import SportIcon from './SportIcon.jsx';
@@ -30,6 +31,32 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const sportOptions = Object.values(allSports).filter(s => !s.isArchived).map(s => s.label);
   const dialogRef = useRef(null);
   useFocusTrap(dialogRef);
+  useAndroidBack(true, onClose);
+
+  function handleHandleDown(e) {
+    const el = dialogRef.current;
+    if (!el) return;
+    const startY = e.touches?.[0]?.clientY ?? e.clientY;
+    function onMove(e) {
+      const dy = Math.max(0, (e.touches?.[0]?.clientY ?? e.clientY) - startY);
+      el.style.transform = `translateY(${dy}px)`;
+      el.style.transition = 'none';
+    }
+    function onEnd(e) {
+      const dy = (e.changedTouches?.[0] ?? e).clientY - startY;
+      el.style.transform = '';
+      el.style.transition = '';
+      if (dy > 120) onClose();
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onEnd);
+    }
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onEnd);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+  }
 
   const buildDefaults = useCallback((ev) => {
     if (!ev?._isNew) return {};
@@ -179,8 +206,12 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Handle */}
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
+          {/* Handle — draggable pour swipe-to-close */}
+          <div
+            onMouseDown={handleHandleDown}
+            onTouchStart={handleHandleDown}
+            style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0', cursor: 'grab', touchAction: 'none' }}
+          >
             <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
           </div>
 
@@ -537,6 +568,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               createdEvent={createdEvent}
               onOpenPoster={onOpenPoster}
               onClose={onClose}
+              isCoach={isClubAdmin}
             />
           )}
         </motion.div>

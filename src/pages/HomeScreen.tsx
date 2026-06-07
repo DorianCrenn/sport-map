@@ -11,13 +11,23 @@ interface HomeScreenProps {
   clubs?: unknown[];
   allEvents?: unknown[];
   onOpenTrainings?: () => void;
+  externalConvocations?: unknown[];
+  onConvocationRespond?: (id: string, status: string, note?: string) => void;
 }
 
-const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, clubs, allEvents, onOpenTrainings }) => {
+const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, clubs, allEvents, onOpenTrainings, externalConvocations, onConvocationRespond }) => {
   const { currentUser } = useAuth();
 
   if (currentUser) {
-    return <NewsPage followedClubIds={followedClubIds} onNavigate={onNavigate} onOpenTrainings={onOpenTrainings} />;
+    return (
+      <NewsPage
+        followedClubIds={followedClubIds}
+        onNavigate={onNavigate}
+        onOpenTrainings={onOpenTrainings}
+        externalConvocations={externalConvocations}
+        onConvocationRespond={onConvocationRespond}
+      />
+    );
   }
 
   return (

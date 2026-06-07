@@ -1,5 +1,24 @@
-import { useMemo } from 'react';
-import SportIcon from '../../SportIcon.jsx';
+import { useMemo, useState, lazy, Suspense } from 'react';
+import { useEventConvocations } from '../../../hooks/useEventConvocations.js';
+
+const EventFormStepConvocation = lazy(() => import('../../event/EventFormStepConvocation.jsx'));
+
+/** Badge compact résumant les réponses à une convocation. */
+function ConvocBadge({ eventId }) {
+  const { stats, loading } = useEventConvocations(eventId);
+  if (loading || stats.total === 0) return null;
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 4,
+      fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+      backgroundColor: stats.pending > 0 ? 'rgba(245,158,11,0.12)' : 'rgba(34,197,94,0.12)',
+      color: stats.pending > 0 ? '#f59e0b' : '#22c55e',
+      border: `1px solid ${stats.pending > 0 ? 'rgba(245,158,11,0.3)' : 'rgba(34,197,94,0.3)'}`,
+    }}>
+      📋 {stats.responded}/{stats.total}
+    </div>
+  );
+}
 
 function ScoreBadge({ scoreHome, scoreAway, isHome }) {
   if (scoreHome === null || scoreHome === undefined) {
@@ -19,7 +38,7 @@ function ScoreBadge({ scoreHome, scoreAway, isHome }) {
   );
 }
 
-function MatchRow({ event, clubId }) {
+function MatchRow({ event, canConvoque, onConvoque }) {
   const now = new Date();
   const eventDate = new Date(event.date);
   const isPast = eventDate < now;
@@ -41,24 +60,33 @@ function MatchRow({ event, clubId }) {
         </div>
       </div>
 
-      {/* Teams */}
+      {/* Teams + convoc badge */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {event.homeTeam ?? '—'} <span style={{ color: 'var(--sl-t3)', fontWeight: 500 }}>vs</span> {event.awayTeam ?? '—'}
         </div>
-        <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2 }}>
-          {event.championship || event.eventType || 'Match'}
-          {event.venue && ` · ${event.venue}`}
+        <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <span>{event.championship || event.eventType || 'Match'}{event.venue ? ` · ${event.venue}` : ''}</span>
+          {/* Indicateur convocations (coach, matchs à venir) */}
+          {canConvoque && !isPast && <ConvocBadge eventId={event.id} />}
         </div>
       </div>
 
-      {/* Score / status */}
-      <div style={{ flexShrink: 0 }}>
-        <ScoreBadge
-          scoreHome={event.scoreHome}
-          scoreAway={event.scoreAway}
-          isHome={isHome}
-        />
+      {/* Score ou bouton convoquer */}
+      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+        <ScoreBadge scoreHome={event.scoreHome} scoreAway={event.scoreAway} isHome={isHome} />
+        {canConvoque && !isPast && (
+          <button
+            onClick={() => onConvoque?.(event)}
+            style={{
+              fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 7, cursor: 'pointer',
+              backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)',
+              color: '#6366f1', whiteSpace: 'nowrap',
+            }}
+          >
+            Convoquer ›
+          </button>
+        )}
       </div>
     </div>
   );
@@ -97,6 +125,7 @@ function StatsRow({ W, D, L, played }) {
 
 export default function ClubMatchesTab({ effectiveEvents, club, accentColor, canAddEvent, onCreateEvent }) {
   const now = new Date();
+  const [convocEvent, setConvocEvent] = useState(null);
 
   const clubEvents = useMemo(() =>
     effectiveEvents.filter(e => String(e.clubId) === String(club.id)),
@@ -175,7 +204,9 @@ export default function ClubMatchesTab({ effectiveEvents, club, accentColor, can
                 À venir ({upcoming.length})
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {upcoming.map(e => <MatchRow key={e.id} event={e} clubId={club.id} />)}
+                {upcoming.map(e => (
+                  <MatchRow key={e.id} event={e} canConvoque={canAddEvent} onConvoque={setConvocEvent} />
+                ))}
               </div>
             </div>
           )}
@@ -186,11 +217,36 @@ export default function ClubMatchesTab({ effectiveEvents, club, accentColor, can
                 Résultats ({past.length})
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {past.map(e => <MatchRow key={e.id} event={e} clubId={club.id} />)}
+                {past.map(e => <MatchRow key={e.id} event={e} canConvoque={false} />)}
               </div>
             </div>
           )}
         </>
+      )}
+
+      {/* Panel convocations (slide depuis la droite) */}
+      {convocEvent && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 10, backgroundColor: 'var(--sl-card)', borderRadius: 'inherit', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '12px 14px 0', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            <button
+              onClick={() => setConvocEvent(null)}
+              style={{ width: 36, height: 36, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+              aria-label="Retour"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--sl-t1)' }}>
+              {convocEvent.homeTeam ?? convocEvent.title ?? 'Match'}
+            </span>
+          </div>
+          <Suspense fallback={null}>
+            <EventFormStepConvocation
+              event={convocEvent}
+              onDone={() => setConvocEvent(null)}
+              onClose={() => setConvocEvent(null)}
+            />
+          </Suspense>
+        </div>
       )}
     </div>
   );

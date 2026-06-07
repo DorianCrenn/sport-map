@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import { Z } from '../constants/zIndex.js';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -92,7 +93,7 @@ export default function TrainingManagerPage({ onBack }) {
   // Initialise selectedClubId quand managedClubs se charge
   useEffect(() => {
     if (selectedClubId || !managedClubs.length) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setSelectedClubId(String(managedClubs[0].id));
   }, [managedClubs, selectedClubId]);
 
@@ -100,6 +101,14 @@ export default function TrainingManagerPage({ onBack }) {
     () => managedClubs.find(c => String(c.id) === selectedClubId) ?? null,
     [managedClubs, selectedClubId]
   );
+
+  useAndroidBack(true, onBack);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onBack?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onBack]);
 
   const [trainings, setTrainings] = useClubTrainings(isManager ? selectedClubId : null);
   const { generateFromRecurring } =
@@ -153,7 +162,7 @@ export default function TrainingManagerPage({ onBack }) {
 
   // Initialiser l'onglet actif sur la première équipe dès que clubTeams est disponible
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     if (!activeTabId && clubTeams.length > 0) setActiveTabId(clubTeams[0].id);
   }, [clubTeams, activeTabId]);
 
@@ -238,6 +247,9 @@ export default function TrainingManagerPage({ onBack }) {
 
   return (
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label={headerTitle}
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
@@ -256,8 +268,9 @@ export default function TrainingManagerPage({ onBack }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             onClick={onBack}
+            aria-label="Retour"
             style={{
-              width: 40, height: 40, borderRadius: 11, border: 'none', cursor: 'pointer',
+              width: 44, height: 44, borderRadius: 11, border: 'none', cursor: 'pointer',
               backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center',
               justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0,
             }}

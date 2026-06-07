@@ -1,4 +1,7 @@
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useFocusTrap } from '../../hooks/useFocusTrap.js';
+import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 
 const ITEMS = [
   { id: 'dashboard',    icon: '📊', label: 'Tableau de bord',     desc: 'Stats, vues, conversions' },
@@ -14,6 +17,42 @@ const ITEMS = [
 ];
 
 export default function ClubAdminDrawer({ open, onClose, onAction, isEditing }) {
+  const drawerRef = useRef(null);
+  useFocusTrap(drawerRef, open);
+  useAndroidBack(open, onClose);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  function handleHandleDown(e) {
+    const el = drawerRef.current;
+    if (!el) return;
+    const startY = e.touches?.[0]?.clientY ?? e.clientY;
+    function onMove(e) {
+      const dy = Math.max(0, (e.touches?.[0]?.clientY ?? e.clientY) - startY);
+      el.style.transform = `translateY(${dy}px)`;
+      el.style.transition = 'none';
+    }
+    function onEnd(e) {
+      const dy = (e.changedTouches?.[0] ?? e).clientY - startY;
+      el.style.transform = '';
+      el.style.transition = '';
+      if (dy > 100) onClose?.();
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onEnd);
+    }
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onEnd);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+  }
+
   return (
     <AnimatePresence>
       {open && (
@@ -31,6 +70,10 @@ export default function ClubAdminDrawer({ open, onClose, onAction, isEditing }) 
 
           {/* Drawer */}
           <motion.div
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Administration du club"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -46,8 +89,12 @@ export default function ClubAdminDrawer({ open, onClose, onAction, isEditing }) 
               display: 'flex', flexDirection: 'column',
             }}
           >
-            {/* Handle */}
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px', flexShrink: 0 }}>
+            {/* Handle — draggable pour swipe-to-close */}
+            <div
+              onMouseDown={handleHandleDown}
+              onTouchStart={handleHandleDown}
+              style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px', flexShrink: 0, cursor: 'grab', touchAction: 'none' }}
+            >
               <div style={{ width: 36, height: 3.5, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
             </div>
 
@@ -67,8 +114,9 @@ export default function ClubAdminDrawer({ open, onClose, onAction, isEditing }) 
               </div>
               <button
                 onClick={onClose}
+                aria-label="Fermer"
                 style={{
-                  width: 36, height: 36, borderRadius: 10, border: 'none',
+                  width: 44, height: 44, borderRadius: 10, border: 'none',
                   backgroundColor: 'var(--sl-surface)', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'var(--sl-t2)',

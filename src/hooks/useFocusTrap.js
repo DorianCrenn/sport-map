@@ -10,6 +10,8 @@ export function useFocusTrap(ref, enabled = true) {
   useEffect(() => {
     if (!enabled || !ref.current) return;
     const container = ref.current;
+    // Save the element that was focused before the trap opened
+    const previousFocus = document.activeElement;
 
     function getFocusable() {
       return [...container.querySelectorAll(FOCUSABLE_SEL)].filter(
@@ -17,13 +19,8 @@ export function useFocusTrap(ref, enabled = true) {
       );
     }
 
-    // Focus first element on open
-    const first = getFocusable()[0];
-    if (first) {
-      // Small delay so animation has time to render the element
-      const tid = setTimeout(() => first.focus(), 50);
-      return () => clearTimeout(tid);
-    }
+    // Focus first element on open (delay for animation)
+    const tid = setTimeout(() => getFocusable()[0]?.focus(), 50);
 
     function onKeyDown(e) {
       if (e.key !== 'Tab') return;
@@ -39,6 +36,11 @@ export function useFocusTrap(ref, enabled = true) {
     }
 
     container.addEventListener('keydown', onKeyDown);
-    return () => container.removeEventListener('keydown', onKeyDown);
+    return () => {
+      clearTimeout(tid);
+      container.removeEventListener('keydown', onKeyDown);
+      // Restore focus to the element that was active before the trap
+      previousFocus?.focus?.({ preventScroll: true });
+    };
   }, [ref, enabled]);
 }

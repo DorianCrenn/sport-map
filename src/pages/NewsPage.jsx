@@ -4,8 +4,13 @@ import { useFeaturedEvents } from '../hooks/useFeaturedEvents.ts';
 import { useClubSponsors } from '../hooks/useClubSponsors.ts';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useManagedClubs } from '../hooks/useManagedClubs.js';
+import { useMyConvocations } from '../hooks/useMyConvocations.js';
 import ClubFeed from '../components/feed/ClubFeed.tsx';
 import MatchesTab from '../components/feed/MatchesTab.jsx';
+import UpcomingAgendaSection from '../components/feed/UpcomingAgendaSection.jsx';
+import ConvocationsList from '../components/convocations/ConvocationsList.jsx';
+import ParentDashboard from '../components/home/ParentDashboard.jsx';
+import { useParentChildren } from '../hooks/useParentChildren.js';
 
 // ── Onglets principaux ────────────────────────────────────────────────────────
 
@@ -191,9 +196,15 @@ function QuickSetupCard({ onDismiss }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrainings }) {
+export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrainings, externalConvocations, onConvocationRespond }) {
   const { currentUser, isAdmin, isClubAdmin, follows } = useAuth();
   const { managedClubs } = useManagedClubs();
+  // Fallback local si le parent ne fournit pas les convocations
+  const localConv = useMyConvocations(externalConvocations ? null : currentUser?.id);
+  const convocations = externalConvocations ?? localConv.convocations;
+  const onRespond    = onConvocationRespond ?? localConv.respond;
+
+  const { isParent } = useParentChildren(currentUser?.id);
 
   const [activeMain, setActiveMain] = useState('agenda');
   const [activeFeed, setActiveFeed] = useState('all');
@@ -271,15 +282,46 @@ export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrain
         {/* Colonne Agenda */}
         <div className={[
           'flex-1 min-h-0 min-w-0',
-          // Mobile : visible seulement si onglet actif
           activeMain === 'agenda' ? 'flex flex-col' : 'hidden',
-          // Desktop : toujours visible, séparateur
           'md:flex md:flex-col md:border-r md:border-[var(--sl-border)]',
         ].join(' ')}>
-          <MatchesTab
-            followedClubIds={feedClubIds}
-            onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
-          />
+          <div className="flex-1 overflow-y-auto overscroll-contain">
+            {/* Dashboard parent (si tuteur d'au moins un joueur) */}
+            {currentUser && isParent && (
+              <div className="px-4 pt-4">
+                <ParentDashboard currentUser={currentUser} convocations={convocations} onConvocationRespond={onRespond} />
+              </div>
+            )}
+
+            {/* Mon agenda — entraînements + matchs à venir (si pas parent, ou en plus) */}
+            {currentUser && !isParent && (
+              <div className="px-4 pt-4">
+                <UpcomingAgendaSection currentUser={currentUser} convocations={convocations} onConvocationRespond={onRespond} />
+              </div>
+            )}
+
+            {/* Convocations en attente (hors parent — géré dans ParentDashboard) */}
+            {currentUser && !isParent && convocations.filter(c => c.status === 'pending').length > 0 && (
+              <div className="px-4">
+                <ConvocationsList convocations={convocations} onRespond={onRespond} />
+              </div>
+            )}
+
+            {/* Séparateur */}
+            {currentUser && (
+              <div className="px-4 pt-2 pb-1">
+                <p className="text-[9px] font-black tracking-[0.15em] uppercase text-[var(--sl-t3)]">
+                  Matchs à suivre
+                </p>
+              </div>
+            )}
+
+            {/* Calendrier des matchs des clubs suivis */}
+            <MatchesTab
+              followedClubIds={feedClubIds}
+              onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
+            />
+          </div>
         </div>
 
         {/* Colonne Mes clubs */}

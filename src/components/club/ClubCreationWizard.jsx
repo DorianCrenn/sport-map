@@ -1,4 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap.js';
+import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
@@ -246,9 +248,22 @@ export default function ClubCreationWizard({ onSave, onClose }) {
   const { allSports: SPORTS } = useSports();
   const { currentUser } = useAuth();
 
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef);
+  useAndroidBack(true, onClose);
+
   const [step, setStep] = useState(1);
   const [dir, setDir] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      if (step > 1) { setDir(-1); setStep(s => s - 1); } else onClose?.();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [step, onClose]);
   const [logoUploading, setLogoUploading] = useState(false);
   const [bannerUploading, setBannerUploading] = useState(false);
   const [cityValid, setCityValid] = useState(false);
@@ -734,6 +749,10 @@ export default function ClubCreationWizard({ onSave, onClose }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 60, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 360, damping: 34 }}
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Créer mon club"
         style={{
           width: '100%', maxWidth: 540,
           backgroundColor: 'var(--sl-card)',

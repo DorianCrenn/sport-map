@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useFocusTrap } from '../hooks/useFocusTrap.js';
+import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BADGE_DEFS } from '../hooks/useBadges.js';
 
@@ -28,6 +30,9 @@ function SparkleParticles({ color }) {
 }
 
 export default function BadgeUnlockModal({ badges, onDone }) {
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef);
+  useAndroidBack(true, onDone);
   const [index, setIndex] = useState(0);
   const def = BADGE_DEFS[badges[index]];
 
@@ -35,6 +40,12 @@ export default function BadgeUnlockModal({ badges, onDone }) {
     if (index < badges.length - 1) setIndex(i => i + 1);
     else onDone();
   }
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onDone?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onDone]);
 
   if (!def) return null;
 
@@ -45,6 +56,10 @@ export default function BadgeUnlockModal({ badges, onDone }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
+      ref={panelRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Badge débloqué"
       style={{
         position: 'fixed', inset: 0, zIndex: 9500,
         backgroundColor: 'rgba(0,0,0,0.9)',

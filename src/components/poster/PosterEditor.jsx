@@ -76,7 +76,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
             minL = Math.min(minL, cr.left); minT = Math.min(minT, cr.top);
             maxR = Math.max(maxR, cr.right); maxB = Math.max(maxB, cr.bottom);
           }
-        } catch (_) {}
+        } catch { /* getBoundingClientRect peut échouer sur des nœuds non attachés */ }
       }
       el.querySelectorAll('svg, img').forEach(child => {
         if (inNestedBlock(child)) return;
@@ -413,6 +413,20 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                 {BLOCK_LABELS[activeBlock]}
               </span>
               <div style={{ display: 'flex', gap: 5 }}>
+                {/* Bouton fermer toujours accessible */}
+                <button
+                  onClick={onClose}
+                  title="Fermer l'éditeur"
+                  style={{
+                    fontSize: 10, fontWeight: 700, padding: '9px 11px', borderRadius: 7, cursor: 'pointer', minHeight: 40,
+                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.55)',
+                    display: 'flex', alignItems: 'center', gap: 5,
+                  }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  Fermer
+                </button>
+                <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', margin: '0 2px' }} />
                 {/* Alignment buttons */}
                 {[
                   { dir: 'left', title: 'Aligner à gauche', icon: <><rect x="3" y="5" width="12" height="2" rx="1" fill="currentColor"/><rect x="3" y="9" width="18" height="2" rx="1" fill="currentColor"/><rect x="3" y="13" width="10" height="2" rx="1" fill="currentColor"/></> },
@@ -474,8 +488,9 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                 <button
                   onClick={() => {
                     if (t.fontSize != null) {
-                      const { fontSize: _, ...rest } = transforms[activeBlock] || {};
-                      onChange(activeBlock, rest);
+                      const next = { ...transforms[activeBlock] };
+                      delete next.fontSize;
+                      onChange(activeBlock, next);
                     } else {
                       onChange(activeBlock, { ...(transforms[activeBlock] || {}), fontSize: 32 });
                     }

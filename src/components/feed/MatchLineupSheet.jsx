@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 import { motion } from 'framer-motion';
 import { useMatchLineup } from '../../hooks/useMatchLineup.js';
 import { useClubPlayers } from '../../hooks/useClubPlayers.js';
@@ -66,6 +67,14 @@ export default function MatchLineupSheet({ eventId, clubId, canEdit, currentUser
   const [localFormation, setLocalFormation] = useState(null);
   const [saving, setSaving] = useState(false);
 
+  useAndroidBack(true, onClose);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   const activeLineup    = localLineup    ?? lineup;
   const activeFormation = localFormation ?? formation;
 
@@ -115,6 +124,9 @@ export default function MatchLineupSheet({ eventId, clubId, canEdit, currentUser
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Composition du match"
       style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)' }}
     >
       {/* Header */}
@@ -123,7 +135,7 @@ export default function MatchLineupSheet({ eventId, clubId, canEdit, currentUser
         display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
         backgroundColor: 'var(--sl-card)',
       }}>
-        <button onClick={onClose} style={{ width: 40, height: 40, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+        <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div style={{ flex: 1 }}>

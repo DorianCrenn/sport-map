@@ -1,4 +1,6 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap.js';
+import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
@@ -187,8 +189,18 @@ export default function ClubFormModal({ club, onSave, onClose }) {
     logoUrl:    club?.logoUrl    ?? null,
     categories: club?.categories ?? [],
   });
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef);
+  useAndroidBack(true, onClose);
+
   const [errors, setErrors]               = useState({});
   const [cityValid, setCityValid]         = useState(!!club?.city);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
   const [showCatPicker, setShowCatPicker] = useState(false);
   const [submitting, setSubmitting]       = useState(false);
 
@@ -279,6 +291,10 @@ export default function ClubFormModal({ club, onSave, onClose }) {
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <motion.div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={isEdit ? 'Modifier le club' : 'Créer mon club'}
         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 320, damping: 34 }}
         className="mt-auto bg-white rounded-t-3xl flex flex-col overflow-hidden"

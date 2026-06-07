@@ -38,6 +38,7 @@ import OfflineBanner from './components/OfflineBanner.jsx';
 import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
 import { useAttendeeCountActions } from './contexts/AttendeeCountContext.jsx';
+import { useMyConvocations } from './hooks/useMyConvocations.js';
 
 function ModalLoader() {
   return (
@@ -82,6 +83,7 @@ function AppInner() {
   const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent, archiveSeason } = useLocalEvents();
   const { unreadCount: rideNotifCount } = useRideNotifications();
   const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
+  const { convocations: myConvocations, pendingCount: convocationsPending, respond: respondToConvocation } = useMyConvocations(currentUser?.id);
   const [showMyRides, setShowMyRides] = useState(false);
   const [showTrainings, setShowTrainings] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
@@ -228,8 +230,11 @@ function AppInner() {
 
   const navBadges = useMemo(() => {
     const todayCount = upcomingFavorites.today.length;
-    return todayCount > 0 ? { favoris: todayCount } : {};
-  }, [upcomingFavorites.today]);
+    const badges = {};
+    if (todayCount > 0) badges.favoris = todayCount;
+    if (convocationsPending > 0) badges.home = convocationsPending;
+    return badges;
+  }, [upcomingFavorites.today, convocationsPending]);
 
   const homeStats = useMemo(() => {
     const now = new Date();
@@ -368,6 +373,8 @@ function AppInner() {
                   clubs={allClubs}
                   allEvents={allEvents}
                   onOpenTrainings={() => setShowTrainings(true)}
+                  externalConvocations={myConvocations}
+                  onConvocationRespond={respondToConvocation}
                 />
               </ErrorBoundary>
             )}

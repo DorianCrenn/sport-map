@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAndroidBack } from '../hooks/useAndroidBack.js';
 
 const VARIANTS = {
   sheet: {
@@ -60,6 +61,8 @@ export default function ModalFrame({
 }) {
   const v = VARIANTS[variant] ?? VARIANTS.sheet;
   const firstFocusRef = useRef(null);
+  const [sheetDy, setSheetDy] = useState(0);
+  useAndroidBack(open, onClose);
 
   useEffect(() => {
     if (!open) return;
@@ -76,6 +79,32 @@ export default function ModalFrame({
     );
     el?.focus();
   }, [open]);
+
+  // Reset drag offset when modal closes
+  useEffect(() => { if (!open) setSheetDy(0); }, [open]);
+
+  const handleDragHandleDown = useCallback((e) => {
+    if (variant !== 'sheet') return;
+    const startY = e.touches?.[0]?.clientY ?? e.clientY;
+
+    function onMove(e) {
+      const y = e.touches?.[0]?.clientY ?? e.clientY;
+      setSheetDy(Math.max(0, y - startY));
+    }
+    function onEnd(e) {
+      const y = (e.changedTouches?.[0] ?? e).clientY;
+      if (y - startY > 100) onClose?.();
+      setSheetDy(0);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onEnd);
+    }
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onEnd);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+  }, [variant, onClose]);
 
   return (
     <AnimatePresence>
@@ -101,13 +130,38 @@ export default function ModalFrame({
             {...v.panel}
             style={{
               backgroundColor: 'var(--sl-card)',
-              padding: '24px',
+              padding: variant === 'sheet' ? '0' : '24px',
               ...v.panel.style,
               ...panelStyle,
+              transform: variant === 'sheet' && sheetDy > 0
+                ? `translateY(${sheetDy}px)`
+                : undefined,
+              transition: sheetDy > 0 ? 'none' : undefined,
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {children}
+            {/* Drag handle — sheet variant uniquement */}
+            {variant === 'sheet' && (
+              <div
+                onMouseDown={handleDragHandleDown}
+                onTouchStart={handleDragHandleDown}
+                aria-label="Glisser pour fermer"
+                style={{
+                  display: 'flex', justifyContent: 'center',
+                  padding: '12px 0 4px',
+                  cursor: 'grab', touchAction: 'none', flexShrink: 0,
+                }}
+              >
+                <div style={{
+                  width: 36, height: 4, borderRadius: 999,
+                  backgroundColor: 'var(--sl-border-s)',
+                }} />
+              </div>
+            )}
+            {/* Padding wrapper pour le contenu */}
+            <div style={{ padding: '4px 24px 24px' }}>
+              {children}
+            </div>
           </motion.div>
         </motion.div>
       )}

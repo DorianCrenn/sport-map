@@ -1,11 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap.js';
+import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 import { motion } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 
 export default function JoinRideModal({ ride, onSave, onClose }) {
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef);
+  useAndroidBack(true, onClose);
   const [message, setMessage] = useState('');
   const [saving,  setSaving]  = useState(false);
   const [error,   setError]   = useState('');
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -30,6 +41,10 @@ export default function JoinRideModal({ ride, onSave, onClose }) {
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <motion.div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Rejoindre ce trajet"
         initial={{ scale: 0.94, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.94, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 460, damping: 36 }}
         style={{

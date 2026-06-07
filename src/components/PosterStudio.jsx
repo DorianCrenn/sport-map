@@ -12,6 +12,7 @@ import BackgroundPanelTab from './poster/panels/BackgroundPanelTab.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
 import AiElementEditor from './poster/AiElementEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import { useClubMedia } from '../hooks/useClubMedia.js';
 import { useClubDNA } from '../hooks/useClubDNA.js';
 import { useClubSponsorsPage } from '../hooks/useClubSponsorsPage.js';
@@ -158,6 +159,34 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     return () => clearTimeout(t);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Android back — chaîné comme Escape : ferme d'abord la sous-vue la plus haute
+  useAndroidBack(
+    true,
+    () => {
+      if (editorOpen)          { setEditorOpen(false); return; }
+      if (previewFull)         { setPreviewFull(false); return; }
+      if (aiElEditorUid !== null) { setAiElEditorUid(null); return; }
+      if (exportOpen)          { setExportOpen(false); return; }
+      if (showUpgradeModal)    { setShowUpgradeModal(false); return; }
+      onClose();
+    },
+  );
+
+  // Fermeture via Escape — ne ferme que si aucune sous-fenêtre n'est ouverte
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key !== 'Escape') return;
+      if (editorOpen) { setEditorOpen(false); return; }
+      if (previewFull) { setPreviewFull(false); return; }
+      if (aiElEditorUid !== null) { setAiElEditorUid(null); return; }
+      if (exportOpen) { setExportOpen(false); return; }
+      if (showUpgradeModal) { setShowUpgradeModal(false); return; }
+      onClose();
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [editorOpen, previewFull, aiElEditorUid, exportOpen, showUpgradeModal, onClose]);
+
   // Mode Simple → ouvrir l'export quand l'utilisateur arrive à l'étape 3
   useEffect(() => {
     if (!simpleMode || wizardStep !== 3) return;
@@ -279,8 +308,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   const posterEffects = { tint: bgTint || null, tintOp: bgTintOp };
 
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
-  const maxPosterH = Math.max(canvasH - 20, 80);
-  const PREVIEW_W  = Math.min(Math.floor(maxPosterH * (w / h)), 200);
+  const maxPosterH = Math.max(canvasH - 20, 120);
+  const PREVIEW_W  = Math.min(Math.floor(maxPosterH * (w / h)), 260);
   const previewH   = Math.round(h * (PREVIEW_W / w));
 
   // ── Export / AI tracking helpers ──
@@ -702,7 +731,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         {/* ── CANVAS AREA ─────────────────────────────────────────────────────── */}
         <div
           ref={canvasAreaRef}
-          style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-bg)', position: 'relative', overflow: 'hidden' }}
+          style={{ flex: 1, minHeight: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-bg)', position: 'relative', overflow: 'hidden' }}
           onClick={() => exportOpen && setExportOpen(false)}
         >
           <div style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 10 }}>
@@ -792,7 +821,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         </AnimatePresence>
 
         {/* ── Wizard panels — mode Simple ─────────────────────────────────────── */}
-        {simpleMode && <WizardContent ps={{ wizardStep, set, format, accentColor, templateId, displayTemplates, sportColors, homeName, awayName, championship, isTournamentEvent }} />}
+        {simpleMode && <WizardContent ps={{ wizardStep, set, format, accentColor, templateId, displayTemplates, sportColors, homeName, awayName, championship, isTournamentEvent, bgPreset, bgSrc, dispatch }} />}
 
         {/* Tab panels — mode Expert uniquement */}
         {!simpleMode && <AnimatePresence mode='wait'>
@@ -800,7 +829,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             <motion.div key={activeTab}
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.16 }}
-              style={{ flexShrink: 0, overflowY: 'auto', maxHeight: '42dvh', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}
+              style={{ flexShrink: 0, overflowY: 'auto', maxHeight: '38dvh', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}
             >
               <div style={{ padding: '14px 16px 16px' }}>
                 {(() => {
@@ -923,15 +952,24 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           onClick={e => e.stopPropagation()}
           style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}
         >
-          {/* Badge */}
+          {/* Badge + close */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
               👑
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--sl-t1)' }}>Template Premium</div>
               <div style={{ fontSize: 12, color: 'var(--sl-t3)' }}>Disponible dès 10 €/mois</div>
             </div>
+            <button
+              onClick={() => setShowUpgradeModal(false)}
+              aria-label="Fermer"
+              style={{ width: 44, height: 44, borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
           </div>
 
           {/* Avantages */}

@@ -21,9 +21,9 @@ export default function PlatformPreviewPanel({
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Aperçu plateformes</span>
-        <button onClick={() => setPlatformPreview(null)}
-          style={{ width: 32, height: 32, borderRadius: 9, border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <button onClick={() => setPlatformPreview(null)} aria-label="Fermer"
+          style={{ width: 44, height: 44, borderRadius: 11, border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 

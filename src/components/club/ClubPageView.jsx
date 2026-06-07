@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 import { useDynamicMeta } from '../../hooks/useDynamicMeta.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
@@ -227,6 +228,32 @@ export default function ClubPageView({
   useEffect(() => {
     if (!canEdit && isEditing) setIsEditing(false);
   }, [canEdit, isEditing, setIsEditing]);
+
+  // Android back — même logique que Escape : ne ferme ClubPageView que si aucun sous-panel ouvert
+  useAndroidBack(
+    true,
+    () => {
+      if (showDashboard || showManagersPanel || showRosterPanel || showSponsorsPanel
+          || showAnnouncement || showEditInfo || showAddTeam || showAdminDrawer
+          || showFollowModal || showPoster || teamEventModal) return;
+      onBack?.();
+    },
+  );
+
+  // Fermeture via Escape — ne ferme que si aucun sous-panel n'est ouvert
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key !== 'Escape') return;
+      if (showDashboard || showManagersPanel || showRosterPanel || showSponsorsPanel
+          || showAnnouncement || showEditInfo || showAddTeam || showAdminDrawer
+          || showFollowModal || showPoster || teamEventModal) return;
+      onBack?.();
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onBack, showDashboard, showManagersPanel, showRosterPanel, showSponsorsPanel,
+      showAnnouncement, showEditInfo, showAddTeam, showAdminDrawer,
+      showFollowModal, showPoster, teamEventModal]);
 
   // ── Event handlers ─────────────────────────────────────────────────────────
   async function handleShare() {

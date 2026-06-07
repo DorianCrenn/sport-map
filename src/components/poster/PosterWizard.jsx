@@ -1,5 +1,6 @@
 import React from 'react';
 import { COLOR_PRESETS } from './posterConstants.js';
+import { BG_PRESETS } from './posterBgLibrary.jsx';
 
 /**
  * Mode Simple de PosterStudio — 3 étapes : Style → Infos → Exporter.
@@ -49,9 +50,18 @@ export function WizardStepBar({ ps }) {
 }
 
 export function WizardContent({ ps }) {
-  const { wizardStep, set, format, accentColor, templateId, displayTemplates, sportColors, homeName, awayName, championship, isTournamentEvent } = ps;
+  const { wizardStep, set, format, accentColor, templateId, displayTemplates, sportColors, homeName, awayName, championship, isTournamentEvent, bgPreset, bgSrc, dispatch } = ps;
+
+  function readAndSetBg(file) {
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = ev => dispatch({ type: 'PATCH', payload: { bgSrc: ev.target.result, bgPreset: '', bgErr: false, bgMode: 'upload' } });
+    r.readAsDataURL(file);
+  }
+
+  const hasBg = !!(bgPreset || bgSrc);
   return (
-    <div style={{ flexShrink: 0, overflowY: 'auto', maxHeight: '44dvh', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+    <div style={{ flexShrink: 0, overflowY: 'auto', maxHeight: '38dvh', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
       <div style={{ padding: '16px 16px 8px' }}>
 
         {/* ── Étape 1 : Style ── */}
@@ -91,6 +101,93 @@ export function WizardContent({ ps }) {
                 </label>
               </div>
             </div>
+
+            {/* ── Section Image de fond ── */}
+            {dispatch && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)', margin: 0 }}>Image de fond</p>
+                  {hasBg && (
+                    <button
+                      onClick={() => dispatch({ type: 'PATCH', payload: { bgPreset: '', bgSrc: '', bgErr: false } })}
+                      style={{ fontSize: 10, fontWeight: 700, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px' }}
+                    >
+                      Supprimer
+                    </button>
+                  )}
+                </div>
+
+                {/* Grille de presets CSS */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 5, marginBottom: 8 }}>
+                  {/* Option "Aucun" */}
+                  <button
+                    onClick={() => dispatch({ type: 'PATCH', payload: { bgPreset: '', bgSrc: '', bgErr: false } })}
+                    aria-label="Pas de fond"
+                    style={{
+                      height: 42, borderRadius: 10,
+                      border: `2px solid ${!hasBg ? accentColor : 'var(--sl-border)'}`,
+                      backgroundColor: !hasBg ? `${accentColor}14` : 'var(--sl-surface)',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: !hasBg ? accentColor : 'var(--sl-t3)', fontSize: 9, fontWeight: 800,
+                      letterSpacing: '0.06em', textTransform: 'uppercase',
+                    }}
+                  >
+                    Aucun
+                  </button>
+
+                  {/* Presets cinématiques */}
+                  {BG_PRESETS.slice(0, 11).map(preset => (
+                    <button
+                      key={preset.id}
+                      onClick={() => dispatch({ type: 'PATCH', payload: { bgPreset: preset.id, bgSrc: '', bgErr: false, bgMode: 'color' } })}
+                      aria-label={preset.label}
+                      title={preset.label}
+                      style={{
+                        height: 42, borderRadius: 10,
+                        background: preset.preview,
+                        cursor: 'pointer', border: 'none',
+                        boxShadow: bgPreset === preset.id
+                          ? `0 0 0 2px var(--sl-card), 0 0 0 4px ${accentColor}`
+                          : 'inset 0 0 0 1.5px rgba(255,255,255,0.08)',
+                        transition: 'box-shadow 0.15s',
+                        position: 'relative',
+                      }}
+                    >
+                      {bgPreset === preset.id && (
+                        <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Upload depuis la galerie */}
+                <label
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '10px 14px', borderRadius: 12, cursor: 'pointer',
+                    border: `1.5px dashed ${bgSrc && !bgPreset ? accentColor : 'var(--sl-border-s)'}`,
+                    backgroundColor: bgSrc && !bgPreset ? `${accentColor}10` : 'var(--sl-surface)',
+                    color: bgSrc && !bgPreset ? accentColor : 'var(--sl-t2)',
+                    fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => readAndSetBg(e.target.files?.[0])}
+                  />
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  {bgSrc && !bgPreset ? 'Photo chargée ✓' : 'Depuis ma galerie'}
+                </label>
+              </div>
+            )}
           </div>
         )}
 

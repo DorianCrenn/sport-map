@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 import { announcementSchema, validate } from '../../lib/schemas.js';
 
@@ -57,6 +57,18 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
     const p = n => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
   });
+
+  const [scheduleAtMin] = useState(() => {
+    const d = new Date(Date.now() + 5 * 60 * 1000);
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  });
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   const selectedType = TYPE_OPTIONS.find(t => t.key === type);
 
@@ -266,7 +278,7 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
                 <input
                   type="datetime-local"
                   value={scheduleAt}
-                  min={(() => { const _d = new Date(Date.now() + 5*60*1000); const _p = n => String(n).padStart(2,'0'); return `${_d.getFullYear()}-${_p(_d.getMonth()+1)}-${_p(_d.getDate())}T${_p(_d.getHours())}:${_p(_d.getMinutes())}`; })()}
+                  min={scheduleAtMin}
                   onChange={e => setScheduleAt(e.target.value)}
                   style={{ width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 10, fontSize: 13, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
                 />

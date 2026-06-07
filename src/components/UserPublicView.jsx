@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase.js';
-import { useSports } from '../hooks/useSports.js';
 import { getLevel, BADGE_DEFS, BADGE_ORDER } from '../hooks/useBadges.js';
 import SportIcon from './SportIcon.jsx';
 
@@ -27,7 +27,14 @@ export default function UserPublicView({ userId, onClose }) {
   const [followedClubs, setFollowedClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const { allSports } = useSports();
+
+  useAndroidBack(true, onClose);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   useEffect(() => {
     if (!userId) return;
@@ -73,6 +80,9 @@ export default function UserPublicView({ userId, onClose }) {
 
   return (
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Profil membre"
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
@@ -93,7 +103,8 @@ export default function UserPublicView({ userId, onClose }) {
       }}>
         <button
           onClick={onClose}
-          style={{ width: 40, height: 40, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}
+          aria-label="Retour"
+          style={{ width: 44, height: 44, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -102,7 +113,7 @@ export default function UserPublicView({ userId, onClose }) {
         </h1>
         <button
           onClick={handleShare}
-          style={{ width: 40, height: 40, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: copied ? 'rgba(34,217,106,0.12)' : 'var(--sl-surface)', color: copied ? 'var(--sl-green)' : 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+          style={{ width: 44, height: 44, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: copied ? 'rgba(34,217,106,0.12)' : 'var(--sl-surface)', color: copied ? 'var(--sl-green)' : 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
           title="Partager ce profil"
         >
           {copied
