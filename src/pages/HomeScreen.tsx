@@ -13,9 +13,10 @@ interface HomeScreenProps {
   onOpenTrainings?: () => void;
   externalConvocations?: unknown[];
   onConvocationRespond?: (id: string, status: string, note?: string) => void;
+  onShowLegal?: (section?: string) => void;
 }
 
-const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, clubs, allEvents, onOpenTrainings, externalConvocations, onConvocationRespond }) => {
+const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, clubs, allEvents, onOpenTrainings, externalConvocations, onConvocationRespond, onShowLegal }) => {
   const { currentUser } = useAuth();
 
   if (currentUser) {
@@ -37,6 +38,7 @@ const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, c
         stats={stats}
         clubs={clubs ?? []}
         allEvents={allEvents ?? []}
+        onShowLegal={onShowLegal}
       />
     </Suspense>
   );

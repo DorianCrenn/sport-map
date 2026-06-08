@@ -34,6 +34,7 @@ const MyRidesPage           = lazy(() => import('./pages/MyRidesPage.jsx'));
 const TrainingManagerPage   = lazy(() => import('./pages/TrainingManagerPage.jsx'));
 const AnnouncementsCenter = lazy(() => import('./components/AnnouncementsCenter.jsx'));
 const PosterStudio        = lazy(() => import('./components/PosterStudio.jsx'));
+const LegalPage           = lazy(() => import('./pages/LegalPage.jsx'));
 import OfflineBanner from './components/OfflineBanner.jsx';
 import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
@@ -87,6 +88,7 @@ function AppInner() {
   const [showMyRides, setShowMyRides] = useState(false);
   const [showTrainings, setShowTrainings] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
+  const [legalSection, setLegalSection] = useState(null); // null | 'mentions' | 'privacy' | 'cgu'
   const [, setClubOverlayOpen] = useState(false);
   const [clubOverlayLoading, setClubOverlayLoading] = useState(false);
   const [publicUserId, setPublicUserId] = useState(null);
@@ -155,8 +157,13 @@ function AppInner() {
     const clubMatch  = window.location.hash.match(/^#club\/(.+)$/);
     const eventMatch = window.location.hash.match(/^#event\/(.+)$/);
     const userMatch  = window.location.hash.match(/^#user\/(.+)$/);
+    const legalMatch = window.location.hash.match(/^#legal(?:\/(\w+))?$/);
     if (eventMatch) pendingEventDeepLink.current = eventMatch[1];
     if (userMatch) setPublicUserId(userMatch[1]);
+    if (legalMatch) {
+      setLegalSection(legalMatch[1] || 'mentions');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
 
     if (clubMatch) {
       const id = clubMatch[1];
@@ -375,6 +382,7 @@ function AppInner() {
                   onOpenTrainings={() => setShowTrainings(true)}
                   externalConvocations={myConvocations}
                   onConvocationRespond={respondToConvocation}
+                  onShowLegal={(section) => setLegalSection(section || 'mentions')}
                 />
               </ErrorBoundary>
             )}
@@ -487,6 +495,7 @@ function AppInner() {
               key="auth"
               onClose={handleAuthClose}
               onNeedOnboarding={handleNeedOnboarding}
+              onShowLegal={(section) => { setShowAuth(false); setLegalSection(section || 'mentions'); }}
             />
           )}
           {shouldShowOnboarding && (
@@ -537,6 +546,16 @@ function AppInner() {
               club={studioClub}
               quickMode
               onClose={() => { setStudioEvent(null); setStudioClub(null); }}
+            />
+          )}
+          {legalSection && (
+            <LegalPage
+              key="legal"
+              initialTab={legalSection}
+              onClose={() => {
+                setLegalSection(null);
+                window.history.replaceState(null, '', window.location.pathname);
+              }}
             />
           )}
         </AnimatePresence>

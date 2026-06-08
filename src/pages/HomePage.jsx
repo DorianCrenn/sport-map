@@ -601,7 +601,7 @@ function FeaturesSection({ stats = {}, onNavigate }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function HomePage({ onNavigate, stats, clubs = [], allEvents = [] }) {
+export default function HomePage({ onNavigate, stats, clubs = [], allEvents = [], onShowLegal }) {
   // ── PosterStudio depuis les affiches du week-end ───────────────────────────
   const [studioEvent, setStudioEvent] = useState(null);
   const [studioClub,  setStudioClub]  = useState(null);
@@ -917,8 +917,19 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
               ))}
             </div>
 
-            <div className="text-center pb-8">
-              <p style={{ fontSize:12, color:'var(--sl-t3)' }}>Version 1.0.0</p>
+            <div className="text-center pb-8" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {[['mentions', 'Mentions légales'], ['privacy', 'Confidentialité'], ['cgu', 'CGU']].map(([section, label]) => (
+                  <button
+                    key={section}
+                    onClick={() => onShowLegal?.(section)}
+                    style={{ fontSize: 12, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', textDecoration: 'underline', textDecorationColor: 'var(--sl-border)', textUnderlineOffset: 3 }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>SportLink v1.0.0 — Bretagne</p>
             </div>
           </div>
         </div>

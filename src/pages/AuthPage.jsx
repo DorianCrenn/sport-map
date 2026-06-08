@@ -195,7 +195,7 @@ function ForgotPasswordView({ onBack }) {
 
 // ── Main AuthPage ──────────────────────────────────────────────────────────
 
-export default function AuthPage({ onClose, onNeedOnboarding }) {
+export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal }) {
   const { login, register, loginWithGoogle } = useAuth();
   const { toast } = useToast();
   const [mode, setMode] = useState('login');   // 'login' | 'register' | 'forgot' | 'confirm-email'
@@ -507,6 +507,18 @@ export default function AuthPage({ onClose, onNeedOnboarding }) {
                     {mode === 'register' && (
                       <p className="text-center text-[11px] text-slate-600 pt-0.5">
                         Un email de confirmation sera envoyé à votre adresse.
+                      </p>
+                    )}
+                    {mode === 'register' && (
+                      <p className="text-center text-[11px] text-slate-500 leading-relaxed">
+                        En créant un compte, vous acceptez nos{' '}
+                        <button type="button" onClick={() => onShowLegal?.('cgu')} className="text-green-500 hover:text-green-400 underline underline-offset-2 cursor-pointer">
+                          CGU
+                        </button>
+                        {' '}et notre{' '}
+                        <button type="button" onClick={() => onShowLegal?.('privacy')} className="text-green-500 hover:text-green-400 underline underline-offset-2 cursor-pointer">
+                          Politique de confidentialité
+                        </button>.
                       </p>
                     )}
                   </form>
