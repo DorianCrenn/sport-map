@@ -92,7 +92,7 @@ function ThemeToggle() {
   );
 }
 
-export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, onShowAuth, onMyRides, rideNotifCount = 0 }) {
+export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, onShowAuth, onMyRides, rideNotifCount = 0, onShowLegal }) {
   const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs, requestPasswordReset } = useAuth();
   const { toast } = useToast();
   const { favorites } = useFavoritesContext();
@@ -710,6 +710,17 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
           </button>
         </div>
 
+        <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', paddingTop: 4 }}>
+          {[['mentions', 'Mentions légales'], ['privacy', 'Confidentialité'], ['cgu', 'CGU']].map(([section, label]) => (
+            <button
+              key={section}
+              onClick={() => onShowLegal?.(section)}
+              style={{ fontSize: 11, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textDecorationColor: 'var(--sl-border)', textUnderlineOffset: 3 }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <p className="text-xs text-center pt-1" style={{ color: 'var(--sl-t3)' }}>SportLink v1.0.0</p>
 
         </> /* /PARAMÈTRES */}

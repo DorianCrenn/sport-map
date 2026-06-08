@@ -425,6 +425,7 @@ function AppInner() {
                   onShowAuth={() => setShowAuth(true)}
                   onMyRides={() => setShowMyRides(true)}
                   rideNotifCount={rideNotifCount}
+                  onShowLegal={(section) => setLegalSection(section || 'mentions')}
                 />
               </ErrorBoundary>
             )}
