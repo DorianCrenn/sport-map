@@ -38,7 +38,7 @@ function ClubSuggestionsStep({ sports, selectedCity: initialCity, onFinish, onBa
           );
           const data = await res.json();
           if (data[0]?.nom) setResolvedCity(data[0].nom);
-        } catch (_) { /* silently ignore */ }
+        } catch { /* silently ignore */ }
         setDetectingGps(false);
       },
       () => setDetectingGps(false)
@@ -307,7 +307,7 @@ function ClubSuggestionsStep({ sports, selectedCity: initialCity, onFinish, onBa
         </motion.button>
         {followed.size === 0 && (
           <p className="text-center text-xs" style={{ color: '#334155' }}>
-            Vous pourrez suivre des clubs depuis l'annuaire
+            Tu pourras suivre des clubs depuis l'annuaire
           </p>
         )}
       </div>
@@ -378,7 +378,8 @@ export default function OnboardingPage({ onDone }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
-            className="flex flex-col flex-1 overflow-y-auto px-5 pt-8 pb-8 min-h-0"
+            className="flex flex-col flex-1 overflow-y-auto px-5 pt-8 min-h-0"
+            style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}
           >
             {/* Header */}
             <div className="mb-8 text-center">
@@ -401,7 +402,7 @@ export default function OnboardingPage({ onDone }) {
                 className="text-sm font-medium"
                 style={{ color: '#64748b' }}
               >
-                Quels sports vous intéressent ?
+                Quels sports t'intéressent ?
               </motion.p>
             </div>
 
@@ -468,7 +469,7 @@ export default function OnboardingPage({ onDone }) {
               </motion.button>
               {selected.size === 0 && (
                 <p className="text-center text-xs" style={{ color: '#334155' }}>
-                  Vous pourrez modifier vos préférences depuis votre profil
+                  Tu pourras modifier tes préférences depuis ton profil
                 </p>
               )}
             </div>
@@ -483,7 +484,8 @@ export default function OnboardingPage({ onDone }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.2 }}
-            className="flex flex-col flex-1 overflow-y-auto px-5 pt-8 pb-8 min-h-0"
+            className="flex flex-col flex-1 overflow-y-auto px-5 pt-8 min-h-0"
+            style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}
           >
             {/* Back button */}
             <button
@@ -521,7 +523,7 @@ export default function OnboardingPage({ onDone }) {
                 className="text-sm font-medium"
                 style={{ color: '#64748b' }}
               >
-                Pour centrer la carte sur chez vous
+                Pour centrer la carte sur chez toi
               </motion.p>
             </div>
 
@@ -534,7 +536,7 @@ export default function OnboardingPage({ onDone }) {
                 value={cityInput}
                 onChange={setCityInput}
                 onSelect={setSelectedCity}
-                placeholder="ex. Brest, Quimper, Morlaix…"
+                placeholder="ex. Paris, Lyon, Nantes…"
                 inputClassName="w-full rounded-xl px-3 py-3 text-sm focus:outline-none transition-colors"
                 inputStyle={{
                   backgroundColor: 'rgba(255,255,255,0.08)',
@@ -595,8 +597,8 @@ export default function OnboardingPage({ onDone }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.2 }}
-            className="flex flex-col flex-1 px-5 pt-8 pb-8 min-h-0"
-            style={{ overflow: 'hidden' }}
+            className="flex flex-col flex-1 px-5 pt-8 min-h-0"
+            style={{ overflow: 'hidden', paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}
           >
             <ClubSuggestionsStep
               sports={[...selected]}

@@ -51,7 +51,6 @@ export default function MapPage({
   const [flyTarget, setFlyTarget] = useState(null);
   const [geoError, setGeoError] = useState(null);
   const [viewMode, setViewMode] = useState('map'); // 'map' | 'list'
-  const autoRequested = useRef(false);
 
   useEffect(() => {
     setShowAllSports(false);
@@ -59,14 +58,6 @@ export default function MapPage({
   }, [currentUser?.id]);
 
   const { coords: userCoords, loading: geoLoading, error: geoHookError, request: requestGeo } = useGeolocation();
-
-  // Auto-request geolocation on first mount
-  useEffect(() => {
-    if (!autoRequested.current) {
-      autoRequested.current = true;
-      requestGeo();
-    }
-  }, [requestGeo]);
 
   // Sync error and auto-center on first geo fix
   const firstFix = useRef(false);

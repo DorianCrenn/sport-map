@@ -258,6 +258,15 @@ html:not([data-theme="light"]) .leaflet-popup-tip {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   FLOATING LOGOS (HomePage)
+   ═══════════════════════════════════════════════════════════ */
+@keyframes sportFloat {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(var(--fdy)); }
+  100% { transform: translateY(0px); }
+}
+
+/* ═══════════════════════════════════════════════════════════
    GEO MARKER PULSE
    ═══════════════════════════════════════════════════════════ */
 @keyframes geo-pulse {

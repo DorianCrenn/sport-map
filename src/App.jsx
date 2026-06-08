@@ -313,7 +313,12 @@ function AppInner() {
     setPendingOnboarding(false);
     if (selectedSports?.length > 0) {
       setOnboardingSport(selectedSports[0]);
-      setActiveTab('map');
+    }
+    setActiveTab('home');
+    if (isClubAdmin) {
+      toast({ message: 'Bienvenue ! Crée ta première affiche depuis le menu ➕', type: 'info' });
+    } else {
+      toast({ message: 'Bienvenue sur SportLink ! Explore les clubs et événements autour de toi.', type: 'info' });
     }
   }
 
@@ -408,7 +413,7 @@ function AppInner() {
             )}
             {activeTab === 'favoris' && (
               <ErrorBoundary name="Favoris">
-                <FavorisPage allEvents={allEvents} allClubs={allClubs} />
+                <FavorisPage allEvents={allEvents} allClubs={allClubs} onNavigate={setActiveTab} />
               </ErrorBoundary>
             )}
 {activeTab === 'clubs' && (

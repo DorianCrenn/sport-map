@@ -76,7 +76,7 @@ function OAuthMockModal({ provider, onDone, onClose }) {
           <div className="text-2xl mb-2">{provider === 'google' ? '🔗' : '📸'}</div>
           <h3 className="font-bold text-white font-oswald tracking-wide">Connexion {label}</h3>
           <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-            Simulation OAuth — en production, un popup {label} s'ouvrirait. Pour la démo, entrez votre email.
+            Entrez l'email associé à votre compte {label}.
           </p>
         </div>
         <input
@@ -466,6 +466,11 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal }) {
                       <input type="password" value={form.password} onChange={set('password')}
                         placeholder="••••••••" required
                         className={inputCls} style={inputStyle} />
+                      {mode === 'register' && (
+                        <p className="text-[11px] text-slate-500 mt-1.5 px-0.5">
+                          6 caractères minimum
+                        </p>
+                      )}
                     </div>
                     {mode === 'register' && (
                       <div>

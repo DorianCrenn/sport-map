@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { useToast } from '../../contexts/ToastContext.jsx';
 import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 import { useDynamicMeta } from '../../hooks/useDynamicMeta.js';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -101,6 +102,7 @@ export default function ClubPageView({
   initialAction, onInitialActionConsumed,
 }) {
   const { allSports: SPORTS } = useSports();
+  const { toast } = useToast();
   const {
     isAdmin, isClubAdmin, currentUser, isLoggedIn,
     followClub, updateFollow, isFollowingClub, getFollow,
@@ -142,16 +144,19 @@ export default function ClubPageView({
   const [openMenuAfter, setOpenMenuAfter] = useState(null);
 
   // ── Modals state ───────────────────────────────────────────────────────────
-  const [showFollowModal, setShowFollowModal] = useState(false);
-  const [showAdminDrawer, setShowAdminDrawer] = useState(false);
-  const [showAddTeam,     setShowAddTeam]     = useState(false);
-  const [showDashboard, setShowDashboard] = useState(false);
-  const [showManagersPanel, setShowManagersPanel] = useState(false);
-  const [showRosterPanel, setShowRosterPanel] = useState(false);
-  const [showSponsorsPanel, setShowSponsorsPanel] = useState(false);
-  const [showAnnouncement, setShowAnnouncement] = useState(false);
-  const [showEditInfo, setShowEditInfo] = useState(false);
-  const [showPoster, setShowPoster] = useState(false);
+  // Panel/modal actif — null | 'followModal' | 'adminDrawer' | 'addTeam' | 'dashboard'
+  //   | 'managersPanel' | 'rosterPanel' | 'sponsorsPanel' | 'announcement' | 'editInfo' | 'poster'
+  const [modal, setModal] = useState(null);
+  const showFollowModal   = modal === 'followModal';
+  const showAdminDrawer   = modal === 'adminDrawer';
+  const showAddTeam       = modal === 'addTeam';
+  const showDashboard     = modal === 'dashboard';
+  const showManagersPanel = modal === 'managersPanel';
+  const showRosterPanel   = modal === 'rosterPanel';
+  const showSponsorsPanel = modal === 'sponsorsPanel';
+  const showAnnouncement  = modal === 'announcement';
+  const showEditInfo      = modal === 'editInfo';
+  const showPoster        = modal === 'poster';
   const [teamEventModal, setTeamEventModal] = useState(undefined);
 
   const checklistKey = `sl-club-checklist-dismissed-${club.id}`;
@@ -230,31 +235,22 @@ export default function ClubPageView({
     if (!canEdit && isEditing) setIsEditing(false);
   }, [canEdit, isEditing, setIsEditing]);
 
-  // Android back — même logique que Escape : ne ferme ClubPageView que si aucun sous-panel ouvert
-  useAndroidBack(
-    true,
-    () => {
-      if (showDashboard || showManagersPanel || showRosterPanel || showSponsorsPanel
-          || showAnnouncement || showEditInfo || showAddTeam || showAdminDrawer
-          || showFollowModal || showPoster || teamEventModal) return;
-      onBack?.();
-    },
-  );
+  // Android back — ne ferme ClubPageView que si aucun sous-panel ouvert
+  useAndroidBack(true, () => {
+    if (modal || teamEventModal) return;
+    onBack?.();
+  });
 
   // Fermeture via Escape — ne ferme que si aucun sous-panel n'est ouvert
   useEffect(() => {
     function onKey(e) {
       if (e.key !== 'Escape') return;
-      if (showDashboard || showManagersPanel || showRosterPanel || showSponsorsPanel
-          || showAnnouncement || showEditInfo || showAddTeam || showAdminDrawer
-          || showFollowModal || showPoster || teamEventModal) return;
+      if (modal || teamEventModal) return;
       onBack?.();
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [onBack, showDashboard, showManagersPanel, showRosterPanel, showSponsorsPanel,
-      showAnnouncement, showEditInfo, showAddTeam, showAdminDrawer,
-      showFollowModal, showPoster, teamEventModal]);
+  }, [onBack, modal, teamEventModal]);
 
   // ── Event handlers ─────────────────────────────────────────────────────────
   async function handleShare() {
@@ -269,7 +265,7 @@ export default function ClubPageView({
 
   function handleFollow() {
     if (isLoggedIn) {
-      setShowFollowModal(true);
+      setModal('followModal');
     } else {
       setLoginHint(true);
       setTimeout(() => setLoginHint(false), 2200);
@@ -291,15 +287,15 @@ export default function ClubPageView({
 
   function handleAdminAction(actionId) {
     switch (actionId) {
-      case 'dashboard':   setShowDashboard(true); break;
+      case 'dashboard':   setModal('dashboard'); break;
       case 'edit-page':   setIsEditing(e => !e); setActiveTab('accueil'); break;
       case 'event':       handleCreateClubEvent(); break;
-      case 'announce':    setShowAnnouncement(true); break;
-      case 'edit-info':   setShowEditInfo(true); break;
-      case 'managers':    setShowManagersPanel(true); break;
-      case 'roster':      setShowRosterPanel(true); break;
-      case 'add-team':    setShowAddTeam(true); break;
-      case 'sponsors':    setShowSponsorsPanel(true); break;
+      case 'announce':    setModal('announcement'); break;
+      case 'edit-info':   setModal('editInfo'); break;
+      case 'managers':    setModal('managersPanel'); break;
+      case 'roster':      setModal('rosterPanel'); break;
+      case 'add-team':    setModal('addTeam'); break;
+      case 'sponsors':    setModal('sponsorsPanel'); break;
     }
   }
 
@@ -411,7 +407,7 @@ export default function ClubPageView({
             onDismissChecklist={() => { localStorage.setItem(checklistKey, '1'); setChecklistDismissed(true); }}
             onEditPage={() => { setIsEditing(true); setActiveTab('accueil'); }}
             onCreateEvent={handleCreateClubEvent}
-            onSendAnnouncement={() => setShowAnnouncement(true)}
+            onSendAnnouncement={() => setModal('announcement')}
             onTabChange={setActiveTab}
             updateBlock={updateBlock}
             deleteBlock={deleteBlock}
@@ -429,7 +425,7 @@ export default function ClubPageView({
           <ClubNewsTab
             announcements={announcements}
             canEdit={canEdit}
-            onNewAnnouncement={() => setShowAnnouncement(true)}
+            onNewAnnouncement={() => setModal('announcement')}
           />
         )}
 
@@ -489,7 +485,7 @@ export default function ClubPageView({
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               whileTap={{ scale: 0.92 }}
-              onClick={() => setShowAdminDrawer(true)}
+              onClick={() => setModal('adminDrawer')}
               aria-label="Ouvrir les outils d'administration"
               style={{
                 pointerEvents: 'auto',
@@ -564,7 +560,7 @@ export default function ClubPageView({
         items={[
           { icon: '🔗', label: linkCopied ? 'Lien copié !' : 'Copier le lien', action: handleCopyLink },
           { icon: '📤', label: 'Partager', action: handleShare },
-          { icon: '🎨', label: "Créer l'affiche", action: () => setShowPoster(true) },
+          { icon: '🎨', label: "Créer l'affiche", action: () => setModal('poster') },
           { icon: '📅', label: 'Exporter le calendrier', action: () => {
             const upcoming = effectiveEvents.filter(e => e.clubId === club.id && new Date(e.date) >= new Date());
             downloadClubICS(upcoming, club.name);
@@ -578,8 +574,8 @@ export default function ClubPageView({
         {showAddTeam && onUpdateClub && (
           <QuickAddTeamModal
             club={club}
-            onSave={async (patch) => { await onUpdateClub({ ...club, ...patch }); setShowAddTeam(false); }}
-            onClose={() => setShowAddTeam(false)}
+            onSave={async (patch) => { await onUpdateClub({ ...club, ...patch }); setModal(null); }}
+            onClose={() => setModal(null)}
           />
         )}
       </AnimatePresence>
@@ -587,7 +583,7 @@ export default function ClubPageView({
       {/* ── Admin Drawer ── */}
       <ClubAdminDrawer
         open={showAdminDrawer}
-        onClose={() => setShowAdminDrawer(false)}
+        onClose={() => setModal(null)}
         onAction={handleAdminAction}
         isEditing={isEditing}
       />
@@ -598,8 +594,8 @@ export default function ClubPageView({
       {showEditInfo && onUpdateClub && (
         <ClubFormModal
           club={club}
-          onSave={async (data) => { await onUpdateClub(data); setShowEditInfo(false); }}
-          onClose={() => setShowEditInfo(false)}
+          onSave={async (data) => { await onUpdateClub(data); setModal(null); }}
+          onClose={() => setModal(null)}
         />
       )}
 
@@ -618,7 +614,7 @@ export default function ClubPageView({
       {/* Poster studio */}
       {showPoster && (
         <Suspense fallback={null}>
-          <PosterStudio event={posterEvent} club={club} onClose={() => setShowPoster(false)} />
+          <PosterStudio event={posterEvent} club={club} onClose={() => setModal(null)} />
         </Suspense>
       )}
 
@@ -631,7 +627,7 @@ export default function ClubPageView({
           onAdd={addManager}
           onRemove={removeManager}
           onRoleChange={updateManagerRole}
-          onClose={() => setShowManagersPanel(false)}
+          onClose={() => setModal(null)}
         />
       )}
 
@@ -640,7 +636,7 @@ export default function ClubPageView({
         <div style={{ position: 'absolute', inset: 0, zIndex: 50, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, backgroundColor: 'var(--sl-card)' }}>
             <button
-              onClick={() => setShowRosterPanel(false)}
+              onClick={() => setModal(null)}
               aria-label="Retour"
               style={{ width: 40, height: 40, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}
             >
@@ -665,7 +661,7 @@ export default function ClubPageView({
       {showSponsorsPanel && (
         <ClubSponsorsPanel
           clubId={String(club.id)}
-          onClose={() => setShowSponsorsPanel(false)}
+          onClose={() => setModal(null)}
         />
       )}
 
@@ -676,10 +672,15 @@ export default function ClubPageView({
           allEvents={effectiveEvents}
           currentFollow={currentFollow}
           onSave={(options) => {
-            if (isFollowing) { updateFollow(club.id, options); } else { followClub(club.id, options); }
-            setShowFollowModal(false);
+            if (isFollowing) {
+              updateFollow(club.id, options);
+            } else {
+              followClub(club.id, options);
+              toast({ message: `Tu suis maintenant ${club.name} ! Les annonces apparaîtront dans ton fil.`, type: 'success' });
+            }
+            setModal(null);
           }}
-          onClose={() => setShowFollowModal(false)}
+          onClose={() => setModal(null)}
         />
       )}
 
@@ -689,8 +690,14 @@ export default function ClubPageView({
           <SendAnnouncementModal
             key="send-announcement"
             club={club}
-            onSend={sendAnnouncement}
-            onClose={() => setShowAnnouncement(false)}
+            onSend={async (data) => {
+              await sendAnnouncement(data);
+              const msg = data.scheduledFor
+                ? 'Annonce programmée avec succès'
+                : 'Annonce envoyée à tes abonnés !';
+              toast({ message: msg, type: 'success' });
+            }}
+            onClose={() => setModal(null)}
           />
         )}
       </AnimatePresence>
@@ -704,7 +711,7 @@ export default function ClubPageView({
             clubEventIds={clubEventIds}
             allEvents={effectiveEvents}
             onArchiveSeason={onArchiveSeason}
-            onClose={() => setShowDashboard(false)}
+            onClose={() => setModal(null)}
           />
         )}
       </AnimatePresence>

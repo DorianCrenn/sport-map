@@ -97,15 +97,6 @@ const FLOAT_SLOTS = [
   { x: '84%', y: '72%', size: 26, opacity: 0.33, dur: 11,  delay: 4,   dy: 14 },
 ];
 
-// CSS keyframes injectés une seule fois
-const FLOAT_CSS = `
-  @keyframes sportFloat {
-    0%   { transform: translateY(0px); }
-    50%  { transform: translateY(var(--fdy)); }
-    100% { transform: translateY(0px); }
-  }
-`;
-
 function FloatingLogos() {
   const { allSports } = useSports();
 
@@ -115,7 +106,6 @@ function FloatingLogos() {
 
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-      <style>{FLOAT_CSS}</style>
       {sports.map(([name, sportData], i) => {
         const slot = FLOAT_SLOTS[i];
         const iconHtml = SPORT_ICONS[name] ?? SPORT_ICONS[sportData.iconId];

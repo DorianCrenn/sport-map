@@ -24,10 +24,6 @@ const QUICK_TEAMS = [
   { cat: 'Loisir',    name: 'Loisir' },
 ];
 
-const LEVEL_OPTIONS = [
-  'Loisir', 'Départemental', 'Régional', 'National', 'Fédéral',
-];
-
 const COLOR_PRESETS = [
   '#22C55E', '#3B82F6', '#EF4444', '#F97316', '#8B5CF6',
   '#EC4899', '#14B8A6', '#EAB308', '#0F172A', '#6B7280',
@@ -152,55 +148,6 @@ function LogoUpload({ logo, name, accentColor, onUpload, uploading }) {
   );
 }
 
-// ── Banner upload ─────────────────────────────────────────────────────────────
-
-function BannerUpload({ banner, accentColor, onUpload, uploading }) {
-  const fileRef = useRef();
-  return (
-    <div>
-      <label style={labelStyle}>Bannière du club</label>
-      <div
-        onClick={() => fileRef.current?.click()}
-        style={{
-          width: '100%', height: 96, borderRadius: 14, cursor: 'pointer',
-          border: `2px dashed ${banner ? 'transparent' : 'var(--sl-border)'}`,
-          backgroundColor: banner ? 'transparent' : 'var(--sl-surface)',
-          overflow: 'hidden', position: 'relative',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'border-color 0.15s',
-        }}
-      >
-        {banner ? (
-          <img src={banner} alt="Bannière" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : uploading ? (
-          <div style={{ width: 20, height: 20, border: '2px solid var(--sl-border)', borderTopColor: accentColor, borderRadius: '50%', animation: 'sl-spin 0.7s linear infinite' }} />
-        ) : (
-          <div style={{ textAlign: 'center' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round" style={{ display: 'block', margin: '0 auto 6px' }}>
-              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
-            <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Ajouter une bannière · 16:9 recommandé</span>
-          </div>
-        )}
-        {banner && (
-          <div style={{
-            position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            opacity: 0, transition: 'opacity 0.15s',
-          }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '0'}
-          >
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>↺ Changer</span>
-          </div>
-        )}
-      </div>
-      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onUpload} />
-    </div>
-  );
-}
-
 // ── Mini preview ──────────────────────────────────────────────────────────────
 
 function ClubPreview({ form, accentColor }) {
@@ -265,7 +212,6 @@ export default function ClubCreationWizard({ onSave, onClose }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [step, onClose]);
   const [logoUploading, setLogoUploading] = useState(false);
-  const [bannerUploading, setBannerUploading] = useState(false);
   const [cityValid, setCityValid] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -304,11 +250,11 @@ export default function ClubCreationWizard({ onSave, onClose }) {
       setErrors({});
     }
     setDir(1);
-    setStep(s => Math.min(s + 1, 6));
+    setStep(s => Math.min(s + 1, 3));
   }
 
   function goBack() { setDir(-1); setStep(s => Math.max(s - 1, 1)); }
-  function skip()   { setDir(1);  setStep(s => Math.min(s + 1, 6)); }
+  function skip()   { setDir(1);  setStep(s => Math.min(s + 1, 3)); }
 
   // ── Logo upload ─────────────────────────────────────────────────────────────
 
@@ -325,24 +271,6 @@ export default function ClubCreationWizard({ onSave, onClose }) {
       set('logoUrl', publicUrl);
     }
     setLogoUploading(false);
-    e.target.value = '';
-  }
-
-  // ── Banner upload ───────────────────────────────────────────────────────────
-
-  async function handleBannerUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert('Image trop grande (max 5 Mo)'); return; }
-    setBannerUploading(true);
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const path = `clubs/new-${currentUser?.id ?? 'anon'}/${Date.now()}-banner.${ext}`;
-    const { data, error } = await supabase.storage.from('club-logos').upload(path, file, { contentType: file.type, upsert: true });
-    if (!error && data) {
-      const { data: { publicUrl } } = supabase.storage.from('club-logos').getPublicUrl(data.path);
-      set('bannerUrl', publicUrl);
-    }
-    setBannerUploading(false);
     e.target.value = '';
   }
 
@@ -390,10 +318,10 @@ export default function ClubCreationWizard({ onSave, onClose }) {
 
   const stepContent = {
 
-    // ── Étape 1 : Identité ────────────────────────────────────────────────────
+    // ── Étape 1 : Identité (essentiel) ────────────────────────────────────────
     1: (
       <>
-        <StepHeader step={1} total={6} title="Créez votre club" subtitle="Ces 3 informations sont obligatoires. Le reste est optionnel." />
+        <StepHeader step={1} total={3} title="Créez votre club" subtitle="3 informations suffisent pour démarrer. Vous compléterez le reste après." />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* Nom */}
@@ -404,14 +332,6 @@ export default function ClubCreationWizard({ onSave, onClose }) {
               style={{ ...inputStyle, borderColor: errors.name ? '#ef4444' : 'var(--sl-border)' }}
               autoFocus />
             {errors.name && <div style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{errors.name}</div>}
-          </div>
-
-          {/* Sigle */}
-          <div>
-            <label style={labelStyle}>Sigle / Acronyme</label>
-            <input value={form.sigle} onChange={e => set('sigle', e.target.value)}
-              placeholder="FCB, USL…" maxLength={8}
-              style={inputStyle} />
           </div>
 
           {/* Sport */}
@@ -447,7 +367,7 @@ export default function ClubCreationWizard({ onSave, onClose }) {
                 if (commune.codeDepartement) set('region', commune.codeRegion ?? '');
                 setCityValid(true);
               }}
-              placeholder="Brest, Quimper, Landerneau…"
+              placeholder="Paris, Lyon, Nantes…"
               inputStyle={{ ...inputStyle, borderColor: errors.city ? '#ef4444' : 'var(--sl-border)' }}
             />
             {errors.city && <div style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{errors.city}</div>}
@@ -490,234 +410,60 @@ export default function ClubCreationWizard({ onSave, onClose }) {
       </>
     ),
 
-    // ── Étape 2 : Présentation ────────────────────────────────────────────────
+    // ── Étape 2 : Équipes ─────────────────────────────────────────────────────
     2: (
       <>
-        <StepHeader step={2} total={6} title="Présentation" subtitle="Racontez l'histoire de votre club pour attirer de nouveaux membres." optional />
+        <StepHeader step={2} total={3} title="Vos équipes" subtitle="Sélectionnez vos équipes d'un tap. Vous pourrez en ajouter d'autres après." optional />
         <ClubPreview form={form} accentColor={accentColor} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          <div>
-            <label style={labelStyle}>Description courte</label>
-            <textarea value={form.description} onChange={e => set('description', e.target.value)}
-              placeholder="Fondé en 1952, le FC Brest est un club de football amateur ancré dans le tissu sportif brestois…"
-              rows={4} style={{ ...inputStyle, resize: 'none', lineHeight: 1.55 }} />
-            <div style={{ textAlign: 'right', fontSize: 10, color: form.description.length > 380 ? '#ef4444' : 'var(--sl-t3)', marginTop: 3 }}>
-              {form.description.length}/400
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+          {QUICK_TEAMS.map(qt => {
+            const selected = isTeamSelected(qt);
+            return (
+              <button key={`${qt.cat}-${qt.name}`} onClick={() => toggleQuickTeam(qt)}
+                style={{
+                  padding: '12px', borderRadius: 12, cursor: 'pointer',
+                  border: `2px solid ${selected ? accentColor : 'var(--sl-border)'}`,
+                  backgroundColor: selected ? `${accentColor}10` : 'var(--sl-surface)',
+                  textAlign: 'left', transition: 'all 0.12s',
+                }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: selected ? accentColor : 'var(--sl-t1)' }}>
+                  {selected ? '✓ ' : ''}{qt.name}
+                </div>
+                <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 3 }}>{qt.cat}</div>
+              </button>
+            );
+          })}
+        </div>
+        {form.categories.length > 0 && (
+          <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {form.categories.flatMap(c => c.teams).map(t => (
+                <span key={t.id} style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 6, backgroundColor: `${accentColor}12`, color: accentColor, border: `1px solid ${accentColor}30` }}>
+                  {t.name}
+                </span>
+              ))}
             </div>
           </div>
-
-          <div>
-            <label style={labelStyle}>Slogan du club</label>
-            <input value={form.slogan} onChange={e => set('slogan', e.target.value)}
-              placeholder="Ensemble, on va plus loin !"
-              style={inputStyle} maxLength={80} />
-          </div>
-
-        </div>
+        )}
       </>
     ),
 
-    // ── Étape 3 : Localisation ────────────────────────────────────────────────
+    // ── Étape 3 : Prêt ! ─────────────────────────────────────────────────────
     3: (
       <>
-        <StepHeader step={3} total={6} title="Localisation" subtitle="Où se trouvent vos installations ? Les membres pourront vous trouver facilement." optional />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          <div>
-            <label style={labelStyle}>Stade / Salle / Terrain</label>
-            <input value={form.venue} onChange={e => set('venue', e.target.value)}
-              placeholder="Stade Francis-Le Blé, Gymnase Kerichen…"
-              style={inputStyle} />
-          </div>
-
-          <div>
-            <label style={labelStyle}>Adresse</label>
-            <input value={form.address} onChange={e => set('address', e.target.value)}
-              placeholder="15 rue du Stade"
-              style={inputStyle} />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div>
-              <label style={labelStyle}>Code postal</label>
-              <input value={form.postalCode} onChange={e => set('postalCode', e.target.value)}
-                placeholder="29200"
-                style={inputStyle} maxLength={10} />
-            </div>
-            <div>
-              <label style={labelStyle}>Région</label>
-              <input value={form.region} onChange={e => set('region', e.target.value)}
-                placeholder="Bretagne"
-                style={inputStyle} />
-            </div>
-          </div>
-
-          {form.postalCode && (
-            <div style={{ padding: '10px 14px', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', fontSize: 12, color: 'var(--sl-t2)' }}>
-              📍 {form.address ? `${form.address}, ` : ''}{form.postalCode} {form.city}
-              {form.region ? ` — ${form.region}` : ''}
-            </div>
-          )}
-
-        </div>
-      </>
-    ),
-
-    // ── Étape 4 : Contact ─────────────────────────────────────────────────────
-    4: (
-      <>
-        <StepHeader step={4} total={6} title="Contact" subtitle="Les coordonnées du responsable principal du club." optional />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div>
-              <label style={labelStyle}>Nom du responsable</label>
-              <input value={form.managerName} onChange={e => set('managerName', e.target.value)}
-                placeholder="Jean Dupont"
-                style={inputStyle} />
-            </div>
-            <div>
-              <label style={labelStyle}>Fonction</label>
-              <input value={form.managerFunction} onChange={e => set('managerFunction', e.target.value)}
-                placeholder="Président"
-                style={inputStyle} />
-            </div>
-          </div>
-
-          <div>
-            <label style={labelStyle}>Email de contact</label>
-            <input type="email" value={form.email} onChange={e => set('email', e.target.value)}
-              placeholder="contact@monclub.fr"
-              style={inputStyle} />
-          </div>
-
-          <div>
-            <label style={labelStyle}>Téléphone</label>
-            <input type="tel" value={form.phone} onChange={e => set('phone', e.target.value)}
-              placeholder="06 12 34 56 78"
-              style={inputStyle} />
-          </div>
-
-        </div>
-      </>
-    ),
-
-    // ── Étape 5 : Sport & Médias ──────────────────────────────────────────────
-    5: (
-      <>
-        <StepHeader step={5} total={6} title="Sport & Médias" subtitle="Vos équipes, votre niveau et vos réseaux sociaux." optional />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-          {/* Équipes rapides */}
-          <div>
-            <label style={labelStyle}>Équipes</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-              {QUICK_TEAMS.map(qt => {
-                const selected = isTeamSelected(qt);
-                return (
-                  <button key={`${qt.cat}-${qt.name}`} onClick={() => toggleQuickTeam(qt)}
-                    style={{
-                      padding: '10px 12px', borderRadius: 12, cursor: 'pointer',
-                      border: `2px solid ${selected ? accentColor : 'var(--sl-border)'}`,
-                      backgroundColor: selected ? `${accentColor}10` : 'var(--sl-surface)',
-                      textAlign: 'left', transition: 'all 0.12s',
-                    }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: selected ? accentColor : 'var(--sl-t1)' }}>
-                      {selected ? '✓ ' : ''}{qt.name}
-                    </div>
-                    <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2 }}>{qt.cat}</div>
-                  </button>
-                );
-              })}
-            </div>
-            {form.categories.length > 0 && (
-              <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                  {form.categories.flatMap(c => c.teams).map(t => (
-                    <span key={t.id} style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 6, backgroundColor: `${accentColor}12`, color: accentColor, border: `1px solid ${accentColor}30` }}>
-                      {t.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Niveau + licenciés */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div>
-              <label style={labelStyle}>Niveau</label>
-              <select value={form.level} onChange={e => set('level', e.target.value)}
-                style={{ ...inputStyle, appearance: 'none' }}>
-                <option value="">Sélectionner…</option>
-                {LEVEL_OPTIONS.map(l => <option key={l} value={l}>{l}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Nbre de licenciés</label>
-              <input type="number" value={form.memberCount} onChange={e => set('memberCount', e.target.value)}
-                placeholder="Ex : 120" min={1} style={inputStyle} />
-            </div>
-          </div>
-
-          {/* Bannière */}
-          <BannerUpload banner={form.bannerUrl} accentColor={accentColor}
-            onUpload={handleBannerUpload} uploading={bannerUploading} />
-
-          {/* Réseaux sociaux */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label style={labelStyle}>Réseaux sociaux</label>
-            {[
-              { key: 'facebook',  icon: '📘', label: 'Facebook',  placeholder: 'facebook.com/monclub' },
-              { key: 'instagram', icon: '📸', label: 'Instagram', placeholder: '@monclub' },
-              { key: 'tiktok',    icon: '🎵', label: 'TikTok',    placeholder: '@monclub' },
-              { key: 'website',   icon: '🌐', label: 'Site web',  placeholder: 'www.monclub.fr' },
-            ].map(({ key, icon, placeholder }) => (
-              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
-                <input value={form[key]} onChange={e => set(key, e.target.value)}
-                  placeholder={placeholder} style={{ ...inputStyle, flex: 1 }} />
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </>
-    ),
-
-    // ── Étape 6 : Récapitulatif ───────────────────────────────────────────────
-    6: (
-      <>
-        <StepHeader step={6} total={6} title="Récapitulatif" subtitle="Vérifiez les informations avant de créer votre club." />
+        <StepHeader step={3} total={3} title="C'est prêt !" subtitle="Votre club va être créé. Vous pourrez compléter les infos depuis le tableau de bord." />
         <ClubPreview form={form} accentColor={accentColor} />
 
         <div style={{ borderRadius: 14, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', padding: '0 14px', marginBottom: 16 }}>
-          <RecapRow label="Nom"            value={form.name} />
-          <RecapRow label="Sigle"          value={form.sigle} />
-          <RecapRow label="Sport"          value={form.sport} />
-          <RecapRow label="Ville"          value={form.city} />
-          <RecapRow label="Code postal"    value={form.postalCode} />
-          <RecapRow label="Région"         value={form.region} />
-          <RecapRow label="Fondé en"       value={form.foundingYear} />
-          <RecapRow label="Slogan"         value={form.slogan} />
-          <RecapRow label="Stade"          value={form.venue} />
-          <RecapRow label="Adresse"        value={form.address} />
-          <RecapRow label="Responsable"    value={[form.managerName, form.managerFunction].filter(Boolean).join(' — ')} />
-          <RecapRow label="Email"          value={form.email} />
-          <RecapRow label="Téléphone"      value={form.phone} />
-          <RecapRow label="Niveau"         value={form.level} />
-          <RecapRow label="Licenciés"      value={form.memberCount} />
-          <RecapRow label="Équipes"        value={form.categories.flatMap(c => c.teams).map(t => t.name).join(', ')} />
-          <RecapRow label="Facebook"       value={form.facebook} />
-          <RecapRow label="Instagram"      value={form.instagram} />
-          <RecapRow label="Site web"       value={form.website} />
+          <RecapRow label="Nom"      value={form.name} />
+          <RecapRow label="Sport"    value={form.sport} />
+          <RecapRow label="Ville"    value={form.city} />
+          <RecapRow label="Équipes"  value={form.categories.flatMap(c => c.teams).map(t => t.name).join(', ') || '—'} />
         </div>
 
-        <div style={{ padding: '12px 14px', borderRadius: 12, backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 12 }}>
-          <p style={{ margin: 0, fontSize: 12, color: '#92400e', lineHeight: 1.6 }}>
-            <strong>Votre club sera créé immédiatement.</strong> Vous pourrez commencer à utiliser SportLink de suite.
-            Notre équipe vérifiera les informations fournies sous 48h.
+        <div style={{ padding: '12px 14px', borderRadius: 12, backgroundColor: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.2)', marginBottom: 12 }}>
+          <p style={{ margin: 0, fontSize: 12, color: 'var(--sl-t2)', lineHeight: 1.6 }}>
+            Après la création, tu pourras ajouter : description, logo, horaires d'entraînement, réseaux sociaux, contact, etc.
           </p>
         </div>
 
@@ -730,7 +476,7 @@ export default function ClubCreationWizard({ onSave, onClose }) {
     ),
   };
 
-  const isLastStep = step === 6;
+  const isLastStep = step === 3;
 
   return (
     <motion.div
@@ -783,7 +529,7 @@ export default function ClubCreationWizard({ onSave, onClose }) {
         </div>
 
         {/* Progress */}
-        <ProgressBar step={step} total={6} accentColor={accentColor} />
+        <ProgressBar step={step} total={3} accentColor={accentColor} />
 
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px 8px', overscrollBehavior: 'contain' }}>

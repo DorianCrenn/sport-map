@@ -13,7 +13,7 @@ const TABS = [
   { id: 'calendrier', label: 'Agenda', icon: '📅' },
 ];
 
-export default function FavorisPage({ allEvents, allClubs = [] }) {
+export default function FavorisPage({ allEvents, allClubs = [], onNavigate }) {
   const { follows, unfollowClub, updateFollow } = useAuth();
   const { favorites, toggleFavorite: onToggleFavorite } = useFavoritesContext();
   const { isAttending, toggle: onToggleAttend } = useAttendanceContext();
@@ -27,6 +27,34 @@ export default function FavorisPage({ allEvents, allClubs = [] }) {
     () => favoriteEvents.filter(e => new Date(e.date) >= new Date()),
     [favoriteEvents]
   );
+
+  const isCompletelyEmpty = favoriteEvents.length === 0 && follows.length === 0;
+
+  if (isCompletelyEmpty) {
+    return (
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', backgroundColor: 'var(--sl-bg)', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 20 }}>🔖</div>
+        <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 8 }}>Rien de sauvegardé</p>
+        <p style={{ fontSize: 14, color: 'var(--sl-t3)', lineHeight: 1.6, marginBottom: 28, maxWidth: 280 }}>
+          Suis des clubs pour voir leurs matchs et annonces ici, ou sauvegarde des événements depuis la carte.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 300 }}>
+          <button
+            onClick={() => onNavigate?.('clubs')}
+            style={{ padding: '13px 20px', borderRadius: 14, border: 'none', backgroundColor: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+          >
+            Découvrir les clubs
+          </button>
+          <button
+            onClick={() => onNavigate?.('map')}
+            style={{ padding: '13px 20px', borderRadius: 14, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+          >
+            Voir les événements
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)' }}>

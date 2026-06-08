@@ -5,9 +5,9 @@ import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useClubLeaderboard } from '../hooks/useClubLeaderboard.js';
 import SportIcon from '../components/SportIcon.jsx';
-const ClubPageView = lazy(() => import('../components/club/ClubPageView.jsx'));
+const ClubPageView      = lazy(() => import('../components/club/ClubPageView.jsx'));
+const ClubCreationWizard = lazy(() => import('../components/club/ClubCreationWizard.jsx'));
 import ClubFormModal from '../components/club/ClubFormModal.jsx';
-import ClubCreationWizard from '../components/club/ClubCreationWizard.jsx';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { SkeletonClubCard } from '../components/Skeleton.jsx';
 export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent, onClubOverlayChange, onArchiveSeason }) {
@@ -107,13 +107,15 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
         )}
       </AnimatePresence>
 
-      {/* Création nouveau club → wizard 6 étapes */}
+      {/* Création nouveau club → wizard 3 étapes */}
       <AnimatePresence>
         {formClub === true && (
-          <ClubCreationWizard
-            onSave={handleSave}
-            onClose={() => setFormClub(null)}
-          />
+          <Suspense fallback={null}>
+            <ClubCreationWizard
+              onSave={handleSave}
+              onClose={() => setFormClub(null)}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 

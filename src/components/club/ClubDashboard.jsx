@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 import { useClubDashboard } from '../../hooks/useClubDashboard.js';
@@ -242,7 +242,7 @@ function AnnouncementsSection({ club }) {
             style={{ padding: '10px 16px', backgroundColor: 'rgba(59,130,246,0.08)', borderTop: '1px solid var(--sl-border)' }}
           >
             <div style={{ fontSize: 12, fontWeight: 600, color: '#3b82f6' }}>
-              ✓ Annonce publiée — visible dans le fil d'actualité.
+              ✓ Annonce envoyée à tes abonnés — visible dans le fil d'actualité.
             </div>
           </motion.div>
         )}
@@ -668,8 +668,9 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
   const data = useClubDashboard(club.id, clubEventIds);
   const isEmpty = !data.loading && data.followers === 0 && data.pageViews.total === 0 && data.attendees.total === 0 && data.posterExports === 0 && data.posterShares === 0;
 
-  const clubUpcomingEvents = (allEvents ?? []).filter(e =>
-    clubEventIds.some(id => String(id) === String(e.id))
+  const clubUpcomingEvents = useMemo(
+    () => (allEvents ?? []).filter(e => clubEventIds.some(id => String(id) === String(e.id))),
+    [allEvents, clubEventIds]
   );
 
   return (
@@ -682,6 +683,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
         position: 'absolute', inset: 0, zIndex: Z.formModal,
         backgroundColor: 'var(--sl-bg)',
         display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
       }}
     >
       {/* Header */}
@@ -827,6 +829,25 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
                 Les statistiques s'alimenteront dès que des utilisateurs visiteront la page, suivront le club ou cliqueront sur "J'y serai".
               </div>
             )}
+
+            {/* Bouton fermer en bas — accessible après avoir scrollé */}
+            <button
+              onClick={onClose}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                width: '100%', padding: '14px 16px',
+                borderRadius: 14, border: '1px solid var(--sl-border)',
+                backgroundColor: 'var(--sl-card)', color: 'var(--sl-t2)',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                marginTop: 4,
+                paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+              Retour à la page du club
+            </button>
           </>
         )}
       </div>
