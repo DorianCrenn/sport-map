@@ -529,7 +529,7 @@ function RecentResultsFeed({ allEvents, onNavigate }) {
 }
 
 // ── Stats + Features ──────────────────────────────────────────────────────────
-function FeaturesSection({ stats = {}, onNavigate }) {
+function FeaturesSection({ stats = {}, onNavigate, onShowLegal }) {
   const { clubs = 0, events = 0, sports = 0, thisWeek = 0 } = stats;
   return (
     <div className="px-5 pt-6 pb-6 md:px-12 md:pt-10 md:pb-10">
@@ -593,8 +593,19 @@ function FeaturesSection({ stats = {}, onNavigate }) {
           </span>
         </div>
       </div>
-      <div className="text-center mt-4">
-        <p style={{ fontSize:11, color:'var(--sl-t3)' }}>SportLink · Version 1.0.0</p>
+      <div className="text-center mt-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {[['mentions', 'Mentions légales'], ['privacy', 'Confidentialité'], ['cgu', 'CGU']].map(([section, label]) => (
+            <button
+              key={section}
+              onClick={() => onShowLegal?.(section)}
+              style={{ fontSize: 11, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textDecorationColor: 'var(--sl-border)', textUnderlineOffset: 3 }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>SportLink · Version 1.0.0</p>
       </div>
     </div>
   );
@@ -713,7 +724,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
           <div className="px-5 pt-5">
             <RecentResultsFeed allEvents={allEvents} onNavigate={onNavigate} />
           </div>
-          <FeaturesSection stats={stats} onNavigate={onNavigate} />
+          <FeaturesSection stats={stats} onNavigate={onNavigate} onShowLegal={onShowLegal} />
         </div>
       </div>
 
