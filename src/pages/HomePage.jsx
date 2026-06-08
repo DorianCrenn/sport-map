@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback, lazy, Suspense } from 'react';
+import { APP_VERSION, APP_NAME } from '../lib/appInfo.js';
 import { motion } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
@@ -605,7 +606,7 @@ function FeaturesSection({ stats = {}, onNavigate, onShowLegal }) {
             </button>
           ))}
         </div>
-        <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>SportLink · Version 1.0.0</p>
+        <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>{APP_NAME} · v{APP_VERSION}</p>
       </div>
     </div>
   );
@@ -940,7 +941,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
                   </button>
                 ))}
               </div>
-              <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>SportLink v1.0.0 — Bretagne</p>
+              <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>{APP_NAME} v{APP_VERSION} — Bretagne</p>
             </div>
           </div>
         </div>

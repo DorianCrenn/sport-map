@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
+import { APP_VERSION, APP_NAME } from '../lib/appInfo.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
@@ -180,7 +181,7 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
             <p style={{ fontSize: 12, lineHeight: 1.5, textAlign: 'center', color: 'var(--sl-t2)', margin: 0 }}>
               Application communautaire pour trouver les clubs et événements sportifs près de chez vous.
             </p>
-            <p style={{ fontSize: 12, marginTop: 8, textAlign: 'center', color: 'var(--sl-t3)' }}>Version 1.0.0</p>
+            <p style={{ fontSize: 12, marginTop: 8, textAlign: 'center', color: 'var(--sl-t3)' }}>Version {APP_VERSION}</p>
           </div>
         </div>
       </div>
@@ -721,7 +722,7 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
             </button>
           ))}
         </div>
-        <p className="text-xs text-center pt-1" style={{ color: 'var(--sl-t3)' }}>SportLink v1.0.0</p>
+        <p className="text-xs text-center pt-1" style={{ color: 'var(--sl-t3)' }}>{APP_NAME} v{APP_VERSION}</p>
 
         </> /* /PARAMÈTRES */}
 
