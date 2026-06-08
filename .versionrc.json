@@ -1,0 +1,15 @@
+{
+  "types": [
+    { "type": "feat",     "section": "Nouvelles fonctionnalités" },
+    { "type": "fix",      "section": "Corrections de bugs" },
+    { "type": "refactor", "section": "Améliorations techniques" },
+    { "type": "perf",     "section": "Performances" },
+    { "type": "chore",    "hidden": true },
+    { "type": "docs",     "hidden": true },
+    { "type": "style",    "hidden": true },
+    { "type": "test",     "hidden": true },
+    { "type": "ci",       "hidden": true }
+  ],
+  "commitUrlFormat": "https://github.com/DorianCrenn/sport-map/commit/{{hash}}",
+  "compareUrlFormat": "https://github.com/DorianCrenn/sport-map/compare/{{previousTag}}...{{currentTag}}"
+}
