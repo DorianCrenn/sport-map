@@ -17,7 +17,7 @@ function mapProfile(authUser, dbProfile) {
     favoriteSports: dbProfile?.favorite_sports ?? [],
     followedClubs:  dbProfile?.followed_clubs ?? [],
     clubId:         dbProfile?.club_id ?? null,
-    onboardingDone: dbProfile?.onboarding_done ?? false,
+    onboardingDone: dbProfile ? (dbProfile.onboarding_done ?? false) : null,
     digestOptIn:    dbProfile?.digest_opt_in ?? false,
     authProvider:   dbProfile?.auth_provider ?? meta.authProvider ?? null,
     badges:         dbProfile?.badges ?? [],
@@ -227,7 +227,7 @@ export function AuthProvider({ children }) {
         table: 'profiles',
         filter: `id=eq.${authUser.id}`,
       }, ({ new: row }) => {
-        setProfile(mapProfile(authUser, row));
+        setProfile(row);
       })
       .subscribe();
     return () => supabase.removeChannel(channel);
@@ -330,39 +330,41 @@ export function AuthProvider({ children }) {
       // role, plan et clubId intentionnellement absents — modifiables uniquement côté serveur
     };
     const dbPatch = {};
-    const uiPatch = {};
+    const snakePatch = {};
     for (const [key, col] of Object.entries(map)) {
-      if (key in patch) { dbPatch[col] = patch[key]; uiPatch[key] = patch[key]; }
+      if (key in patch) { dbPatch[col] = patch[key]; snakePatch[col] = patch[key]; }
     }
     const { error } = await supabase.from('profiles').update(dbPatch).eq('id', authUser.id);
     if (error) {
       console.error('[Auth] updateProfile error:', error.message);
       return { error };
     }
-    setProfile(prev => prev ? { ...prev, ...uiPatch } : prev);
+    setProfile(prev => prev ? { ...prev, ...snakePatch } : prev);
     return { error: null };
   }, [authUser]);
 
   // ── OAuth ─────────────────────────────────────────────────────────────────
 
-  const loginWithGoogle = useCallback(() => new Promise(async (resolve, reject) => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin, skipBrowserRedirect: true },
-    });
-    if (error) { reject(new Error(error.message)); return; }
-    if (!data?.url) { reject(new Error('URL OAuth manquante')); return; }
+  const loginWithGoogle = useCallback(() => new Promise((resolve, reject) => {
+    (async () => {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin, skipBrowserRedirect: true },
+      });
+      if (error) { reject(new Error(error.message)); return; }
+      if (!data?.url) { reject(new Error('URL OAuth manquante')); return; }
 
-    const popup = window.open(data.url, 'sl-google-oauth', 'width=520,height=620,scrollbars=yes');
-    if (!popup) { reject(new Error('popup-blocked')); return; }
+      const popup = window.open(data.url, 'sl-google-oauth', 'width=520,height=620,scrollbars=yes');
+      if (!popup) { reject(new Error('popup-blocked')); return; }
 
-    const poll = setInterval(async () => {
-      if (!popup.closed) return;
-      clearInterval(poll);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) resolve(session);
-      else reject(new Error('cancelled'));
-    }, 400);
+      const poll = setInterval(async () => {
+        if (!popup.closed) return;
+        clearInterval(poll);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) resolve(session);
+        else reject(new Error('cancelled'));
+      }, 400);
+    })().catch(reject);
   }), []);
 
   // Mock OAuth for demo purposes only — disabled in production
@@ -377,7 +379,7 @@ export function AuthProvider({ children }) {
 
     if (pwd) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password: pwd });
-      if (!error) return { user: data.user, needsConfirmation: false };
+      if (!error) return { user: data.user, needsConfirmation: false, isNewUser: false };
     }
 
     // Generate a cryptographically random 32-char password for this device+email pair
@@ -392,7 +394,7 @@ export function AuthProvider({ children }) {
       options: { data: { name, authProvider: provider } },
     });
     if (error) throw new Error(error.message);
-    return { user: data.user, needsConfirmation: !data.session };
+    return { user: data.user, needsConfirmation: !data.session, isNewUser: true };
   }, []);
 
   const requestPasswordReset = useCallback(async (email) => {
@@ -489,6 +491,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');

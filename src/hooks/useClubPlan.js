@@ -23,11 +23,12 @@ export function useClubPlan(clubId) {
       .select('plan, status, current_period_end, trial_end, carpool_allowed_team_id')
       .eq('club_id', String(clubId))
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (cancelled) return;
-        setSub(data);
+        if (!error) setSub(data);
         setLoading(false);
-      });
+      })
+      .catch(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
   }, [clubId]);

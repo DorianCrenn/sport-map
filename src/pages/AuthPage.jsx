@@ -266,12 +266,16 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal }) {
     }
   }
 
-  function handleOAuthDone({ needsConfirmation }) {
+  function handleOAuthDone({ needsConfirmation, isNewUser }) {
     const provider = oauthProvider;
     setOauthProvider(null);
     if (needsConfirmation) { setMode('confirm-email'); return; }
     toast({ message: `Connecté avec ${provider === 'google' ? 'Google' : 'Instagram'} !` });
-    onNeedOnboarding?.();
+    if (isNewUser) {
+      onNeedOnboarding?.();
+    } else {
+      onClose();
+    }
   }
 
   const inputCls = 'w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow';

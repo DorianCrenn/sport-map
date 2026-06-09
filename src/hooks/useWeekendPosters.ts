@@ -128,8 +128,8 @@ export function useWeekendPosters(): WeekendMatch[] {
       .lte('date', endIso)
       .eq('home_or_away', 'home')
       .order('date')
-      .then(({ data }) => {
-        if (cancelled || !data) return;
+      .then(({ data, error }) => {
+        if (cancelled || error || !data) return;
 
         const result: WeekendMatch[] = data.map(ev => {
           const club = managedClubs.find(c => String(c.id) === String(ev.club_id));
@@ -177,7 +177,8 @@ export function useWeekendPosters(): WeekendMatch[] {
         });
 
         setMatches(result);
-      });
+      })
+      .catch(() => { /* silently fail — matches stays [] */ });
 
     return () => { cancelled = true; };
   }, [managedClubs]);

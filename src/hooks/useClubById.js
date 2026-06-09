@@ -38,11 +38,12 @@ export function useClubById(clubId) {
       .select('id, name, sport, city, description, logo_url, website, phone, email, categories, user_id')
       .eq('id', String(clubId))
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (cancelled) return;
-        setClub(mapClub(data));
+        if (!error) setClub(mapClub(data));
         setLoading(false);
-      });
+      })
+      .catch(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
   }, [clubId]);

@@ -635,11 +635,13 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
             style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', backgroundColor: 'rgba(34,217,106,0.07)', borderBottom: '1px solid rgba(34,217,106,0.18)' }}
           >
-            <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--sl-green)', flexShrink: 0 }} />
+            <div className={!exportOpen ? 'animate-pulse' : ''} style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--sl-green)', flexShrink: 0 }} />
             <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)', flex: 1, lineHeight: 1.4 }}>
-              {resultMode
-                ? `Score ${resultMode.home}–${resultMode.away} · Affiche résultat prête !`
-                : 'Affiche prête — personnalisez ou partagez directement'
+              {!exportOpen
+                ? 'Préparation du panneau de partage...'
+                : resultMode
+                  ? `Score ${resultMode.home}–${resultMode.away} · Affiche résultat prête !`
+                  : 'Affiche prête — personnalisez ou partagez directement'
               }
             </span>
             <button onClick={() => { setExportOpen(true); setQuickBannerDismissed(true); }}
