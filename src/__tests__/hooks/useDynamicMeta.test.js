@@ -16,7 +16,7 @@ describe('useDynamicMeta', () => {
 
   it('utilise le titre par défaut si aucun titre fourni', () => {
     renderHook(() => useDynamicMeta({}));
-    expect(document.title).toBe('SportLink — Sport en Finistère');
+    expect(document.title).toBe('SportLink — Sport partout en France');
   });
 
   it('crée les balises og:title et og:description', () => {

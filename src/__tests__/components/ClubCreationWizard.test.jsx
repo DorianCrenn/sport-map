@@ -1,5 +1,5 @@
 /**
- * Tests ClubCreationWizard — parcours de création club (nouveau wizard 6 étapes)
+ * Tests ClubCreationWizard — parcours de création club (wizard 3 étapes)
  */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
@@ -72,10 +72,10 @@ function renderWizard(onSave = vi.fn(), onClose = vi.fn()) {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('ClubCreationWizard — étape 1 (Identité)', () => {
-  it('affiche le titre et la progression étape 1/6', () => {
+  it('affiche le titre et la progression étape 1/3', () => {
     renderWizard();
     expect(screen.getByText(/Créez votre club/i)).toBeDefined();
-    expect(screen.getByText(/ÉTAPE 1\/6/i)).toBeDefined();
+    expect(screen.getByText(/ÉTAPE 1\/3/i)).toBeDefined();
   });
 
   it('bloque la progression si le nom est vide', () => {
@@ -84,7 +84,7 @@ describe('ClubCreationWizard — étape 1 (Identité)', () => {
     fireEvent.click(nextBtn);
     expect(screen.getByText(/Nom requis/i)).toBeDefined();
     // Toujours à l'étape 1
-    expect(screen.getByText(/ÉTAPE 1\/6/i)).toBeDefined();
+    expect(screen.getByText(/ÉTAPE 1\/3/i)).toBeDefined();
   });
 
   it('bloque si aucun sport sélectionné', () => {
@@ -105,7 +105,7 @@ describe('ClubCreationWizard — étape 1 (Identité)', () => {
     fireEvent.focus(cityInput);
 
     fireEvent.click(screen.getByRole('button', { name: /Suivant/i }));
-    await waitFor(() => expect(screen.getByText(/ÉTAPE 2\/6/i)).toBeDefined());
+    await waitFor(() => expect(screen.getByText(/ÉTAPE 2\/3/i)).toBeDefined());
   });
 });
 
@@ -118,11 +118,11 @@ describe('ClubCreationWizard — navigation', () => {
     const cityInput = screen.getByTestId('city-autocomplete');
     fireEvent.focus(cityInput);
     fireEvent.click(screen.getByRole('button', { name: /Suivant/i }));
-    await waitFor(() => screen.getByText(/ÉTAPE 2\/6/i));
+    await waitFor(() => screen.getByText(/ÉTAPE 2\/3/i));
 
     // Retour à l'étape 1
     fireEvent.click(screen.getByRole('button', { name: /Précédent/i }));
-    await waitFor(() => expect(screen.getByText(/ÉTAPE 1\/6/i)).toBeDefined());
+    await waitFor(() => expect(screen.getByText(/ÉTAPE 1\/3/i)).toBeDefined());
   });
 
   it('bouton Passer saute les étapes optionnelles', async () => {
@@ -131,10 +131,10 @@ describe('ClubCreationWizard — navigation', () => {
     fireEvent.click(screen.getAllByText('Football')[0]);
     fireEvent.focus(screen.getByTestId('city-autocomplete'));
     fireEvent.click(screen.getByRole('button', { name: /Suivant/i }));
-    await waitFor(() => screen.getByText(/ÉTAPE 2\/6/i));
+    await waitFor(() => screen.getByText(/ÉTAPE 2\/3/i));
 
     fireEvent.click(screen.getByRole('button', { name: /Passer/i }));
-    await waitFor(() => expect(screen.getByText(/ÉTAPE 3\/6/i)).toBeDefined());
+    await waitFor(() => expect(screen.getByText(/ÉTAPE 3\/3/i)).toBeDefined());
   });
 
   it('ferme la modal sur le bouton Annuler (étape 1)', () => {
@@ -145,8 +145,8 @@ describe('ClubCreationWizard — navigation', () => {
   });
 });
 
-describe('ClubCreationWizard — récapitulatif (étape 6)', () => {
-  async function goToStep6() {
+describe('ClubCreationWizard — récapitulatif (étape 3)', () => {
+  async function goToStep3() {
     const onSave = vi.fn().mockResolvedValue({});
     renderWizard(onSave);
 
@@ -156,23 +156,21 @@ describe('ClubCreationWizard — récapitulatif (étape 6)', () => {
     fireEvent.focus(screen.getByTestId('city-autocomplete'));
     fireEvent.click(screen.getByRole('button', { name: /Suivant/i }));
 
-    // Étapes 2-5 : Passer
-    for (let i = 0; i < 4; i++) {
-      await waitFor(() => screen.getByRole('button', { name: /Passer/i }));
-      fireEvent.click(screen.getByRole('button', { name: /Passer/i }));
-    }
+    // Étape 2 : Passer (optionnel)
+    await waitFor(() => screen.getByRole('button', { name: /Passer/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Passer/i }));
 
-    await waitFor(() => screen.getByText(/Récapitulatif/i));
+    await waitFor(() => screen.getByText(/C'est prêt/i));
     return onSave;
   }
 
-  it('affiche le bouton Creer le club a etape 6', async () => {
-    await goToStep6();
+  it('affiche le bouton Creer le club a etape 3', async () => {
+    await goToStep3();
     expect(screen.getByRole('button', { name: /Créer le club/i })).toBeDefined();
   });
 
   it('appelle onSave avec les données complètes du formulaire', async () => {
-    const onSave = await goToStep6();
+    const onSave = await goToStep3();
     fireEvent.click(screen.getByRole('button', { name: /Créer le club/i }));
     await waitFor(() => {
       expect(onSave).toHaveBeenCalledOnce();

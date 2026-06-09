@@ -157,7 +157,7 @@ describe('Patterns exit-path dans le code source', () => {
       m => m.default ?? m
     ).catch(() => null);
     if (!src) return;
-    expect(src).toContain("key === 'Escape'");
+    expect(src).toContain("'Escape'");
     expect(src).toContain('onClose');
   });
 

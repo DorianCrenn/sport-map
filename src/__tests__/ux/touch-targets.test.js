@@ -11,13 +11,15 @@
  * liste dense ; les boutons principaux / fermeture doivent atteindre 44 px.
  */
 
+/* global process */
 import { readFileSync } from 'fs';
 import { resolve, relative } from 'path';
 import { describe, it, expect } from 'vitest';
 
 // ── Configuration ──────────────────────────────────────────────────────────────
 
-const SRC_DIR   = resolve(new URL('../../src', import.meta.url).pathname);
+// process.cwd() = racine du projet (là où vitest.config.js est lancé)
+const SRC_DIR   = resolve(process.cwd(), 'src');
 const MIN_PX    = 36;   // seuil général : < 36 px = violation
 const MIN_PX_44 = 44;   // seuil strict pour les boutons primaires
 
