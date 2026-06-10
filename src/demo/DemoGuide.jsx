@@ -25,22 +25,20 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
   if (!step) return null;
 
   return (
-    // ── Wrapper div : gère UNIQUEMENT position:fixed + centrage ─────────────────
-    // Ne pas mettre transform ici — il resterait intact et n'interférerait
-    // pas avec les transforms Framer Motion du motion.div enfant.
+    // Wrapper div : fixed + centrage — jamais de transform ici
     <div style={{
-      position:   'fixed',
-      bottom:     76,
-      left:       0,
-      right:      0,
-      zIndex:     9995,
-      display:    'flex',
+      position:      'fixed',
+      bottom:        76,
+      left:          0,
+      right:         0,
+      zIndex:        10001, // au-dessus de tous les overlays app (AnnouncementsCenter: 1200, etc.)
+      display:       'flex',
       justifyContent: 'center',
-      alignItems: 'flex-end',
-      padding:    '0 12px',
+      alignItems:    'flex-end',
+      padding:       '0 12px',
       pointerEvents: 'none',
     }}>
-      {/* motion.div : UNIQUEMENT animation (opacity + y). Aucun positionnement. */}
+      {/* motion.div : animation seulement (opacity + y) */}
       <motion.div
         key={stepIndex}
         initial={{ opacity: 0, y: 20 }}
@@ -58,10 +56,13 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
           borderRadius:   16,
           overflow:       'hidden',
           boxShadow:      '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.1)',
+          // Flex column pour séparer contenu scrollable et boutons fixes
+          display:        'flex',
+          flexDirection:  'column',
         }}
       >
-        {/* Progress bar */}
-        <div style={{ height: 3, background: 'rgba(255,255,255,0.06)' }}>
+        {/* Barre de progression — toujours visible */}
+        <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', flexShrink: 0 }}>
           <motion.div
             initial={{ width: `${(stepIndex / totalSteps) * 100}%` }}
             animate={{ width: `${progress}%` }}
@@ -74,24 +75,26 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
           />
         </div>
 
+        {/* Zone de contenu scrollable (header + titre + corps) */}
         <div style={{
-          padding:   '14px 18px 16px',
-          maxHeight: 'calc(100dvh - 180px)',
+          padding:   '14px 18px 0',
+          maxHeight: 'calc(100dvh - 260px)', // limite pour les petits écrans
           overflowY: 'auto',
+          flexShrink: 1,
         }}>
-          {/* Header row */}
+          {/* Ligne header : emoji + compteur + bouton Passer */}
           <div style={{
             display:        'flex',
             alignItems:     'center',
             justifyContent: 'space-between',
-            marginBottom:   12,
+            marginBottom:   10,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 22, lineHeight: 1 }}>{step.emoji}</span>
+              <span style={{ fontSize: 20, lineHeight: 1 }}>{step.emoji}</span>
               <span style={{
-                fontSize:   11,
-                fontWeight: 600,
-                color:      'rgba(255,255,255,0.35)',
+                fontSize:    11,
+                fontWeight:  600,
+                color:       'rgba(255,255,255,0.35)',
                 letterSpacing: 0.5,
               }}>
                 Étape {stepIndex + 1} / {totalSteps}
@@ -120,24 +123,27 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
           </div>
 
           <h3 style={{
-            fontSize:   16,
+            fontSize:   15,
             fontWeight: 700,
             color:      '#fff',
-            margin:     '0 0 7px',
+            margin:     '0 0 6px',
             lineHeight: 1.3,
           }}>
             {step.title}
           </h3>
 
           <p style={{
-            fontSize:   13,
+            fontSize:   12.5,
             color:      'rgba(255,255,255,0.62)',
-            margin:     '0 0 16px',
+            margin:     '0 0 14px',
             lineHeight: 1.55,
           }}>
             {step.body}
           </p>
+        </div>
 
+        {/* Boutons de navigation — TOUJOURS visibles, hors de la zone scrollable */}
+        <div style={{ padding: '12px 18px 14px', flexShrink: 0 }}>
           {step.isCTA ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <button
@@ -146,7 +152,7 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
                   width:        '100%',
                   background:   'linear-gradient(135deg, #1d4ed8, #7c3aed)',
                   border:       'none',
-                  borderRadius: 12,
+                  borderRadius: 10,
                   color:        '#fff',
                   padding:      '12px 20px',
                   fontSize:     14,
@@ -165,7 +171,7 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
                   width:        '100%',
                   background:   'rgba(255,255,255,0.05)',
                   border:       '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: 12,
+                  borderRadius: 10,
                   color:        'rgba(255,255,255,0.55)',
                   padding:      '10px 20px',
                   fontSize:     13,
