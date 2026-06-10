@@ -114,14 +114,29 @@ function AppInner() {
   const [studioClub,  setStudioClub]  = useState(null);
 
   const { toast } = useToast();
-  useErrorBus((msg) => toast({ message: msg, type: 'error' }));
+  useErrorBus((msg) => {
+    toast({
+      message: msg,
+      type: 'error',
+      onReport: () => {
+        setErrorForReport({ type: 'bug', title: msg, category: 'crash' });
+        setShowFeedback(true);
+      },
+    });
+  });
   const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent, archiveSeason } = useLocalEvents();
   const { unreadCount: rideNotifCount } = useRideNotifications();
   const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
   const { convocations: myConvocations, pendingCount: convocationsPending, respond: respondToConvocation } = useMyConvocations(currentUser?.id);
   const [showMyRides, setShowMyRides] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [showFeedback,    setShowFeedback]    = useState(false);
+  const [errorForReport,  setErrorForReport]  = useState(null);
+
+  const handleErrorReport = useCallback((prefilled) => {
+    setErrorForReport(prefilled);
+    setShowFeedback(true);
+  }, []);
   const [showTrainings, setShowTrainings] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [legalSection, setLegalSection] = useState(null); // null | 'mentions' | 'privacy' | 'cgu'
@@ -379,7 +394,7 @@ function AppInner() {
   );
 
   return (
-    <ErrorBoundary name="AppShell">
+    <ErrorBoundary name="AppShell" onReport={handleErrorReport}>
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
       <OfflineBanner />
       <UpdateBanner />
@@ -424,7 +439,7 @@ function AppInner() {
             style={{ position: 'absolute', inset: 0 }}
           >
             {activeTab === 'home' && (
-              <ErrorBoundary name="Accueil">
+              <ErrorBoundary name="Accueil" onReport={handleErrorReport}>
                 <HomeScreen
                   followedClubIds={followedClubs}
                   onNavigate={handleTabChange}
@@ -439,7 +454,7 @@ function AppInner() {
               </ErrorBoundary>
             )}
             {activeTab === 'map' && (
-              <ErrorBoundary name="Carte">
+              <ErrorBoundary name="Carte" onReport={handleErrorReport}>
                 <MapPage
                   allEvents={allEvents}
                   allClubs={allClubs}
@@ -459,17 +474,17 @@ function AppInner() {
               </ErrorBoundary>
             )}
             {activeTab === 'favoris' && (
-              <ErrorBoundary name="Favoris">
+              <ErrorBoundary name="Favoris" onReport={handleErrorReport}>
                 <FavorisPage allEvents={allEvents} allClubs={allClubs} onNavigate={setActiveTab} />
               </ErrorBoundary>
             )}
 {activeTab === 'clubs' && (
-              <ErrorBoundary name="Clubs">
+              <ErrorBoundary name="Clubs" onReport={handleErrorReport}>
                 <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} onClubOverlayChange={setClubOverlayOpen} onArchiveSeason={archiveSeason} />
               </ErrorBoundary>
             )}
             {activeTab === 'profil' && (
-              <ErrorBoundary name="Profil">
+              <ErrorBoundary name="Profil" onReport={handleErrorReport}>
                 <ProfilPage
                   userEvents={userEvents}
                   earnedBadges={earnedBadges}
@@ -483,7 +498,7 @@ function AppInner() {
                 />
               </ErrorBoundary>
             )}
-            {activeTab === 'admin' && isAdmin && <ErrorBoundary name="Admin"><Suspense fallback={<ModalLoader />}><AdminPage /></Suspense></ErrorBoundary>}
+            {activeTab === 'admin' && isAdmin && <ErrorBoundary name="Admin" onReport={handleErrorReport}><Suspense fallback={<ModalLoader />}><AdminPage /></Suspense></ErrorBoundary>}
           </motion.div>
         </AnimatePresence>
 
@@ -539,7 +554,7 @@ function AppInner() {
         )}
       </main>
 
-      <ErrorBoundary name="BottomNav">
+      <ErrorBoundary name="BottomNav" onReport={handleErrorReport}>
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} onClubAdminAction={handleClubAdminFabAction} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp} />
       </ErrorBoundary>
 
@@ -632,7 +647,10 @@ function AppInner() {
       <AnimatePresence>
         {showFeedback && (
           <Suspense fallback={null}>
-            <FeedbackModal onClose={() => setShowFeedback(false)} />
+            <FeedbackModal
+              onClose={() => { setShowFeedback(false); setErrorForReport(null); }}
+              prefilled={errorForReport ?? {}}
+            />
           </Suspense>
         )}
       </AnimatePresence>

@@ -6,7 +6,7 @@ const ToastCtx = createContext({ toast: () => {} });
 // eslint-disable-next-line react-refresh/only-export-components
 export const useToast = () => useContext(ToastCtx);
 
-function ToastItem({ message, type }) {
+function ToastItem({ message, type, onReport }) {
   const accent =
     type === 'error' ? '#ef4444' :
     type === 'info'  ? 'var(--sl-blue)' :
@@ -20,20 +20,33 @@ function ToastItem({ message, type }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
-      padding: '10px 18px 10px 14px', borderRadius: 99,
+      padding: '10px 14px', borderRadius: 99,
       backgroundColor: 'var(--sl-card)',
       border: '1px solid var(--sl-border-s)',
       boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.2)',
       fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)',
-      whiteSpace: 'nowrap', maxWidth: 'min(340px, 88vw)',
+      whiteSpace: 'nowrap', maxWidth: 'min(360px, 92vw)',
       userSelect: 'none',
+      pointerEvents: onReport ? 'auto' : 'none',
     }}>
       <span style={{ color: accent, display: 'flex', flexShrink: 0 }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           {path}
         </svg>
       </span>
-      {message}
+      <span style={{ flex: 1, paddingRight: onReport ? 4 : 4 }}>{message}</span>
+      {onReport && (
+        <button
+          onClick={onReport}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px',
+            fontSize: 12, fontWeight: 700, color: '#818cf8',
+            textDecoration: 'underline', textUnderlineOffset: 2, flexShrink: 0,
+          }}
+        >
+          Signaler
+        </button>
+      )}
     </div>
   );
 }
@@ -41,9 +54,9 @@ function ToastItem({ message, type }) {
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
-  const toast = useCallback(({ message, type = 'success', duration = 2800 }) => {
+  const toast = useCallback(({ message, type = 'success', duration = 2800, onReport }) => {
     const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    setToasts(prev => [...prev.slice(-3), { id, message, type }]);
+    setToasts(prev => [...prev.slice(-3), { id, message, type, onReport }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
   }, []);
 
@@ -77,9 +90,9 @@ export function ToastProvider({ children }) {
               animate={{ opacity: 1, y: 0,  scale: 1 }}
               exit={{ opacity: 0,    y: 10,  scale: 0.92 }}
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              style={{ pointerEvents: 'none' }}
+              style={{ pointerEvents: t.onReport ? 'auto' : 'none' }}
             >
-              <ToastItem message={t.message} type={t.type} />
+              <ToastItem message={t.message} type={t.type} onReport={t.onReport} />
             </motion.div>
           ))}
         </AnimatePresence>

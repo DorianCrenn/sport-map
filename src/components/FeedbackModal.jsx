@@ -50,27 +50,29 @@ function getBrowserInfo() {
   };
 }
 
-export default function FeedbackModal({ onClose }) {
+export default function FeedbackModal({ onClose, prefilled = {} }) {
   const { submit, fetchIdeas, searchSimilar } = useFeedback();
   const { toast } = useToast();
   const panelRef = useRef(null);
   useAndroidBack(true, onClose);
   useScrollInputIntoView(panelRef);
 
+  const isPrefilled = !!(prefilled.type || prefilled.title);
   const { saveDraft, loadDraft, clearDraft } = useFormDraft(DRAFT_KEY);
 
-  const [type,        setType]        = useState('idea');
-  const [category,    setCategory]    = useState('');
-  const [title,       setTitle]       = useState('');
-  const [description, setDescription] = useState('');
+  const [type,        setType]        = useState(prefilled.type        ?? 'idea');
+  const [category,    setCategory]    = useState(prefilled.category    ?? '');
+  const [title,       setTitle]       = useState(prefilled.title       ?? '');
+  const [description, setDescription] = useState(prefilled.description ?? '');
   const [submitting,  setSubmitting]  = useState(false);
   const [done,        setDone]        = useState(false);
   const [similar,     setSimilar]     = useState([]);
   const [ideasList,   setIdeasList]   = useState([]);
   const similarTimer = useRef(null);
 
-  // Restore draft on mount
+  // Restore draft uniquement si pas de pré-remplissage contextuel
   useEffect(() => {
+    if (isPrefilled) return;
     const d = loadDraft();
     if (d) {
       if (d.type)        setType(d.type);
