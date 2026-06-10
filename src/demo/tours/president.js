@@ -25,10 +25,10 @@ export const presidentTour = [
   },
   {
     id:     4,
-    tab:    'mon-club',
-    action: 'close-overlay',
+    tab:    'map',
+    action: 'focus-demo-event',
     title:  'Organiser le covoiturage',
-    body:   'Proposez et coordonnez les trajets pour chaque événement. Vos joueurs peuvent demander une place directement depuis l\'app. Fini les groupes WhatsApp !',
+    body:   'Voici votre prochain match. Proposez un covoiturage directement depuis l\'événement — vos joueurs peuvent demander une place et confirmer en temps réel. Fini les groupes WhatsApp !',
     emoji:  '🚗',
   },
   {

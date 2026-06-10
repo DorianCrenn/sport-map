@@ -325,6 +325,11 @@ function AppInner() {
         const demoEvent = userEvents.find(ev => ev.club_id === 'demo-club-001' && !ev.score);
         if (demoEvent) handleOpenPoster(demoEvent);
       }
+      if (action === 'focus-demo-event') {
+        setShowNewEventForm(false);
+        setShowAnnouncements(false);
+        setFocusEventId('demo-event-001');
+      }
       if (action === 'close-overlay') {
         setShowNewEventForm(false);
         setShowAnnouncements(false);
