@@ -25,35 +25,45 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
   if (!step) return null;
 
   return (
-    <>
-      {/* Mobile: bottom sheet / Desktop: bottom-right card */}
+    // ── Wrapper div : gère UNIQUEMENT position:fixed + centrage ─────────────────
+    // Ne pas mettre transform ici — il resterait intact et n'interférerait
+    // pas avec les transforms Framer Motion du motion.div enfant.
+    <div style={{
+      position:   'fixed',
+      bottom:     76,
+      left:       0,
+      right:      0,
+      zIndex:     9995,
+      display:    'flex',
+      justifyContent: 'center',
+      alignItems: 'flex-end',
+      padding:    '0 12px',
+      pointerEvents: 'none',
+    }}>
+      {/* motion.div : UNIQUEMENT animation (opacity + y). Aucun positionnement. */}
       <motion.div
         key={stepIndex}
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 16 }}
+        exit={{ opacity: 0, y: 12 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
         style={{
-          position:   'fixed',
-          zIndex:     9995,
-          // Mobile: full width at bottom
-          bottom:     68, // above BottomNav
-          left:       '50%',
-          transform:  'translateX(-50%)',
-          width:      'min(480px, calc(100vw - 24px))',
-          background: 'rgba(10, 14, 28, 0.97)',
+          width:          '100%',
+          maxWidth:       480,
+          pointerEvents:  'all',
+          background:     'rgba(10, 14, 28, 0.97)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          border:     '1px solid rgba(99,102,241,0.25)',
-          borderRadius: 20,
-          overflow:   'hidden',
-          boxShadow:  '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.1)',
+          border:         '1px solid rgba(99,102,241,0.25)',
+          borderRadius:   16,
+          overflow:       'hidden',
+          boxShadow:      '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.1)',
         }}
       >
         {/* Progress bar */}
         <div style={{ height: 3, background: 'rgba(255,255,255,0.06)' }}>
           <motion.div
-            initial={{ width: `${((stepIndex) / totalSteps) * 100}%` }}
+            initial={{ width: `${(stepIndex / totalSteps) * 100}%` }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
             style={{
@@ -64,17 +74,20 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
           />
         </div>
 
-        <div style={{ padding: '16px 20px 18px' }}>
+        <div style={{
+          padding:   '14px 18px 16px',
+          maxHeight: 'calc(100dvh - 180px)',
+          overflowY: 'auto',
+        }}>
           {/* Header row */}
           <div style={{
             display:        'flex',
             alignItems:     'center',
             justifyContent: 'space-between',
-            marginBottom:   14,
+            marginBottom:   12,
           }}>
-            {/* Emoji + step counter */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 24, lineHeight: 1 }}>{step.emoji}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 22, lineHeight: 1 }}>{step.emoji}</span>
               <span style={{
                 fontSize:   11,
                 fontWeight: 600,
@@ -85,7 +98,6 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
               </span>
             </div>
 
-            {/* Exit button */}
             <button
               onClick={handleExit}
               title={confirmExit ? 'Cliquer pour confirmer' : 'Passer la visite guidée'}
@@ -107,30 +119,27 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
             </button>
           </div>
 
-          {/* Title */}
           <h3 style={{
-            fontSize:   17,
+            fontSize:   16,
             fontWeight: 700,
             color:      '#fff',
-            margin:     '0 0 8px',
+            margin:     '0 0 7px',
             lineHeight: 1.3,
           }}>
             {step.title}
           </h3>
 
-          {/* Body */}
           <p style={{
-            fontSize:   13.5,
+            fontSize:   13,
             color:      'rgba(255,255,255,0.62)',
-            margin:     '0 0 18px',
+            margin:     '0 0 16px',
             lineHeight: 1.55,
           }}>
             {step.body}
           </p>
 
-          {/* CTA step — special layout */}
           {step.isCTA ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <button
                 onClick={handleCreateAccount}
                 style={{
@@ -139,15 +148,14 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
                   border:       'none',
                   borderRadius: 12,
                   color:        '#fff',
-                  padding:      '13px 20px',
+                  padding:      '12px 20px',
                   fontSize:     14,
                   fontWeight:   700,
                   cursor:       'pointer',
                   transition:   'opacity 0.2s',
-                  letterSpacing: 0.2,
                 }}
-                onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
               >
                 🚀 Créer mon club gratuitement
               </button>
@@ -169,8 +177,7 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
               </button>
             </div>
           ) : (
-            /* Normal navigation */
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
               {!isFirst && (
                 <button
                   onClick={onPrev}
@@ -178,16 +185,16 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
                     flex:         '0 0 auto',
                     background:   'rgba(255,255,255,0.05)',
                     border:       '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: 12,
+                    borderRadius: 10,
                     color:        'rgba(255,255,255,0.55)',
-                    padding:      '11px 18px',
+                    padding:      '10px 16px',
                     fontSize:     13,
                     fontWeight:   600,
                     cursor:       'pointer',
                     transition:   'all 0.2s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                 >
                   ← Précédent
                 </button>
@@ -201,14 +208,13 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
                     : 'rgba(99,102,241,0.18)',
                   border:       '1px solid',
                   borderColor:  isLast ? 'transparent' : 'rgba(99,102,241,0.35)',
-                  borderRadius: 12,
+                  borderRadius: 10,
                   color:        '#fff',
-                  padding:      '11px 20px',
+                  padding:      '10px 18px',
                   fontSize:     13,
                   fontWeight:   700,
                   cursor:       'pointer',
                   transition:   'all 0.2s',
-                  letterSpacing: 0.2,
                 }}
                 onMouseEnter={e => { if (!isLast) e.currentTarget.style.background = 'rgba(99,102,241,0.28)'; }}
                 onMouseLeave={e => { if (!isLast) e.currentTarget.style.background = 'rgba(99,102,241,0.18)'; }}
@@ -219,6 +225,6 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
           )}
         </div>
       </motion.div>
-    </>
+    </div>
   );
 }

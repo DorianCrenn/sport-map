@@ -64,7 +64,7 @@ export default function DemoLandingPage({ onSelect }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding:    '24px 16px',
+        padding:    '24px 16px 40px',
         overflowY:  'auto',
       }}
     >

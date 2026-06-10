@@ -5,6 +5,7 @@ import AddBlockMenu from '../AddBlockMenu.jsx';
 import ClubSimpleEditor from '../ClubSimpleEditor.jsx';
 import NextMatchBlock from '../blocks/NextMatchBlock.jsx';
 import { timeAgo } from '../../../lib/dateUtils.js';
+import { isDemoMode } from '../../../lib/supabase.js';
 
 // ── Annonce preview ───────────────────────────────────────────────────────────
 
@@ -88,8 +89,8 @@ export default function ClubHomeTab({
   return (
     <div style={{ padding: '14px 14px calc(90px + env(safe-area-inset-bottom, 0px))' }}>
 
-      {/* Checklist post-création */}
-      {canEdit && !isEditing && !checklistDismissed && (
+      {/* Checklist post-création — masquée en mode démo */}
+      {canEdit && !isEditing && !checklistDismissed && !isDemoMode() && (
         <ClubSetupChecklist
           club={club} blocks={blocks}
           events={effectiveEvents.filter(e => String(e.clubId) === String(club.id))}
