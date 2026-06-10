@@ -27,9 +27,10 @@ export function useFeedback() {
     if (ideasLoaded) return ideas;
     const { data } = await supabase
       .from('app_feedback')
-      .select('id, title, description, status, created_at')
+      .select('id, title, description, status, vote_count, created_at')
       .eq('type', 'idea')
       .is('merged_into', null)
+      .order('vote_count', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(50);
     const list = data ?? [];
