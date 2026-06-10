@@ -7,11 +7,13 @@ export const DEMO_BANNER_HEIGHT = 40;
 export default function DemoBanner({ onCreateAccount }) {
   const [pulse, setPulse] = useState(false);
 
-  function handleCTA() {
+  function handleCTA(e) {
+    e.preventDefault();
     setPulse(true);
     setTimeout(() => setPulse(false), 300);
     trackCreateAccountClicked('banner');
     onCreateAccount?.();
+    window.location.assign('/');
   }
 
   return (
@@ -67,35 +69,36 @@ export default function DemoBanner({ onCreateAccount }) {
         </div>
 
         {/* Right: CTA */}
-        <button
+        <a
+          href="/"
           onClick={handleCTA}
-          style={{
-            flexShrink:   0,
-            background:   pulse
-              ? 'rgba(99,102,241,0.4)'
-              : 'rgba(99,102,241,0.2)',
-            border:       '1px solid rgba(99,102,241,0.5)',
-            borderRadius: 8,
-            color:        '#c7d2fe',
-            padding:      '5px 12px',
-            fontSize:     11,
-            fontWeight:   700,
-            cursor:       'pointer',
-            whiteSpace:   'nowrap',
-            transition:   'all 0.15s',
-            letterSpacing: 0.3,
-          }}
           onMouseEnter={e => {
             e.currentTarget.style.background = 'rgba(99,102,241,0.35)';
             e.currentTarget.style.color = '#fff';
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.background = 'rgba(99,102,241,0.2)';
+            e.currentTarget.style.background = pulse ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.2)';
             e.currentTarget.style.color = '#c7d2fe';
+          }}
+          style={{
+            flexShrink:     0,
+            background:     pulse ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.2)',
+            border:         '1px solid rgba(99,102,241,0.5)',
+            borderRadius:   8,
+            color:          '#c7d2fe',
+            padding:        '5px 12px',
+            fontSize:       11,
+            fontWeight:     700,
+            cursor:         'pointer',
+            whiteSpace:     'nowrap',
+            transition:     'all 0.15s',
+            letterSpacing:  0.3,
+            textDecoration: 'none',
+            display:        'inline-block',
           }}
         >
           Créer mon club →
-        </button>
+        </a>
       </div>
 
       <style>{`

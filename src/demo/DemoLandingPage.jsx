@@ -247,20 +247,20 @@ export default function DemoLandingPage({ onSelect }) {
           position:   'relative',
         }}
       >
-        <button
-          onClick={() => {
-            trackCreateAccountClicked('landing-footer');
-            window.location.href = '/?register=1';
-          }}
+        <a
+          href="/"
+          onClick={() => trackCreateAccountClicked('landing-footer')}
           style={{
-            background: 'transparent',
-            border:     '1px solid rgba(255,255,255,0.15)',
+            background:  'transparent',
+            border:      '1px solid rgba(255,255,255,0.15)',
             borderRadius: 10,
-            color:      'rgba(255,255,255,0.5)',
-            padding:    '10px 20px',
-            fontSize:   13,
-            cursor:     'pointer',
-            transition: 'all 0.2s',
+            color:       'rgba(255,255,255,0.5)',
+            padding:     '10px 20px',
+            fontSize:    13,
+            cursor:      'pointer',
+            transition:  'all 0.2s',
+            textDecoration: 'none',
+            display:     'inline-block',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
@@ -272,7 +272,7 @@ export default function DemoLandingPage({ onSelect }) {
           }}
         >
           Créer directement mon compte →
-        </button>
+        </a>
       </motion.div>
 
       {/* Shimmer keyframe */}

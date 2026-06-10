@@ -19,7 +19,7 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
 
   function handleCreateAccount() {
     trackCreateAccountClicked('guide-cta');
-    window.location.href = '/?register=1';
+    window.location.assign('/');
   }
 
   if (!step) return null;
