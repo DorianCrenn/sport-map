@@ -63,27 +63,35 @@ CREATE INDEX IF NOT EXISTS feedback_votes_idx ON public.app_feedback_votes(feedb
 ALTER TABLE public.app_feedback       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_feedback_votes ENABLE ROW LEVEL SECURITY;
 
+-- Politiques RLS (DROP + CREATE pour idempotence)
+DROP POLICY IF EXISTS "feedback_select_auth"  ON public.app_feedback;
+DROP POLICY IF EXISTS "feedback_insert_own"   ON public.app_feedback;
+DROP POLICY IF EXISTS "feedback_update_admin" ON public.app_feedback;
+DROP POLICY IF EXISTS "votes_select_auth"     ON public.app_feedback_votes;
+DROP POLICY IF EXISTS "votes_insert_own"      ON public.app_feedback_votes;
+DROP POLICY IF EXISTS "votes_delete_own"      ON public.app_feedback_votes;
+
 -- Lecture : tous les utilisateurs authentifiés (nécessaire pour recherche de similaires)
-CREATE POLICY IF NOT EXISTS "feedback_select_auth" ON public.app_feedback
+CREATE POLICY "feedback_select_auth" ON public.app_feedback
   FOR SELECT TO authenticated USING (true);
 
 -- Insert : uniquement par l'utilisateur lui-même
-CREATE POLICY IF NOT EXISTS "feedback_insert_own" ON public.app_feedback
+CREATE POLICY "feedback_insert_own" ON public.app_feedback
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Update : uniquement admins (gestion des statuts)
-CREATE POLICY IF NOT EXISTS "feedback_update_admin" ON public.app_feedback
+CREATE POLICY "feedback_update_admin" ON public.app_feedback
   FOR UPDATE USING (public.sl_is_admin())
   WITH CHECK (public.sl_is_admin());
 
 -- Votes - lecture publique
-CREATE POLICY IF NOT EXISTS "votes_select_auth" ON public.app_feedback_votes
+CREATE POLICY "votes_select_auth" ON public.app_feedback_votes
   FOR SELECT TO authenticated USING (true);
 
 -- Votes - insert par le propriétaire
-CREATE POLICY IF NOT EXISTS "votes_insert_own" ON public.app_feedback_votes
+CREATE POLICY "votes_insert_own" ON public.app_feedback_votes
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Votes - delete par le propriétaire
-CREATE POLICY IF NOT EXISTS "votes_delete_own" ON public.app_feedback_votes
+CREATE POLICY "votes_delete_own" ON public.app_feedback_votes
   FOR DELETE USING (auth.uid() = user_id);
