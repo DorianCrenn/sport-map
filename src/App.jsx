@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
-import { supabase } from './lib/supabase.js';
+import { supabase, setDemoMode, isDemoMode } from './lib/supabase.js';
 import { AnimatePresence, motion } from 'framer-motion';
+import DemoApp from './demo/DemoApp.jsx';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { useToast } from './contexts/ToastContext.jsx';
 import { SportsProvider } from './contexts/SportsContext.jsx';
@@ -146,6 +147,8 @@ function AppInner() {
   const [pendingClubAction, setPendingClubAction] = useState(null);
 
   const allClubsRef = useRef([]);
+  const demoNavRef  = useRef({});  // stable ref for demo nav handler — always current values
+  const pendingDemoTabRef = useRef(null);
 
   const handleOpenPoster = useCallback((eventData) => {
     setShowNewEventForm(false);
@@ -294,6 +297,60 @@ function AppInner() {
     }
   }, [convocationsPending]);
 
+  // ── Demo navigation — listens to DemoApp step dispatches ─────────────────────
+  // Keep ref current so the stable event handler always reads latest values
+  demoNavRef.current = { handleTabChange, handleOpenPoster, userEvents };
+
+  useEffect(() => {
+    if (!isDemoMode()) return;
+
+    function onDemoNav(e) {
+      const { tab, action } = e.detail ?? {};
+      const { handleTabChange, handleOpenPoster, userEvents } = demoNavRef.current;
+
+      if (tab === 'mon-club') {
+        if (allClubsRef.current.length === 0) {
+          // Clubs not loaded yet — retry after they arrive
+          pendingDemoTabRef.current = 'mon-club';
+        } else {
+          handleTabChange('mon-club');
+        }
+      } else if (tab) {
+        handleTabChange(tab);
+      }
+
+      if (action === 'open-event-form')    setShowNewEventForm(true);
+      if (action === 'open-announcements') setShowAnnouncements(true);
+      if (action === 'open-poster-studio') {
+        const demoEvent = userEvents.find(ev => ev.club_id === 'demo-club-001' && !ev.score);
+        if (demoEvent) handleOpenPoster(demoEvent);
+      }
+      if (action === 'close-overlay') {
+        setShowNewEventForm(false);
+        setShowAnnouncements(false);
+        setStudioEvent(null);
+        setStudioClub(null);
+      }
+    }
+
+    function onCreateAccount() { setShowAuth(true); }
+
+    window.addEventListener('sl-demo-navigate',       onDemoNav);
+    window.addEventListener('sl-demo-create-account', onCreateAccount);
+    return () => {
+      window.removeEventListener('sl-demo-navigate',       onDemoNav);
+      window.removeEventListener('sl-demo-create-account', onCreateAccount);
+    };
+  }, []); // stable event listeners via demoNavRef
+
+  // Retry pending demo tab once clubs have loaded
+  useEffect(() => {
+    if (!isDemoMode() || !pendingDemoTabRef.current || userClubs.length === 0) return;
+    const tab = pendingDemoTabRef.current;
+    pendingDemoTabRef.current = null;
+    handleTabChange(tab);
+  }, [userClubs, handleTabChange]);
+
   const upcomingFavorites = useUpcomingFavorites(allEvents, favorites);
 
   const navBadges = useMemo(() => {
@@ -395,7 +452,8 @@ function AppInner() {
 
   return (
     <ErrorBoundary name="AppShell" onReport={handleErrorReport}>
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
+    {/* paddingTop: demo banner height so the fixed banner doesn't cover app content */}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden', paddingTop: isDemoMode() ? 40 : 0 }}>
       <OfflineBanner />
       <UpdateBanner />
       {activeTab !== 'home' && (
@@ -683,12 +741,20 @@ export default function App() {
   if (window.opener && (params.has('code') || params.has('error'))) {
     return <OAuthPopupCallback />;
   }
+
+  // Demo mode detection — must happen before any Supabase auth call
+  const isDemo = window.location.pathname.startsWith('/demo');
+  if (isDemo && !isDemoMode()) setDemoMode(true);
+
   return (
     <AuthProvider>
       <SportsProvider>
         <FavoritesProvider>
           <AttendanceProvider>
-            <AppInner />
+            {isDemo
+              ? <DemoApp AppInner={AppInner} />
+              : <AppInner />
+            }
           </AttendanceProvider>
         </FavoritesProvider>
       </SportsProvider>
