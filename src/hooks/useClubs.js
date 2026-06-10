@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { dispatchError } from '../lib/errorBus.js';
 
 function mapFromDB(row) {
   return {
@@ -98,27 +99,33 @@ export function useClubs() {
   // ── Initial fetch ─────────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
-    supabase
-      .from('clubs')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(500)
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) {
-          console.error('[Clubs] fetch failed:', error.message);
+    function fetchClubs() {
+      supabase
+        .from('clubs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500)
+        .then(({ data, error }) => {
+          if (cancelled) return;
+          if (error) {
+            console.error('[Clubs] fetch failed:', error.message);
+            dispatchError('Impossible de charger les clubs.');
+            setLoading(false);
+            return;
+          }
+          setUserClubs(data?.map(mapFromDB) ?? []);
           setLoading(false);
-          return;
-        }
-        setUserClubs(data?.map(mapFromDB) ?? []);
-        setLoading(false);
-      })
-      .catch(err => {
-        if (cancelled) return;
-        console.error('[Clubs] fetch rejected:', err.message);
-        setLoading(false);
-      });
-    return () => { cancelled = true; };
+        })
+        .catch(err => {
+          if (cancelled) return;
+          console.error('[Clubs] fetch rejected:', err.message);
+          setLoading(false);
+        });
+    }
+    fetchClubs();
+    function onOnline() { if (!cancelled) fetchClubs(); }
+    window.addEventListener('online', onOnline);
+    return () => { cancelled = true; window.removeEventListener('online', onOnline); };
   }, []);
 
   // ── Realtime ──────────────────────────────────────────────────────────────

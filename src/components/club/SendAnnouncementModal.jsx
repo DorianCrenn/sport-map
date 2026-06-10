@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 import { announcementSchema, validate } from '../../lib/schemas.js';
+import { useFocusTrap } from '../../hooks/useFocusTrap.js';
+import { useScrollInputIntoView } from '../../hooks/useScrollInputIntoView.js';
+import { useFormDraft } from '../../hooks/useFormDraft.js';
+import DraftBanner from '../ui/DraftBanner.jsx';
 
 const TYPE_OPTIONS = [
   { key: 'urgent', label: 'Urgent',     icon: '🚨', color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
@@ -64,6 +68,17 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
   });
 
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef);
+  useScrollInputIntoView(panelRef);
+
+  const { hasDraft, saveDraft, loadDraft, clearDraft } = useFormDraft('sl-announcement-draft');
+
+  // Sauvegarder le brouillon à chaque changement
+  useEffect(() => {
+    if (message || type !== 'urgent') saveDraft({ type, message });
+  }, [type, message]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
     document.addEventListener('keydown', onKey);
@@ -112,6 +127,7 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
     try {
       const scheduledFor = scheduled ? new Date(scheduleAt).toISOString() : null;
       await onSend({ type, message: message.trim(), targetTeams: targets, clubName: club.name, scheduledFor });
+      clearDraft();
       onClose();
     } catch (e) {
       setError(e.message ?? 'Erreur lors de l\'envoi');
@@ -126,15 +142,27 @@ export default function SendAnnouncementModal({ club, onSend, onClose }) {
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <motion.div
+        ref={panelRef}
         initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 360, damping: 34 }}
         style={{ width: '100%', maxWidth: 540, backgroundColor: 'var(--sl-card)', borderRadius: '22px 22px 0 0', border: '1px solid var(--sl-border)', borderBottom: 'none', maxHeight: '92dvh', display: 'flex', flexDirection: 'column' }}
+        role="dialog" aria-modal="true"
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
           <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
         </div>
+
+        {/* Draft banner */}
+        <AnimatePresence>
+          {hasDraft && (
+            <DraftBanner
+              onRestore={() => { const d = loadDraft(); if (d) { setType(d.type ?? 'urgent'); setMessage(d.message ?? ''); } clearDraft(); }}
+              onDiscard={clearDraft}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 18px 14px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>

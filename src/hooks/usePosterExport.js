@@ -20,7 +20,7 @@ import { sanitizeFilename } from '../lib/sanitize.js';
  * @param {string} options.event.city
  * @param {Function} options.trackExport — callback(channel) fourni par PosterStudio
  */
-export function usePosterExport({ exportWrapperRef, altExportWrapperRef, format, altFormat, event, trackExport }) {
+export function usePosterExport({ exportWrapperRef, altExportWrapperRef, format, altFormat, event, trackExport, onExportError }) {
   const [downloading,     setDownloading]     = useState(false);
   const [sharing,         setSharing]         = useState(false);
   const [sharingIG,       setSharingIG]       = useState(false);
@@ -31,20 +31,27 @@ export function usePosterExport({ exportWrapperRef, altExportWrapperRef, format,
   async function getBlob() {
     const node = exportWrapperRef.current;
     if (!node) return null;
-    let blob = await toBlob(node, { pixelRatio: 3, cacheBust: true });
-    // Safari iOS peut retourner un blob vide — retry après délai
-    if (!blob || blob.size < 10_000) {
-      await new Promise(r => setTimeout(r, 350));
-      blob = await toBlob(node, { pixelRatio: 3, cacheBust: true });
+    try {
+      let blob = await toBlob(node, { pixelRatio: 3, cacheBust: true });
+      // Safari iOS peut retourner un blob vide — retry après délai
+      if (!blob || blob.size < 10_000) {
+        await new Promise(r => setTimeout(r, 350));
+        blob = await toBlob(node, { pixelRatio: 3, cacheBust: true });
+      }
+      return blob;
+    } catch {
+      return null;
     }
-    return blob;
   }
 
   async function handleDownload() {
     setDownloading(true);
     try {
       const blob = await getBlob();
-      if (!blob) return;
+      if (!blob) {
+        onExportError?.('Export impossible — mémoire insuffisante ou navigateur incompatible.');
+        return;
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -110,6 +117,7 @@ export function usePosterExport({ exportWrapperRef, altExportWrapperRef, format,
     setExportingAll(true);
     try {
       const blob1 = await getBlob();
+      if (!blob1) { onExportError?.('Export impossible — mémoire insuffisante ou navigateur incompatible.'); return; }
       if (blob1) {
         const url1 = URL.createObjectURL(blob1);
         const a1 = document.createElement('a');

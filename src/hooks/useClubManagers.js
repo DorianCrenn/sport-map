@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { dispatchError } from '../lib/errorBus.js';
 
 export function useClubManagers(clubId) {
   const [managers, setManagers] = useState([]);
@@ -17,10 +18,11 @@ export function useClubManagers(clubId) {
         if (cancelled) return;
         if (error) {
           console.error('[Managers] fetch failed, using localStorage:', error.message);
+          dispatchError(error);
           try {
             const raw = localStorage.getItem(`club-managers-${clubId}`);
             if (raw) setManagers(JSON.parse(raw));
-          } catch {}
+          } catch { /* ignore */ }
           return;
         }
         if (data && data.length > 0) {
@@ -38,7 +40,7 @@ export function useClubManagers(clubId) {
                   .then(({ error }) => { if (error) console.error('[Managers] migration insert failed:', error.message); });
               }
             }
-          } catch {}
+          } catch { /* ignore */ }
         }
       });
     return () => { cancelled = true; };

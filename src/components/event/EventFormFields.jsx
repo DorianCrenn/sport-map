@@ -108,6 +108,7 @@ export function AdversaireField({ value, onChange, sameSportClubs, myClubId, inp
         onChange={e => { setQuery(e.target.value); onChange(e.target.value); }}
         onFocus={() => setFocused(true)}
         placeholder="ex. FC Quimper, AS Morlaix…"
+        maxLength={100}
         style={inputStyle} autoComplete="off"
       />
       {focused && filtered.length > 0 && (
@@ -176,7 +177,7 @@ export function TournamentFields({ form, set, inputStyle, myClub }) {
         <Field label="Nom du tournoi">
           <input type="text" value={form.tournamentName}
             onChange={e => set('tournamentName', e.target.value)}
-            placeholder="ex: Tournoi de la Saint-Michel" style={inputStyle} />
+            placeholder="ex: Tournoi de la Saint-Michel" maxLength={200} style={inputStyle} />
         </Field>
 
         <Field label="Type de tournoi">
@@ -195,19 +196,19 @@ export function TournamentFields({ form, set, inputStyle, myClub }) {
         <Field label="Catégories participantes" hint="ex: U13, U15, Sénior">
           <input type="text" value={form.tournamentCategories}
             onChange={e => set('tournamentCategories', e.target.value)}
-            placeholder="U13, U15, Senior…" style={inputStyle} />
+            placeholder="U13, U15, Senior…" maxLength={200} style={inputStyle} />
         </Field>
 
         <Field label="Prix / récompenses" hint="Optionnel">
           <input type="text" value={form.prize}
             onChange={e => set('prize', e.target.value)}
-            placeholder="ex: Trophée, médailles, bon cadeau…" style={inputStyle} />
+            placeholder="ex: Trophée, médailles, bon cadeau…" maxLength={100} style={inputStyle} />
         </Field>
 
         <Field label="Organisateur" hint="Optionnel — pré-rempli avec le nom du club">
           <input type="text" value={form.organizer || myClub?.name || ''}
             onChange={e => set('organizer', e.target.value)}
-            placeholder={myClub?.name || "Nom de l'organisateur"} style={inputStyle} />
+            placeholder={myClub?.name || "Nom de l'organisateur"} maxLength={100} style={inputStyle} />
         </Field>
       </div>
     </motion.div>

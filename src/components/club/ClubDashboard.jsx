@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 import { useClubDashboard } from '../../hooks/useClubDashboard.js';
@@ -15,6 +15,7 @@ import UpgradeDiff from '../ui/UpgradeDiff.jsx';
 import PlansMiniModal from '../ui/PlansMiniModal.jsx';
 import SubscriptionExpiryBanner from '../ui/SubscriptionExpiryBanner.jsx';
 import { canUseFeature } from '../../lib/planHelpers.ts';
+import { hasDemoData, deleteDemoData } from '../../lib/demoDataGenerator.js';
 
 function StatCard({ label, value, sub, color = 'var(--sl-t1)' }) {
   return (
@@ -667,6 +668,12 @@ function ChallengesSection({ club }) {
 export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, onArchiveSeason }) {
   const data = useClubDashboard(club.id, clubEventIds);
   const isEmpty = !data.loading && data.followers === 0 && data.pageViews.total === 0 && data.attendees.total === 0 && data.posterExports === 0 && data.posterShares === 0;
+  const [hasDemo, setHasDemo] = useState(false);
+  const [deletingDemo, setDeletingDemo] = useState(false);
+
+  useEffect(() => {
+    hasDemoData(club.id).then(setHasDemo).catch(() => {});
+  }, [club.id]);
 
   const clubUpcomingEvents = useMemo(
     () => (allEvents ?? []).filter(e => clubEventIds.some(id => String(id) === String(e.id))),
@@ -711,6 +718,43 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
           </div>
         ) : (
           <>
+            {/* Bannière d'encouragement pour un club tout neuf */}
+            {isEmpty && (
+              <div style={{
+                borderRadius: 16, padding: '16px', marginBottom: 4,
+                backgroundColor: 'rgba(34,217,106,0.08)', border: '1px solid rgba(34,217,106,0.2)',
+                display: 'flex', flexDirection: 'column', gap: 6,
+              }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-green)', margin: 0 }}>🚀 Votre club vient d'être créé !</p>
+                <p style={{ fontSize: 12, color: 'var(--sl-t2)', margin: 0, lineHeight: 1.5 }}>
+                  Partagez la page de votre club, ajoutez des événements et invitez vos membres à s'abonner pour voir vos premières statistiques apparaître ici.
+                </p>
+              </div>
+            )}
+
+            {/* Bouton supprimer données de démo */}
+            {hasDemo && (
+              <button
+                onClick={async () => {
+                  setDeletingDemo(true);
+                  await deleteDemoData(club.id).catch(() => {});
+                  setHasDemo(false);
+                  setDeletingDemo(false);
+                }}
+                disabled={deletingDemo}
+                style={{
+                  marginBottom: 4, padding: '10px 14px', borderRadius: 12, cursor: deletingDemo ? 'not-allowed' : 'pointer',
+                  backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+                  color: '#ef4444', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>
+                </svg>
+                {deletingDemo ? 'Suppression…' : 'Supprimer les données de démonstration'}
+              </button>
+            )}
+
             {/* Stat cards */}
             <div style={{ display: 'flex', gap: 8 }}>
               <StatCard

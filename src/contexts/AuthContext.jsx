@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { translateSupabaseError } from '../lib/translateSupabaseError.js';
 
 const AuthContext = createContext(null);
 
@@ -23,6 +24,7 @@ function mapProfile(authUser, dbProfile) {
     badges:         dbProfile?.badges ?? [],
     plan:           dbProfile?.plan ?? 'free',
     xp:             dbProfile?.xp ?? 0,
+    jobRole:        dbProfile?.job_role ?? null,
     createdAt:      authUser.created_at,
   };
 }
@@ -281,11 +283,7 @@ export function AuthProvider({ children }) {
       new Promise((_, rej) => setTimeout(() => rej(new Error('Supabase ne répond pas — projet pausé ou connexion bloquée')), 12000)),
     ]);
     if (error) {
-      if (error.message.includes('Invalid login credentials'))
-        throw new Error('Email ou mot de passe incorrect');
-      if (error.message.includes('Email not confirmed'))
-        throw new Error('Confirmez votre email avant de vous connecter');
-      throw new Error(error.message);
+      throw new Error(translateSupabaseError(error));
     }
     setAuthUser(data.user);
     const prof = await Promise.race([
@@ -304,9 +302,7 @@ export function AuthProvider({ children }) {
       options: { data: { name } },
     });
     if (error) {
-      if (error.message.includes('already registered'))
-        throw new Error('Cet email est déjà utilisé');
-      throw new Error(error.message);
+      throw new Error(translateSupabaseError(error));
     }
     // session is null when email confirmation is required
     return { user: data.user, needsConfirmation: !data.session };
@@ -327,6 +323,7 @@ export function AuthProvider({ children }) {
       digestOptIn:    'digest_opt_in',
       badges:         'badges',
       xp:             'xp',
+      jobRole:        'job_role',
       // role, plan et clubId intentionnellement absents — modifiables uniquement côté serveur
     };
     const dbPatch = {};
@@ -339,7 +336,12 @@ export function AuthProvider({ children }) {
       console.error('[Auth] updateProfile error:', error.message);
       return { error };
     }
-    setProfile(prev => prev ? { ...prev, ...snakePatch } : prev);
+    // Synchroniser le state JS avec les noms camelCase
+    const camelPatch = {};
+    for (const [key] of Object.entries(map)) {
+      if (key in patch) camelPatch[key] = patch[key];
+    }
+    setProfile(prev => prev ? { ...prev, ...camelPatch } : prev);
     return { error: null };
   }, [authUser]);
 

@@ -305,6 +305,18 @@ export default function ClubPageView({
     onInitialActionConsumed?.();
   }, [initialAction]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Guard : club introuvable (deep link invalide ou club supprimé) ────────
+  if (!club?.id) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 14, color: 'var(--sl-t2)', backgroundColor: 'var(--sl-bg)' }}>
+        <span style={{ fontSize: 36 }}>🏟️</span>
+        <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', margin: 0 }}>Club introuvable</p>
+        <p style={{ fontSize: 13, margin: 0 }}>Ce club n'existe pas ou a été supprimé.</p>
+        <button onClick={onBack} style={{ marginTop: 4, padding: '10px 22px', borderRadius: 12, background: 'var(--sl-surface)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t1)', fontSize: 14, fontWeight: 600 }}>Retour</button>
+      </div>
+    );
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <motion.div
@@ -320,7 +332,7 @@ export default function ClubPageView({
         fontFamily: `"${typography.bodyFont}", sans-serif`,
       }}
       role="main"
-      aria-label={`Page du club ${club.name}`}
+      aria-label={`Page du club ${club.name ?? ''}`}
     >
 
       {/* ── Hero ── */}

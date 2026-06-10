@@ -111,6 +111,7 @@ export default function FavorisPage({ allEvents, allClubs = [], onNavigate }) {
               onToggleFavorite={onToggleFavorite}
               isAttending={isAttending}
               onToggleAttend={onToggleAttend}
+              onGoToMap={() => onNavigate?.('map')}
             />
           )}
           {activeTab === 'clubs' && (

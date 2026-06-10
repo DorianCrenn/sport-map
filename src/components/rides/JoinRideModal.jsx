@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 import { useAndroidBack } from '../../hooks/useAndroidBack.js';
+import { useScrollInputIntoView } from '../../hooks/useScrollInputIntoView.js';
 import { motion } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 
@@ -8,6 +9,7 @@ export default function JoinRideModal({ ride, onSave, onClose }) {
   const panelRef = useRef(null);
   useFocusTrap(panelRef);
   useAndroidBack(true, onClose);
+  useScrollInputIntoView(panelRef);
   const [message, setMessage] = useState('');
   const [saving,  setSaving]  = useState(false);
   const [error,   setError]   = useState('');

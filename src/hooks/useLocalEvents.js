@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { sanitizeText } from '../lib/sanitize.js';
+import { dispatchError } from '../lib/errorBus.js';
 
 async function pushClubFollowers(clubId, title, body, url, tag) {
   try {
@@ -46,6 +47,7 @@ function mapFromDB(row) {
     userId:                row.user_id,
     seriesId:              row.series_id               ?? null,
     source:                row.source                  ?? 'user',
+    updatedAt:             row.updated_at              ?? null,
     // Tournament-specific fields
     tournamentName:        row.tournament_name         ?? '',
     tournamentType:        row.tournament_type         ?? '',
@@ -125,7 +127,7 @@ export function useLocalEvents() {
             .limit(500));
         }
         if (cancelled) return;
-        if (error) console.error('[Events] fetch failed:', error.message);
+        if (error) { console.error('[Events] fetch failed:', error.message); dispatchError('Impossible de charger les événements.'); }
         if (data) setEvents(data.map(mapFromDB));
       } catch (err) {
         if (cancelled) return;
@@ -135,7 +137,12 @@ export function useLocalEvents() {
       }
     }
     load();
-    return () => { cancelled = true; };
+
+    // Auto-retry quand la connexion revient
+    function onOnline() { if (!cancelled) load(); }
+    window.addEventListener('online', onOnline);
+
+    return () => { cancelled = true; window.removeEventListener('online', onOnline); };
   }, []);
 
   // ── Realtime ─────────────────────────────────────────────────────────────

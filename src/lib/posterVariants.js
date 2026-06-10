@@ -142,8 +142,12 @@ export async function generateCustomBackground(userPrompt) {
   const fullPrompt = `vertical portrait composition, tall format, ${userPrompt}, sports poster background, high quality 4k photography, no text, no people, no logos`;
   const seed = Math.floor(Math.random() * 99999);
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=576&height=1024&model=flux&nologo=true&seed=${seed}`;
-  await preloadImage(url);
-  return { imageUrl: url, prompt: fullPrompt, provider: 'pollinations' };
+  try {
+    await preloadImage(url);
+    return { imageUrl: url, prompt: fullPrompt, provider: 'pollinations' };
+  } catch {
+    return { imageUrl: null, prompt: fullPrompt, provider: 'pollinations', error: true };
+  }
 }
 
 // ── PS-VAR-009 — Full match poster from match data + style hint ───────────────
@@ -186,8 +190,12 @@ export async function generateMatchPoster({ sport, homeTeam, awayTeam, champions
 
   const seed = Math.floor(Math.random() * 99999);
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=576&height=1024&model=flux&nologo=true&seed=${seed}`;
-  await preloadImage(url);
-  return { imageUrl: url, prompt };
+  try {
+    await preloadImage(url);
+    return { imageUrl: url, prompt };
+  } catch {
+    return { imageUrl: null, prompt, error: true };
+  }
 }
 
 // ── PS-VAR-008 — Custom element prompt → Pollinations.ai (screen blend) ──────
@@ -207,8 +215,12 @@ export async function generateCustomElement(userPrompt) {
   const fullPrompt = `vertical portrait orientation, ${userPrompt}, isolated on pure black background, dramatic, vibrant, high contrast, centered composition, no people, no text, no logos, photorealistic`;
   const seed = Math.floor(Math.random() * 99999);
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=576&height=1024&model=flux&nologo=true&seed=${seed}`;
-  await preloadImage(url);
-  return { imageUrl: url, prompt: fullPrompt };
+  try {
+    await preloadImage(url);
+    return { imageUrl: url, prompt: fullPrompt };
+  } catch {
+    return { imageUrl: null, prompt: fullPrompt, error: true };
+  }
 }
 
 // ── PS-VAR-004/005 — AI background generation via Fal.ai Flux ────────────────

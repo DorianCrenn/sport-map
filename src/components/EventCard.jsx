@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { useAttendeeCount } from '../contexts/AttendeeCountContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useFavoritesContext } from '../contexts/FavoritesContext.jsx';
+import ConfirmDialog from './ConfirmDialog.jsx';
 import { useClubPlayers } from '../hooks/useClubPlayers.js';
 import { useClubAnnouncements } from '../hooks/useClubAnnouncements.js';
 import EventReactions from './EventReactions.jsx';
@@ -481,7 +482,7 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
             <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
-            <button onClick={(e) => { e.stopPropagation(); onDelete(event.id); }} style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}>
+            <button onClick={(e) => { e.stopPropagation(); onDelete(); }} style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
             </button>
           </div>
@@ -613,6 +614,7 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
   const status = getEffectiveStatus(event);
   const isTournament = event.eventType === 'tournament';
   const accentColor = isTournament ? TOURNAMENT_COLOR : sportColor;
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const cardTitle = event.tournamentName || event.title;
 
@@ -663,7 +665,7 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
           isSelected={isSelected}
           canEditThis={canEditThis}
           onEdit={onEdit}
-          onDelete={onDelete}
+          onDelete={() => setConfirmDelete(true)}
           onDuplicate={onDuplicate}
           onUpdateEvent={onUpdateEvent}
           setShowPoster={setShowPoster}
@@ -702,7 +704,7 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
                 <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} aria-label="Modifier l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); onDelete(event.id); }} aria-label="Supprimer l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}>
+                <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }} aria-label="Supprimer l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                 </button>
               </div>
@@ -875,6 +877,15 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
         initialBgSrc={posterInitBg}
       />
     )}
+    <ConfirmDialog
+      open={confirmDelete}
+      title="Supprimer l'événement ?"
+      message={`« ${cardTitle} » sera définitivement supprimé.`}
+      confirmLabel="Supprimer"
+      confirmColor="#ef4444"
+      onConfirm={() => { setConfirmDelete(false); onDelete(event.id); }}
+      onCancel={() => setConfirmDelete(false)}
+    />
   </>
   );
 });

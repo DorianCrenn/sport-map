@@ -1,12 +1,16 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Z } from '../constants/zIndex.js';
 import { eventFormSchema, validate } from '../lib/schemas.js';
+import { supabase } from '../lib/supabase.js';
+import { sanitizeText } from '../lib/sanitize.js';
+import HelpTooltip from './HelpTooltip.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import { useAndroidBack } from '../hooks/useAndroidBack.js';
+import { useScrollInputIntoView } from '../hooks/useScrollInputIntoView.js';
 import CityAutocomplete from './CityAutocomplete.jsx';
 import VenueAutocomplete from './VenueAutocomplete.jsx';
 import SportIcon from './SportIcon.jsx';
@@ -32,6 +36,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const dialogRef = useRef(null);
   useFocusTrap(dialogRef);
   useAndroidBack(true, onClose);
+  useScrollInputIntoView(dialogRef);
 
   function handleHandleDown(e) {
     const el = dialogRef.current;
@@ -89,10 +94,39 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
     return defaults;
   }, [useSmartMode, myClub]);
 
-  const [form, setForm]         = useState(() => toFormValues(event, buildDefaults(event)));
+  const DRAFT_KEY = 'sl-event-form-draft';
+
+  const [form, setForm] = useState(() => {
+    const base = toFormValues(event, buildDefaults(event));
+    // Restaurer le brouillon uniquement pour les nouveaux événements
+    if (!event || event._isNew) {
+      try {
+        const saved = localStorage.getItem(DRAFT_KEY);
+        if (saved) {
+          const { data, ts } = JSON.parse(saved);
+          // Brouillon expiré après 24h
+          if (data && ts && Date.now() - ts < 24 * 3600 * 1000) {
+            return { ...base, ...data };
+          }
+        }
+      } catch { /* ignore */ }
+    }
+    return base;
+  });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [createdEvent, setCreatedEvent] = useState(null);
+
+  // ── Sauvegarde auto du brouillon (uniquement création) ────────────────────
+  const draftTimerRef = useRef(null);
+  useEffect(() => {
+    if (isEdit) return;
+    clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = setTimeout(() => {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ data: form, ts: Date.now() })); } catch { /* ignore */ }
+    }, 1500);
+    return () => clearTimeout(draftTimerRef.current);
+  }, [form, isEdit]);
 
   // ── Stepper (uniquement pour la création, pas l'édition) ──────────────────
   const useSteps = !isEdit;
@@ -112,7 +146,6 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   }
 
   useEffect(() => {
-     
     setForm(toFormValues(event, buildDefaults(event)));
   }, [event]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -141,19 +174,60 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
       return;
     }
 
+    // Validation date passée (uniquement pour les nouveaux événements)
+    if (!isEdit && form.date) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      if (new Date(form.date) < today) {
+        setSubmitError('La date de l\'événement ne peut pas être dans le passé');
+        return;
+      }
+    }
+
     setSubmitError(null);
     setSubmitting(true);
     try {
-      const base = buildEvent(form, currentUser, myClub, useSmartMode);
+      // Sanitiser les champs texte libres avant sauvegarde
+      const sanitizedForm = {
+        ...form,
+        adversaire:           sanitizeText(form.adversaire ?? ''),
+        description:          sanitizeText(form.description ?? ''),
+        venue:                sanitizeText(form.venue ?? ''),
+        teamName:             sanitizeText(form.teamName ?? ''),
+        homeTeam:             sanitizeText(form.homeTeam ?? ''),
+        awayTeam:             sanitizeText(form.awayTeam ?? ''),
+        tournamentName:       sanitizeText(form.tournamentName ?? ''),
+        prize:                sanitizeText(form.prize ?? ''),
+        organizer:            sanitizeText(form.organizer ?? ''),
+        tournamentCategories: sanitizeText(form.tournamentCategories ?? ''),
+      };
+      const base = buildEvent(sanitizedForm, currentUser, myClub, useSmartMode);
       if (!base.title?.trim()) {
         setSubmitError('Le nom de l\'événement est requis');
         return;
       }
       if (!isEdit && form.recurrenceEnabled && form.recurrenceUntil && onBulkSave) {
         const recurring = generateRecurring(base, form.recurrenceFreq, form.recurrenceUntil);
-        if (recurring.length > 0) { await onBulkSave(recurring); return; }
+        if (recurring.length > 0) {
+          try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+          await onBulkSave(recurring);
+          return;
+        }
       }
+      // Détection édition simultanée : vérifier que updated_at n'a pas changé
+      if (isEdit && event?.id && event?.updatedAt) {
+        const { data: fresh } = await supabase
+          .from('events')
+          .select('updated_at')
+          .eq('id', event.id)
+          .maybeSingle();
+        if (fresh?.updated_at && fresh.updated_at !== event.updatedAt) {
+          setSubmitError('Cet événement a été modifié dans un autre onglet. Fermez et rouvrez le formulaire.');
+          return;
+        }
+      }
+
       const saved = await onSave(base);
+      try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       if (!isEdit && onOpenPoster) {
         setCreatedEvent(saved ?? base);
       }
@@ -502,8 +576,20 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               />
             </Field>
 
-            <Field label="Description">
-              <textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Informations complémentaires…" rows={3} style={{ ...inputStyle, resize: 'none' }} />
+            <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>Description <HelpTooltip content="Informations complémentaires visibles par tous : convocation, tenue à porter, consignes pratiques, lieu de rendez-vous exact…" /></span>}>
+              <textarea
+                value={form.description}
+                onChange={e => set('description', e.target.value)}
+                placeholder="Informations complémentaires…"
+                rows={3}
+                maxLength={2000}
+                style={{ ...inputStyle, resize: 'none' }}
+              />
+              {(form.description?.length ?? 0) > 1800 && (
+                <span style={{ fontSize: 11, color: (form.description?.length ?? 0) >= 2000 ? '#ef4444' : 'var(--sl-t3)', textAlign: 'right', display: 'block', marginTop: 3 }}>
+                  {form.description?.length ?? 0}/2000
+                </span>
+              )}
             </Field>
 
             </div>{/* /ÉTAPE 3 */}

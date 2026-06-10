@@ -14,10 +14,10 @@ export default function BackgroundPanelTab({ ps }) {
     addOverlayElement, removeOverlayElement, updateOverlayElement,
     aiOverlayElements, addAiOverlay, removeAiOverlay, updateAiOverlay,
     savedAiEls, addSavedEl, removeSavedEl,
-    aiElEditorUid, setAiElEditorUid,
+    setAiElEditorUid,
     aiBgLoading, aiBgResult, customPrompt, setCustomPrompt, generateBg,
     aiElLoading, elementPrompt, setElementPrompt, generateElement,
-    aiGenerateBlocked, aiUsage,
+    aiGenerateBlocked, onUpgradeRequired,
     bgTint, bgTintOp, bgMode, bgSrc, bgUrl, bgErr, bgFileRef,
     applyBgUrl, readFile,
     sponsorSrc, sponsorRef,
@@ -113,10 +113,12 @@ export default function BackgroundPanelTab({ ps }) {
           <input value={elementPrompt} onChange={e => setElementPrompt(e.target.value)} placeholder="Décris l'effet décoratif…" disabled={aiElLoading}
             onKeyDown={e => { if (e.key !== 'Enter') return; generateElement({ accentColor, onSuccess: res => addAiOverlay({ imageUrl: res.imageUrl, prompt: res.prompt }) }); }}
             style={{ flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 11, fontWeight: 500, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }} />
-          <button disabled={aiElLoading || !elementPrompt.trim() || aiGenerateBlocked}
-            onClick={() => generateElement({ accentColor, onSuccess: res => addAiOverlay({ imageUrl: res.imageUrl, prompt: res.prompt }) })}
-            style={{ padding: '9px 13px', borderRadius: 10, fontSize: 12, fontWeight: 800, flexShrink: 0, cursor: (aiElLoading || !elementPrompt.trim() || aiGenerateBlocked) ? 'not-allowed' : 'pointer', background: aiGenerateBlocked ? 'rgba(148,163,184,0.2)' : 'linear-gradient(135deg, #a855f7, #6366f1)', color: aiGenerateBlocked ? 'var(--sl-t3)' : '#fff', border: 'none', opacity: (aiElLoading || !elementPrompt.trim() || aiGenerateBlocked) ? 0.5 : 1 }}>
-            {aiElLoading ? '⏳' : '✨'}
+          <button
+            disabled={aiElLoading || !elementPrompt.trim()}
+            onClick={() => aiGenerateBlocked ? onUpgradeRequired?.() : generateElement({ accentColor, onSuccess: res => addAiOverlay({ imageUrl: res.imageUrl, prompt: res.prompt }) })}
+            title={aiGenerateBlocked ? 'Quota mensuel atteint — passez au plan supérieur' : undefined}
+            style={{ padding: '9px 13px', borderRadius: 10, fontSize: 12, fontWeight: 800, flexShrink: 0, cursor: (aiElLoading || !elementPrompt.trim()) ? 'not-allowed' : 'pointer', background: aiGenerateBlocked ? 'rgba(148,163,184,0.2)' : 'linear-gradient(135deg, #a855f7, #6366f1)', color: aiGenerateBlocked ? 'var(--sl-t3)' : '#fff', border: aiGenerateBlocked ? '1.5px dashed rgba(148,163,184,0.5)' : 'none', opacity: (aiElLoading || !elementPrompt.trim()) ? 0.5 : 1 }}>
+            {aiElLoading ? '⏳' : aiGenerateBlocked ? '🔒' : '✨'}
           </button>
         </div>
         {aiElLoading && <div style={{ fontSize: 10, color: '#a78bfa', textAlign: 'center', marginBottom: 6, fontWeight: 600 }}>Génération en cours… (30-60s)</div>}
@@ -265,10 +267,12 @@ export default function BackgroundPanelTab({ ps }) {
           <input value={customPrompt} onChange={e => setCustomPrompt(e.target.value)} placeholder="Décris le fond que tu veux…" disabled={aiBgLoading}
             onKeyDown={e => { if (e.key !== 'Enter') return; generateBg({ dnaForBg, eventSport: event?.sport, onSuccess: imageUrl => dispatch({ type: 'PATCH', payload: { bgSrc: imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } }) }); }}
             style={{ flex: 1, padding: '9px 11px', borderRadius: 10, fontSize: 11, fontWeight: 500, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }} />
-          <button disabled={aiBgLoading || aiGenerateBlocked}
-            onClick={() => generateBg({ dnaForBg, eventSport: event?.sport, onSuccess: imageUrl => dispatch({ type: 'PATCH', payload: { bgSrc: imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } }) })}
-            style={{ padding: '9px 13px', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: (aiBgLoading || aiGenerateBlocked) ? 'not-allowed' : 'pointer', background: aiGenerateBlocked ? 'rgba(148,163,184,0.2)' : 'linear-gradient(135deg, #a855f7, #6366f1)', color: aiGenerateBlocked ? 'var(--sl-t3)' : '#fff', border: 'none', opacity: (aiBgLoading || aiGenerateBlocked) ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-            {aiBgLoading ? '⏳' : '✨'}
+          <button
+            disabled={aiBgLoading}
+            onClick={() => aiGenerateBlocked ? onUpgradeRequired?.() : generateBg({ dnaForBg, eventSport: event?.sport, onSuccess: imageUrl => dispatch({ type: 'PATCH', payload: { bgSrc: imageUrl, bgMode: 'url', bgErr: false, bgPreset: '' } }) })}
+            title={aiGenerateBlocked ? 'Quota mensuel atteint — passez au plan supérieur' : undefined}
+            style={{ padding: '9px 13px', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: aiBgLoading ? 'not-allowed' : 'pointer', background: aiGenerateBlocked ? 'rgba(148,163,184,0.2)' : 'linear-gradient(135deg, #a855f7, #6366f1)', color: aiGenerateBlocked ? 'var(--sl-t3)' : '#fff', border: aiGenerateBlocked ? '1.5px dashed rgba(148,163,184,0.5)' : 'none', opacity: aiBgLoading ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+            {aiBgLoading ? '⏳' : aiGenerateBlocked ? '🔒' : '✨'}
           </button>
         </div>
 

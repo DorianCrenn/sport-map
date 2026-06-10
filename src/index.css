@@ -408,6 +408,43 @@ html:not([data-theme="light"]) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ACCESSIBILITÉ — focus-visible + landmarks
+   ═══════════════════════════════════════════════════════════ */
+
+/* Focus visible global (WCAG 2.4.7) — remplace outline:none par outline seulement au clavier */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--sl-green, #22d96a);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Icônes SVG décoratives — masquées aux lecteurs d'écran globalement quand dans un bouton avec aria-label */
+button[aria-label] > svg,
+a[aria-label] > svg {
+  pointer-events: none;
+}
+
+/* Skip-nav — visible uniquement au focus clavier (WCAG 2.4.1) */
+.sl-skip-nav {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  padding: 8px 16px;
+  background: var(--sl-green, #22d96a);
+  color: #000;
+  font-weight: 700;
+  font-size: 14px;
+  z-index: 9999;
+  border-radius: 0 0 8px 0;
+  text-decoration: none;
+  transition: top 0.1s;
+}
+.sl-skip-nav:focus {
+  top: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
    TABLET — sidebar responsive width + touch improvements
    ═══════════════════════════════════════════════════════════ */
 :root {
@@ -435,4 +472,42 @@ html:not([data-theme="light"]) {
 .leaflet-container {
   width: 100% !important;
   height: 100% !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PAYSAGE MOBILE — bottom sheets compressées
+   ═══════════════════════════════════════════════════════════ */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Modales bottom-sheet : hauteur réduite + scroll */
+  .sl-bottom-sheet {
+    max-height: 85dvh !important;
+  }
+  /* Bottom nav — plus compact en paysage */
+  .sl-bottom-nav {
+    padding-bottom: 4px !important;
+    height: 52px !important;
+  }
+  /* Réduire les paddings verticaux dans les formulaires */
+  .sl-form-section { padding-top: 8px !important; padding-bottom: 8px !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TRÈS PETITS ÉCRANS — Galaxy Fold replié ≤ 320px
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 320px) {
+  /* Réduire les paddings globaux */
+  .sl-card, [style*="padding: 14px"] { padding: 10px !important; }
+
+  /* BottomNav — icônes plus petites */
+  .sl-bottom-nav-btn { padding: 6px 2px !important; }
+  .sl-bottom-nav-label { font-size: 9px !important; }
+
+  /* Eviter le débordement des titres */
+  h1, h2, h3 { overflow-wrap: break-word; word-break: break-word; }
+
+  /* Sport filter bar — pills plus compacts */
+  .sl-sport-pill { padding: 5px 8px !important; font-size: 9px !important; }
+
+  /* Modales — pleine largeur sans marge latérale */
+  .sl-modal-frame { border-radius: 16px 16px 0 0 !important; }
 }

@@ -5,6 +5,8 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import SportIcon from '../components/SportIcon.jsx';
 import CityAutocomplete from '../components/CityAutocomplete.jsx';
+import OnboardingRoleStep from '../components/OnboardingRoleStep.jsx';
+import OnboardingFirstSteps from '../components/OnboardingFirstSteps.jsx';
 
 // ── Emoji par sport (pour les cartes clubs) ───────────────────────────────────
 const SPORT_EMOJIS = {
@@ -320,10 +322,12 @@ function ClubSuggestionsStep({ sports, selectedCity: initialCity, onFinish, onBa
 export default function OnboardingPage({ onDone }) {
   const { currentUser, updateProfile } = useAuth();
   const { allSports: SPORTS } = useSports();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1);         // 1=rôle 2=sports 3=ville 4=clubs
+  const [jobRole, setJobRole] = useState(null);
   const [selected, setSelected] = useState(new Set());
   const [cityInput, setCityInput] = useState('');
   const [selectedCity, setSelectedCity] = useState(null);
+  const [showFirstSteps, setShowFirstSteps] = useState(false);
 
   function toggle(sportId) {
     setSelected(prev => {
@@ -340,8 +344,14 @@ export default function OnboardingPage({ onDone }) {
         localStorage.setItem(`sl_city_${currentUser.id}`, JSON.stringify(selectedCity));
       }
     }
-    updateProfile({ favoriteSports: [...selected], onboardingDone: true });
+    updateProfile({ favoriteSports: [...selected], onboardingDone: true, jobRole: jobRole ?? undefined });
+    setShowFirstSteps(true);
+  }
+
+  function handleFirstStepsDone(tab) {
     onDone([...selected]);
+    // Si l'utilisateur a cliqué sur une action, naviguer vers l'onglet
+    if (tab) setTimeout(() => window.dispatchEvent(new CustomEvent('sl-navigate', { detail: tab })), 50);
   }
 
   const firstName = currentUser?.name?.split(' ')[0] ?? '';
@@ -358,9 +368,9 @@ export default function OnboardingPage({ onDone }) {
       <div className="absolute top-0 right-0 w-72 h-72 rounded-full pointer-events-none"
         style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
 
-      {/* Step dots — 3 étapes */}
+      {/* Step dots — 4 étapes */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 6, paddingTop: 20, flexShrink: 0 }}>
-        {[1, 2, 3].map(s => (
+        {[1, 2, 3, 4].map(s => (
           <div key={s} style={{
             width: step === s ? 18 : 6, height: 6, borderRadius: 3,
             backgroundColor: step === s ? '#22C55E' : s < step ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.2)',
@@ -370,8 +380,27 @@ export default function OnboardingPage({ onDone }) {
       </div>
 
       <AnimatePresence mode="wait">
-        {/* ── Étape 1 : Sports ── */}
+        {/* ── Étape 1 : Rôle ── */}
         {step === 1 && (
+          <motion.div
+            key="step0"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col flex-1 overflow-y-auto px-5 pt-8 min-h-0"
+            style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}
+          >
+            <OnboardingRoleStep
+              value={jobRole}
+              onChange={setJobRole}
+              onNext={() => setStep(2)}
+            />
+          </motion.div>
+        )}
+
+        {/* ── Étape 2 : Sports ── */}
+        {step === 2 && (
           <motion.div
             key="step1"
             initial={{ opacity: 0, x: -20 }}
@@ -456,7 +485,7 @@ export default function OnboardingPage({ onDone }) {
             <div className="mt-auto space-y-3">
               <motion.button
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-                onClick={() => setStep(2)}
+                onClick={() => setStep(3)}
                 className="w-full py-4 rounded-2xl font-bold font-poppins text-sm text-white transition-all"
                 style={{
                   backgroundColor: '#22C55E',
@@ -476,8 +505,8 @@ export default function OnboardingPage({ onDone }) {
           </motion.div>
         )}
 
-        {/* ── Étape 2 : Ville ── */}
-        {step === 2 && (
+        {/* ── Étape 3 : Ville ── */}
+        {step === 3 && (
           <motion.div
             key="step2"
             initial={{ opacity: 0, x: 20 }}
@@ -489,7 +518,7 @@ export default function OnboardingPage({ onDone }) {
           >
             {/* Back button */}
             <button
-              onClick={() => setStep(1)}
+              onClick={() => setStep(2)}
               style={{
                 alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6,
                 background: 'none', border: 'none', cursor: 'pointer',
@@ -566,11 +595,11 @@ export default function OnboardingPage({ onDone }) {
               </motion.div>
             )}
 
-            {/* CTA → étape 3 (clubs) */}
+            {/* CTA → étape 4 (clubs) */}
             <div className="mt-auto space-y-3">
               <motion.button
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-                onClick={() => setStep(3)}
+                onClick={() => setStep(4)}
                 className="w-full py-4 rounded-2xl font-bold font-poppins text-sm text-white transition-all"
                 style={{
                   backgroundColor: '#22C55E',
@@ -580,7 +609,7 @@ export default function OnboardingPage({ onDone }) {
                 Suivant →
               </motion.button>
               <button
-                onClick={() => setStep(3)}
+                onClick={() => setStep(4)}
                 style={{ background: 'none', border: 'none', width: '100%', textAlign: 'center', cursor: 'pointer', color: '#334155', fontSize: 12 }}
               >
                 Passer cette étape
@@ -589,10 +618,10 @@ export default function OnboardingPage({ onDone }) {
           </motion.div>
         )}
 
-        {/* ── Étape 3 : Clubs suggérés ── */}
-        {step === 3 && (
+        {/* ── Étape 4 : Clubs suggérés ── */}
+        {step === 4 && (
           <motion.div
-            key="step3"
+            key="step4"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
@@ -604,9 +633,20 @@ export default function OnboardingPage({ onDone }) {
               sports={[...selected]}
               selectedCity={selectedCity}
               onFinish={handleFinish}
-              onBack={() => setStep(2)}
+              onBack={() => setStep(3)}
             />
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Premiers pas post-onboarding */}
+      <AnimatePresence>
+        {showFirstSteps && (
+          <OnboardingFirstSteps
+            jobRole={jobRole}
+            onNavigate={(tab) => { setShowFirstSteps(false); handleFirstStepsDone(tab); }}
+            onClose={() => { setShowFirstSteps(false); handleFirstStepsDone(null); }}
+          />
         )}
       </AnimatePresence>
     </motion.div>

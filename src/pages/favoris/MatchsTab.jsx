@@ -235,7 +235,7 @@ function exportAllICS(events) {
 }
 
 // ── MatchsTab ─────────────────────────────────────────────────────────────────
-export default function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite, isAttending, onToggleAttend }) {
+export default function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleFavorite, isAttending, onToggleAttend, onGoToMap }) {
   const groups = useMemo(() => groupByDate(favoriteEvents), [favoriteEvents]);
   const [showPast, setShowPast] = useState(false);
   const hasUpcoming = groups.today.length + groups.tomorrow.length + groups.thisWeek.length + groups.later.length > 0;
@@ -264,6 +264,14 @@ export default function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleF
             </svg>
             <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--sl-t2)' }}>Aucun favori pour l'instant</p>
             <p style={{ fontSize: 13, marginTop: 6, color: 'var(--sl-t3)' }}>Appuie sur le cœur d'un événement pour l'ajouter ici</p>
+            {onGoToMap && (
+              <button
+                onClick={onGoToMap}
+                style={{ marginTop: 18, padding: '10px 22px', borderRadius: 14, backgroundColor: 'var(--sl-green)', color: '#000', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}
+              >
+                Voir les événements
+              </button>
+            )}
           </motion.div>
         ) : (
           <motion.div key="groups" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

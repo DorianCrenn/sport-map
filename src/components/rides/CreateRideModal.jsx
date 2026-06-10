@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 import { useAndroidBack } from '../../hooks/useAndroidBack.js';
+import { useScrollInputIntoView } from '../../hooks/useScrollInputIntoView.js';
+import { useFormDraft } from '../../hooks/useFormDraft.js';
+import DraftBanner from '../ui/DraftBanner.jsx';
 import { motion } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
 import VenueAutocomplete from '../VenueAutocomplete.jsx';
@@ -54,7 +58,17 @@ export default function CreateRideModal({ event, onSave, onClose }) {
   const panelRef = useRef(null);
   useFocusTrap(panelRef);
   useAndroidBack(true, onClose);
+  useScrollInputIntoView(panelRef);
   const [saving, setSaving] = useState(false);
+
+  const { hasDraft, saveDraft, loadDraft, clearDraft } = useFormDraft('sl-ride-draft');
+
+  // Sauvegarder les champs texte libres
+  useEffect(() => {
+    if (form.departureLocation || form.notes) {
+      saveDraft({ departureLocation: form.departureLocation, notes: form.notes });
+    }
+  }, [form.departureLocation, form.notes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
@@ -83,6 +97,7 @@ export default function CreateRideModal({ event, onSave, onClose }) {
     setError('');
     try {
       await onSave({ ...form, departureTime: event.date });
+      clearDraft();
     } catch (err) {
       setError(err.message ?? 'Erreur lors de la création');
       setSaving(false);
@@ -118,6 +133,16 @@ export default function CreateRideModal({ event, onSave, onClose }) {
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
           <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
         </div>
+
+        {/* Draft banner */}
+        <AnimatePresence>
+          {hasDraft && (
+            <DraftBanner
+              onRestore={() => { const d = loadDraft(); if (d) { set('departureLocation', d.departureLocation ?? ''); set('notes', d.notes ?? ''); } clearDraft(); }}
+              onDiscard={clearDraft}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 18px 14px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>

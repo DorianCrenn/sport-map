@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
@@ -10,6 +10,7 @@ const ClubCreationWizard = lazy(() => import('../components/club/ClubCreationWiz
 import ClubFormModal from '../components/club/ClubFormModal.jsx';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { SkeletonClubCard } from '../components/Skeleton.jsx';
+import { generateDemoData } from '../lib/demoDataGenerator.js';
 export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent, onClubOverlayChange, onArchiveSeason }) {
   const { allSports: SPORTS } = useSports();
   const { userClubs, loading: clubsLoading, addClubAndNotify, updateClub, deleteClub } = useClubs();
@@ -17,6 +18,8 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
 
   const [search, setSearch]               = useState('');
   const [sportFilter, setSportFilter]     = useState(null);
+  const [showDemoDialog, setShowDemoDialog] = useState(false);
+  const newClubRef = useRef(null); // club créé en attente de démo
   const { leaderboard } = useClubLeaderboard({ limit: 5, sportFilter });
   const [showAllSports, setShowAllSports]       = useState(false);
   const [selectedClub, setSelectedClub]         = useState(null);
@@ -53,13 +56,33 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
   async function handleSave(data) {
     if (formClub && formClub !== true) {
       await updateClub(formClub.id, data);
+      setFormClub(null);
     } else {
       const created = await addClubAndNotify(data);
       setSelectedClub(created);
-      // Await le refresh pour que role=club_admin et clubId soient à jour avant le rendu
       await refetchProfile();
+      setFormClub(null);
+      // Proposer les données de démo après création
+      if (created?.id) {
+        newClubRef.current = created;
+        setShowDemoDialog(true);
+      }
     }
-    setFormClub(null);
+  }
+
+  async function handleAcceptDemo() {
+    setShowDemoDialog(false);
+    const club = newClubRef.current;
+    if (!club || !currentUser) return;
+    try {
+      await generateDemoData(club.id, currentUser.id, club.name, club.sport);
+    } catch { /* silencieux — la démo est optionnelle */ }
+    newClubRef.current = null;
+  }
+
+  function handleDeclineDemo() {
+    setShowDemoDialog(false);
+    newClubRef.current = null;
   }
 
   function handleDelete(club) {
@@ -129,6 +152,17 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
           />
         )}
       </AnimatePresence>
+
+      {/* Dialog données de démonstration */}
+      <ConfirmDialog
+        open={showDemoDialog}
+        title="Générer des données d'exemple ?"
+        message="SportLink peut créer 5 événements, 1 annonce et 1 covoiturage fictifs pour vous montrer toutes les fonctionnalités. Vous pourrez les supprimer à tout moment depuis le dashboard."
+        confirmLabel="Générer les exemples"
+        confirmColor="var(--sl-green)"
+        onConfirm={handleAcceptDemo}
+        onCancel={handleDeclineDemo}
+      />
 
       <ConfirmDialog
         open={!!confirmDelete}

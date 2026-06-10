@@ -11,44 +11,50 @@ import { generateAIBackground, generateCustomBackground, generateCustomElement }
  * @param {boolean}  opts.aiGenerateBlocked — true when monthly quota exceeded
  * @param {function} [opts.onTrack]         — called after each successful generation (analytics)
  */
-export function usePosterAI({ aiGenerateBlocked, onTrack, clubId } = {}) {
+export function usePosterAI({ aiGenerateBlocked, onTrack, clubId, onError } = {}) {
   const [aiBgLoading,   setAiBgLoading]   = useState(false);
   const [aiBgResult,    setAiBgResult]    = useState(null);
   const [customPrompt,  setCustomPrompt]  = useState('');
   const [aiElLoading,   setAiElLoading]   = useState(false);
   const [elementPrompt, setElementPrompt] = useState('');
 
-  /**
-   * Generate a background image.
-   * @param {{ dnaForBg: object, eventSport: string, onSuccess: (url: string) => void }} opts
-   */
   async function generateBg({ dnaForBg, eventSport, onSuccess }) {
     if (aiGenerateBlocked || aiBgLoading) return;
     setAiBgLoading(true);
     setAiBgResult(null);
-    const res = customPrompt.trim()
-      ? await generateCustomBackground(customPrompt.trim())
-      : await generateAIBackground(dnaForBg, eventSport, supabase, clubId);
-    setAiBgResult(res);
-    setAiBgLoading(false);
-    if (res.imageUrl) {
-      onSuccess?.(res.imageUrl);
-      onTrack?.();
+    try {
+      const res = customPrompt.trim()
+        ? await generateCustomBackground(customPrompt.trim())
+        : await generateAIBackground(dnaForBg, eventSport, supabase, clubId);
+      setAiBgResult(res);
+      if (res.imageUrl) {
+        onSuccess?.(res.imageUrl);
+        onTrack?.();
+      } else if (res.error) {
+        onError?.('Génération IA indisponible, réessayez.');
+      }
+    } catch {
+      onError?.('Génération IA indisponible, réessayez.');
+    } finally {
+      setAiBgLoading(false);
     }
   }
 
-  /**
-   * Generate a decorative element.
-   * @param {{ accentColor: string, onSuccess: (result: { imageUrl, prompt }) => void }} opts
-   */
   async function generateElement({ accentColor, onSuccess }) {
     if (aiGenerateBlocked || aiElLoading || !elementPrompt.trim()) return;
     setAiElLoading(true);
-    const res = await generateCustomElement(elementPrompt.trim(), accentColor);
-    setAiElLoading(false);
-    if (res.imageUrl) {
-      onSuccess?.(res);
-      onTrack?.();
+    try {
+      const res = await generateCustomElement(elementPrompt.trim(), accentColor);
+      if (res.imageUrl) {
+        onSuccess?.(res);
+        onTrack?.();
+      } else if (res.error) {
+        onError?.('Génération IA indisponible, réessayez.');
+      }
+    } catch {
+      onError?.('Génération IA indisponible, réessayez.');
+    } finally {
+      setAiElLoading(false);
     }
   }
 

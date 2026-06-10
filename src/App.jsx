@@ -36,6 +36,10 @@ const AnnouncementsCenter = lazy(() => import('./components/AnnouncementsCenter.
 const PosterStudio        = lazy(() => import('./components/PosterStudio.jsx'));
 const LegalPage           = lazy(() => import('./pages/LegalPage.jsx'));
 import OfflineBanner from './components/OfflineBanner.jsx';
+import { useErrorBus } from './lib/errorBus.js';
+import HelpFab from './components/HelpFab.jsx';
+const HelpPage      = lazy(() => import('./pages/HelpPage.jsx'));
+const FeedbackModal = lazy(() => import('./components/FeedbackModal.jsx'));
 import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
 import { useAttendeeCountActions } from './contexts/AttendeeCountContext.jsx';
@@ -60,6 +64,35 @@ function ModalLoader() {
   );
 }
 
+function UpdateBanner() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setVisible(true);
+    window.addEventListener('sl-sw-update-ready', handler);
+    return () => window.removeEventListener('sl-sw-update-ready', handler);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      gap: 10, padding: '9px 14px',
+      backgroundColor: '#1a3a2a', borderBottom: '1px solid rgba(34,217,106,0.25)',
+      fontSize: 13, color: '#22d96a', flexShrink: 0, zIndex: 200,
+    }}>
+      <span style={{ fontWeight: 600 }}>Nouvelle version disponible !</span>
+      <button
+        onClick={() => { if ('serviceWorker' in navigator && navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' }); else window.location.reload(); }}
+        style={{ padding: '5px 14px', borderRadius: 8, backgroundColor: '#22d96a', color: '#000', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, flexShrink: 0 }}
+      >
+        Recharger
+      </button>
+    </div>
+  );
+}
+
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs } = useAuth();
   const [activeTab, _setActiveTab] = useState(() => {
@@ -81,11 +114,14 @@ function AppInner() {
   const [studioClub,  setStudioClub]  = useState(null);
 
   const { toast } = useToast();
+  useErrorBus((msg) => toast({ message: msg, type: 'error' }));
   const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent, archiveSeason } = useLocalEvents();
   const { unreadCount: rideNotifCount } = useRideNotifications();
   const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
   const { convocations: myConvocations, pendingCount: convocationsPending, respond: respondToConvocation } = useMyConvocations(currentUser?.id);
   const [showMyRides, setShowMyRides] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [showTrainings, setShowTrainings] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [legalSection, setLegalSection] = useState(null); // null | 'mentions' | 'privacy' | 'cgu'
@@ -233,6 +269,16 @@ function AppInner() {
   // Fetch all communes for active departments from geo.api.gouv.fr
   const { communes } = useCommunes([activeDepartment]);
 
+  // Badge API — affiche le nombre de convocations en attente sur l'icône de l'app
+  useEffect(() => {
+    if (!('setAppBadge' in navigator)) return;
+    if (convocationsPending > 0) {
+      navigator.setAppBadge(convocationsPending).catch(() => {});
+    } else {
+      navigator.clearAppBadge().catch(() => {});
+    }
+  }, [convocationsPending]);
+
   const upcomingFavorites = useUpcomingFavorites(allEvents, favorites);
 
   const navBadges = useMemo(() => {
@@ -336,6 +382,7 @@ function AppInner() {
     <ErrorBoundary name="AppShell">
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
       <OfflineBanner />
+      <UpdateBanner />
       {activeTab !== 'home' && (
         <Header
           cities={communes}
@@ -366,7 +413,7 @@ function AppInner() {
       {/* zIndex:1 crée un stacking context explicite au-dessus du BottomNav (z:auto),
           garantissant que les overlays fixed (ClubPageView, PosterStudio…) ne passent
           pas derrière la nav bottom quand ils sont ouverts depuis une page enfant. */}
-      <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', zIndex: 1 }}>
+      <main id="main-content" style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', zIndex: 1 }}>
         <AnimatePresence initial={false}>
           <motion.div
             key={activeTab}
@@ -430,6 +477,8 @@ function AppInner() {
                   onShowAuth={() => setShowAuth(true)}
                   onMyRides={() => setShowMyRides(true)}
                   rideNotifCount={rideNotifCount}
+                  onMyConvocations={currentUser ? () => setActiveTab('home') : undefined}
+                  convocationsPendingCount={convocationsPending}
                   onShowLegal={(section) => setLegalSection(section || 'mentions')}
                 />
               </ErrorBoundary>
@@ -488,10 +537,10 @@ function AppInner() {
             />
           </Suspense>
         )}
-      </div>
+      </main>
 
       <ErrorBoundary name="BottomNav">
-        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} onClubAdminAction={handleClubAdminFabAction} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides} />
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} onClubAdminAction={handleClubAdminFabAction} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp} />
       </ErrorBoundary>
 
       <Suspense fallback={<ModalLoader />}>
@@ -566,6 +615,27 @@ function AppInner() {
           )}
         </AnimatePresence>
       </Suspense>
+
+      {/* HelpFab — visible hors overlay */}
+      <HelpFab onClick={() => setShowHelp(true)} hidden={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp || showFeedback || !!studioEvent || !!legalSection} />
+
+      {/* HelpPage */}
+      <AnimatePresence>
+        {showHelp && (
+          <Suspense fallback={null}>
+            <HelpPage onClose={() => setShowHelp(false)} onOpenFeedback={() => { setShowHelp(false); setShowFeedback(true); }} />
+          </Suspense>
+        )}
+      </AnimatePresence>
+
+      {/* FeedbackModal */}
+      <AnimatePresence>
+        {showFeedback && (
+          <Suspense fallback={null}>
+            <FeedbackModal onClose={() => setShowFeedback(false)} />
+          </Suspense>
+        )}
+      </AnimatePresence>
     </div>
     </ErrorBoundary>
   );

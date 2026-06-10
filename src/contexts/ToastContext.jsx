@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const ToastCtx = createContext({ toast: () => {} });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useToast = () => useContext(ToastCtx);
 
 function ToastItem({ message, type }) {
@@ -49,6 +50,16 @@ export function ToastProvider({ children }) {
   return (
     <ToastCtx.Provider value={{ toast }}>
       {children}
+      {/* Région aria-live pour lecteurs d'écran — invisible mais vocalisée */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}
+      >
+        {toasts.map(t => t.message).join('. ')}
+      </div>
+
       <div style={{
         position: 'fixed',
         bottom: 'calc(72px + env(safe-area-inset-bottom, 0px) + 10px)',

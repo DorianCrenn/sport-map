@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import RideCard from '../components/rides/RideCard.jsx';
 import { timeAgo } from '../lib/dateUtils.js';
+import EmptyState from '../components/ui/EmptyState.jsx';
 
 const TABS = [
   { key: 'driving',   label: 'Mes trajets',   icon: '🚗' },
@@ -21,21 +22,13 @@ const STATUS_META = {
   cancelled: { label: '↩ Annulée',    color: '#64748b', bg: 'rgba(100,116,139,0.1)' },
 };
 
-function EmptyState({ icon, title, subtitle }) {
-  return (
-    <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-      <div style={{ fontSize: 40, marginBottom: 12 }}>{icon}</div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>{title}</div>
-      <div style={{ fontSize: 13, color: 'var(--sl-t3)', lineHeight: 1.5 }}>{subtitle}</div>
-    </div>
-  );
-}
 
 export default function MyRidesPage({ onBack }) {
   const { currentUser } = useAuth();
   const { myDriving, myPassenger, loading, refetch } = useMyRides();
   const { notifications, unreadCount, markAllRead, markRead } = useRideNotifications();
   const [activeTab, setActiveTab] = useState('driving');
+  const [processingIds, setProcessingIds] = useState(new Set());
 
   useAndroidBack(true, onBack);
 
@@ -45,33 +38,51 @@ export default function MyRidesPage({ onBack }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [onBack]);
 
+  function markProcessing(id) {
+    setProcessingIds(prev => new Set([...prev, id]));
+  }
+  function unmarkProcessing(id) {
+    setProcessingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+  }
+
   // Actions (used by driving tab)
   async function handleAccept(requestId, rideId, passengerId) {
-    const { error } = await supabase
-      .from('ride_requests')
-      .update({ status: 'accepted' })
-      .eq('id', requestId);
-    if (error) return;
-    // Check if full
-    const ride = myDriving.find(r => r.id === rideId);
-    if (ride && ride.takenSeats + 1 >= ride.availableSeats) {
-      await supabase.from('rides').update({ status: 'full' }).eq('id', rideId);
+    if (processingIds.has(requestId)) return;
+    markProcessing(requestId);
+    try {
+      const { error } = await supabase
+        .from('ride_requests')
+        .update({ status: 'accepted' })
+        .eq('id', requestId);
+      if (error) return;
+      const ride = myDriving.find(r => r.id === rideId);
+      if (ride && ride.takenSeats + 1 >= ride.availableSeats) {
+        await supabase.from('rides').update({ status: 'full' }).eq('id', rideId);
+      }
+      await supabase.from('ride_notifications').insert({
+        user_id: passengerId, type: 'request_accepted', ride_id: rideId, request_id: requestId,
+        data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
+      });
+      refetch();
+    } finally {
+      unmarkProcessing(requestId);
     }
-    await supabase.from('ride_notifications').insert({
-      user_id: passengerId, type: 'request_accepted', ride_id: rideId, request_id: requestId,
-      data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
-    });
-    refetch();
   }
 
   async function handleRefuse(requestId, rideId, passengerId) {
-    await supabase.from('ride_requests').update({ status: 'refused' }).eq('id', requestId);
-    const ride = myDriving.find(r => r.id === rideId);
-    await supabase.from('ride_notifications').insert({
-      user_id: passengerId, type: 'request_refused', ride_id: rideId, request_id: requestId,
-      data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
-    });
-    refetch();
+    if (processingIds.has(requestId)) return;
+    markProcessing(requestId);
+    try {
+      await supabase.from('ride_requests').update({ status: 'refused' }).eq('id', requestId);
+      const ride = myDriving.find(r => r.id === rideId);
+      await supabase.from('ride_notifications').insert({
+        user_id: passengerId, type: 'request_refused', ride_id: rideId, request_id: requestId,
+        data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
+      });
+      refetch();
+    } finally {
+      unmarkProcessing(requestId);
+    }
   }
 
   async function handleCancelRide(rideId) {
@@ -178,7 +189,7 @@ export default function MyRidesPage({ onBack }) {
             {activeTab === 'driving' && (
               <motion.div key="driving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 {activeDriving.length === 0 && pastDriving.length === 0 ? (
-                  <EmptyState icon="🚗" title="Aucun trajet proposé" subtitle="Vos trajets proposés apparaîtront ici." />
+                  <EmptyState emoji="🚗" title="Aucun trajet proposé" subtitle="Proposez un covoiturage depuis la fiche d'un événement." actionLabel="Voir les événements" onAction={onBack} />
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {activeDriving.length > 0 && (
@@ -216,7 +227,7 @@ export default function MyRidesPage({ onBack }) {
             {activeTab === 'passenger' && (
               <motion.div key="passenger" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 {myPassenger.length === 0 ? (
-                  <EmptyState icon="🙋" title="Aucune demande envoyée" subtitle="Les covoiturages que vous demandez à rejoindre apparaîtront ici." />
+                  <EmptyState emoji="🙋" title="Aucune demande envoyée" subtitle="Trouvez un covoiturage depuis la fiche d'un événement." actionLabel="Voir les événements" onAction={onBack} />
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {activePassenger.map(req => {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { dispatchError } from '../lib/errorBus.js';
 
 function mapRequest(row) {
   return {
@@ -46,11 +47,15 @@ export function useRides(eventId) {
 
   const fetchRides = useCallback(async () => {
     if (!eventId) return;
+    // Filtre côté serveur : ne récupérer que les trajets partant dans les 2h à venir ou plus
+    const cutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     const { data, error } = await supabase
       .from('rides')
       .select('*, ride_requests(*)')
       .eq('event_id', String(eventId))
-      .order('created_at', { ascending: true });
+      .gte('departure_time', cutoff)
+      .order('departure_time', { ascending: true });
+    if (error) dispatchError('Impossible de charger les covoiturages.');
     if (!error && data) setRides(data.map(mapRide));
     setLoading(false);
   }, [eventId]);
@@ -120,13 +125,13 @@ export function useRides(eventId) {
       .eq('id', rideId)
       .eq('driver_id', currentUser?.id);
     if (error) throw error;
-    // Notify accepted passengers
-    const accepted = ride?.requests.filter(r => r.status === 'accepted') ?? [];
+    // Notify accepted passengers (ignorer les passagerIds null/invalides)
+    const accepted = (ride?.requests ?? []).filter(r => r.status === 'accepted' && r.passengerId);
     if (accepted.length > 0) {
       await supabase.from('ride_notifications').insert(
         accepted.map(r => ({
           user_id: r.passengerId, type: 'ride_cancelled', ride_id: rideId,
-          data: { driverName: currentUser?.name, rideLocation: ride.departureLocation },
+          data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
         }))
       );
     }
@@ -135,11 +140,14 @@ export function useRides(eventId) {
 
   const requestRide = useCallback(async (rideId, message) => {
     if (!currentUser) throw new Error('not authenticated');
-    // Guard : ne pas insérer si le trajet est plein ou annulé
+    // Guard : ne pas insérer si le trajet est plein, annulé ou expiré
     const ride = rides.find(r => r.id === rideId);
     if (ride) {
       if (ride.status === 'full' || ride.status === 'cancelled') {
         throw new Error('Ce trajet n\'est plus disponible');
+      }
+      if (ride.departureTime && new Date(ride.departureTime) < new Date()) {
+        throw new Error('Ce trajet est déjà parti');
       }
       const accepted = (ride.requests ?? []).filter(r => r.status === 'accepted').length;
       if (accepted >= ride.availableSeats) {

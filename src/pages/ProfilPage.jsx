@@ -93,7 +93,63 @@ function ThemeToggle() {
   );
 }
 
-export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, onShowAuth, onMyRides, rideNotifCount = 0, onShowLegal }) {
+const ROLE_OPTIONS = [
+  { id: 'president',   label: 'Président / Responsable', emoji: '🏛️' },
+  { id: 'coach',       label: 'Coach / Éducateur',        emoji: '🎽' },
+  { id: 'communicant', label: 'Communication',            emoji: '📸' },
+  { id: 'parent',      label: 'Parent',                   emoji: '👨‍👩‍👦' },
+  { id: 'joueur',      label: 'Joueur / Joueuse',         emoji: '⚽' },
+  { id: 'supporter',   label: 'Supporter',                emoji: '📣' },
+];
+
+function RoleSection({ jobRole, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const current = ROLE_OPTIONS.find(r => r.id === jobRole);
+  return (
+    <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)' }}>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-sm font-poppins" style={{ color: 'var(--sl-t1)' }}>Mon rôle</h3>
+        <button
+          onClick={() => setEditing(e => !e)}
+          className="text-xs font-semibold px-2.5 py-1 rounded-lg"
+          style={{ backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}
+        >
+          {editing ? 'Fermer' : 'Modifier'}
+        </button>
+      </div>
+      {!editing ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 20 }}>{current?.emoji ?? '🙋'}</span>
+          <span className="text-sm" style={{ color: 'var(--sl-t2)' }}>
+            {current?.label ?? 'Non défini'}
+          </span>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {ROLE_OPTIONS.map(role => (
+            <button
+              key={role.id}
+              onClick={() => { onSave(role.id); setEditing(false); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '9px 12px', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
+                border: `2px solid ${jobRole === role.id ? 'var(--sl-green)' : 'var(--sl-border)'}`,
+                backgroundColor: jobRole === role.id ? 'rgba(34,217,106,0.08)' : 'var(--sl-surface)',
+                fontSize: 12, fontWeight: 600,
+                color: jobRole === role.id ? 'var(--sl-green)' : 'var(--sl-t2)',
+              }}
+            >
+              <span style={{ fontSize: 16 }}>{role.emoji}</span>
+              {role.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, onShowAuth, onMyRides, rideNotifCount = 0, onShowLegal, onMyConvocations, convocationsPendingCount = 0 }) {
   const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs, requestPasswordReset } = useAuth();
   const { toast } = useToast();
   const { favorites } = useFavoritesContext();
@@ -346,6 +402,25 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
           ))}
         </div>
 
+        {/* CTA si aucun événement créé */}
+        {profileTab === 'profil' && eventCount === 0 && (
+          <div style={{
+            borderRadius: 16, padding: '16px 16px',
+            backgroundColor: 'var(--sl-card)', border: '1px dashed var(--sl-border)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center',
+          }}>
+            <span style={{ fontSize: 28 }}>🏟️</span>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', margin: 0 }}>Aucun événement ajouté</p>
+            <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: 0, lineHeight: 1.4 }}>Créez votre premier événement sur la carte pour débloquer vos badges.</p>
+            <button
+              onClick={() => onNavigate?.('map')}
+              style={{ marginTop: 6, padding: '9px 20px', borderRadius: 12, backgroundColor: 'var(--sl-green)', color: '#000', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}
+            >
+              Voir la carte
+            </button>
+          </div>
+        )}
+
         </> /* /PROFIL */}
 
         {/* ═══════════ ONGLET STATS ═══════════ */}
@@ -481,6 +556,39 @@ export default function ProfilPage({ userEvents, earnedBadges = [], onNavigate, 
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         )}
+
+        {/* Mes convocations shortcut */}
+        {onMyConvocations && (
+          <button
+            onClick={onMyConvocations}
+            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-colors cursor-pointer"
+            style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)' }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(99,102,241,0.12)', position: 'relative' }}>
+              <span style={{ fontSize: 20 }}>📋</span>
+              {convocationsPendingCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: -4, right: -4,
+                  minWidth: 18, height: 18, borderRadius: 999, padding: '0 4px',
+                  backgroundColor: '#f59e0b', color: '#fff',
+                  fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {convocationsPendingCount > 9 ? '9+' : convocationsPendingCount}
+                </span>
+              )}
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-semibold font-poppins" style={{ color: 'var(--sl-t1)' }}>Mes convocations</div>
+              <div className="text-xs" style={{ color: 'var(--sl-t2)' }}>
+                {convocationsPendingCount > 0 ? `${convocationsPendingCount} en attente` : 'Sélections et réponses'}
+              </div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        )}
+
+        {/* Mon rôle */}
+        {currentUser && <RoleSection jobRole={currentUser.jobRole} onSave={role => updateProfile({ jobRole: role })} />}
 
         {/* Sports suivis */}
         <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>

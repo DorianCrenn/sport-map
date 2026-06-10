@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 import { useAndroidBack } from '../../hooks/useAndroidBack.js';
+import { useScrollInputIntoView } from '../../hooks/useScrollInputIntoView.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useToast } from '../../contexts/ToastContext.jsx';
 import SportIcon from '../SportIcon.jsx';
 import CityAutocomplete from '../CityAutocomplete.jsx';
 import { clubSchema, validate } from '../../lib/schemas.js';
 import { supabase } from '../../lib/supabase.js';
+import { compressImage } from '../../lib/imageUtils.js';
 
 const AGE_CATEGORIES = [
   'U7', 'U7F', 'U9', 'U9F', 'U11', 'U11F', 'U13', 'U13F',
@@ -44,6 +47,7 @@ const selectCls = 'text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-whit
 function LogoUpload({ logo, name, sport, clubId, userId, onChange }) {
   const ref = useRef();
   const { allSports } = useSports();
+  const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const sportColor = allSports[sport]?.color ?? '#64748b';
   const initials = (name || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 3);
@@ -51,30 +55,55 @@ function LogoUpload({ logo, name, sport, clubId, userId, onChange }) {
   async function handleFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { alert('Image trop grande (max 2 Mo)'); return; }
-
-    setUploading(true);
-    const ext  = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const folder = clubId ?? `new-${userId ?? 'anon'}`;
-    const path = `clubs/${folder}/${Date.now()}-logo.${ext}`;
-
-    const { data, error } = await supabase.storage
-      .from('club-logos')
-      .upload(path, file, { contentType: file.type, upsert: true });
-
-    if (error || !data) {
-      alert("Erreur lors de l'upload du logo.");
-      setUploading(false);
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ message: 'Image trop grande (max 10 Mo)', type: 'error' });
       return;
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('club-logos')
-      .getPublicUrl(data.path);
+    setUploading(true);
+    try {
+      // Compression pour les formats raster (pas SVG)
+      let uploadFile = file;
+      let contentType = file.type;
+      if (!file.type.includes('svg')) {
+        const { dataUrl } = await compressImage(file, { maxWidth: 800, quality: 0.88 });
+        const resp = await fetch(dataUrl);
+        const blob = await resp.blob();
+        uploadFile = new File([blob], 'logo.jpg', { type: 'image/jpeg' });
+        contentType = 'image/jpeg';
+      }
 
-    onChange(publicUrl);
-    setUploading(false);
-    e.target.value = '';
+      const folder = clubId ?? `new-${userId ?? 'anon'}`;
+      const path = `clubs/${folder}/${Date.now()}-logo.${contentType.includes('svg') ? 'svg' : 'jpg'}`;
+
+      const abortController = new AbortController();
+      const uploadTimeout = setTimeout(() => abortController.abort(), 30_000);
+
+      const { data, error } = await supabase.storage
+        .from('club-logos')
+        .upload(path, uploadFile, { contentType, upsert: true, signal: abortController.signal });
+
+      clearTimeout(uploadTimeout);
+
+      if (error || !data) {
+        const msg = error?.message?.includes('aborted')
+          ? "Upload trop lent — vérifiez votre connexion et réessayez."
+          : "Erreur lors de l'upload du logo. Réessayez.";
+        toast({ message: msg, type: 'error' });
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('club-logos')
+        .getPublicUrl(data.path);
+
+      onChange(publicUrl);
+    } catch {
+      toast({ message: "Upload impossible. Vérifiez votre connexion.", type: 'error' });
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   }
 
   const isStorageUrl = logo && logo.startsWith('http');
@@ -176,22 +205,48 @@ function CategoryBlock({ cat, onAddTeam, onUpdateTeam, onRemoveTeam, onRemoveCat
 }
 
 // ── Main modal ────────────────────────────────────────────────────────────────
+const CLUB_DRAFT_KEY = 'sl-club-form-draft';
+
 export default function ClubFormModal({ club, onSave, onClose }) {
   const { allSports: SPORTS } = useSports();
   const { currentUser } = useAuth();
   const isEdit = !!club;
 
-  const [form, setForm] = useState({
-    name:       club?.name       ?? '',
-    sport:      club?.sport      ?? Object.keys(SPORTS)[0],
-    city:       club?.city       ?? '',
-    email:      club?.email      ?? '',
-    logoUrl:    club?.logoUrl    ?? null,
-    categories: club?.categories ?? [],
+  const [form, setForm] = useState(() => {
+    const base = {
+      name:       club?.name       ?? '',
+      sport:      club?.sport      ?? Object.keys(SPORTS)[0],
+      city:       club?.city       ?? '',
+      email:      club?.email      ?? '',
+      logoUrl:    club?.logoUrl    ?? null,
+      categories: club?.categories ?? [],
+    };
+    if (!isEdit) {
+      try {
+        const saved = localStorage.getItem(CLUB_DRAFT_KEY);
+        if (saved) {
+          const { data, ts } = JSON.parse(saved);
+          if (data && ts && Date.now() - ts < 24 * 3600 * 1000) return { ...base, ...data };
+        }
+      } catch { /* ignore */ }
+    }
+    return base;
   });
   const panelRef = useRef(null);
   useFocusTrap(panelRef);
   useAndroidBack(true, onClose);
+  useScrollInputIntoView(panelRef);
+
+  // Sauvegarde auto du brouillon (création uniquement)
+  const draftTimerRef = useRef(null);
+  useEffect(() => {
+    if (isEdit) return;
+    clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = setTimeout(() => {
+      try { localStorage.setItem(CLUB_DRAFT_KEY, JSON.stringify({ data: form, ts: Date.now() })); } catch { /* ignore */ }
+    }, 1500);
+    return () => clearTimeout(draftTimerRef.current);
+  }, [form, isEdit]);
 
   const [errors, setErrors]               = useState({});
   const [cityValid, setCityValid]         = useState(!!club?.city);
@@ -278,6 +333,7 @@ export default function ClubFormModal({ club, onSave, onClose }) {
     setSubmitting(true);
     try {
       await onSave({ ...form });
+      try { localStorage.removeItem(CLUB_DRAFT_KEY); } catch { /* ignore */ }
     } finally {
       setSubmitting(false);
     }
