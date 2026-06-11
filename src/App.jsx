@@ -299,7 +299,7 @@ function AppInner() {
 
   // ── Demo navigation — listens to DemoApp step dispatches ─────────────────────
   // Keep ref current so the stable event handler always reads latest values
-  demoNavRef.current = { handleTabChange, handleOpenPoster, userEvents };
+  demoNavRef.current = { handleTabChange, handleOpenPoster, userEvents, handleClubAdminFabAction };
 
   useEffect(() => {
     if (!isDemoMode()) return;
@@ -329,6 +329,9 @@ function AppInner() {
         setShowNewEventForm(false);
         setShowAnnouncements(false);
         setFocusEventId('demo-event-001');
+      }
+      if (action === 'open-dashboard') {
+        demoNavRef.current.handleClubAdminFabAction('dashboard');
       }
       if (action === 'focus-score-event') {
         setShowNewEventForm(false);

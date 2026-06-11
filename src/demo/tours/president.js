@@ -68,9 +68,9 @@ export const presidentTour = [
   {
     id:     9,
     tab:    'mon-club',
-    action: 'scroll-to-stats',
+    action: 'open-dashboard',
     title:  'Vos statistiques',
-    body:   'Suivez l\'engagement de votre communauté : vues de page, nouveaux abonnés, participations aux événements, affiches générées. Mesurez votre impact.',
+    body:   "Suivez l'engagement de votre communauté : vues de page, nouveaux abonnés, participations aux événements, affiches générées. Mesurez votre impact.",
     emoji:  '📊',
   },
   {
