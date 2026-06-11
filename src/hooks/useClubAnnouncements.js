@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { sanitizeText } from '../lib/sanitize.js';
 
@@ -89,6 +89,7 @@ export function useClubAnnouncements(clubId) {
       .single();
     if (error) throw error;
     const ann = mapAnn(data);
+    if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'announcement-sent' } }));
     // Notify followers immediately for non-scheduled announcements (PUSH-PROD-001c)
     if (!scheduledFor) {
       const notifTitle = clubName

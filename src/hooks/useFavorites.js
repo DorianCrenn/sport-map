@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 function lsKey(userId) {
@@ -7,7 +7,7 @@ function lsKey(userId) {
 }
 
 function save(userId, set) {
-  try { localStorage.setItem(lsKey(userId), JSON.stringify([...set])); } catch {}
+  try { localStorage.setItem(lsKey(userId), JSON.stringify([...set])); } catch { /* storage plein */ }
 }
 
 export function useFavorites() {
@@ -71,6 +71,8 @@ export function useFavorites() {
               save(userId, rolled);
               return rolled;
             });
+          } else if (adding && isDemoMode()) {
+            window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'event-favorited' } }));
           }
         });
       }

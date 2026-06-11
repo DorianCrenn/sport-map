@@ -1,34 +1,52 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { DemoContext } from './DemoContext.jsx';
 import { loadTour }    from './tours/index.js';
 import {
   startDemoSession, trackStep, trackTourCompleted,
   trackSandboxEntered, trackDemoExited,
 } from './demoAnalytics.js';
-import DemoBanner      from './DemoBanner.jsx';
-import DemoLandingPage from './DemoLandingPage.jsx';
-import DemoGuide       from './DemoGuide.jsx';
+import DemoBanner       from './DemoBanner.jsx';
+import DemoLandingPage  from './DemoLandingPage.jsx';
+import DemoGuide        from './DemoGuide.jsx';
+import DemoSpotlight    from './DemoSpotlight.jsx';
+import SandboxWelcome   from './SandboxWelcome.jsx';
 
-// AppInner is passed as a prop to avoid a circular import
+const PROFILE_EMOJIS = {
+  president:    '👑',
+  coach:        '🎯',
+  communication:'📣',
+  parent:       '👨‍👧',
+  player:       '⚽',
+  supporter:    '🏟️',
+};
+
+// AppInner est passé en prop pour éviter l'import circulaire
 export default function DemoApp({ AppInner }) {
-  const [profile,     setProfile]     = useState(() => sessionStorage.getItem('sl-demo-profile') || null);
-  const [currentStep, setCurrentStep] = useState(() => parseInt(sessionStorage.getItem('sl-demo-step') || '0', 10));
-  const [isInSandbox, setIsInSandbox] = useState(false);
-  const [tourSteps,   setTourSteps]   = useState(() => {
+  const [profile,           setProfile]           = useState(() => sessionStorage.getItem('sl-demo-profile') || null);
+  const [currentStep,       setCurrentStep]       = useState(() => parseInt(sessionStorage.getItem('sl-demo-step') || '0', 10));
+  const [isInSandbox,       setIsInSandbox]       = useState(false);
+  const [showSandboxWelcome,setShowSandboxWelcome] = useState(false);
+  const [spotlightActive,   setSpotlightActive]   = useState(false);
+  const [tourSteps,         setTourSteps]         = useState(() => {
     const saved = sessionStorage.getItem('sl-demo-profile');
     return saved ? loadTour(saved) : [];
   });
 
-  const showLanding = !profile;
+  const showLanding        = !profile;
   const firstNavDispatched = useRef(false);
 
-  // Dispatch navigation when step changes (also handles first step after profile selection)
+  const currentTarget = tourSteps[currentStep]?.target ?? null;
+  // Auto-spotlight sur les étapes avec target mais sans tryItAction
+  const autoSpotlight = !!currentTarget && !tourSteps[currentStep]?.tryItAction;
+  const showSpotlight = (autoSpotlight || spotlightActive) && !showLanding && !isInSandbox && !showSandboxWelcome;
+
+  // Dispatch navigation à chaque changement d'étape
   useEffect(() => {
     if (showLanding || !tourSteps.length) return;
     const step = tourSteps[currentStep];
     if (!step) return;
 
-    // Small delay: ensures App.jsx event listener and clubs are ready
     const timer = setTimeout(() => {
       window.dispatchEvent(new CustomEvent('sl-demo-navigate', {
         detail: { tab: step.tab, action: step.action, stepId: step.id },
@@ -48,7 +66,7 @@ export default function DemoApp({ AppInner }) {
     setCurrentStep(0);
     firstNavDispatched.current = false;
     sessionStorage.setItem('sl-demo-profile', selectedProfile);
-    sessionStorage.setItem('sl-demo-step',    '0');
+    sessionStorage.setItem('sl-demo-step', '0');
     startDemoSession(selectedProfile);
   }, []);
 
@@ -60,6 +78,7 @@ export default function DemoApp({ AppInner }) {
       if (step) trackStep(next, step.title);
       return next;
     });
+    setSpotlightActive(false);
   }, [tourSteps]);
 
   const prevStep = useCallback(() => {
@@ -68,15 +87,21 @@ export default function DemoApp({ AppInner }) {
       sessionStorage.setItem('sl-demo-step', String(p));
       return p;
     });
+    setSpotlightActive(false);
   }, []);
 
   const exitTour = useCallback(() => {
     trackTourCompleted(profile);
-    setIsInSandbox(true);
-    trackSandboxEntered();
-    // Clear the overlay action so no modal stays open
+    setSpotlightActive(false);
+    setShowSandboxWelcome(true);
     window.dispatchEvent(new CustomEvent('sl-demo-navigate', { detail: { action: 'close-overlay' } }));
   }, [profile]);
+
+  const enterSandbox = useCallback(() => {
+    setShowSandboxWelcome(false);
+    setIsInSandbox(true);
+    trackSandboxEntered();
+  }, []);
 
   const exitDemo = useCallback(() => {
     trackDemoExited(currentStep);
@@ -85,36 +110,44 @@ export default function DemoApp({ AppInner }) {
     window.location.href = '/';
   }, [currentStep]);
 
+  const replayTour = useCallback(() => {
+    setIsInSandbox(false);
+    setCurrentStep(0);
+    firstNavDispatched.current = false;
+    sessionStorage.setItem('sl-demo-step', '0');
+    startDemoSession(profile);
+  }, [profile]);
+
   // ── Context value ──────────────────────────────────────────────────────────
 
   const contextValue = {
-    profile,
-    currentStep,
-    tourSteps,
-    isInSandbox,
-    isLastStep:  currentStep === tourSteps.length - 1,
-    startDemo,
-    nextStep,
-    prevStep,
-    exitTour,
-    exitDemo,
+    profile, currentStep, tourSteps, isInSandbox,
+    isLastStep:     currentStep === tourSteps.length - 1,
+    spotlightTarget: currentTarget,
+    spotlightActive: showSpotlight,
+    startDemo, nextStep, prevStep, exitTour, exitDemo,
   };
 
   return (
     <DemoContext.Provider value={contextValue}>
-      {/* AppInner always rendered — data loads in the background */}
+      {/* App complète — les données chargent en arrière-plan */}
       <AppInner />
 
-      {/* Fixed demo banner — always visible in demo mode */}
+      {/* Bandeau fixe — toujours visible */}
       <DemoBanner onCreateAccount={() => {
         window.dispatchEvent(new CustomEvent('sl-demo-create-account', {}));
       }} />
 
-      {/* Landing overlay — shown until profile is selected */}
-      {showLanding && <DemoLandingPage onSelect={startDemo} />}
+      {/* Overlay de sélection de profil */}
+      <AnimatePresence>
+        {showLanding && <DemoLandingPage onSelect={startDemo} />}
+      </AnimatePresence>
 
-      {/* Guided tour overlay */}
-      {!showLanding && !isInSandbox && tourSteps.length > 0 && currentStep < tourSteps.length && (
+      {/* Spotlight sur l'élément cible */}
+      <DemoSpotlight target={currentTarget} active={showSpotlight} />
+
+      {/* Guide guidé */}
+      {!showLanding && !isInSandbox && !showSandboxWelcome && tourSteps.length > 0 && currentStep < tourSteps.length && (
         <DemoGuide
           step={tourSteps[currentStep]}
           stepIndex={currentStep}
@@ -123,40 +156,103 @@ export default function DemoApp({ AppInner }) {
           onNext={nextStep}
           onPrev={prevStep}
           onExit={exitTour}
+          onTryItActivate={(active) => {
+            setSpotlightActive(active);
+          }}
         />
       )}
 
-      {/* Sandbox CTA — shown when tour is complete or sandbox entered */}
+      {/* Écran de félicitations post-tour */}
+      <AnimatePresence>
+        {showSandboxWelcome && (
+          <SandboxWelcome
+            profile={profile}
+            completedSteps={tourSteps.length}
+            onEnterSandbox={enterSandbox}
+            onCreateAccount={() => {
+              window.location.assign('/#register');
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Badge sandbox */}
       {!showLanding && isInSandbox && (
-        <SandboxBadge />
+        <SandboxBadge
+          profile={profile}
+          stepCount={tourSteps.length}
+          onCreateAccount={() => window.location.assign('/#register')}
+          onReplayTour={replayTour}
+        />
       )}
     </DemoContext.Provider>
   );
 }
 
-function SandboxBadge() {
+function SandboxBadge({ profile, onCreateAccount, onReplayTour }) {
+  const emoji = PROFILE_EMOJIS[profile] || '🏖️';
+
   return (
     <div style={{
-      position:   'fixed',
-      bottom:     80,
-      left:       '50%',
-      transform:  'translateX(-50%)',
-      zIndex:     9990,
-      background: 'linear-gradient(135deg, #1d4ed8, #7c3aed)',
-      color:      '#fff',
-      padding:    '8px 18px',
-      borderRadius: 24,
-      fontSize:   13,
-      fontWeight: 600,
-      boxShadow:  '0 4px 20px rgba(29,78,216,0.4)',
-      whiteSpace: 'nowrap',
-      pointerEvents: 'none',
-      display:    'flex',
-      alignItems: 'center',
-      gap:        8,
+      position:     'fixed',
+      bottom:       80,
+      left:         '50%',
+      transform:    'translateX(-50%)',
+      zIndex:       9990,
+      display:      'flex',
+      alignItems:   'center',
+      gap:          8,
+      background:   'rgba(10,14,28,0.96)',
+      backdropFilter: 'blur(16px)',
+      border:       '1px solid rgba(99,102,241,0.3)',
+      borderRadius: 28,
+      padding:      '8px 8px 8px 14px',
+      boxShadow:    '0 4px 24px rgba(0,0,0,0.5)',
+      whiteSpace:   'nowrap',
     }}>
-      <span>🏖️</span>
-      Mode sandbox — explorez librement
+      <span style={{ fontSize: 16 }}>{emoji}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.65)' }}>
+        Sandbox
+      </span>
+
+      <button
+        onClick={onReplayTour}
+        style={{
+          background:   'rgba(255,255,255,0.06)',
+          border:       '1px solid rgba(255,255,255,0.12)',
+          borderRadius: 20,
+          color:        'rgba(255,255,255,0.5)',
+          padding:      '5px 12px',
+          fontSize:     11,
+          fontWeight:   600,
+          cursor:       'pointer',
+          transition:   'all 0.2s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+      >
+        Revoir la visite
+      </button>
+
+      <button
+        onClick={onCreateAccount}
+        style={{
+          background:   'linear-gradient(135deg, #1d4ed8, #7c3aed)',
+          border:       'none',
+          borderRadius: 20,
+          color:        '#fff',
+          padding:      '6px 14px',
+          fontSize:     12,
+          fontWeight:   700,
+          cursor:       'pointer',
+          transition:   'opacity 0.2s',
+          animation:    'sl-demo-pulse 2.5s ease-in-out infinite',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; }}
+        onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+      >
+        🚀 Créer mon club
+      </button>
     </div>
   );
 }

@@ -23,6 +23,20 @@ export const demoStats = {
   posterExports:  6,
   socialShares:   18,
   newFollowersThisMonth: 24,
+  // Données enrichies
+  monthlyFollowerGrowth: [
+    { month: 'juil', count: 12 }, { month: 'août', count: 18 },
+    { month: 'sep',  count: 31 }, { month: 'oct',  count: 22 },
+    { month: 'nov',  count: 19 }, { month: 'déc',  count: 14 },
+    { month: 'jan',  count: 28 }, { month: 'fév',  count: 35 },
+    { month: 'mar',  count: 42 }, { month: 'avr',  count: 38 },
+    { month: 'mai',  count: 47 }, { month: 'juin', count: 24 },
+  ],
+  participationByTeam: {
+    'Équipe 1': 82, 'Réserve': 71, 'U17': 88,
+    'U15': 79, 'Équipe F': 85,
+  },
+  posterFormatDistribution: { story: 3, square: 2, landscape: 1 },
 };
 
 // Pour useClubPageViews — format attendu par le hook

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 import { translateSupabaseError } from '../lib/translateSupabaseError.js';
 
 const AuthContext = createContext(null);
@@ -441,6 +441,7 @@ export function AuthProvider({ children }) {
     const item = { clubId: String(clubId), teams: options.teams ?? 'all', notif: options.notif ?? { match: true, news: true } };
     const next = [...follows, item];
     setFollows(next);
+    if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'club-followed', clubId } }));
     _saveFollows(authUser.id, next, follows);
   }, [authUser?.id, follows]);
 

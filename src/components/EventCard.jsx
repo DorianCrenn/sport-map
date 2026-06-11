@@ -858,6 +858,7 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
         }}
         aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
         aria-pressed={fav}
+        data-demo="favorite-btn"
         style={{ minWidth: 44, minHeight: 44, padding: '0 10px 0 4px', border: 'none', cursor: 'pointer', backgroundColor: 'transparent', flexShrink: 0, alignSelf: 'flex-start', color: fav ? '#ef4444' : 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round">

@@ -186,6 +186,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                   onClick={() => setFabOpen(o => !o)}
                   aria-label={fabOpen ? 'Fermer le menu rapide' : 'Ouvrir le menu rapide'}
                   aria-expanded={fabOpen}
+                  data-demo="fab-add"
                   style={{
                     width: 52, height: 52, borderRadius: '50%',
                     backgroundColor: 'var(--sl-green)',
@@ -220,6 +221,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
               key={tab.id}
               whileTap={{ scale: 0.86 }}
               onClick={() => { setFabOpen(false); onTabChange(tab.id); }}
+              data-demo={`tab-${tab.id}`}
               style={{
                 flex: 1, display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',

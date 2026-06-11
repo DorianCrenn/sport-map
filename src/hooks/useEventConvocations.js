@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 
 /**
  * Gestion des convocations pour un événement (vue coach).
@@ -50,7 +50,10 @@ export function useEventConvocations(eventId) {
     const { error } = await supabase
       .from('event_convocations')
       .upsert(rows, { onConflict: 'event_id,player_id', ignoreDuplicates: true });
-    if (!error) load();
+    if (!error) {
+      load();
+      if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'convocation-sent', count: playerIds.length } }));
+    }
     return { error };
   }, [eventId, load]);
 

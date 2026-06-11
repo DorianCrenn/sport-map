@@ -167,7 +167,7 @@ export default function ClubPageView({
   const [teamTrainings, setTeamTrainings] = useClubTrainings(club.id);
 
   // ── Live events ────────────────────────────────────────────────────────────
-  const liveEvents = useClubEvents(club.id);
+  const liveEvents = useClubEvents(club.id, club.name ?? '');
   const effectiveEvents = useMemo(() => {
     if (!liveEvents.length) return allEvents ?? [];
     const liveIds = new Set(liveEvents.map(e => e.id));

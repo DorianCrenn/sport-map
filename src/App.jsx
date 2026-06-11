@@ -161,6 +161,7 @@ function AppInner() {
     try {
       const result = await addEvent(data);
       toast({ message: 'Événement créé !' });
+      if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'event-created' } }));
       return result;
     } catch (err) {
       toast({ message: err.message || 'Erreur lors de la création', type: 'error' });
@@ -337,6 +338,10 @@ function AppInner() {
       }
       if (action === 'open-dashboard') {
         demoNavRef.current.handleClubAdminFabAction('dashboard');
+      }
+      if (action === 'open-convocations') {
+        // Navigue vers l'onglet Matchs du club pour y trouver le bouton Convoquer
+        demoNavRef.current?.scrollToMatches?.();
       }
       if (action === 'focus-score-event') {
         setShowNewEventForm(false);

@@ -5,6 +5,7 @@ import { demoRides, demoRideRequests } from './rides.js';
 import { demoSponsors } from './sponsors.js';
 import { demoPlayers } from './players.js';
 import { demoStats, demoPageViews, demoPosterExports, demoClubFollows } from './stats.js';
+import { demoConvocations } from './convocations.js';
 
 export {
   DEMO_CLUB_ID, DEMO_USER_ID,
@@ -15,6 +16,7 @@ export {
   demoSponsors,
   demoPlayers,
   demoStats, demoPageViews, demoPosterExports, demoClubFollows,
+  demoConvocations,
 };
 
 // ── Profil auth démo ─────────────────────────────────────────────────────────
@@ -103,5 +105,8 @@ export function buildDemoTables() {
     event_predictions:     [],
     app_feedback:          [],
     app_feedback_votes:    [],
+    event_convocations:    [...demoConvocations],
+    player_guardians:      [],
+    club_challenges:       [],
   };
 }

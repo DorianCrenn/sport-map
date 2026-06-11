@@ -42,6 +42,30 @@ export function trackDemoExited(currentStep) {
   trackDemo('demo_exited', { at_step: currentStep });
 }
 
+export function trackTryItUsed(stepIndex, actionType) {
+  trackDemo('try_it_used', { step: stepIndex + 1, action: actionType });
+}
+
+export function trackTryItCompleted(stepIndex, actionType) {
+  const start   = parseInt(sessionStorage.getItem(SESSION_KEY) || '0');
+  const elapsed = start ? Math.round((Date.now() - start) / 1000) : 0;
+  trackDemo('try_it_completed', { step: stepIndex + 1, action: actionType, elapsed_seconds: elapsed });
+}
+
+export function trackSpotlightSeen(target) {
+  trackDemo('spotlight_seen', { target });
+}
+
+export function trackSandboxWelcomeSeen(profile) {
+  trackDemo('sandbox_welcome_seen', { profile });
+}
+
+export function trackSandboxWelcomeEntered(profile) {
+  const start   = parseInt(sessionStorage.getItem(SESSION_KEY) || '0');
+  const elapsed = start ? Math.round((Date.now() - start) / 1000) : 0;
+  trackDemo('sandbox_welcome_entered', { profile, elapsed_seconds: elapsed });
+}
+
 export function getDemoAnalytics() {
   return _readLog();
 }

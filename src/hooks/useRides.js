@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { dispatchError } from '../lib/errorBus.js';
 
@@ -114,6 +114,7 @@ export function useRides(eventId) {
       .single();
     if (error) throw error;
     await fetchRides();
+    if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'carpool-requested' } }));
     return mapRide({ ...saved, ride_requests: [] });
   }, [currentUser, eventId, fetchRides]);
 

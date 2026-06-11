@@ -139,6 +139,7 @@ export default function ClubAdminDrawer({ open, onClose, onAction, isEditing }) 
                   <button
                     key={item.id}
                     onClick={() => { onAction(item.id); onClose(); }}
+                    data-demo={`admin-${item.id}`}
                     style={{
                       width: '100%', display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 18px', border: 'none', cursor: 'pointer',

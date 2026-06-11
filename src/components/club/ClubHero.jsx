@@ -7,7 +7,7 @@ import SportIcon from '../SportIcon.jsx';
 
 function ClubLogoInitials({ club, accentColor, size = 72 }) {
   const [imgError, setImgError] = useState(false);
-  const logoUrl = club.logo_url || club.logo || club.logoUrl;
+  const logoUrl = club.logoUrl || club.logo_url || club.logo;
   const initials = club.name.split(' ').slice(0, 2).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 3);
   const radius = Math.round(size * 0.22);
 
@@ -436,6 +436,7 @@ export default function ClubHero({
           <button
             onClick={onFollow}
             aria-label={isFollowing ? 'Modifier les préférences de suivi' : 'Suivre ce club'}
+            data-demo="follow-club-btn"
             style={{
               flex: 1,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,

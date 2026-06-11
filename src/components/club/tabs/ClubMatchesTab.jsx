@@ -78,6 +78,7 @@ function MatchRow({ event, canConvoque, onConvoque }) {
         {canConvoque && !isPast && (
           <button
             onClick={() => onConvoque?.(event)}
+            data-demo="convocations-tab"
             style={{
               fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 7, cursor: 'pointer',
               backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)',
