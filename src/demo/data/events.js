@@ -243,6 +243,29 @@ export const demoEvents = [
   },
 
   // ── MATCHS PASSÉS (avec scores) ──────────────────────────────────────────────
+  // ── MATCH D'HIER — sans score (pour la démo de saisie de résultat) ───────────
+  {
+    id:           'demo-event-016',
+    title:        'FC SportLink Démo @ CA Brest Métropole',
+    sport:        'Football',
+    date:         past(1, 15),
+    lat:          48.4050, lng: -4.4800,
+    city:         'Brest',
+    venue:        'Stade du Ponant',
+    event_type:   'championship',
+    team_name:    'Équipe 1',
+    category:     'Seniors',
+    home_or_away: 'away',
+    adversaire:   'CA Brest Métropole',
+    level:        'Régional 2',
+    club_id:      DEMO_CLUB_ID,
+    user_id:      DEMO_USER_ID,
+    source:       'user',
+    is_archived:  false,
+    score:        null,   // pas encore saisi — parfait pour la démo
+    created_at:   past(35),
+  },
+
   {
     id:           'demo-event-012',
     title:        'FC SportLink Démo vs SC Quimper Brest',
@@ -332,5 +355,5 @@ export const demoEvents = [
 
 export const demoAttendeesCounts = demoEvents.map((e, i) => ({
   event_id: e.id,
-  count:    [28, 15, 22, 12, 8, 11, 7, 6, 18, 14, 16, 31, 19, 9, 13][i] ?? 5,
+  count:    [28, 15, 22, 12, 8, 11, 7, 6, 18, 14, 16, 17, 31, 19, 9, 13][i] ?? 5,
 }));

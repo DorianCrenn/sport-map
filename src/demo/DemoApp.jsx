@@ -119,6 +119,7 @@ export default function DemoApp({ AppInner }) {
           step={tourSteps[currentStep]}
           stepIndex={currentStep}
           totalSteps={tourSteps.length}
+          position={tourSteps[currentStep]?.position ?? 'bottom'}
           onNext={nextStep}
           onPrev={prevStep}
           onExit={exitTour}

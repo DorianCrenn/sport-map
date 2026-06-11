@@ -24,12 +24,13 @@ export const presidentTour = [
     emoji:  '➕',
   },
   {
-    id:     4,
-    tab:    'map',
-    action: 'focus-demo-event',
-    title:  'Organiser le covoiturage',
-    body:   'Voici votre prochain match. Proposez un covoiturage directement depuis l\'événement — vos joueurs peuvent demander une place et confirmer en temps réel. Fini les groupes WhatsApp !',
-    emoji:  '🚗',
+    id:       4,
+    tab:      'map',
+    action:   'focus-demo-event',
+    position: 'top',  // event sheet en bas → guide en haut pour éviter le chevauchement
+    title:    'Organiser le covoiturage',
+    body:     'Voici votre prochain match. Proposez un covoiturage directement depuis l\'événement — vos joueurs peuvent demander une place et confirmer en temps réel. Fini les groupes WhatsApp !',
+    emoji:    '🚗',
   },
   {
     id:     5,
@@ -40,12 +41,13 @@ export const presidentTour = [
     emoji:  '📢',
   },
   {
-    id:     6,
-    tab:    'mon-club',
-    action: 'close-overlay',
-    title:  'Saisir un score',
-    body:   'Après chaque match, saisissez le score en quelques secondes. Le résultat s\'affiche instantanément dans le fil d\'actualité de tous vos suiveurs.',
-    emoji:  '⚽',
+    id:       6,
+    tab:      'map',
+    action:   'focus-score-event',
+    position: 'top',  // event sheet en bas → guide en haut
+    title:    'Saisir un résultat',
+    body:     "Votre match d'hier n'a pas encore de score. Faites glisser la fiche vers le haut pour saisir le résultat — il s'affichera instantanément chez vos abonnés.",
+    emoji:    '⚽',
   },
   {
     id:     7,

@@ -330,6 +330,13 @@ function AppInner() {
         setShowAnnouncements(false);
         setFocusEventId('demo-event-001');
       }
+      if (action === 'focus-score-event') {
+        setShowNewEventForm(false);
+        setShowAnnouncements(false);
+        setStudioEvent(null);
+        setStudioClub(null);
+        setFocusEventId('demo-event-016'); // match d'hier sans score
+      }
       if (action === 'close-overlay') {
         setShowNewEventForm(false);
         setShowAnnouncements(false);

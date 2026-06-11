@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { trackCreateAccountClicked } from './demoAnalytics.js';
 
-export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev, onExit }) {
+export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev, onExit, position = 'bottom' }) {
   const [confirmExit, setConfirmExit] = useState(false);
   const isFirst = stepIndex === 0;
   const isLast  = stepIndex === totalSteps - 1;
@@ -26,24 +26,27 @@ export default function DemoGuide({ step, stepIndex, totalSteps, onNext, onPrev,
 
   return (
     // Wrapper div : fixed + centrage — jamais de transform ici
+    // position='top' : sous le DemoBanner (top: 48px) pour les étapes avec bottom-sheet
+    // position='bottom' : au-dessus de la BottomNav (bottom: 76px) sinon
     <div style={{
       position:      'fixed',
-      bottom:        76,
+      ...(position === 'top'
+        ? { top: 48, bottom: 'auto', alignItems: 'flex-start' }
+        : { bottom: 76, top: 'auto', alignItems: 'flex-end' }),
       left:          0,
       right:         0,
-      zIndex:        10001, // au-dessus de tous les overlays app (AnnouncementsCenter: 1200, etc.)
+      zIndex:        10001,
       display:       'flex',
       justifyContent: 'center',
-      alignItems:    'flex-end',
       padding:       '0 12px',
       pointerEvents: 'none',
     }}>
       {/* motion.div : animation seulement (opacity + y) */}
       <motion.div
         key={stepIndex}
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: position === 'top' ? -16 : 20 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 12 }}
+        exit={{ opacity: 0, y: position === 'top' ? -12 : 12 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
         style={{
           width:          '100%',
