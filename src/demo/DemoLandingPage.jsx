@@ -248,7 +248,7 @@ export default function DemoLandingPage({ onSelect }) {
         }}
       >
         <a
-          href="/"
+          href="/#register"
           onClick={() => trackCreateAccountClicked('landing-footer')}
           style={{
             background:  'transparent',

@@ -208,14 +208,19 @@ function AppInner() {
   const pendingEventDeepLink = useRef(null);
 
   useEffect(() => {
-    const clubMatch  = window.location.hash.match(/^#club\/(.+)$/);
-    const eventMatch = window.location.hash.match(/^#event\/(.+)$/);
-    const userMatch  = window.location.hash.match(/^#user\/(.+)$/);
-    const legalMatch = window.location.hash.match(/^#legal(?:\/(\w+))?$/);
+    const clubMatch     = window.location.hash.match(/^#club\/(.+)$/);
+    const eventMatch    = window.location.hash.match(/^#event\/(.+)$/);
+    const userMatch     = window.location.hash.match(/^#user\/(.+)$/);
+    const legalMatch    = window.location.hash.match(/^#legal(?:\/(\w+))?$/);
+    const registerMatch = window.location.hash === '#register';
     if (eventMatch) pendingEventDeepLink.current = eventMatch[1];
     if (userMatch) setPublicUserId(userMatch[1]);
     if (legalMatch) {
       setLegalSection(legalMatch[1] || 'mentions');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    if (registerMatch) {
+      setShowAuth(true);
       window.history.replaceState(null, '', window.location.pathname);
     }
 

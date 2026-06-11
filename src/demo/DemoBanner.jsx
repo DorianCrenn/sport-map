@@ -13,7 +13,7 @@ export default function DemoBanner({ onCreateAccount }) {
     setTimeout(() => setPulse(false), 300);
     trackCreateAccountClicked('banner');
     onCreateAccount?.();
-    window.location.assign('/');
+    window.location.assign('/#register');
   }
 
   return (
