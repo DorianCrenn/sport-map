@@ -75,21 +75,21 @@ function ConvocationCard({ conv, onRespond }) {
 
         {/* Boutons de réponse si pending */}
         {conv.status === 'pending' && (
-          <div style={{ display: 'flex', gap: 5 }}>
+          <div data-demo="convocation-respond" style={{ display: 'flex', gap: 5 }}>
             {RESPONSE_BUTTONS.map(btn => (
               <button
                 key={btn.status}
                 onClick={() => onRespond(conv.id, btn.status)}
                 style={{
-                  flex: 1, padding: '7px 4px',
+                  flex: 1, padding: '10px 6px', minHeight: 44,
                   borderRadius: 9, cursor: 'pointer',
                   border: '1.5px solid var(--sl-border)',
                   backgroundColor: 'transparent',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
                   transition: 'all 0.15s',
                 }}
               >
-                <span style={{ fontSize: 15 }}>{btn.emoji}</span>
+                <span style={{ fontSize: 16 }}>{btn.emoji}</span>
                 <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)' }}>{btn.label}</span>
               </button>
             ))}

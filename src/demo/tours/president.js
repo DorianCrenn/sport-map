@@ -67,7 +67,7 @@ export const presidentTour = [
     title:       'Créer une affiche',
     body:        'PosterStudio génère des affiches professionnelles pour vos matchs. Choisissez parmi 37 templates, personnalisez couleurs et logos. Exportez en HD.',
     emoji:       '🎨',
-    target:      'open-dashboard',
+    target:      'admin-dashboard',
     tryItAction: 'poster-generated',
     tryItLabel:  'Créer une affiche',
     why:         'Les clubs avec des affiches pro gagnent en moyenne 40 % d\'abonnés en plus sur Instagram.',
@@ -100,7 +100,7 @@ export const presidentTour = [
     title:  'Statistiques détaillées',
     body:   "Suivez l'engagement de votre communauté : vues de page, nouveaux abonnés, participations, affiches générées. Mesurez l'impact de votre communication.",
     emoji:  '📊',
-    target: 'open-dashboard',
+    target: 'admin-dashboard',
     why:    'Les stats permettent d\'identifier les meilleures heures pour publier vos annonces.',
   },
   {
