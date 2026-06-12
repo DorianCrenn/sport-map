@@ -482,7 +482,7 @@ function AppInner() {
   return (
     <ErrorBoundary name="AppShell" onReport={handleErrorReport}>
     {/* paddingTop: demo banner height so the fixed banner doesn't cover app content */}
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden', paddingTop: isDemoMode() ? 40 : 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden', paddingTop: isDemoMode() ? 'calc(40px + env(safe-area-inset-top, 0px))' : 0 }}>
       <OfflineBanner />
       <UpdateBanner />
       {activeTab !== 'home' && (

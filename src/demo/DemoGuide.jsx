@@ -18,6 +18,7 @@ function getInitialPos() {
 export default function DemoGuide({
   step, stepIndex, totalSteps,
   onNext, onPrev, onExit,
+  onChangeProfile,
   onTryItActivate,
 }) {
   const [collapsed,     setCollapsed]     = useState(() => {
@@ -158,9 +159,14 @@ export default function DemoGuide({
         <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{step.emoji}</span>
         <div style={{ flex: 1, minWidth: 0 }}>
           {tryItActive ? (
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>
-              ✨ À vous de jouer !
-            </span>
+            <>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', display: 'block' }}>
+                ✨ À vous de jouer !
+              </span>
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', display: 'block', marginTop: 1 }}>
+                Appuyez pour reprendre →
+              </span>
+            </>
           ) : (
             <>
               <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.4)', display: 'block' }}>
@@ -246,8 +252,11 @@ export default function DemoGuide({
 
         {/* 3 points de drag + bouton Passer */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {/* Indicateur visuel de déplaçabilité */}
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', letterSpacing: 2 }}>⋮⋮</span>
+          {/* Indicateur de déplacement — titre accessible sur desktop */}
+          <span
+            title="Glisser pour déplacer"
+            style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', letterSpacing: 3, lineHeight: 1 }}
+          >⠿⠿</span>
           <button
             onClick={(e) => { e.stopPropagation(); handleExit(); }}
             style={{
@@ -428,6 +437,23 @@ export default function DemoGuide({
               </button>
             </div>
           </div>
+        )}
+
+        {/* Lien "Changer de profil" — escape hatch discret */}
+        {onChangeProfile && (
+          <button
+            onClick={onChangeProfile}
+            style={{
+              display: 'block', width: '100%', marginTop: 6,
+              background: 'none', border: 'none', padding: '2px 0',
+              fontSize: 11, color: 'rgba(255,255,255,0.28)',
+              cursor: 'pointer', textAlign: 'center', transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}
+          >
+            ↩ Changer de profil
+          </button>
         )}
       </div>
     </motion.div>

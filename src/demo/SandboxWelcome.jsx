@@ -20,7 +20,7 @@ const FEATURES = [
   { emoji: '👥', title: 'Effectif & convocs',    desc: '75 joueurs, convocations avec réponse en push.' },
 ];
 
-export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox, onCreateAccount }) {
+export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox, onChangeProfile, onCreateAccount }) {
   useEffect(() => {
     trackSandboxWelcomeSeen(profile);
   }, [profile]);
@@ -219,6 +219,21 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
         >
           🚀 Créer mon club gratuitement
         </button>
+
+        {onChangeProfile && (
+          <button
+            onClick={onChangeProfile}
+            style={{
+              background: 'none', border: 'none', padding: '6px 0',
+              fontSize: 13, color: 'rgba(255,255,255,0.35)',
+              cursor: 'pointer', textAlign: 'center', transition: 'color 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; }}
+          >
+            ↩ Voir la démo avec un autre profil
+          </button>
+        )}
       </motion.div>
     </motion.div>
   );

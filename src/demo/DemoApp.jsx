@@ -118,6 +118,19 @@ export default function DemoApp({ AppInner }) {
     startDemoSession(profile);
   }, [profile]);
 
+  const changeProfile = useCallback(() => {
+    sessionStorage.removeItem('sl-demo-profile');
+    sessionStorage.removeItem('sl-demo-step');
+    setProfile(null);
+    setTourSteps([]);
+    setCurrentStep(0);
+    setIsInSandbox(false);
+    setShowSandboxWelcome(false);
+    setSpotlightActive(false);
+    firstNavDispatched.current = false;
+    window.dispatchEvent(new CustomEvent('sl-demo-navigate', { detail: { action: 'close-overlay' } }));
+  }, []);
+
   // ── Context value ──────────────────────────────────────────────────────────
 
   const contextValue = {
@@ -156,6 +169,7 @@ export default function DemoApp({ AppInner }) {
           onNext={nextStep}
           onPrev={prevStep}
           onExit={exitTour}
+          onChangeProfile={changeProfile}
           onTryItActivate={(active) => {
             setSpotlightActive(active);
           }}
@@ -169,6 +183,7 @@ export default function DemoApp({ AppInner }) {
             profile={profile}
             completedSteps={tourSteps.length}
             onEnterSandbox={enterSandbox}
+            onChangeProfile={changeProfile}
             onCreateAccount={() => {
               window.location.assign('/#register');
             }}
