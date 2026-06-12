@@ -12,6 +12,13 @@ function past(days, hour = 15) {
   d.setHours(hour, 0, 0, 0);
   return d.toISOString();
 }
+// Événement en cours MAINTENANT (démarré il y a X minutes)
+function liveNow(minutesAgo = 60) {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - minutesAgo);
+  d.setSeconds(0, 0);
+  return d.toISOString();
+}
 
 export const demoEvents = [
   // ── MATCHS À VENIR — Équipe 1 ───────────────────────────────────────────────
@@ -425,13 +432,47 @@ export const demoEvents = [
     club_id: DEMO_CLUB_ID, user_id: DEMO_USER_ID, source: 'user',
     is_archived: false, score: { home: 4, away: 0 }, man_of_match: 'Julien Prigent', created_at: past(142),
   },
+
+  // ── MATCHS EN COURS MAINTENANT (Multiplex EN DIRECT) ─────────────────────────
+  {
+    id: 'demo-event-live-001',
+    title: 'FC SportLink Démo R vs CS Plabennec R',
+    sport: 'Football', date: liveNow(75),
+    lat: 48.3904, lng: -4.4861, city: 'Brest', venue: 'Terrain annexe – Cavale Blanche',
+    event_type: 'championship', team_name: 'Réserve', category: 'Seniors',
+    home_or_away: 'home', adversaire: 'CS Plabennec R', level: 'District',
+    club_id: DEMO_CLUB_ID, user_id: DEMO_USER_ID, source: 'user',
+    is_archived: false, score: null, created_at: past(14),
+  },
+  {
+    id: 'demo-event-live-002',
+    title: 'U17 : FC SportLink Démo vs ES Lannilis U17',
+    sport: 'Football', date: liveNow(55),
+    lat: 48.3904, lng: -4.4861, city: 'Brest', venue: 'Stade Francis-Le Blé',
+    event_type: 'championship', team_name: 'U17', category: 'Jeunes',
+    home_or_away: 'home', adversaire: 'ES Lannilis U17', level: 'District',
+    club_id: DEMO_CLUB_ID, user_id: DEMO_USER_ID, source: 'user',
+    is_archived: false, score: null, created_at: past(10),
+  },
+  {
+    id: 'demo-event-live-003',
+    title: 'FC SportLink Démo F @ ES Plouzané F',
+    sport: 'Football', date: liveNow(40),
+    lat: 48.3836, lng: -4.6230, city: 'Plouzané', venue: 'Stade de Kermaria',
+    event_type: 'championship', team_name: 'Équipe F', category: 'Féminines',
+    home_or_away: 'away', adversaire: 'ES Plouzané F', level: 'Régional',
+    club_id: DEMO_CLUB_ID, user_id: DEMO_USER_ID, source: 'user',
+    is_archived: false, score: null, created_at: past(8),
+  },
 ];
 
-// Counts de présence par événement (premiers 45 items)
+// Counts de présence par événement
 const _attendanceCounts = [
   28, 15, 22, 12, 8, 11, 7, 6, 18, 14, 16, 17, 31, 19, 9, 13,
   10, 8, 9, 12, 7, 5, 15, 11, 19, 14, 17, 20, 13, 21, 18, 16,
   14, 22, 9, 11, 20, 17, 12, 8, 10, 14, 19, 16, 18,
+  // live events
+  23, 18, 12,
 ];
 
 export const demoAttendeesCounts = demoEvents.map((e, i) => ({

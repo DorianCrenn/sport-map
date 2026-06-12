@@ -28,7 +28,7 @@ const PROFILES = [
     description: 'Affiches PosterStudio, annonces, réseaux sociaux et sponsors',
     color:       '#7c3aed',
     gradient:    'linear-gradient(135deg, #7c3aed, #a78bfa)',
-    steps:       6,
+    steps:       7,
   },
   {
     id:          'parent',

@@ -1,6 +1,15 @@
 export const communicationTour = [
   {
     id:    1,
+    tab:   'home',
+    action: null,
+    title: 'Le bon bouton au bon moment',
+    body:  'J-3 avant un match ? Le bouton "🎨 Affiche Jour de Match" apparaît automatiquement. J-1 avec les convocations validées ? "📋 Affiche Convocation" avec les 14 noms injectés. Post-match ? "🔥 Générer le visuel résultat" avec le score pré-rempli. Zéro recherche — SportLink sait ce dont vous avez besoin.',
+    emoji: '⚡',
+    why:   'Les clubs qui publient une affiche dans l\'heure après le match obtiennent 3× plus d\'engagement.',
+  },
+  {
+    id:    2,
     tab:   'mon-club',
     action: null,
     title: 'Votre espace communication',
@@ -9,7 +18,7 @@ export const communicationTour = [
     why:   'Les clubs sur SportLink publient 3× plus de contenu qu\'avant en moins de temps.',
   },
   {
-    id:          2,
+    id:          3,
     tab:         'mon-club',
     action:      'open-poster-studio',
     title:       'PosterStudio — Affiches pro',
@@ -20,7 +29,7 @@ export const communicationTour = [
     why:         'Une affiche pro sur Instagram génère en moyenne 180 impressions pour un club local.',
   },
   {
-    id:     3,
+    id:     4,
     tab:    'mon-club',
     action: 'close-overlay',
     title:  'Partagez en un tap',
@@ -29,7 +38,7 @@ export const communicationTour = [
     why:    'Un partage WhatsApp touche en moyenne 150 contacts dans votre réseau de supporters local.',
   },
   {
-    id:          4,
+    id:          5,
     tab:         'mon-club',
     action:      'open-announcements',
     title:       'Annonces ciblées par équipe',
@@ -40,7 +49,7 @@ export const communicationTour = [
     why:         'Les annonces push ont un taux d\'ouverture de 85 % — vs 20 % pour les emails.',
   },
   {
-    id:     5,
+    id:     6,
     tab:    'mon-club',
     action: 'close-overlay',
     title:  'Sponsors et partenaires valorisés',
@@ -49,7 +58,7 @@ export const communicationTour = [
     why:    'Les sponsors visibles in-app ont 3× plus de chances de renouveler leur partenariat.',
   },
   {
-    id:    6,
+    id:    7,
     tab:   'mon-club',
     action: null,
     title: 'Révolutionnez votre communication',

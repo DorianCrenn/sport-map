@@ -101,4 +101,64 @@ export const demoAnnouncements = [
     message: 'La buvette sera ouverte lors du prochain match à domicile vs AS Plougastel. Nous recherchons 3 bénévoles pour tenir la buvette. Si vous êtes disponible de 14h à 17h, contactez-nous par email. Merci d\'avance !',
     target_teams: [], scheduled_for: null, created_at: past(1, 16),
   },
+
+  // ── Entraînements & Préparation ─────────────────────────────────────────────
+  {
+    id: 'demo-ann-016', club_id: DEMO_CLUB_ID, author_id: DEMO_USER_ID,
+    type: 'info', title: '📊 Bilan séance mardi — Bonne intensité collective',
+    message: 'Excellente séance mardi soir avec 18 présents sur 22 convoqués. Points forts : pressing haut très bien exécuté, transitions rapides en contre. Travail à poursuivre : les phases arrêtées offensives. On sera prêts pour samedi !',
+    target_teams: ['Équipe 1'], scheduled_for: null, created_at: past(2, 21),
+  },
+  {
+    id: 'demo-ann-017', club_id: DEMO_CLUB_ID, author_id: DEMO_USER_ID,
+    type: 'urgent', title: '🏥 Blessure Mathieu Dourdain — Forfait 3 semaines',
+    message: 'Suite à une entorse à la cheville lors du dernier entraînement, Mathieu Dourdain est indisponible pour environ 3 semaines. Bon rétablissement Mathieu ! Son remplaçant sera désigné lors de la prochaine séance.',
+    target_teams: ['Équipe 1'], scheduled_for: null, created_at: past(3, 10),
+  },
+  {
+    id: 'demo-ann-018', club_id: DEMO_CLUB_ID, author_id: DEMO_USER_ID,
+    type: 'info', title: '🎯 Séance vidéo jeudi — Analyse tactique pré-match',
+    message: 'Comme annoncé, séance vidéo d\'analyse tactique jeudi à 20h dans la salle du club. Présence recommandée pour tous les joueurs convoqués vs AS Plougastel. Durée : environ 45 minutes. Le staff présentera les points clés de l\'adversaire.',
+    target_teams: ['Équipe 1'], scheduled_for: null, created_at: past(1, 14),
+  },
+
+  // ── IA & Communication ──────────────────────────────────────────────────────
+  {
+    id: 'demo-ann-019', club_id: DEMO_CLUB_ID, author_id: DEMO_USER_ID,
+    type: 'event', title: '📸 Photos du match disponibles — Album partagé',
+    message: 'Les photos du match vs SC Quimper Brest sont disponibles dans l\'album partagé ! 87 photos au total par notre photographe bénévole Sylvain. Merci à lui pour ce superbe travail. Partagez avec vos familles !',
+    target_teams: [], scheduled_for: null, created_at: past(6, 12),
+  },
+  {
+    id: 'demo-ann-020', club_id: DEMO_CLUB_ID, author_id: DEMO_USER_ID,
+    type: 'info', title: '🏆 Classement J27 — On reste dans le Top 5 !',
+    message: '5ème place au championnat après la journée 27 avec 44 points. 4 matchs à jouer dont 2 à domicile. L\'objectif d\'une place européenne en 3ème division reste accessible. Chaque point compte — restez mobilisés !',
+    target_teams: [], scheduled_for: null, created_at: past(7, 20),
+  },
+  {
+    id: 'demo-ann-021', club_id: DEMO_CLUB_ID, author_id: DEMO_USER_ID,
+    type: 'info', title: '👕 Nouveau partenariat — Auto Brest Center équipe notre staff',
+    message: 'Bienvenue à Auto Brest Center comme nouveau partenaire Silver du club ! Ils équiperont notre staff technique en tenues officielles pour la saison 2026-2027. Un grand merci pour leur soutien. Retrouvez-les sur le panneau publicitaire bord terrain.',
+    target_teams: [], scheduled_for: null, created_at: past(18, 9),
+  },
+
+  // ── U17 & Féminines ─────────────────────────────────────────────────────────
+  {
+    id: 'demo-ann-022', club_id: DEMO_CLUB_ID, author_id: DEMO_USER_ID,
+    type: 'result', title: '⚽ U17 : Noa Kerguelen — Hat-trick historique !',
+    message: 'Noa Kerguelen a inscrit un triplé lors de la victoire 4-1 contre ES Lesneven. À 16 ans, il devient le plus jeune joueur à réussir un hat-trick sous le maillot du FC SportLink. Un talent à suivre de près ! 🌟',
+    target_teams: ['U17'], scheduled_for: null, created_at: past(12, 19),
+  },
+  {
+    id: 'demo-ann-023', club_id: DEMO_CLUB_ID, author_id: DEMO_USER_ID,
+    type: 'info', title: '🌟 Détection régionale — 3 U17 sélectionnés',
+    message: 'Félicitations à Noa Kerguelen, Mathis Keriven et Théo Tanguy, sélectionnés pour les stages de détection régionale Bretagne U17 ! Une belle reconnaissance du travail effectué. Le club est très fier de vous.',
+    target_teams: ['U17'], scheduled_for: null, created_at: past(20, 11),
+  },
+  {
+    id: 'demo-ann-024', club_id: DEMO_CLUB_ID, author_id: DEMO_USER_ID,
+    type: 'event', title: '👧 Féminines : Journée portes ouvertes U11 et U13 F',
+    message: 'Le FC SportLink ouvre ses portes aux filles de 8 à 13 ans ! Journée portes ouvertes samedi prochain de 10h à 12h. Venez découvrir le football féminin dans une ambiance conviviale. Aucun équipement requis, juste envie de s\'amuser.',
+    target_teams: ['Équipe F'], scheduled_for: null, created_at: past(4, 15),
+  },
 ];

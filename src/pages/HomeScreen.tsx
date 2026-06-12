@@ -1,6 +1,6 @@
 import { type FC, lazy, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import NewsPage from './NewsPage.jsx';
+import ActualitesPage from './ActualitesPage.jsx';
 
 const HomePage = lazy(() => import('./HomePage.jsx'));
 
@@ -21,7 +21,7 @@ const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, c
 
   if (currentUser) {
     return (
-      <NewsPage
+      <ActualitesPage
         followedClubIds={followedClubIds}
         onNavigate={onNavigate}
         onOpenTrainings={onOpenTrainings}
