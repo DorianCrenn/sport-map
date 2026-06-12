@@ -67,6 +67,7 @@ export default function DemoApp({ AppInner }) {
     firstNavDispatched.current = false;
     sessionStorage.setItem('sl-demo-profile', selectedProfile);
     sessionStorage.setItem('sl-demo-step', '0');
+    window.dispatchEvent(new CustomEvent('sl-demo-profile-selected', { detail: { profile: selectedProfile } }));
     startDemoSession(selectedProfile);
   }, []);
 

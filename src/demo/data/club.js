@@ -64,12 +64,13 @@ export const demoBrandKit = {
 export const demoClubPage = {
   club_id: DEMO_CLUB_ID,
   blocks: [
-    { id: 'b1', type: 'title',         data: { text: 'Bienvenue au FC SportLink Démo' } },
-    { id: 'b2', type: 'about',         data: { text: 'Club fondé en 2018, basé à Brest. Nous évoluons en Régional 2 avec plus de 120 licenciés répartis sur 8 équipes. Rejoignez-nous !' } },
-    { id: 'b3', type: 'next-match',    data: {} },
+    { id: 'b1', type: 'title',           data: { text: 'Bienvenue au FC SportLink Démo' } },
+    { id: 'b2', type: 'about',           data: { text: 'Club fondé en 2018, basé à Brest. Nous évoluons en Régional 2 avec plus de 120 licenciés répartis sur 8 équipes. Rejoignez-nous !' } },
+    { id: 'b3', type: 'next-match',      data: {} },
     { id: 'b4', type: 'upcoming-events', data: { title: 'Prochains événements' } },
-    { id: 'b5', type: 'training',      data: { title: 'Entraînements' } },
-    { id: 'b6', type: 'sponsors',      data: { title: 'Nos partenaires' } },
+    { id: 'b5', type: 'roster',          data: { title: 'Notre effectif' } },
+    { id: 'b6', type: 'training',        data: { title: 'Entraînements' } },
+    { id: 'b7', type: 'sponsors',        data: { title: 'Nos partenaires' } },
   ],
   typography: { fontFamily: 'Inter', headingSize: 'lg' },
   theme:      { variant: 'light' },

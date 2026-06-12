@@ -25,8 +25,8 @@ const convocEvent001 = [
   { id: 'demo-conv-001-14', event_id: 'demo-event-001', club_id: DEMO_CLUB_ID, player_id: 'demo-player-014', player_name: 'Hugo Kervarrec',   team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), responded_at: past(1) },
   { id: 'demo-conv-001-15', event_id: 'demo-event-001', club_id: DEMO_CLUB_ID, player_id: 'demo-player-015', player_name: 'Nathan Kermarrec', team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), responded_at: past(2) },
   { id: 'demo-conv-001-16', event_id: 'demo-event-001', club_id: DEMO_CLUB_ID, player_id: 'demo-player-016', player_name: 'Yann Le Guével',   team_name: 'Équipe 1', status: 'pending',     note: null,                     created_at: past(2), responded_at: null    },
-  { id: 'demo-conv-001-17', event_id: 'demo-event-001', club_id: DEMO_CLUB_ID, player_id: 'demo-player-031', player_name: 'Erwan Bodéré',     team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), responded_at: past(1) },
-  { id: 'demo-conv-001-18', event_id: 'demo-event-001', club_id: DEMO_CLUB_ID, player_id: 'demo-player-032', player_name: 'Matthieu Briec',   team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), responded_at: past(2) },
+  { id: 'demo-conv-001-17', event_id: 'demo-event-001', club_id: DEMO_CLUB_ID, player_id: 'demo-player-017', player_name: 'Erwan Bodéré',     team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), responded_at: past(1) },
+  { id: 'demo-conv-001-18', event_id: 'demo-event-001', club_id: DEMO_CLUB_ID, player_id: 'demo-player-018', player_name: 'Matthieu Briec',   team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), responded_at: past(2) },
 ];
 
 // Convocations pour demo-event-002 (Coupe dans 7 jours)
@@ -45,7 +45,7 @@ const convocEvent002 = [
   { id: 'demo-conv-002-12', event_id: 'demo-event-002', club_id: DEMO_CLUB_ID, player_id: 'demo-player-014', player_name: 'Hugo Kervarrec',   team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(1), responded_at: past(1) },
   { id: 'demo-conv-002-13', event_id: 'demo-event-002', club_id: DEMO_CLUB_ID, player_id: 'demo-player-015', player_name: 'Nathan Kermarrec', team_name: 'Équipe 1', status: 'pending',     note: null,                     created_at: past(1), responded_at: null    },
   { id: 'demo-conv-002-14', event_id: 'demo-event-002', club_id: DEMO_CLUB_ID, player_id: 'demo-player-031', player_name: 'Erwan Bodéré',     team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(1), responded_at: past(1) },
-  { id: 'demo-conv-002-15', event_id: 'demo-event-002', club_id: DEMO_CLUB_ID, player_id: 'demo-player-033', player_name: 'Gauthier Faou',    team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(1), responded_at: past(1) },
+  { id: 'demo-conv-002-15', event_id: 'demo-event-002', club_id: DEMO_CLUB_ID, player_id: 'demo-player-019', player_name: 'Gauthier Faou',    team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(1), responded_at: past(1) },
 ];
 
 // Convocations pour demo-event-005 (championnat dans 18 jours)

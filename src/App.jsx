@@ -332,7 +332,7 @@ function AppInner() {
       if (action === 'open-event-form')    setShowNewEventForm(true);
       if (action === 'open-announcements') setShowAnnouncements(true);
       if (action === 'open-poster-studio') {
-        const demoEvent = userEvents.find(ev => ev.club_id === 'demo-club-001' && !ev.score);
+        const demoEvent = userEvents.find(ev => ev.clubId === 'demo-club-001' && !ev.score);
         if (demoEvent) handleOpenPoster(demoEvent);
       }
       if (action === 'focus-demo-event') {
@@ -344,8 +344,7 @@ function AppInner() {
         demoNavRef.current.handleClubAdminFabAction('dashboard');
       }
       if (action === 'open-convocations') {
-        // Navigue vers l'onglet Matchs du club pour y trouver le bouton Convoquer
-        demoNavRef.current?.scrollToMatches?.();
+        demoNavRef.current.handleClubAdminFabAction('open-matchs-tab');
       }
       if (action === 'focus-score-event') {
         setShowNewEventForm(false);

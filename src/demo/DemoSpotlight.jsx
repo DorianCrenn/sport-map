@@ -40,7 +40,7 @@ export default function DemoSpotlight({ target, active }) {
     }
 
     let attempts = 0;
-    const MAX_ATTEMPTS = 40; // 4 secondes
+    const MAX_ATTEMPTS = 60; // 6 secondes
 
     function updateRect(el) {
       const r = el.getBoundingClientRect();

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 import { generateAIBackground, generateCustomBackground, generateCustomElement } from '../lib/posterVariants.js';
 
 /**
@@ -19,7 +19,7 @@ export function usePosterAI({ aiGenerateBlocked, onTrack, clubId, onError } = {}
   const [elementPrompt, setElementPrompt] = useState('');
 
   async function generateBg({ dnaForBg, eventSport, onSuccess }) {
-    if (aiGenerateBlocked || aiBgLoading) return;
+    if (isDemoMode() || aiGenerateBlocked || aiBgLoading) return;
     setAiBgLoading(true);
     setAiBgResult(null);
     try {
@@ -41,7 +41,7 @@ export function usePosterAI({ aiGenerateBlocked, onTrack, clubId, onError } = {}
   }
 
   async function generateElement({ accentColor, onSuccess }) {
-    if (aiGenerateBlocked || aiElLoading || !elementPrompt.trim()) return;
+    if (isDemoMode() || aiGenerateBlocked || aiElLoading || !elementPrompt.trim()) return;
     setAiElLoading(true);
     try {
       const res = await generateCustomElement(elementPrompt.trim(), accentColor);

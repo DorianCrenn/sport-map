@@ -471,7 +471,22 @@ export function AuthProvider({ children }) {
   const [devRole,   setDevRole]   = useState(null);
   const [devClubId, setDevClubId] = useState(null);
 
-  const effectiveRole = (devRole && !import.meta.env.PROD) ? devRole : currentUser?.role;
+  // ── Demo profile role override ──────────────────────────────────────────────
+  const [demoProfileType, setDemoProfileType] = useState(() =>
+    isDemoMode() ? sessionStorage.getItem('sl-demo-profile') : null
+  );
+  useEffect(() => {
+    if (!isDemoMode()) return;
+    function onProfileSelected(e) { setDemoProfileType(e.detail.profile); }
+    window.addEventListener('sl-demo-profile-selected', onProfileSelected);
+    return () => window.removeEventListener('sl-demo-profile-selected', onProfileSelected);
+  }, []);
+
+  const _baseRole = (devRole && !import.meta.env.PROD) ? devRole : currentUser?.role;
+  const NON_ADMIN_DEMO_PROFILES = ['parent', 'player', 'supporter'];
+  const effectiveRole = (isDemoMode() && NON_ADMIN_DEMO_PROFILES.includes(demoProfileType))
+    ? 'user'
+    : _baseRole;
   const effectiveUser = (devRole && !import.meta.env.PROD && currentUser)
     ? { ...currentUser, role: devRole, clubId: devClubId ?? currentUser.clubId }
     : currentUser;

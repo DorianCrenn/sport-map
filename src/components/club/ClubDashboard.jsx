@@ -682,6 +682,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
 
   return (
     <motion.div
+      data-demo="admin-dashboard"
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
