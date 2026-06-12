@@ -4,6 +4,13 @@
  */
 import { motion } from 'framer-motion';
 import { MiniToggle } from '../PosterAtoms.jsx';
+import { isDemoMode } from '../../../lib/supabase.js';
+
+function dispatchPosterGenerated() {
+  if (isDemoMode()) {
+    window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'poster-generated' } }));
+  }
+}
 
 export default function ExportPanel({ ps }) {
   const {
@@ -45,7 +52,7 @@ export default function ExportPanel({ ps }) {
       <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
 
       {/* PNG download */}
-      <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleDownload(); setExportOpen(false); }} disabled={downloading}
+      <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleDownload(); setExportOpen(false); dispatchPosterGenerated(); }} disabled={downloading}
         style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: `${accentColor}10` }}>
         <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: `${accentColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2.5" strokeLinecap="round">
@@ -59,7 +66,7 @@ export default function ExportPanel({ ps }) {
       </motion.button>
 
       {/* Tout télécharger */}
-      <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleDownloadAll(); setExportOpen(false); }} disabled={exportingAll}
+      <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handleDownloadAll(); setExportOpen(false); dispatchPosterGenerated(); }} disabled={exportingAll}
         style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: `${accentColor}10` }}>
         <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: `${accentColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2.5" strokeLinecap="round">

@@ -8,7 +8,7 @@ import {
 } from './usePosterDraft.js';
 import { getBgCache, normalizeSport } from '../lib/sportBgCache.js';
 
-export function usePosterState({ event, club, initialAccent, initialFields, initialBgSrc, isTournamentEvent, resultMode }) {
+export function usePosterState({ event, club, initialAccent, initialFields, initialBgSrc, isTournamentEvent, resultMode, convocationPlayers }) {
   const draftHook  = usePosterDraft(event?.id);
   const libHook    = usePosterLibrary();
   const favTplHook = useFavoriteTemplates();
@@ -16,7 +16,7 @@ export function usePosterState({ event, club, initialAccent, initialFields, init
 
   const [poster, dispatch] = useReducer(posterReducer, {
     format: 'story',
-    templateId: isTournamentEvent ? 'tr-premium' : (resultMode ? 'impact' : 'simple'),
+    templateId: isTournamentEvent ? 'tr-premium' : (resultMode ? 'impact' : (convocationPlayers?.length ? 'convocation' : 'simple')),
     accentColor: initialAccent,
     scoreHome: resultMode?.home !== undefined ? resultMode.home : undefined,
     scoreAway: resultMode?.away !== undefined ? resultMode.away : undefined,
@@ -29,6 +29,7 @@ export function usePosterState({ event, club, initialAccent, initialFields, init
     homeName: initialFields.homeName, awayName: initialFields.awayName,
     homeLogo: initialFields.homeLogo, awayLogo: initialFields.awayLogo,
     championship: initialFields.championship, tagline: initialFields.tagline,
+    convocationPlayers: convocationPlayers ?? [],
     sponsorSrc: '', transforms: {},
   });
 

@@ -1,22 +1,178 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const STATUS_CFG = {
-  pending:     { label: 'En attente', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-  accepted:    { label: 'Accepté',    color: '#22c55e', bg: 'rgba(34,197,94,0.1)'  },
-  declined:    { label: 'Décliné',    color: '#ef4444', bg: 'rgba(239,68,68,0.1)'  },
+  pending:     { label: 'En attente',   color: '#f59e0b', bg: 'rgba(245,158,11,0.1)'  },
+  accepted:    { label: 'Accepté',      color: '#22c55e', bg: 'rgba(34,197,94,0.1)'   },
+  declined:    { label: 'Décliné',      color: '#ef4444', bg: 'rgba(239,68,68,0.1)'   },
   unavailable: { label: 'Indisponible', color: '#64748b', bg: 'rgba(100,116,139,0.1)' },
 };
 
-const RESPONSE_BUTTONS = [
-  { status: 'accepted',    emoji: '✅', label: 'Accepter'     },
-  { status: 'declined',    emoji: '❌', label: 'Décliner'     },
-  { status: 'unavailable', emoji: '🤔', label: 'Indisponible' },
-];
+// ── Sélecteur de mode de transport (affiché après clic "Accepter") ────────────
+function TransportSelector({ onSelect, onBack }) {
+  const [driverSeats, setDriverSeats] = useState(3);
+  const [selected,    setSelected]    = useState(null);
+  const [confirmed,   setConfirmed]   = useState(false);
 
+  function confirm() {
+    if (!selected) return;
+    setConfirmed(true);
+    setTimeout(() => {
+      onSelect(selected, selected === 'driving' ? driverSeats : null);
+    }, 900);
+  }
+
+  if (confirmed) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 'auto' }}
+        exit={{ opacity: 0, height: 0 }}
+        className="overflow-hidden"
+      >
+        <div style={{ paddingTop: 10, borderTop: '1px solid var(--sl-border)', marginTop: 8, textAlign: 'center' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '8px 0' }}>
+            ✓ Transport enregistré
+          </p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      className="overflow-hidden"
+    >
+      <div style={{ paddingTop: 10, borderTop: '1px solid var(--sl-border)', marginTop: 8 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', marginBottom: 8 }}>
+          ✅ Présent — Comment y venez-vous ?
+        </p>
+
+        {/* Carte "Je conduis" */}
+        <button
+          onClick={() => setSelected('driving')}
+          style={{
+            width: '100%', marginBottom: 6, padding: '10px 12px',
+            borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+            border: `1.5px solid ${selected === 'driving' ? '#22c55e' : 'var(--sl-border)'}`,
+            backgroundColor: selected === 'driving' ? 'rgba(34,197,94,0.07)' : 'transparent',
+            display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
+          }}
+        >
+          <span style={{ fontSize: 18, lineHeight: 1 }}>🚗</span>
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>
+              Je conduis
+            </p>
+            <p style={{ margin: 0, fontSize: 10, color: 'var(--sl-t3)' }}>
+              Un trajet sera créé automatiquement
+            </p>
+          </div>
+          {selected === 'driving' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {[1, 2, 3, 4].map(n => (
+                <button
+                  key={n}
+                  onClick={e => { e.stopPropagation(); setDriverSeats(n); }}
+                  style={{
+                    width: 36, height: 36, borderRadius: 10, cursor: 'pointer',
+                    border: `1.5px solid ${driverSeats === n ? '#22c55e' : 'var(--sl-border)'}`,
+                    backgroundColor: driverSeats === n ? 'rgba(34,197,94,0.15)' : 'transparent',
+                    color: driverSeats === n ? '#22c55e' : 'var(--sl-t2)',
+                    fontSize: 13, fontWeight: 800,
+                  }}
+                >
+                  {n}
+                </button>
+              ))}
+              <span style={{ fontSize: 10, color: 'var(--sl-t3)', marginLeft: 2 }}>places</span>
+            </div>
+          )}
+        </button>
+
+        {/* Carte "Je cherche une place" */}
+        <button
+          onClick={() => setSelected('passenger')}
+          style={{
+            width: '100%', marginBottom: 6, padding: '10px 12px',
+            borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+            border: `1.5px solid ${selected === 'passenger' ? '#6366f1' : 'var(--sl-border)'}`,
+            backgroundColor: selected === 'passenger' ? 'rgba(99,102,241,0.07)' : 'transparent',
+            display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
+          }}
+        >
+          <span style={{ fontSize: 18, lineHeight: 1 }}>🙋</span>
+          <div>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>
+              Je cherche une place
+            </p>
+            <p style={{ margin: 0, fontSize: 10, color: 'var(--sl-t3)' }}>
+              Le coach verra que vous avez besoin d'un trajet
+            </p>
+          </div>
+        </button>
+
+        {/* Carte "Par mes propres moyens" */}
+        <button
+          onClick={() => setSelected('own_means')}
+          style={{
+            width: '100%', marginBottom: 10, padding: '10px 12px',
+            borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+            border: `1.5px solid ${selected === 'own_means' ? '#94a3b8' : 'var(--sl-border)'}`,
+            backgroundColor: selected === 'own_means' ? 'rgba(148,163,184,0.07)' : 'transparent',
+            display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
+          }}
+        >
+          <span style={{ fontSize: 18, lineHeight: 1 }}>🏡</span>
+          <div>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>
+              Par mes propres moyens
+            </p>
+            <p style={{ margin: 0, fontSize: 10, color: 'var(--sl-t3)' }}>
+              Vous venez directement sur place
+            </p>
+          </div>
+        </button>
+
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            onClick={onBack}
+            style={{
+              flex: 1, padding: '9px 0', borderRadius: 9, cursor: 'pointer',
+              border: '1.5px solid var(--sl-border)', backgroundColor: 'transparent',
+              color: 'var(--sl-t3)', fontSize: 12, fontWeight: 600,
+            }}
+          >
+            Retour
+          </button>
+          <button
+            onClick={confirm}
+            disabled={!selected}
+            style={{
+              flex: 2, padding: '9px 0', borderRadius: 9, cursor: 'pointer',
+              border: 'none', backgroundColor: selected ? '#22c55e' : 'var(--sl-card-hi)',
+              color: selected ? '#000' : 'var(--sl-t3)', fontSize: 13, fontWeight: 700,
+              transition: 'all 0.15s',
+            }}
+          >
+            Confirmer
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Carte d'une convocation ───────────────────────────────────────────────────
 function ConvocationCard({ conv, onRespond }) {
-  const event = conv.event;
-  const player = conv.player;
-  const statusCfg = STATUS_CFG[conv.status];
+  const [awaitingTransport, setAwaitingTransport] = useState(false);
+
+  const event     = conv.event;
+  const player    = conv.player;
+  const statusCfg = STATUS_CFG[conv.status] ?? STATUS_CFG.pending;
 
   const dateLabel = event?.date
     ? new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
@@ -27,10 +183,17 @@ function ConvocationCard({ conv, onRespond }) {
     : null;
 
   const matchLabel = event
-    ? (event.homeTeam && event.awayTeam
-        ? `${event.homeTeam} · ${event.awayTeam}`
-        : event.title ?? 'Match')
+    ? (event.team_name && event.adversaire
+        ? `${event.team_name} vs ${event.adversaire}`
+        : event.adversaire
+          ? `vs ${event.adversaire}`
+          : event.title ?? 'Match')
     : 'Événement';
+
+  function handleTransportSelect(mode, seats) {
+    setAwaitingTransport(false);
+    onRespond(conv.id, 'accepted', null, mode, seats);
+  }
 
   return (
     <motion.div
@@ -39,15 +202,17 @@ function ConvocationCard({ conv, onRespond }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       style={{
-        borderRadius: 14, border: `1.5px solid ${statusCfg.color}40`,
-        backgroundColor: 'var(--sl-card)', overflow: 'hidden',
+        borderRadius: 14,
+        border: `1.5px solid ${statusCfg.color}40`,
+        backgroundColor: 'var(--sl-card)',
+        overflow: 'hidden',
       }}
     >
-      {/* Barre colorée en haut */}
+      {/* Barre colorée */}
       <div style={{ height: 3, backgroundColor: statusCfg.color }} />
 
       <div style={{ padding: '11px 14px' }}>
-        {/* Header : label convocation + statut */}
+        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <span style={{
             fontSize: 9, fontWeight: 800, letterSpacing: '0.12em',
@@ -73,10 +238,30 @@ function ConvocationCard({ conv, onRespond }) {
           {event?.city && <><span>·</span><span>{event.city}</span></>}
         </p>
 
-        {/* Boutons de réponse si pending */}
-        {conv.status === 'pending' && (
+        {/* Boutons de réponse si pending et pas encore en attente du transport */}
+        {conv.status === 'pending' && !awaitingTransport && (
           <div data-demo="convocation-respond" style={{ display: 'flex', gap: 5 }}>
-            {RESPONSE_BUTTONS.map(btn => (
+            {/* Accepter → ouvre le sélecteur transport */}
+            <button
+              onClick={() => setAwaitingTransport(true)}
+              style={{
+                flex: 1, padding: '10px 6px', minHeight: 44,
+                borderRadius: 9, cursor: 'pointer',
+                border: '1.5px solid var(--sl-border)',
+                backgroundColor: 'transparent',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+                transition: 'all 0.15s',
+              }}
+            >
+              <span style={{ fontSize: 16 }}>✅</span>
+              <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)' }}>Accepter</span>
+            </button>
+
+            {/* Décliner / Indisponible → réponse directe */}
+            {[
+              { status: 'declined',    emoji: '❌', label: 'Décliner'     },
+              { status: 'unavailable', emoji: '🤔', label: 'Indisponible' },
+            ].map(btn => (
               <button
                 key={btn.status}
                 onClick={() => onRespond(conv.id, btn.status)}
@@ -96,10 +281,24 @@ function ConvocationCard({ conv, onRespond }) {
           </div>
         )}
 
-        {/* Statut si déjà répondu */}
+        {/* Sélecteur transport (expansion après "Accepter") */}
+        <AnimatePresence>
+          {awaitingTransport && (
+            <TransportSelector
+              onSelect={handleTransportSelect}
+              onBack={() => setAwaitingTransport(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Statut déjà répondu */}
         {conv.status !== 'pending' && conv.responded_by && (
           <p style={{ fontSize: 10, color: 'var(--sl-t3)', margin: 0 }}>
-            Répondu {conv.note ? `· "${conv.note}"` : ''}
+            Répondu
+            {conv.transport_mode === 'driving'   && ` · 🚗 Je conduis (${conv.driver_seats ?? '?'} places)`}
+            {conv.transport_mode === 'passenger'  && ' · 🙋 Je cherche une place'}
+            {conv.transport_mode === 'own_means'  && ' · 🏡 Par mes propres moyens'}
+            {conv.note ? ` · "${conv.note}"` : ''}
           </p>
         )}
       </div>
@@ -107,10 +306,11 @@ function ConvocationCard({ conv, onRespond }) {
   );
 }
 
+// ── Liste principale ──────────────────────────────────────────────────────────
 export default function ConvocationsList({ convocations, onRespond, showAll = false }) {
-  const pending    = convocations.filter(c => c.status === 'pending');
-  const responded  = convocations.filter(c => c.status !== 'pending');
-  const displayed  = showAll ? convocations : pending;
+  const pending   = convocations.filter(c => c.status === 'pending');
+  const responded = convocations.filter(c => c.status !== 'pending');
+  const displayed = showAll ? convocations : pending;
 
   if (!displayed.length) return null;
 

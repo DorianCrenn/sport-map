@@ -34,7 +34,7 @@ import PlatformPreviewPanel from './poster/PlatformPreviewPanel.jsx';
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function PosterStudio({ event, onClose, club, quickMode = false, resultMode = null, initialBgSrc = null }) {
+export default function PosterStudio({ event, onClose, club, quickMode = false, resultMode = null, initialBgSrc = null, convocationPlayers = null }) {
   const { allSports } = useSports();
   const { currentUser, isAdmin, isClubAdmin } = useAuth();
   const canExpert = isAdmin || isClubAdmin;
@@ -65,7 +65,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     poster, dispatch, set,
     draftState, lastSavedAt, restoredDraft,
     libHook, favTplHook, defTplHook,
-  } = usePosterState({ event, club, initialAccent, initialFields, initialBgSrc, isTournamentEvent, resultMode });
+  } = usePosterState({ event, club, initialAccent, initialFields, initialBgSrc, isTournamentEvent, resultMode, convocationPlayers });
 
   const clubMedia  = useClubMedia(club?.id);
   const clubDNA    = useClubDNA(club?.id);

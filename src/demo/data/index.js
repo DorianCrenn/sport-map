@@ -72,6 +72,10 @@ const _demoFollowsWithUser = [
 // ── Table map : nom de table Supabase → tableau de lignes ───────────────────
 
 export function buildDemoTables() {
+  // Dates dynamiques — recalculées à chaque ouverture de démo
+  const TODAY = new Date().toISOString().slice(0, 10);
+  const NOW   = new Date().toISOString();
+
   // Mutable copies — modifiable during sandbox mode
   return {
     events:                [...demoEvents],
@@ -85,6 +89,55 @@ export function buildDemoTables() {
     club_pages:            [{ ...demoClubPage }],
     club_brand_kits:       [{ ...demoBrandKit }],
     club_trainings:        [...demoTrainings],
+    // Séances concrètes avec date du jour — nécessaires pour TrainingCard
+    training_sessions: [
+      {
+        id:         'demo-ts-001',
+        club_id:    DEMO_CLUB_ID,
+        team_id:    'demo-team-001',
+        date:       TODAY,
+        time:       '18h30',
+        location:   'Complexe de la Cavale Blanche',
+        status:     'active',
+        created_at: NOW,
+      },
+    ],
+    // Scores de matchs — nécessaires pour CoachMatchCard et LiveMultiplexSection
+    match_scores: [
+      {
+        // demo-event-001 (J+4) — état pre_filled pour le coach
+        id:          'demo-ms-001',
+        event_id:    'demo-event-001',
+        sport:       'Football',
+        score_home:  null,
+        score_away:  null,
+        status:      'pending',
+        score_detail: {},
+        man_of_match: null,
+        validated_by: null,
+        validated_at: null,
+        created_at:  NOW,
+        updated_at:  NOW,
+      },
+      {
+        // demo-event-016 (hier) — LIVE pour le Multiplex et la carte coach
+        id:          'demo-ms-016',
+        event_id:    'demo-event-016',
+        sport:       'Football',
+        score_home:  2,
+        score_away:  1,
+        status:      'in_progress',
+        score_detail: {},
+        man_of_match: null,
+        validated_by: null,
+        validated_at: null,
+        created_at:  NOW,
+        updated_at:  NOW,
+      },
+    ],
+    match_lineups:         [],
+    match_encounters:      [],
+    live_match_events:     [],
     club_managers:         [],
     club_follows:          [..._demoFollowsWithUser],
     club_media_assets:     [],

@@ -32,7 +32,7 @@ export function useMyConvocations(userId) {
     // 2. Récupérer les convocations (sans join imbriqué — compatible demoClient)
     const { data: convocs } = await supabase
       .from('event_convocations')
-      .select('id, status, note, created_at, responded_by, player_id, event_id')
+      .select('id, status, note, transport_mode, driver_seats, created_at, responded_by, player_id, event_id')
       .in('player_id', allPlayerIds)
       .order('created_at', { ascending: false });
 
@@ -68,15 +68,27 @@ export function useMyConvocations(userId) {
     return () => { supabase.removeChannel(channel); };
   }, [userId, load]);
 
-  const respond = useCallback(async (convocationId, status, note = null) => {
+  const respond = useCallback(async (
+    convocationId,
+    status,
+    note          = null,
+    transportMode = null,
+    driverSeats   = null,
+  ) => {
     // Optimistic update
     setConvocations(prev =>
-      prev.map(c => c.id === convocationId ? { ...c, status, note } : c)
+      prev.map(c =>
+        c.id === convocationId
+          ? { ...c, status, note, transport_mode: transportMode, driver_seats: driverSeats }
+          : c
+      )
     );
     const { error } = await supabase.rpc('respond_to_convocation', {
       p_convocation_id: convocationId,
       p_status:         status,
       p_note:           note,
+      p_transport_mode: transportMode,
+      p_driver_seats:   driverSeats,
     });
     if (error) {
       // Rollback

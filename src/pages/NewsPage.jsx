@@ -1,16 +1,22 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState, useCallback } from 'react';
 import { useFeedItems } from '../hooks/useFeedItems.ts';
 import { useFeaturedEvents } from '../hooks/useFeaturedEvents.ts';
 import { useClubSponsors } from '../hooks/useClubSponsors.ts';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useManagedClubs } from '../hooks/useManagedClubs.js';
 import { useMyConvocations } from '../hooks/useMyConvocations.js';
+import { useParentChildren } from '../hooks/useParentChildren.js';
+import { useQuickActions } from '../hooks/useQuickActions.js';
+import { supabase } from '../lib/supabase.js';
 import ClubFeed from '../components/feed/ClubFeed.tsx';
 import MatchesTab from '../components/feed/MatchesTab.jsx';
 import UpcomingAgendaSection from '../components/feed/UpcomingAgendaSection.jsx';
 import ConvocationsList from '../components/convocations/ConvocationsList.jsx';
 import ParentDashboard from '../components/home/ParentDashboard.jsx';
-import { useParentChildren } from '../hooks/useParentChildren.js';
+import QuickActionsSection from '../components/home/QuickActionsSection.jsx';
+import LiveMultiplexSection from '../components/home/LiveMultiplexSection.jsx';
+
+const PosterStudio = lazy(() => import('../components/PosterStudio.jsx'));
 
 // ── Onglets principaux ────────────────────────────────────────────────────────
 
@@ -22,9 +28,9 @@ const MAIN_TABS = [
 // ── Pills de filtre (affichées dans l'onglet "Mes clubs") ─────────────────────
 
 const FEED_FILTERS = [
-  { key: 'all',     label: 'Tout',     emoji: '🗂️' },
-  { key: 'match',   label: 'Matchs',   emoji: '⚽' },
-  { key: 'flash',   label: 'Annonces', emoji: '📢' },
+  { key: 'all',     label: 'Tout',        emoji: '🗂️' },
+  { key: 'match',   label: 'Matchs',      emoji: '⚽' },
+  { key: 'flash',   label: 'Annonces',    emoji: '📢' },
   { key: 'carpool', label: 'Covoiturage', emoji: '🚗' },
 ];
 
@@ -103,7 +109,6 @@ function NoClubsZeroState({ onNavigateClubs, onSwitchToAgenda }) {
       padding: '0 32px',
       textAlign: 'center',
     }}>
-      {/* Illustration */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 28, lineHeight: 1 }}>
         <span style={{ fontSize: 42, transform: 'rotate(-12deg)', display: 'inline-block' }}>⚽</span>
         <span style={{ fontSize: 42, transform: 'translateY(-10px)', display: 'inline-block' }}>🏀</span>
@@ -198,9 +203,10 @@ function QuickSetupCard({ onDismiss }) {
 
 export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrainings, externalConvocations, onConvocationRespond }) {
   const { currentUser, isAdmin, isClubAdmin, follows } = useAuth();
-  const { managedClubs } = useManagedClubs();
+  const { managedClubs, isCoachOrManager, isCommunicant } = useManagedClubs();
+
   // Fallback local si le parent ne fournit pas les convocations
-  const localConv = useMyConvocations(externalConvocations ? null : currentUser?.id);
+  const localConv    = useMyConvocations(externalConvocations ? null : currentUser?.id);
   const convocations = externalConvocations ?? localConv.convocations;
   const onRespond    = onConvocationRespond ?? localConv.respond;
 
@@ -210,6 +216,7 @@ export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrain
   const [activeFeed, setActiveFeed] = useState('all');
 
   const isManager  = isAdmin || isClubAdmin || managedClubs.length > 0;
+  const isPresident = isAdmin || isClubAdmin;
   const dismissKey = `sl-quick-setup-dismissed-${currentUser?.id}`;
   const [setupDismissed, setSetupDismissed] = useState(
     () => !!localStorage.getItem(dismissKey)
@@ -220,7 +227,7 @@ export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrain
   }
 
   const managedClubIds = useMemo(() => managedClubs.map(c => String(c.id)), [managedClubs]);
-  const feedClubIds = useMemo(
+  const feedClubIds    = useMemo(
     () => [...new Set([...followedClubIds, ...managedClubIds])],
     [followedClubIds, managedClubIds],
   );
@@ -228,9 +235,54 @@ export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrain
   const { items, loading }  = useFeedItems(feedClubIds, follows, managedClubIds);
   const { items: featured } = useFeaturedEvents({ clubIds: feedClubIds });
   const { sponsors }        = useClubSponsors(feedClubIds);
-  const hasClubs = feedClubIds.length > 0;
+  const hasClubs            = feedClubIds.length > 0;
 
   const showSetupCard = isManager && hasClubs && !setupDismissed;
+
+  // ── QuickActions ─────────────────────────────────────────────────────────
+  const quickActions = useQuickActions({
+    currentUser,
+    managedClubs,
+    followedClubIds: feedClubIds,
+    isCoachOrManager,
+    isCommunicant,
+  });
+
+  // ── PosterStudio — ouvert depuis QuickActionsSection ─────────────────────
+  const [studioConfig, setStudioConfig] = useState(null);
+
+  const handleOpenPoster = useCallback(async ({ event, score, mode }) => {
+    let convPlayers = null;
+
+    // Mode convocation : fetcher les noms des joueurs acceptés
+    if (mode === 'convocation' && event?.id) {
+      const { data: convocRows } = await supabase
+        .from('event_convocations')
+        .select('player_id')
+        .eq('event_id', event.id)
+        .eq('status', 'accepted');
+
+      const playerIds = (convocRows ?? []).map(r => r.player_id);
+      if (playerIds.length) {
+        const { data: playerRows } = await supabase
+          .from('club_players')
+          .select('name')
+          .in('id', playerIds);
+        convPlayers = (playerRows ?? []).map(p => p.name);
+      } else {
+        convPlayers = [];
+      }
+    }
+
+    setStudioConfig({
+      event,
+      resultMode: score ? score : null,
+      quickMode: !!score,
+      convocationPlayers: convPlayers,
+    });
+  }, []);
+
+  const handleClosePoster = useCallback(() => setStudioConfig(null), []);
 
   return (
     <div className="flex flex-col h-full bg-[var(--sl-bg)]">
@@ -286,6 +338,24 @@ export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrain
           'md:flex md:flex-col md:border-r md:border-[var(--sl-border)]',
         ].join(' ')}>
           <div className="flex-1 overflow-y-auto overscroll-contain">
+
+            {/* QuickActions : cartes rôle-contextuelles (coach, communicant, président) */}
+            {currentUser && (isCoachOrManager || isCommunicant || isPresident) && (
+              <div className="px-4 pt-4">
+                <QuickActionsSection
+                  quickActions={quickActions}
+                  isParent={isParent}
+                  isCoachOrManager={isCoachOrManager}
+                  isCommunicant={isCommunicant}
+                  isPresident={isPresident}
+                  managedClubs={managedClubs}
+                  onNavigate={onNavigate}
+                  onOpenTrainings={onOpenTrainings}
+                  onOpenPoster={handleOpenPoster}
+                />
+              </div>
+            )}
+
             {/* Dashboard parent (si tuteur d'au moins un joueur) */}
             {currentUser && isParent && (
               <div className="px-4 pt-4">
@@ -336,25 +406,46 @@ export default function NewsPage({ followedClubIds = [], onNavigate, onOpenTrain
               onSwitchToAgenda={() => setActiveMain('agenda')}
             />
           ) : (
-            <ClubFeed
-              clubId="followed"
-              clubName="Mes clubs"
-              items={items}
-              featuredItems={featured}
-              sponsorItems={sponsors}
-              loading={loading}
-              currentUser={currentUser}
-              onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
-              onOpenTrainings={onOpenTrainings}
-              externalFilter={activeFeed}
-              hideHeader
-              headerSlot={showSetupCard ? (
-                <QuickSetupCard onDismiss={dismissSetup} />
-              ) : undefined}
-            />
+            <>
+              {/* Section Multiplex : matchs live en cours */}
+              {quickActions.liveMatches.length > 0 && (
+                <LiveMultiplexSection liveMatches={quickActions.liveMatches} />
+              )}
+
+              <ClubFeed
+                clubId="followed"
+                clubName="Mes clubs"
+                items={items}
+                featuredItems={featured}
+                sponsorItems={sponsors}
+                loading={loading}
+                currentUser={currentUser}
+                onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
+                onOpenTrainings={onOpenTrainings}
+                externalFilter={activeFeed}
+                hideHeader
+                headerSlot={showSetupCard ? (
+                  <QuickSetupCard onDismiss={dismissSetup} />
+                ) : undefined}
+              />
+            </>
           )}
         </div>
       </div>
+
+      {/* PosterStudio — ouvert depuis CoachMatchCard / CommunicantPosterCard */}
+      {studioConfig && (
+        <Suspense fallback={null}>
+          <PosterStudio
+            event={studioConfig.event}
+            club={managedClubs.find(c => String(c.id) === String(studioConfig.event?.club_id)) ?? null}
+            onClose={handleClosePoster}
+            resultMode={studioConfig.resultMode}
+            quickMode={studioConfig.quickMode}
+            convocationPlayers={studioConfig.convocationPlayers}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

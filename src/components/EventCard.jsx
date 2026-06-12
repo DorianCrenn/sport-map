@@ -1,5 +1,6 @@
 import { forwardRef, memo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { isDemoMode } from '../lib/supabase.js';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -254,6 +255,9 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
     setSaved(true);
     setScoreForAnnounce({ home: h, away: a });
     setTimeout(() => setSaved(false), 5000);
+    if (isDemoMode()) {
+      window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'score-entered' } }));
+    }
   }
 
   async function handleAnnounce(e) {

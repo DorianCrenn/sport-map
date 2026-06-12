@@ -37,9 +37,18 @@ import TplTrChampion from './templates/TplTrChampion.jsx';
 import TplTrField from './templates/TplTrField.jsx';
 import TplTrDynamic from './templates/TplTrDynamic.jsx';
 import TplAiFull from './templates/TplAiFull.jsx';
+import TplConvocation from './templates/TplConvocation.jsx';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const POSTER_TEMPLATES = [
+  {
+    id: 'convocation',
+    label: 'Convocation',
+    desc: 'Liste joueurs · Officiel · Club',
+    icon: '📋',
+    color: '#6366f1',
+    Component: TplConvocation,
+  },
   {
     id: 'simple',
     label: 'Classique',
