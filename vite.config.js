@@ -3,8 +3,34 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { createRequire } from 'module'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { join } from 'path'
 const require = createRequire(import.meta.url)
 const pkg = require('./package.json')
+
+// Injecte un commentaire de build en tête du SW généré par VitePWA.
+// Permet d'identifier en prod quelle version du SW est installée chez un utilisateur
+// (visible dans DevTools > Application > Service Workers > Source).
+// Doit s'exécuter APRÈS VitePWA (placé après dans le tableau plugins).
+function swVersionPlugin() {
+  return {
+    name: 'sl-sw-version',
+    apply: 'build',
+    closeBundle: {
+      order: 'post',
+      handler() {
+        const swPath = join('dist', 'sw.js')
+        if (!existsSync(swPath)) return
+        const buildId = `${pkg.version}+${Date.now()}`
+        const header = `/* SportLink SW — build ${buildId} */\n`
+        const src = readFileSync(swPath, 'utf8')
+        if (!src.startsWith('/* SportLink')) {
+          writeFileSync(swPath, header + src)
+        }
+      },
+    },
+  }
+}
 
 export default defineConfig({
   define: {
@@ -47,6 +73,7 @@ export default defineConfig({
         ],
       },
     }),
+    swVersionPlugin(),
   ],
   build: {
     rollupOptions: {
@@ -73,6 +100,12 @@ export default defineConfig({
           if (id.includes('node_modules/react') || id.includes('node_modules/scheduler')) {
             return 'vendor-react';
           }
+          // Pages rarement visitées sur premier chargement
+          if (id.includes('pages/FavorisPage')) return 'page-favoris';
+          if (id.includes('pages/ClubsPage'))   return 'page-clubs';
+          if (id.includes('pages/ProfilPage') || id.includes('pages/AuthPage')) return 'page-profil';
+          // DemoApp + tout le dossier demo
+          if (id.includes('/demo/'))            return 'demo';
           // Everything else in node_modules → shared vendor chunk
           if (id.includes('node_modules')) {
             return 'vendor';

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { supabase, setDemoMode, isDemoMode } from './lib/supabase.js';
 import { AnimatePresence, motion } from 'framer-motion';
-import DemoApp from './demo/DemoApp.jsx';
+const DemoApp = lazy(() => import('./demo/DemoApp.jsx'));
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { useToast } from './contexts/ToastContext.jsx';
 import { SportsProvider } from './contexts/SportsContext.jsx';
@@ -21,10 +21,10 @@ const ClubPageView   = lazy(() => import('./components/club/ClubPageView.jsx'));
 const UserPublicView = lazy(() => import('./components/UserPublicView.jsx'));
 import HomeScreen from './pages/HomeScreen.tsx';
 import MapPage from './pages/MapPage.jsx';
-import FavorisPage from './pages/FavorisPage.jsx';
-import ClubsPage from './pages/ClubsPage.jsx';
-import ProfilPage from './pages/ProfilPage.jsx';
-import AuthPage from './pages/AuthPage.jsx';
+const FavorisPage = lazy(() => import('./pages/FavorisPage.jsx'));
+const ClubsPage   = lazy(() => import('./pages/ClubsPage.jsx'));
+const ProfilPage  = lazy(() => import('./pages/ProfilPage.jsx'));
+const AuthPage    = lazy(() => import('./pages/AuthPage.jsx'));
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 const AdminPage          = lazy(() => import('./pages/AdminPage.jsx'));
 const OnboardingPage     = lazy(() => import('./pages/OnboardingPage.jsx'));
@@ -234,7 +234,11 @@ function AppInner() {
       supabase.from('clubs').select('*').eq('id', id).maybeSingle()
         .then(({ data }) => {
           setClubOverlayLoading(false);
-          if (!data) return;
+          if (!data) {
+            toast({ message: 'Club introuvable ou lien invalide', type: 'error' });
+            window.history.replaceState(null, '', window.location.pathname);
+            return;
+          }
           setSelectedSearchClub({
             id: data.id, name: data.name, sport: data.sport,
             city: data.city ?? '', description: data.description ?? '',
@@ -777,7 +781,7 @@ export default function App() {
         <FavoritesProvider>
           <AttendanceProvider>
             {isDemo
-              ? <DemoApp AppInner={AppInner} />
+              ? <Suspense fallback={null}><DemoApp AppInner={AppInner} /></Suspense>
               : <AppInner />
             }
           </AttendanceProvider>

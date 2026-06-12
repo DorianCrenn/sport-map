@@ -38,6 +38,7 @@ import TplTrField from './templates/TplTrField.jsx';
 import TplTrDynamic from './templates/TplTrDynamic.jsx';
 import TplAiFull from './templates/TplAiFull.jsx';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const POSTER_TEMPLATES = [
   {
     id: 'simple',
@@ -363,6 +364,7 @@ export const POSTER_TEMPLATES = [
   },
 ];
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const BASE_DIMS = {
   story: { w: 360, h: 640 },
   post:  { w: 360, h: 450 },
@@ -425,7 +427,7 @@ function SponsorBand({ logos, h }) {
         <img
           key={i}
           src={url}
-          alt=""
+          alt={`Sponsor ${i + 1}`}
           style={{
             height: logoH,
             maxWidth: maxLogoW,
@@ -440,7 +442,7 @@ function SponsorBand({ logos, h }) {
   );
 }
 
-const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', bgImageOverlay = 0.52, bgImageGradient = false, effects = {}, overlayElements = [], aiOverlayElements = [], playerLayers = [], sponsorLogos = [], showWatermark = true }) {
+const PosterRenderer = memo(function PosterRenderer({ templateId, data, format = 'story', previewWidth = 158, innerRef, outerRef, transforms = {}, bgPresetId = '', effects = {}, overlayElements = [], aiOverlayElements = [], playerLayers = [], sponsorLogos = [], showWatermark = true }) {
   const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);

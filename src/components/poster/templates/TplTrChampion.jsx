@@ -117,7 +117,7 @@ export default function TplTrChampion({
       >
         {homeTeam?.logo ? (
           <img
-            src={homeTeam.logo} alt="" crossOrigin="anonymous"
+            src={homeTeam.logo} alt={homeTeam.name || ''} crossOrigin="anonymous"
             className="w-full h-full object-contain"
             style={{ filter: `drop-shadow(0 0 18px ${mc}90)`, opacity: 0.95 }}
           />
