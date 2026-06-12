@@ -86,7 +86,9 @@ export default function ClubInfoTab({ club, accentColor }) {
             </div>
             <div>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)' }}>{club.city}</div>
-              <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Bretagne, France</div>
+              <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>
+                {club.region ? `${club.region}, France` : 'France'}
+              </div>
             </div>
           </div>
         </div>

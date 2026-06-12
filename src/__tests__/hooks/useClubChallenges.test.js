@@ -164,7 +164,7 @@ describe('useClubChallenges — respond', () => {
     const { result } = renderHook(() => useClubChallenges('club-a'));
     await act(async () => {});
 
-    const respondSpy = vi.spyOn(result.current, 'respond');
+    vi.spyOn(result.current, 'respond');
 
     await act(async () => {
       await result.current.cancel('ch-1');

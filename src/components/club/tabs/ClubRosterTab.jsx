@@ -86,6 +86,12 @@ export default function ClubRosterTab({
         backgroundColor: 'var(--sl-card)',
         position: 'relative',
       }}>
+        {/* Indicateur overflow droite */}
+        <div style={{
+          position: 'absolute', right: 0, top: 0, bottom: 0, width: 32, zIndex: 1,
+          background: 'linear-gradient(to left, var(--sl-card), transparent)',
+          pointerEvents: 'none',
+        }} />
         <div
           ref={tabBarRef}
           style={{

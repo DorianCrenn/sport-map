@@ -20,12 +20,10 @@ import { useNewsFeed } from '../../hooks/useNewsFeed.js';
 
 // ── Chainable query builder ───────────────────────────────────────────────────
 
-let capturedSelect = null;
-
 function q(terminal) {
   const obj = {
     then:   (fn, rej) => Promise.resolve(terminal).then(fn, rej),
-    select: vi.fn((s) => { capturedSelect = s; return obj; }),
+    select: vi.fn(() => obj),
     in:     vi.fn(() => obj),
     not:    vi.fn(() => obj),
     lt:     vi.fn(() => obj),
@@ -46,7 +44,6 @@ function mockRealtimeChannel() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  capturedSelect = null;
   mockFrom.mockReturnValue(q({ data: [], error: null }));
   mockChannel.mockReturnValue(mockRealtimeChannel());
 });

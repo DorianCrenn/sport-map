@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 
 // ── Mocks hoistés ─────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line no-unused-vars
 const { mockChannel, mockFrom, mockSubscribe, mockOn, mockRemoveChannel, capturedHandler } = vi.hoisted(() => {
   let _handler = null;
   const mockSubscribe = vi.fn().mockReturnThis();
@@ -32,7 +33,6 @@ vi.mock('../../lib/supabase.js', () => ({
   },
 }));
 
-import { renderHook as rh } from '@testing-library/react';
 import { AttendeeCountProvider, useAttendeeCount } from '../../contexts/AttendeeCountContext.jsx';
 
 function makeQuery(data = [], error = null) {

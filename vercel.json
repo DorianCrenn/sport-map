@@ -7,6 +7,10 @@
     {
       "source": "/clubs/:id",
       "destination": "/club-page.html?id=:id"
+    },
+    {
+      "source": "/((?!_next|api|sb-api|clubs/|.*\\.[^/]+$).*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [

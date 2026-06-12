@@ -15,12 +15,27 @@ export function makeQuery(resolved = { data: null, error: null }) {
     eq:          vi.fn().mockReturnThis(),
     neq:         vi.fn().mockReturnThis(),
     in:          vi.fn().mockReturnThis(),
+    or:          vi.fn().mockReturnThis(),
+    not:         vi.fn().mockReturnThis(),
+    is:          vi.fn().mockReturnThis(),
+    contains:    vi.fn().mockReturnThis(),
+    containedBy: vi.fn().mockReturnThis(),
+    gte:         vi.fn().mockReturnThis(),
+    gt:          vi.fn().mockReturnThis(),
+    lte:         vi.fn().mockReturnThis(),
+    lt:          vi.fn().mockReturnThis(),
+    range:       vi.fn().mockReturnThis(),
+    filter:      vi.fn().mockReturnThis(),
+    match:       vi.fn().mockReturnThis(),
     order:       vi.fn().mockReturnThis(),
     limit:       vi.fn().mockReturnThis(),
+    offset:      vi.fn().mockReturnThis(),
+    count:       vi.fn().mockReturnThis(),
     single:      vi.fn().mockResolvedValue(resolved),
     maybeSingle: vi.fn().mockResolvedValue(resolved),
     // Permet d'écrire : await supabase.from('x').select().order()
     then: (fn, rej) => Promise.resolve(resolved).then(fn, rej),
+    catch: (fn) => Promise.resolve(resolved).catch(fn),
   };
   return q;
 }

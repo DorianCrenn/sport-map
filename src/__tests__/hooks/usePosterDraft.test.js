@@ -43,11 +43,6 @@ function makeQuery(resolved = { data: null, error: null }) {
   return q;
 }
 
-// Helper: localStorage retourne bien la valeur JSON-parsable
-function lsSet(key, val) {
-  localStorage.setItem(key, JSON.stringify(val));
-}
-
 // ── usePosterDraft ─────────────────────────────────────────────────────────────
 
 describe('usePosterDraft', () => {
@@ -262,8 +257,7 @@ describe('usePosterLibrary — Supabase sync', () => {
 
   it('ne fait pas de requête Supabase si non connecté', async () => {
     // useAuth retourne null par défaut (beforeEach)
-    const { result } = renderHook(() => usePosterLibrary());
-    // Laisser les effets s'exécuter
+    renderHook(() => usePosterLibrary());
     await act(async () => {});
     expect(mockFrom).not.toHaveBeenCalled();
   });

@@ -10,6 +10,7 @@
  * concerné doit contenir au moins une occurrence de la valeur CSS correcte.
  */
 
+/* global process */
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, it, expect } from 'vitest';

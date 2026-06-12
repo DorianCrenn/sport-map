@@ -46,6 +46,76 @@ const VALID_ROW = {
   date: '2026-06-01', lat: 48, lng: -4, user_id: 'u1',
 };
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function dbRow(overrides = {}) {
+  return {
+    id: 'e1', title: 'FC Brest vs Quimper', sport: 'Football',
+    date: '2026-07-10T18:00:00Z', lat: 48.39, lng: -4.49,
+    city: 'Brest', venue: 'Stade Francis-Le Blé',
+    event_type: 'match', home_or_away: 'home',
+    user_id: 'user-1', club_id: 'club-1',
+    description: '', adversaire: '', score: null,
+    man_of_match: null, series_id: null,
+    ...overrides,
+  };
+}
+
+
+describe('useLocalEvents — fetch initial', () => {
+  beforeEach(() => mockFrom.mockReset());
+
+  it('démarre avec loading=false et events=[] après fetch vide', async () => {
+    mockFrom.mockReturnValue(q({ data: [], error: null }));
+    const { result } = renderHook(() => useLocalEvents());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.events).toEqual([]);
+  });
+
+  it('charge les events et passe loading=false', async () => {
+    mockFrom.mockReturnValue(q({ data: [dbRow()], error: null }));
+    const { result } = renderHook(() => useLocalEvents());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.events).toHaveLength(1);
+  });
+
+  it('mappe event_type → eventType (camelCase)', async () => {
+    mockFrom.mockReturnValue(q({ data: [dbRow({ event_type: 'tournament' })], error: null }));
+    const { result } = renderHook(() => useLocalEvents());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.events[0].eventType).toBe('tournament');
+  });
+
+  it('mappe home_or_away → homeOrAway', async () => {
+    mockFrom.mockReturnValue(q({ data: [dbRow({ home_or_away: 'away' })], error: null }));
+    const { result } = renderHook(() => useLocalEvents());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.events[0].homeOrAway).toBe('away');
+  });
+
+  it('mappe club_id → clubId', async () => {
+    mockFrom.mockReturnValue(q({ data: [dbRow({ club_id: 'c-99' })], error: null }));
+    const { result } = renderHook(() => useLocalEvents());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.events[0].clubId).toBe('c-99');
+  });
+
+  it('champs optionnels absents → valeurs vides par défaut', async () => {
+    mockFrom.mockReturnValue(q({
+      data: [{ id: 'bare', sport: 'Football', date: '2026-07-10', user_id: 'u1' }],
+      error: null,
+    }));
+    const { result } = renderHook(() => useLocalEvents());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    const e = result.current.events[0];
+    expect(e.city).toBe('');
+    expect(e.venue).toBe('');
+    expect(e.description).toBe('');
+    expect(e.adversaire).toBe('');
+    expect(e.manOfMatch).toBe('');
+  });
+});
+
 describe('useLocalEvents', () => {
   beforeEach(() => {
     mockFrom.mockReset();

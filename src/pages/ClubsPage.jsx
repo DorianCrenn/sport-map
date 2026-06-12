@@ -7,7 +7,7 @@ import { useClubLeaderboard } from '../hooks/useClubLeaderboard.js';
 import SportIcon from '../components/SportIcon.jsx';
 const ClubPageView      = lazy(() => import('../components/club/ClubPageView.jsx'));
 const ClubCreationWizard = lazy(() => import('../components/club/ClubCreationWizard.jsx'));
-import ClubFormModal from '../components/club/ClubFormModal.jsx';
+const ClubFormModal  = lazy(() => import('../components/club/ClubFormModal.jsx'));
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { SkeletonClubCard } from '../components/Skeleton.jsx';
 import { generateDemoData } from '../lib/demoDataGenerator.js';
@@ -431,7 +431,8 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
           </div>
         )}
 
-        {/* Clubs list */}
+        {/* Clubs list — grille 2 colonnes sur desktop */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))', gap: 8 }}>
         {filtered.map((club, i) => {
           const sport = SPORTS[club.sport];
           const sportColor = sport?.color ?? '#64748b';
@@ -444,7 +445,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.025, duration: 0.15 }}
               style={{
-                borderRadius: 14, marginBottom: 8, overflow: 'hidden',
+                borderRadius: 14, overflow: 'hidden',
                 backgroundColor: 'var(--sl-card)',
                 border: `1px solid ${own ? 'rgba(34,217,106,0.35)' : 'var(--sl-border)'}`,
               }}
@@ -631,6 +632,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             </motion.div>
           );
         })}
+        </div>
       </div>
     </div>
   );

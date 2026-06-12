@@ -80,7 +80,7 @@ function MatchRow({ event, canConvoque, onConvoque }) {
             onClick={() => onConvoque?.(event)}
             data-demo="convocations-tab"
             style={{
-              fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 7, cursor: 'pointer',
+              fontSize: 9, fontWeight: 700, padding: '5px 10px', minHeight: 28, borderRadius: 7, cursor: 'pointer',
               backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)',
               color: '#6366f1', whiteSpace: 'nowrap',
             }}

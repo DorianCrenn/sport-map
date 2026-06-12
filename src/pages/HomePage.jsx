@@ -485,7 +485,7 @@ function RecentResultsFeed({ allEvents, onNavigate }) {
               </h3>
               <button
                 onClick={() => onNavigate('map')}
-                style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 4px', minHeight: 44 }}
               >
                 Voir tout →
               </button>
@@ -504,7 +504,7 @@ function RecentResultsFeed({ allEvents, onNavigate }) {
               </h3>
               <button
                 onClick={() => onNavigate('map')}
-                style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-blue)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-blue)', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 4px', minHeight: 44 }}
               >
                 Sur la carte →
               </button>
@@ -590,7 +590,7 @@ function FeaturesSection({ stats = {}, onNavigate, onShowLegal }) {
             <button
               key={section}
               onClick={() => onShowLegal?.(section)}
-              style={{ fontSize: 11, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textDecorationColor: 'var(--sl-border)', textUnderlineOffset: 3 }}
+              style={{ fontSize: 11, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 6px', minHeight: 44, textDecoration: 'underline', textDecorationColor: 'var(--sl-border)', textUnderlineOffset: 3 }}
             >
               {label}
             </button>
@@ -680,20 +680,20 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             <div className="flex gap-3">
               <motion.button whileTap={{ scale:0.95 }} onClick={() => onNavigate('map')}
                 className="font-semibold font-poppins cursor-pointer"
-                style={{ color:'rgba(255,255,255,0.6)', background:'none', border:'none', fontSize:13, padding:'4px 0' }}>
+                style={{ color:'rgba(255,255,255,0.6)', background:'none', border:'none', fontSize:13, padding:'10px 8px', minHeight:44 }}>
                 Voir la carte →
               </motion.button>
-              <span style={{ color:'rgba(255,255,255,0.25)', fontSize:13 }}>·</span>
+              <span style={{ color:'rgba(255,255,255,0.25)', fontSize:13, alignSelf:'center' }}>·</span>
               <motion.button whileTap={{ scale:0.95 }} onClick={() => onNavigate('clubs')}
                 className="font-semibold font-poppins cursor-pointer"
-                style={{ color:'rgba(255,255,255,0.6)', background:'none', border:'none', fontSize:13, padding:'4px 0' }}>
+                style={{ color:'rgba(255,255,255,0.6)', background:'none', border:'none', fontSize:13, padding:'10px 8px', minHeight:44 }}>
                 Les clubs →
               </motion.button>
             </div>
             <a
               href="/demo"
               className="font-semibold font-poppins flex items-center gap-1.5 justify-center"
-              style={{ color:'#a5b4fc', background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:12, fontSize:13, padding:'9px 18px', marginTop:4, width:'100%', maxWidth:300, textDecoration:'none', display:'flex' }}>
+              style={{ color:'#a5b4fc', background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:12, fontSize:13, padding:'13px 18px', marginTop:4, width:'100%', maxWidth:300, textDecoration:'none', display:'flex' }}>
               🎭 Découvrir la démo interactive
             </a>
           </motion.div>
@@ -937,7 +937,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
                   <button
                     key={section}
                     onClick={() => onShowLegal?.(section)}
-                    style={{ fontSize: 12, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', textDecoration: 'underline', textDecorationColor: 'var(--sl-border)', textUnderlineOffset: 3 }}
+                    style={{ fontSize: 12, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 6px', minHeight: 44, textDecoration: 'underline', textDecorationColor: 'var(--sl-border)', textUnderlineOffset: 3 }}
                   >
                     {label}
                   </button>

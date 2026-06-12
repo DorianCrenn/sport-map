@@ -279,7 +279,7 @@ function ClubSetupChecklist({ club, blocks, events, onDismiss, onEditPage, onCre
         <span style={{ fontSize: 11, fontWeight: 800, color: '#6366f1' }}>
           ✅ Configuration — {done}/3
         </span>
-        <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t3)', padding: 4, display: 'flex' }}>
+        <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t3)', padding: '6px 8px', minHeight: 32, display: 'flex', alignItems: 'center' }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>

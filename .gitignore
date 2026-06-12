@@ -30,3 +30,12 @@ dist-ssr
 
 # Supabase CLI cache
 supabase/.temp/
+
+# Playwright
+/e2e/reports/
+/e2e/screenshots/diff/
+/playwright-report/
+/test-results/
+
+# Coverage
+/coverage/

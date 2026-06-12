@@ -233,7 +233,7 @@ describe('STAB-005 useLocalEvents — pendingInserts ne croît pas indéfiniment
     await act(async () => {
       try {
         await result.current.addEvent({ title: 'Test', sport: 'Football', date: new Date().toISOString() });
-      } catch {}
+      } catch { /* rollback expected */ }
     });
 
     // After rollback the list should be back to initial length

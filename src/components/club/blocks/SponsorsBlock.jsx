@@ -1,20 +1,6 @@
 import { useState } from 'react';
 import { useClubSponsorsPage } from '../../../hooks/useClubSponsorsPage.js';
 
-function isColorDark(hex = '#ffffff') {
-  const h = hex.replace('#', '').padEnd(6, '0');
-  const r = parseInt(h.slice(0, 2), 16) / 255;
-  const g = parseInt(h.slice(2, 4), 16) / 255;
-  const b = parseInt(h.slice(4, 6), 16) / 255;
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.35;
-}
-
-/** Retourne l'URL du logo adapté au fond (blanc sur fond sombre, couleur sinon). */
-function pickLogo(sponsor, bgColor) {
-  if (sponsor.logoWhite && isColorDark(bgColor ?? '#ffffff')) return sponsor.logoWhite;
-  return sponsor.logo;
-}
-
 const TIER_ORDER = ['gold', 'silver', 'bronze', 'partner'];
 
 const TIER_META = {
@@ -22,18 +8,6 @@ const TIER_META = {
   silver:  { label: 'Argent',    color: '#94a3b8', logoH: 44, cols: 'repeat(auto-fill, minmax(90px, 1fr))'  },
   bronze:  { label: 'Bronze',    color: '#cd7c54', logoH: 32, cols: 'repeat(auto-fill, minmax(72px, 1fr))'  },
   partner: { label: 'Partenaire',color: '#4da6ff', logoH: 32, cols: 'repeat(auto-fill, minmax(72px, 1fr))'  },
-};
-
-const inputStyle = {
-  padding: '6px 9px',
-  borderRadius: 8,
-  fontSize: 12,
-  border: '1px solid var(--sl-border-s)',
-  backgroundColor: 'var(--sl-surface)',
-  color: 'var(--sl-t1)',
-  outline: 'none',
-  width: '100%',
-  boxSizing: 'border-box',
 };
 
 function SponsorLogo({ sponsor, height }) {
@@ -113,11 +87,22 @@ function TierSection({ tier, sponsors, isMultiTier }) {
   );
 }
 
-export function SponsorsBlockView({ block, clubId }) {
+export function SponsorsBlockView({ block, clubId, canEdit = false }) {
   const dbSponsors = useClubSponsorsPage(clubId);
   // DB en priorité, fallback sur les données locales du bloc (rétrocompatibilité)
   const sponsors = dbSponsors.length ? dbSponsors : (block.data?.sponsors ?? []);
-  if (sponsors.length === 0) return null;
+  if (sponsors.length === 0) {
+    if (!canEdit) return null;
+    return (
+      <div style={{
+        padding: '20px 16px', textAlign: 'center',
+        borderRadius: 14, border: '1px dashed var(--sl-border)',
+        color: 'var(--sl-t3)', fontSize: 12,
+      }}>
+        🤝 Aucun partenaire — ajoutez vos sponsors depuis le tableau de bord
+      </div>
+    );
+  }
 
   const grouped = {};
   for (const tier of TIER_ORDER) {

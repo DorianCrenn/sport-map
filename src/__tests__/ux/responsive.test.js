@@ -14,8 +14,9 @@
  * 4. Largeurs fixes cassant mobile — pas de width > 375px sur les racines de pages
  */
 
+/* global process */
 import { readFileSync } from 'fs';
-import { resolve, relative } from 'path';
+import { resolve } from 'path';
 import { describe, it, expect } from 'vitest';
 
 // ── Configuration ──────────────────────────────────────────────────────────────

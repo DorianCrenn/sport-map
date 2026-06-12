@@ -22,7 +22,7 @@ export default function HelpFab({ onClick, hidden = false }) {
             bottom: 'calc(72px + env(safe-area-inset-bottom, 0px) + 12px)',
             left: 14,
             zIndex: Z.helpFab,
-            width: 40, height: 40,
+            width: 44, height: 44,
             borderRadius: '50%',
             backgroundColor: 'rgba(99,102,241,0.15)',
             border: '1.5px solid rgba(99,102,241,0.35)',

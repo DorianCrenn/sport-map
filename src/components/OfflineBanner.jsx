@@ -41,6 +41,7 @@ export default function OfflineBanner() {
             </span>
             <button
               onClick={() => setDismissed(true)}
+              aria-label="Fermer la bannière hors-ligne"
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f59e0b', opacity: 0.7, padding: 4, display: 'flex' }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

@@ -13,13 +13,10 @@ import { useEliteSponsors } from '../../hooks/useEliteSponsors.js';
 
 // ── Chainable query builder ───────────────────────────────────────────────────
 
-let capturedTable = null;
-let capturedSelect = null;
-
 function q(terminal) {
   const obj = {
     then:    (fn, rej) => Promise.resolve(terminal).then(fn, rej),
-    select:  vi.fn((s) => { capturedSelect = s; return obj; }),
+    select:  vi.fn(() => obj),
     eq:      vi.fn(() => obj),
     in:      vi.fn(() => obj),
     limit:   vi.fn(() => obj),
@@ -29,12 +26,7 @@ function q(terminal) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  capturedTable  = null;
-  capturedSelect = null;
-  mockFrom.mockImplementation((table) => {
-    capturedTable = table;
-    return q({ data: [], error: null });
-  });
+  mockFrom.mockImplementation(() => q({ data: [], error: null }));
 });
 
 // ── Aucun club elite ─────────────────────────────────────────────────────────

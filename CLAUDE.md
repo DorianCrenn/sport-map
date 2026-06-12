@@ -2,6 +2,10 @@
 
 > Lis ce fichier en entier avant toute modification. Il décrit précisément ce que fait l'app, comment elle est structurée, et les conventions à respecter.
 
+> **⚠️ GOUVERNANCE QA OBLIGATOIRE** — Lire aussi `SPORTLINK_QA_RULES.md` avant toute modification.
+> Aucune tâche n'est terminée sans que ses tests aient été créés et passent.
+> Consulter `QA_REGISTRY.md` pour identifier les composants/workflows impactés.
+
 ---
 
 ## 1. Vue d'ensemble

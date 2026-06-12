@@ -53,10 +53,18 @@ const TABS = [
 function TabNav({ activeTab, onTabChange, accentColor, announcementsCount }) {
   return (
     <div style={{
-      flexShrink: 0,
-      display: 'flex', overflowX: 'auto',
+      flexShrink: 0, position: 'relative',
       backgroundColor: 'var(--sl-card)',
       borderBottom: '1px solid var(--sl-border)',
+    }}>
+      {/* Indicateur overflow droite */}
+      <div style={{
+        position: 'absolute', right: 0, top: 0, bottom: 0, width: 32, zIndex: 1,
+        background: 'linear-gradient(to left, var(--sl-card), transparent)',
+        pointerEvents: 'none',
+      }} />
+    <div style={{
+      display: 'flex', overflowX: 'auto',
       scrollbarWidth: 'none',
     }}>
       {TABS.map(tab => {
@@ -91,6 +99,7 @@ function TabNav({ activeTab, onTabChange, accentColor, announcementsCount }) {
         );
       })}
       <div style={{ flexShrink: 0, width: 8 }} />
+    </div>
     </div>
   );
 }

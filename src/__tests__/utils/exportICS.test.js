@@ -1,3 +1,4 @@
+/* global global */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { downloadICS, downloadClubICS } from '../../utils/exportICS.js';
 
