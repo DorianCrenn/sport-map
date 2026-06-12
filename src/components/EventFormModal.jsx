@@ -84,7 +84,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
       defaults.sport = myClub.sport;
       // Auto-select first team if not already specified
       if (!defaults.teamName) {
-        const teams = myClub.categories?.flatMap(c => c.teams?.map(t => t.name) ?? []) ?? [];
+        const teams = myClub.categories?.flatMap(c => c.teams?.map(t => t?.name ?? t) ?? []) ?? [];
         if (teams.length > 0) {
           defaults.teamName = teams[0];
           defaults.category = inferCategory(teams[0]);
@@ -240,7 +240,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
 
   const teamPresets = useSmartMode && myClub
     ? (myClub.categories?.length > 0
-        ? myClub.categories.flatMap(c => c.teams?.map(t => t.name) ?? [])
+        ? myClub.categories.flatMap(c => c.teams?.map(t => t?.name ?? t) ?? [])
         : TEAM_PRESETS[myClub.sport] ?? [])
     : TEAM_PRESETS[form.sport] ?? [];
 

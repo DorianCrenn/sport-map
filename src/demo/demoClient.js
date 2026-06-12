@@ -67,6 +67,34 @@ class DemoQueryBuilder {
   contains()    { return this; }
   overlaps()    { return this; }
   textSearch()  { return this; }
+  returns()     { return this; }
+  throwOnError(){ return this; }
+
+  or(filterStr) {
+    const conditions = String(filterStr).split(',').map(part => {
+      const m = part.trim().match(/^(.+?)\.(eq|neq|gte|lte|gt|lt|is|like|ilike)\.(.*)$/);
+      if (!m) return () => true;
+      const [, col, op, val] = m;
+      return r => {
+        const rv = r[col];
+        if (op === 'eq')    return String(rv ?? '') === val;
+        if (op === 'neq')   return String(rv ?? '') !== val;
+        if (op === 'gte')   return rv != null && rv >= val;
+        if (op === 'lte')   return rv != null && rv <= val;
+        if (op === 'gt')    return rv != null && rv > val;
+        if (op === 'lt')    return rv != null && rv < val;
+        if (op === 'is')    return val === 'null' ? (rv == null) : rv === val;
+        if (op === 'like' || op === 'ilike') {
+          const str = String(rv ?? '');
+          const pattern = val.replace(/%/g, '.*').replace(/_/g, '.');
+          return new RegExp(`^${pattern}$`, op === 'ilike' ? 'i' : '').test(str);
+        }
+        return true;
+      };
+    });
+    this._filters.push(r => conditions.some(c => { try { return c(r); } catch { return false; } }));
+    return this;
+  }
   match(obj) {
     Object.entries(obj).forEach(([k, v]) => this.eq(k, v));
     return this;

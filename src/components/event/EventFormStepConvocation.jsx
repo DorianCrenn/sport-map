@@ -74,8 +74,11 @@ export default function EventFormStepConvocation({ event, onDone, onClose }) {
       .eq('is_active', true)
       .order('name');
 
-    // Filtre par équipe si possible
-    if (teamId) q = q.eq('team_id', teamId);
+    // Filtre par équipe — cherche par team_name si teamId est un nom (non-UUID)
+    if (teamId) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(teamId));
+      q = isUUID ? q.eq('team_id', teamId) : q.eq('team_name', teamId);
+    }
 
     q.then(({ data }) => {
       setPlayers(data ?? []);

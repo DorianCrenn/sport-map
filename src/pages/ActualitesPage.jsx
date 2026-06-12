@@ -16,7 +16,8 @@ import QuickActionsSection  from '../components/home/QuickActionsSection.jsx';
 import LiveMultiplexSection from '../components/home/LiveMultiplexSection.jsx';
 import ParentConvocationCard from '../components/home/ParentConvocationCard.jsx';
 
-const PosterStudio = lazy(() => import('../components/PosterStudio.jsx'));
+const PosterStudio           = lazy(() => import('../components/PosterStudio.jsx'));
+const EventFormStepConvocation = lazy(() => import('../components/event/EventFormStepConvocation.jsx'));
 
 export default function ActualitesPage({
   followedClubIds = [],
@@ -74,6 +75,9 @@ export default function ActualitesPage({
   });
 
   const effectiveLiveMatches = demo ? demoLiveMatches : quickActions.liveMatches;
+
+  // ── Convocation modale ────────────────────────────────────────────────────
+  const [convocationEvent, setConvocationEvent] = useState(null);
 
   // ── PosterStudio ──────────────────────────────────────────────────────────
   const [studioConfig, setStudioConfig] = useState(null);
@@ -177,6 +181,7 @@ export default function ActualitesPage({
               onNavigate={onNavigate}
               onOpenTrainings={onOpenTrainings}
               onOpenPoster={handleOpenPoster}
+              onConvocate={(event) => setConvocationEvent(event)}
             />
           )}
 
@@ -199,6 +204,16 @@ export default function ActualitesPage({
         onOpenTrainings={onOpenTrainings}
         hideHeader={false}
       />
+
+      {/* Modale convocation depuis CoachMatchCard */}
+      {convocationEvent && (
+        <Suspense fallback={null}>
+          <EventFormStepConvocation
+            event={convocationEvent}
+            onClose={() => setConvocationEvent(null)}
+          />
+        </Suspense>
+      )}
 
       {/* PosterStudio (lazy) */}
       {studioConfig && (

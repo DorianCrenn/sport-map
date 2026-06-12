@@ -14,9 +14,9 @@ export const demoClubRow = {
   phone:             '06 12 34 56 78',
   email:             'contact@fc-sportlink-demo.fr',
   categories: [
-    { name: 'Seniors',   teams: ['Équipe 1', 'Réserve'] },
-    { name: 'Jeunes',    teams: ['U17', 'U15', 'U13', 'U11'] },
-    { name: 'Féminines', teams: ['Équipe F', 'U15 F'] },
+    { name: 'Seniors',   teams: [{ name: 'Équipe 1' }, { name: 'Réserve' }] },
+    { name: 'Jeunes',    teams: [{ name: 'U17' }, { name: 'U15' }, { name: 'U13' }, { name: 'U11' }] },
+    { name: 'Féminines', teams: [{ name: 'Équipe F' }, { name: 'U15 F' }] },
   ],
   status:            'active',
   verification_note: null,

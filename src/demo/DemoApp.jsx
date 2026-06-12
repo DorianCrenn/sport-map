@@ -23,8 +23,19 @@ const PROFILE_EMOJIS = {
 
 // AppInner est passé en prop pour éviter l'import circulaire
 export default function DemoApp({ AppInner }) {
-  const [profile,           setProfile]           = useState(() => sessionStorage.getItem('sl-demo-profile') || null);
-  const [currentStep,       setCurrentStep]       = useState(() => parseInt(sessionStorage.getItem('sl-demo-step') || '0', 10));
+  const [profile,           setProfile]           = useState(() => {
+    // Ne reprendre une session que si elle a été initialisée dans CETTE navigation
+    if (!sessionStorage.getItem('sl-demo-initialized')) {
+      sessionStorage.removeItem('sl-demo-profile');
+      sessionStorage.removeItem('sl-demo-step');
+      return null;
+    }
+    return sessionStorage.getItem('sl-demo-profile') || null;
+  });
+  const [currentStep,       setCurrentStep]       = useState(() => {
+    if (!sessionStorage.getItem('sl-demo-initialized')) return 0;
+    return parseInt(sessionStorage.getItem('sl-demo-step') || '0', 10);
+  });
   const [isInSandbox,       setIsInSandbox]       = useState(false);
   const [showSandboxWelcome,setShowSandboxWelcome] = useState(false);
   const [spotlightActive,   setSpotlightActive]   = useState(false);
@@ -65,6 +76,7 @@ export default function DemoApp({ AppInner }) {
     setTourSteps(steps);
     setCurrentStep(0);
     firstNavDispatched.current = false;
+    sessionStorage.setItem('sl-demo-initialized', 'true');
     sessionStorage.setItem('sl-demo-profile', selectedProfile);
     sessionStorage.setItem('sl-demo-step', '0');
     window.dispatchEvent(new CustomEvent('sl-demo-profile-selected', { detail: { profile: selectedProfile } }));
@@ -106,6 +118,7 @@ export default function DemoApp({ AppInner }) {
 
   const exitDemo = useCallback(() => {
     trackDemoExited(currentStep);
+    sessionStorage.removeItem('sl-demo-initialized');
     sessionStorage.removeItem('sl-demo-profile');
     sessionStorage.removeItem('sl-demo-step');
     window.location.href = '/';
@@ -120,6 +133,7 @@ export default function DemoApp({ AppInner }) {
   }, [profile]);
 
   const changeProfile = useCallback(() => {
+    sessionStorage.removeItem('sl-demo-initialized');
     sessionStorage.removeItem('sl-demo-profile');
     sessionStorage.removeItem('sl-demo-step');
     setProfile(null);

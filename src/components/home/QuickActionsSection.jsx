@@ -30,6 +30,7 @@ export default function QuickActionsSection({
   onNavigate,
   onOpenTrainings,
   onOpenPoster,
+  onConvocate,
 }) {
   const {
     todayTraining,
@@ -72,6 +73,7 @@ export default function QuickActionsSection({
             convocationCounts={m.convocationCounts}
             onNavigate={onNavigate}
             onOpenPoster={onOpenPoster}
+            onConvocate={onConvocate}
           />
         </div>
       );

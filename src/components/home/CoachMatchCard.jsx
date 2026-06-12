@@ -175,6 +175,7 @@ export default function CoachMatchCard({
   convocationCounts,
   onNavigate,
   onOpenPoster,
+  onConvocate,
 }) {
   const [showScoreInput,  setShowScoreInput]  = useState(false);
   const [localScore,      setLocalScore]      = useState(null);
@@ -300,7 +301,8 @@ export default function CoachMatchCard({
                 Aucune convocation créée pour ce match.
               </p>
               <button
-                onClick={() => onNavigate?.('mon-club')}
+                onClick={() => onConvocate ? onConvocate(event) : onNavigate?.('mon-club')}
+                data-demo="convocation-btn"
                 className="w-full py-2.5 rounded-xl bg-[var(--sl-blue)] text-white
                            text-[13px] font-bold active:scale-95 transition-transform"
               >
