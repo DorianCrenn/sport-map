@@ -24,6 +24,24 @@ export function inferCategory(teamName) {
 }
 
 /**
+ * Retrouve le niveau de championnat d'une équipe depuis les catégories du club.
+ * Ex: club.categories = [{teams: [{name:'Équipe 1', level:'R2'}]}]
+ * inferTeamLevel('Équipe 1', club) → 'R2'
+ */
+export function inferTeamLevel(teamName, club) {
+  if (!teamName || !club?.categories) return '';
+  for (const cat of club.categories) {
+    for (const team of cat.teams ?? []) {
+      const name = team?.name ?? team;
+      if (String(name).trim() === String(teamName).trim()) {
+        return team?.level ?? '';
+      }
+    }
+  }
+  return '';
+}
+
+/**
  * Génère une série d'événements récurrents (hebdo ou bihebdo).
  * Retourne au maximum 52 occurrences.
  */

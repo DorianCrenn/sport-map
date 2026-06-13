@@ -16,14 +16,35 @@ export const TEAM_PRESETS = {
 
 export const CHAMPIONSHIP_LEVELS = {
   Football: [
-    { value: 'National', label: 'National' },
-    { value: 'R1',       label: 'R1 — Régional 1' },
-    { value: 'R2',       label: 'R2 — Régional 2' },
-    { value: 'R3',       label: 'R3 — Régional 3' },
+    // Seniors masculins
+    { value: 'National', label: 'National'              },
+    { value: 'R1',       label: 'R1 — Régional 1'       },
+    { value: 'R2',       label: 'R2 — Régional 2'       },
+    { value: 'R3',       label: 'R3 — Régional 3'       },
     { value: 'DH',       label: "DH — Division d'Honneur" },
-    { value: 'D1',       label: 'D1 — District 1' },
-    { value: 'D2',       label: 'D2 — District 2' },
-    { value: 'D3',       label: 'D3 — District 3' },
+    { value: 'D1',       label: 'D1 — District 1'       },
+    { value: 'D2',       label: 'D2 — District 2'       },
+    { value: 'D3',       label: 'D3 — District 3'       },
+    // Féminines seniors
+    { value: 'R1 F',     label: 'R1 F — Régional 1 Féminin' },
+    { value: 'R2 F',     label: 'R2 F — Régional 2 Féminin' },
+    { value: 'D1 F',     label: 'D1 F — District 1 Féminin' },
+    { value: 'D2 F',     label: 'D2 F — District 2 Féminin' },
+    // U17
+    { value: 'R1 U17',   label: 'R1 U17 — Régional 1 U17'   },
+    { value: 'R2 U17',   label: 'R2 U17 — Régional 2 U17'   },
+    { value: 'D1 U17',   label: 'D1 U17 — District 1 U17'   },
+    { value: 'D2 U17',   label: 'D2 U17 — District 2 U17'   },
+    // U15
+    { value: 'D1 U15',   label: 'D1 U15 — District 1 U15'   },
+    { value: 'D2 U15',   label: 'D2 U15 — District 2 U15'   },
+    { value: 'D1 U15 F', label: 'D1 U15 F — District 1 U15 Féminin' },
+    // U13
+    { value: 'D1 U13',   label: 'D1 U13 — District 1 U13'   },
+    { value: 'D2 U13',   label: 'D2 U13 — District 2 U13'   },
+    // U11
+    { value: 'D1 U11',   label: 'D1 U11 — District 1 U11'   },
+    { value: 'D2 U11',   label: 'D2 U11 — District 2 U11'   },
   ],
   Handball: [
     { value: 'N3',   label: 'N3 — Nationale 3' },

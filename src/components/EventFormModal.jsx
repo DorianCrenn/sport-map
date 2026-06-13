@@ -15,7 +15,7 @@ import CityAutocomplete from './CityAutocomplete.jsx';
 import VenueAutocomplete from './VenueAutocomplete.jsx';
 import SportIcon from './SportIcon.jsx';
 import { BREST, TEAM_PRESETS, CHAMPIONSHIP_LEVELS } from '../lib/eventFormConstants.js';
-import { inferCategory, generateRecurring, toFormValues, buildEvent } from '../lib/eventFormHelpers.js';
+import { inferCategory, inferTeamLevel, generateRecurring, toFormValues, buildEvent } from '../lib/eventFormHelpers.js';
 import {
   Field, AdversaireField, ContextualTypeFields, EventTypeRadio,
 } from './event/EventFormFields.jsx';
@@ -84,10 +84,11 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
       defaults.sport = myClub.sport;
       // Auto-select first team if not already specified
       if (!defaults.teamName) {
-        const teams = myClub.categories?.flatMap(c => c.teams?.map(t => t?.name ?? t) ?? []) ?? [];
-        if (teams.length > 0) {
-          defaults.teamName = teams[0];
-          defaults.category = inferCategory(teams[0]);
+        const firstTeam = myClub.categories?.flatMap(c => c.teams ?? [])?.[0];
+        if (firstTeam) {
+          defaults.teamName = firstTeam?.name ?? firstTeam;
+          defaults.category = inferCategory(defaults.teamName);
+          defaults.level    = firstTeam?.level ?? '';
         }
       }
     }
@@ -158,8 +159,11 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   function set(field, value) {
     setForm(prev => {
       const next = { ...prev, [field]: value };
-      // Auto-category from team
-      if (field === 'teamName') next.category = inferCategory(value);
+      if (field === 'teamName') {
+        next.category = inferCategory(value);
+        const teamLevel = inferTeamLevel(value, myClub);
+        if (teamLevel) next.level = teamLevel;
+      }
       return next;
     });
   }
