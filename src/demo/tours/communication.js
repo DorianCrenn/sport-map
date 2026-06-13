@@ -13,9 +13,9 @@ export const communicationTour = [
   {
     id:     2,
     tab:    'home',
-    action: 'close-overlay',
+    action: null,
     title:  'Partager sur tous les réseaux',
-    body:   'Depuis PosterStudio, partagez en un tap sur WhatsApp, Instagram et Facebook. Votre affiche touche directement les supporters, parents et futurs abonnés.',
+    body:   'Depuis PosterStudio, partagez en un tap sur WhatsApp, Instagram et Facebook. Votre affiche est déjà là — regardez les boutons de partage en bas de l\'écran.',
     emoji:  '📱',
     why:    'Un partage WhatsApp touche en moyenne 150 contacts dans un réseau de supporters local.',
   },
