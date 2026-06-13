@@ -4,9 +4,9 @@ export const coachTour = [
     tab:    'home',
     action: null,
     title:  'Votre espace coach',
-    body:   'Votre carte match montre l\'état des convocations en temps réel et la séance d\'entraînement de ce soir. Tout ce dont vous avez besoin est là, sans ouvrir 4 applications différentes.',
+    body:   'La séance d\'entraînement de ce soir est affichée en haut. En dessous, votre carte match montre l\'état des convocations en temps réel. Tout ce dont vous avez besoin, sans ouvrir 4 applications.',
     emoji:  '🎯',
-    target: 'coach-match-card',
+    target: 'training-card',
     why:    'Les coachs SportLink passent 70% moins de temps à gérer la logistique.',
   },
   {

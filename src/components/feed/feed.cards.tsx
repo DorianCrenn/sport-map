@@ -264,7 +264,7 @@ export function CarpoolCard({ item, onBook }: CarpoolCardProps) {
   const full = item.available_seats === 0;
 
   return (
-    <article className="rounded-2xl border border-[var(--sl-border)] bg-[var(--sl-card)] shadow-md overflow-hidden">
+    <article data-demo="carpool-card" className="rounded-2xl border border-[var(--sl-border)] bg-[var(--sl-card)] shadow-md overflow-hidden">
 
       {/* Trait d'accent couleur */}
       <div className={`h-[3px] ${full ? 'bg-[var(--sl-border)]' : 'bg-gradient-to-r from-emerald-500 to-teal-400'}`} />
