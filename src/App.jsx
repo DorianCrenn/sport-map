@@ -324,9 +324,16 @@ function AppInner() {
       const { tab, action } = e.detail ?? {};
       const { handleTabChange, handleOpenPoster, userEvents } = demoNavRef.current;
 
+      // Fermer les overlays ouverts avant tout changement d'onglet
+      if (tab) {
+        setShowNewEventForm(false);
+        setShowAnnouncements(false);
+        setStudioEvent(null);
+        setStudioClub(null);
+      }
+
       if (tab === 'mon-club') {
         if (allClubsRef.current.length === 0) {
-          // Clubs not loaded yet — retry after they arrive
           pendingDemoTabRef.current = 'mon-club';
         } else {
           handleTabChange('mon-club');
