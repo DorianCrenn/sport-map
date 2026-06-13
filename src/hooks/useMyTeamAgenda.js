@@ -53,7 +53,7 @@ export function useMyTeamAgenda(userId) {
         .neq('status', 'cancelled')
         .order('date', { ascending: true })
         .order('time', { ascending: true })
-        .limit(4);
+        .limit(16);
 
       // 4. Prochains matchs
       const { data: events } = await supabase
@@ -63,7 +63,7 @@ export function useMyTeamAgenda(userId) {
         .gte('date', today)
         .neq('status', 'cancelled')
         .order('date', { ascending: true })
-        .limit(4);
+        .limit(16);
 
       if (cancelled) return;
 
@@ -115,7 +115,7 @@ export function useMyTeamAgenda(userId) {
         if (dateA < dateB) return -1;
         if (dateA > dateB) return 1;
         return 0;
-      }).slice(0, 6);
+      }).slice(0, 20);
 
       setItems(merged);
       setLoading(false);

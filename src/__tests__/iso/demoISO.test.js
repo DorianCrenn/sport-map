@@ -158,7 +158,7 @@ const VALID_TARGETS = [
   'fab-add', 'convocations-tab', 'admin-dashboard',
   'favorite-btn', 'follow-club-btn', 'training-card',
   'live-score-pupitre', 'live-multiplex', 'coach-match-card',
-  'convocation-respond', 'convocation-btn',
+  'convocation-respond', 'convocation-btn', 'agenda-section',
 ];
 
 const VALID_TRY_IT_ACTIONS = [

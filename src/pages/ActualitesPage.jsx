@@ -11,10 +11,11 @@ import { useParentChildren } from '../hooks/useParentChildren.js';
 import { useQuickActions }  from '../hooks/useQuickActions.js';
 import { useDemoFeed }      from '../hooks/useDemoFeed.js';
 import { isDemoMode, supabase } from '../lib/supabase.js';
-import ClubFeed             from '../components/feed/ClubFeed.tsx';
-import QuickActionsSection  from '../components/home/QuickActionsSection.jsx';
-import LiveMultiplexSection from '../components/home/LiveMultiplexSection.jsx';
+import ClubFeed              from '../components/feed/ClubFeed.tsx';
+import QuickActionsSection   from '../components/home/QuickActionsSection.jsx';
+import LiveMultiplexSection  from '../components/home/LiveMultiplexSection.jsx';
 import ParentConvocationCard from '../components/home/ParentConvocationCard.jsx';
+import UpcomingAgendaSection from '../components/feed/UpcomingAgendaSection.jsx';
 
 const PosterStudio           = lazy(() => import('../components/PosterStudio.jsx'));
 const EventFormStepConvocation = lazy(() => import('../components/event/EventFormStepConvocation.jsx'));
@@ -185,6 +186,20 @@ export default function ActualitesPage({
             />
           )}
 
+        </section>
+      )}
+
+      {/* ══ ZONE 1.5 — Mon agenda (présences matchs + entraînements) ═════════ */}
+      {currentUser && !isParent && (
+        <section
+          data-demo="agenda-section"
+          style={{ padding: '0 14px 4px' }}
+        >
+          <UpcomingAgendaSection
+            currentUser={currentUser}
+            convocations={externalConvocations ?? []}
+            onConvocationRespond={onConvocationRespond}
+          />
         </section>
       )}
 

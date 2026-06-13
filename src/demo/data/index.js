@@ -96,11 +96,23 @@ export function buildDemoTables() {
     club_brand_kits:       [{ ...demoBrandKit }],
     club_trainings:        [...demoTrainings],
 
-    // ── Séances d'entraînement aujourd'hui (multi-équipes) ───────────────────
+    // ── Séances d'entraînement — aujourd'hui + 4 semaines ───────────────────
     training_sessions: [
-      { id: 'demo-ts-001', club_id: DEMO_CLUB_ID, team_id: null, date: TODAY, time: '18h30', location: 'Complexe de la Cavale Blanche', status: 'active', created_at: NOW },
-      { id: 'demo-ts-002', club_id: DEMO_CLUB_ID, team_id: null, date: TODAY, time: '17h00', location: 'Terrain annexe – Cavale Blanche', status: 'active', created_at: NOW },
-      { id: 'demo-ts-003', club_id: DEMO_CLUB_ID, team_id: null, date: TODAY, time: '19h30', location: 'Terrain annexe – Cavale Blanche', status: 'active', created_at: NOW },
+      // Aujourd'hui
+      { id: 'demo-ts-001', club_id: DEMO_CLUB_ID, team_id: null, date: TODAY,          time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-002', club_id: DEMO_CLUB_ID, team_id: null, date: TODAY,          time: '17h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
+      { id: 'demo-ts-003', club_id: DEMO_CLUB_ID, team_id: null, date: TODAY,          time: '19h30', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
+      // Semaine 1
+      { id: 'demo-ts-004', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(2),  time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-005', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(2),  time: '17h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
+      { id: 'demo-ts-006', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(4),  time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-007', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(4),  time: '19h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
+      // Semaine 2
+      { id: 'demo-ts-008', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(9),  time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-009', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(11), time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      // Semaine 3
+      { id: 'demo-ts-010', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(16), time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-011', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(18), time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
     ],
 
     // ── Scores de matchs — état pré-match (J+4) + 4 matchs EN DIRECT ────────
@@ -204,6 +216,8 @@ export function buildDemoTables() {
       { id: 'demo-pg-002', player_id: 'demo-player-041', user_id: DEMO_USER_ID, created_at: NOW },
     ],
 
-    club_challenges: [],
+    club_challenges:         [],
+    training_attendance:     [],
+    match_player_attendance: [],
   };
 }
