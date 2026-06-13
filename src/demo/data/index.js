@@ -217,7 +217,20 @@ export function buildDemoTables() {
     ],
 
     club_challenges:         [],
-    training_attendance:     [],
-    match_player_attendance: [],
+
+    // ── Présences entraînements — demo user déjà confirmé pour les séances d'aujourd'hui
+    training_attendance: [
+      { id: 'demo-ta-001', session_id: 'demo-ts-001', user_id: DEMO_USER_ID, status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-002', session_id: 'demo-ts-002', user_id: DEMO_USER_ID, status: 'absent',   updated_at: NOW },
+      { id: 'demo-ta-003', session_id: 'demo-ts-003', user_id: DEMO_USER_ID, status: 'unsure',   updated_at: NOW },
+      { id: 'demo-ta-004', session_id: 'demo-ts-004', user_id: DEMO_USER_ID, status: 'present',  updated_at: NOW },
+    ],
+
+    // ── Présences matchs — demo user a répondu pour le match principal (J+4)
+    match_player_attendance: [
+      { id: 'demo-mpa-001', event_id: 'demo-event-001', user_id: DEMO_USER_ID, status: 'present',  updated_at: NOW },
+      { id: 'demo-mpa-002', event_id: 'demo-event-006', user_id: DEMO_USER_ID, status: 'present',  updated_at: NOW },
+      { id: 'demo-mpa-003', event_id: 'demo-event-007', user_id: DEMO_USER_ID, status: 'unsure',   updated_at: NOW },
+    ],
   };
 }
