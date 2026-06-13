@@ -111,8 +111,10 @@ function AppInner() {
   const [pendingOnboarding, setPendingOnboarding] = useState(false);
   const [showNewEventForm, setShowNewEventForm] = useState(false);
   const [showCSVImport, setShowCSVImport] = useState(false);
-  const [studioEvent, setStudioEvent] = useState(null);
-  const [studioClub,  setStudioClub]  = useState(null);
+  const [studioEvent,     setStudioEvent]     = useState(null);
+  const [studioClub,      setStudioClub]      = useState(null);
+  const [studioQuickMode, setStudioQuickMode] = useState(false);
+  const lastDemoCreatedEventRef = useRef(null);
 
   const { toast } = useToast();
   useErrorBus((msg) => {
@@ -150,9 +152,10 @@ function AppInner() {
   const demoNavRef  = useRef({});  // stable ref for demo nav handler — always current values
   const pendingDemoTabRef = useRef(null);
 
-  const handleOpenPoster = useCallback((eventData) => {
+  const handleOpenPoster = useCallback((eventData, opts = {}) => {
     setShowNewEventForm(false);
     const club = allClubsRef.current.find(c => String(c.id) === String(eventData?.club_id || eventData?.clubId)) ?? null;
+    setStudioQuickMode(opts.quickMode ?? false);
     setStudioEvent(eventData);
     setStudioClub(club);
   }, []);
@@ -161,7 +164,10 @@ function AppInner() {
     try {
       const result = await addEvent(data);
       toast({ message: 'Événement créé !' });
-      if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'event-created' } }));
+      if (isDemoMode()) {
+        lastDemoCreatedEventRef.current = result ?? null;
+        window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'event-created' } }));
+      }
       return result;
     } catch (err) {
       toast({ message: err.message || 'Erreur lors de la création', type: 'error' });
@@ -334,8 +340,10 @@ function AppInner() {
         demoNavRef.current.handleClubAdminFabAction('open-news-announce');
       }
       if (action === 'open-poster-studio') {
-        const demoEvent = userEvents.find(ev => ev.clubId === 'demo-club-001' && !ev.score);
-        if (demoEvent) handleOpenPoster(demoEvent);
+        // Priorité à l'événement que l'utilisateur vient de créer, sinon premier event démo sans score
+        const demoEvent = lastDemoCreatedEventRef.current
+          ?? userEvents.find(ev => ev.clubId === 'demo-club-001' && !ev.score);
+        if (demoEvent) handleOpenPoster(demoEvent, { quickMode: false });
       }
       if (action === 'focus-demo-event') {
         setShowNewEventForm(false);
@@ -702,8 +710,8 @@ function AppInner() {
               key="global-poster-studio"
               event={studioEvent}
               club={studioClub}
-              quickMode
-              onClose={() => { setStudioEvent(null); setStudioClub(null); }}
+              quickMode={studioQuickMode}
+              onClose={() => { setStudioEvent(null); setStudioClub(null); setStudioQuickMode(false); }}
             />
           )}
           {legalSection && (
