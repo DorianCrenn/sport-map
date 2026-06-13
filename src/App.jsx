@@ -330,7 +330,9 @@ function AppInner() {
       }
 
       if (action === 'open-event-form')    setShowNewEventForm(true);
-      if (action === 'open-announcements') setShowAnnouncements(true);
+      if (action === 'open-announcements') {
+        demoNavRef.current.handleClubAdminFabAction('open-news-announce');
+      }
       if (action === 'open-poster-studio') {
         const demoEvent = userEvents.find(ev => ev.clubId === 'demo-club-001' && !ev.score);
         if (demoEvent) handleOpenPoster(demoEvent);

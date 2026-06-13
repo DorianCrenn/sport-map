@@ -296,8 +296,9 @@ export default function ClubPageView({
 
   function handleAdminAction(actionId) {
     switch (actionId) {
-      case 'dashboard':       setModal('dashboard'); break;
-      case 'open-matchs-tab': setActiveTab('matchs'); break;
+      case 'dashboard':         setModal('dashboard'); break;
+      case 'open-matchs-tab':  setActiveTab('matchs'); break;
+      case 'open-news-announce': setActiveTab('news'); setModal('announcement'); break;
       case 'edit-page':       setIsEditing(e => !e); setActiveTab('accueil'); break;
       case 'event':       handleCreateClubEvent(); break;
       case 'announce':    setModal('announcement'); break;
