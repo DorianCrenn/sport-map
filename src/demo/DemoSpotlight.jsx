@@ -128,10 +128,39 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
   if (!active || !rect || rect.width === 0) return null;
 
   const PAD = 10;
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-  const arrowBelow = centerY < window.innerHeight * 0.55; // flèche sous l'élément si l'élément est haut
-  const arrowSize  = 28;
+  const VW  = window.innerWidth;
+  const VH  = window.innerHeight;
+
+  const centerX   = rect.left + rect.width / 2;
+  const rectBottom = rect.top + rect.height;
+
+  // ── Contraindre X pour que la flèche ne sorte jamais du viewport ──────────
+  // La flèche/label fait ~160px de large max ("👆 Clique ici" + lettre-spacing)
+  const ARROW_W  = 160;
+  const MARGIN_H = 12;
+  const safeX = Math.max(
+    ARROW_W / 2 + MARGIN_H,
+    Math.min(centerX, VW - ARROW_W / 2 - MARGIN_H),
+  );
+
+  // ── Choisir la direction selon l'espace réel disponible ──────────────────
+  // Hauteur estimée du container flèche+label (SVG 28px + gap 4px + texte 14px + padding)
+  const ARROW_H  = 58;
+  const MARGIN_V = 8;
+  const spaceBelow = VH - rectBottom - PAD - MARGIN_V;
+  const spaceAbove = rect.top - PAD - MARGIN_V;
+
+  // Flèche en dessous si : il y a de la place ET l'élément est dans la moitié haute
+  // Flèche au-dessus si : il y a de la place ET l'élément est dans la moitié basse
+  // Fallback : forcer en dessous si pas assez de place au-dessus, sinon au-dessus
+  let arrowBelow;
+  if (spaceBelow >= ARROW_H && spaceAbove >= ARROW_H) {
+    arrowBelow = rect.top < VH * 0.60; // les 2 options sont possibles → selon position
+  } else {
+    arrowBelow = spaceBelow >= ARROW_H || spaceAbove < ARROW_H;
+  }
+
+  const arrowSize = 28;
 
   return (
     <div
@@ -194,8 +223,9 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
         /* Flèche pointant vers le haut (↑), positionnée sous l'élément */
         <div style={{
           position:   'fixed',
-          top:        rect.top + rect.height + PAD + 8,
-          left:       centerX,
+          // Clamper verticalement pour ne pas sortir en bas
+          top:        Math.min(rectBottom + PAD + 8, VH - ARROW_H - MARGIN_V),
+          left:       safeX,
           transform:  'translateX(-50%)',
           display:    'flex',
           flexDirection: 'column',
@@ -220,8 +250,9 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
         /* Flèche pointant vers le bas (↓), positionnée au-dessus de l'élément */
         <div style={{
           position:   'fixed',
-          top:        rect.top - PAD - arrowSize - 24,
-          left:       centerX,
+          // Clamper verticalement pour ne pas sortir en haut
+          top:        Math.max(rect.top - PAD - arrowSize - 24, MARGIN_V),
+          left:       safeX,
           transform:  'translateX(-50%)',
           display:    'flex',
           flexDirection: 'column',
