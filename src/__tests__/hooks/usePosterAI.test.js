@@ -7,7 +7,8 @@ import { renderHook, act } from '@testing-library/react';
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
 vi.mock('../../lib/supabase.js', () => ({
-  supabase: { functions: { invoke: vi.fn() } },
+  supabase:   { functions: { invoke: vi.fn() } },
+  isDemoMode: vi.fn().mockReturnValue(false),
 }));
 
 vi.mock('../../lib/posterVariants.js', () => ({

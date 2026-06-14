@@ -62,11 +62,23 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const { clubName, type, context } = await req.json() as {
+    const rawBody = await req.json() as {
       clubName?: string;
       type?: string;
       context?: string;
     };
+
+    // Sanitise inputs — strip control chars, limit length to prevent prompt injection
+    function sanitize(s: unknown, maxLen: number): string {
+      if (typeof s !== 'string') return '';
+      return s.replace(/[\x00-\x1F\x7F]/g, ' ').trim().slice(0, maxLen);
+    }
+    const clubName = sanitize(rawBody.clubName, 100);
+    const context  = sanitize(rawBody.context,  500);
+    // type must be a known key
+    const type = typeof rawBody.type === 'string' && rawBody.type in TYPE_LABELS
+      ? rawBody.type
+      : 'info';
 
     const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     if (!ANTHROPIC_KEY) {
@@ -76,10 +88,11 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const typeLabel = TYPE_LABELS[type ?? 'info'] ?? 'information';
-    const contextLine = context?.trim() ? `\nContexte supplémentaire : ${context.trim()}` : '';
+    const typeLabel = TYPE_LABELS[type] ?? 'information';
+    const contextLine = context ? `\nContexte supplémentaire : ${context}` : '';
 
-    const prompt = `Tu es l'assistant d'un club sportif français nommé "${clubName || 'Mon Club'}". Génère exactement 3 messages d'annonce de type "${typeLabel}" pour les membres du club. Les messages doivent être :
+    const safeName = clubName || 'Mon Club';
+    const prompt = `Tu es l'assistant d'un club sportif français. Génère exactement 3 messages d'annonce de type "${typeLabel}" pour le club "${safeName}". Les messages doivent être :
 - Courts (1 à 3 phrases max, environ 50-100 mots)
 - En français, ton convivial et direct
 - Variés (un formel, un chaleureux, un dynamique)
@@ -112,7 +125,15 @@ Retourne UNIQUEMENT un tableau JSON de 3 strings, sans markdown ni texte autour.
     const data = await res.json() as { content: { text: string }[] };
     const raw = data.content?.[0]?.text?.trim() ?? '[]';
     const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-    const suggestions: string[] = JSON.parse(cleaned);
+    let suggestions: string[];
+    try {
+      const parsed = JSON.parse(cleaned);
+      suggestions = Array.isArray(parsed)
+        ? parsed.filter((s): s is string => typeof s === 'string').slice(0, 3)
+        : [];
+    } catch {
+      suggestions = [];
+    }
 
     return new Response(
       JSON.stringify({ suggestions }),

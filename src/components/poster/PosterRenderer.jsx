@@ -456,7 +456,9 @@ const PosterRenderer = memo(function PosterRenderer({ templateId, data, format =
   const scale = previewWidth / w;
   const previewH = Math.round(h * scale);
 
-  const tpl = POSTER_TEMPLATES.find(t => t.id === templateId) || POSTER_TEMPLATES[0];
+  const tpl = POSTER_TEMPLATES.find(t => t.id === templateId)
+    || POSTER_TEMPLATES.find(t => t.id === 'simple')
+    || POSTER_TEMPLATES[0];
   const { Component } = tpl;
 
   const bgPreset = bgPresetId ? BG_PRESETS.find(b => b.id === bgPresetId) : null;

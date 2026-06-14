@@ -100,12 +100,13 @@ Deno.serve(async (req) => {
       Deno.env.get('VAPID_PRIVATE_KEY')!,
     );
 
-    // ── Fetch followers with notifications enabled ────────────────────────────
+    // ── Fetch followers with match notifications enabled ──────────────────────
+    // notif is JSONB {match: bool, news: bool} — filter with contains()
     const { data: follows } = await serviceClient
       .from('club_follows')
       .select('user_id')
       .eq('club_id', String(club_id))
-      .eq('notif', true);
+      .contains('notif', { match: true });
 
     if (!follows || follows.length === 0) {
       return new Response(JSON.stringify({ sent: 0 }), {

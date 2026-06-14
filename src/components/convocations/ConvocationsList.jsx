@@ -187,7 +187,9 @@ function ConvocationCard({ conv, onRespond }) {
         ? `${event.team_name} vs ${event.adversaire}`
         : event.adversaire
           ? `vs ${event.adversaire}`
-          : event.title ?? 'Match')
+          : event.homeTeam && event.awayTeam
+            ? `${event.homeTeam} vs ${event.awayTeam}`
+            : event.title ?? 'Match')
     : 'Événement';
 
   function handleTransportSelect(mode, seats) {

@@ -65,11 +65,16 @@ describe('ConvocationsList — convocation pending', () => {
     expect(screen.getByRole('button', { name: /indisponible/i })).toBeInTheDocument();
   });
 
-  it('appelle onRespond avec (id, status) au clic Accepter', () => {
+  it('ouvre le sélecteur transport au clic Accepter (puis appelle onRespond après choix)', () => {
+    // Cliquer "Accepter" affiche le sélecteur transport — onRespond est appelé APRÈS
+    // confirmation du mode de transport (voir TransportSelector).
     const onRespond = vi.fn();
     render(<ConvocationsList convocations={[makeConv({ id: 'c-42' })]} onRespond={onRespond} />);
     fireEvent.click(screen.getByRole('button', { name: /accepter/i }));
-    expect(onRespond).toHaveBeenCalledWith('c-42', 'accepted');
+    // Le sélecteur transport doit apparaître
+    expect(screen.getByText(/Je conduis/i)).toBeInTheDocument();
+    // onRespond n'est PAS encore appelé à ce stade
+    expect(onRespond).not.toHaveBeenCalled();
   });
 
   it('appelle onRespond avec "declined" au clic Décliner', () => {
@@ -81,8 +86,7 @@ describe('ConvocationsList — convocation pending', () => {
 
   it('affiche le nom de l\'événement (homeTeam vs awayTeam)', () => {
     render(<ConvocationsList convocations={[makeConv()]} onRespond={vi.fn()} />);
-    expect(screen.getByText(/FC Brest/)).toBeInTheDocument();
-    expect(screen.getByText(/Quimper FC/)).toBeInTheDocument();
+    expect(screen.getByText(/FC Brest vs Quimper FC/)).toBeInTheDocument();
   });
 
   it('affiche le nom du joueur convoqué', () => {

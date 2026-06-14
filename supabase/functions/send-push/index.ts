@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     );
     const { data: profile } = await serviceClient
       .from('profiles').select('role').eq('id', caller.id).single();
-    const isAdmin = profile?.role === 'admin';
+    const isAdmin = profile?.role === 'admin' || profile?.role === 'superadmin';
 
     if (caller.id !== user_id && !isAdmin) {
       return new Response(JSON.stringify({ error: 'Forbidden: cannot push to another user' }), {

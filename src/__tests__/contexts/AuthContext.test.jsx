@@ -16,6 +16,7 @@ vi.mock('../../lib/supabase.js', () => ({
     channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
     removeChannel: vi.fn(),
   },
+  isDemoMode: vi.fn().mockReturnValue(false),
 }));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
