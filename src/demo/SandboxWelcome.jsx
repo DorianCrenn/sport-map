@@ -11,7 +11,6 @@ const PROFILE_LABELS = {
   supporter:     'Supporter',
 };
 
-// Titre personnalisé par profil
 const PROFILE_HEADLINE = {
   president:     'Votre club mérite une vitrine professionnelle.',
   coach:         'Vos joueurs attendent leurs convocations sur SportLink.',
@@ -21,7 +20,6 @@ const PROFILE_HEADLINE = {
   supporter:     'Suivez vos clubs favoris en temps réel.',
 };
 
-// Features prioritaires par profil (6 max)
 const PROFILE_FEATURES = {
   president: [
     { emoji: '📅', title: 'Calendrier complet',   desc: 'Matchs, entraînements, tournois — tout le club en un agenda.' },
@@ -98,16 +96,16 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35 }}
       style={{
-        position:      'fixed',
-        inset:         0,
-        zIndex:        9999,
-        background:    'linear-gradient(160deg, #0a0f1e 0%, #0f1729 50%, #0d1526 100%)',
-        display:       'flex',
-        flexDirection: 'column',
-        alignItems:    'center',
-        justifyContent:'flex-start',
-        overflowY:     'auto',
-        padding:       '32px 16px 48px',
+        position:       'fixed',
+        inset:          0,
+        zIndex:         9999,
+        background:     'var(--demo-full-bg)',
+        display:        'flex',
+        flexDirection:  'column',
+        alignItems:     'center',
+        justifyContent: 'flex-start',
+        overflowY:      'auto',
+        padding:        '32px 16px 48px',
       }}
     >
       {/* Fond décoratif */}
@@ -115,12 +113,12 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
         <div style={{
           position: 'absolute', top: '-15%', left: '50%', transform: 'translateX(-50%)',
           width: 600, height: 600, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%)',
+          background: 'var(--demo-deco3)',
         }} />
         <div style={{
           position: 'absolute', bottom: '-10%', right: '-5%',
           width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)',
+          background: 'var(--demo-deco4)',
         }} />
       </div>
 
@@ -144,7 +142,7 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
         <h1 style={{
           fontSize:      'clamp(20px, 5vw, 30px)',
           fontWeight:    800,
-          color:         '#fff',
+          color:         'var(--sl-t1)',
           margin:        '0 0 8px',
           lineHeight:    1.2,
           letterSpacing: -0.5,
@@ -152,9 +150,9 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
           {headline}
         </h1>
 
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', margin: '0 0 14px', lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: 'var(--sl-t2)', margin: '0 0 14px', lineHeight: 1.5 }}>
           Vous venez de parcourir la démo en profil&nbsp;
-          <span style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 700 }}>
+          <span style={{ color: 'var(--sl-t1)', fontWeight: 700 }}>
             {PROFILE_LABELS[profile] ?? profile}
           </span>.
           Explorez librement maintenant, ou créez votre club en 2 minutes.
@@ -163,9 +161,9 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
+            background: 'var(--demo-indigo-bg)', border: '1px solid var(--demo-indigo-border)',
             borderRadius: 20, padding: '4px 12px',
-            fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.8)',
+            fontSize: 12, fontWeight: 600, color: 'var(--demo-indigo-text)',
           }}>
             ✓ {completedSteps} étapes complétées
           </span>
@@ -180,7 +178,7 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
         style={{ width: '100%', maxWidth: 560, marginBottom: 28, position: 'relative' }}
       >
         <p style={{
-          fontSize: 11, color: 'rgba(255,255,255,0.35)',
+          fontSize: 11, color: 'var(--sl-t2)',
           textAlign: 'center', marginBottom: 12, fontWeight: 700,
           letterSpacing: 1, textTransform: 'uppercase',
         }}>
@@ -194,15 +192,15 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 + i * 0.05 }}
               style={{
-                background:   'rgba(255,255,255,0.04)',
-                border:       '1px solid rgba(255,255,255,0.08)',
+                background:   'var(--demo-surface-bg)',
+                border:       '1px solid var(--demo-surface-border)',
                 borderRadius: 12,
                 padding:      '12px 14px',
               }}
             >
               <div style={{ fontSize: 22, marginBottom: 6, lineHeight: 1 }}>{f.emoji}</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', marginBottom: 3 }}>{f.title}</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', lineHeight: 1.4 }}>{f.desc}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 3 }}>{f.title}</div>
+              <div style={{ fontSize: 11, color: 'var(--sl-t2)', lineHeight: 1.4 }}>{f.desc}</div>
             </motion.div>
           ))}
         </div>
@@ -218,16 +216,16 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
         <button
           onClick={handleEnterSandbox}
           style={{
-            width:        '100%',
-            background:   'linear-gradient(135deg, #1d4ed8, #7c3aed)',
-            border:       'none',
-            borderRadius: 12,
-            color:        '#fff',
-            padding:      '14px 24px',
-            fontSize:     15,
-            fontWeight:   700,
-            cursor:       'pointer',
-            transition:   'opacity 0.2s, transform 0.1s',
+            width:         '100%',
+            background:    'linear-gradient(135deg, #1d4ed8, #7c3aed)',
+            border:        'none',
+            borderRadius:  12,
+            color:         '#fff',
+            padding:       '14px 24px',
+            fontSize:      15,
+            fontWeight:    700,
+            cursor:        'pointer',
+            transition:    'opacity 0.2s, transform 0.1s',
             letterSpacing: 0.2,
           }}
           onMouseEnter={e => { e.currentTarget.style.opacity = '0.92'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
@@ -242,10 +240,10 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
           onClick={handleCreateAccount}
           style={{
             width:        '100%',
-            background:   'rgba(255,255,255,0.05)',
-            border:       '1px solid rgba(255,255,255,0.15)',
+            background:   'var(--demo-surface-bg)',
+            border:       '1px solid var(--demo-surface-border)',
             borderRadius: 12,
-            color:        'rgba(255,255,255,0.75)',
+            color:        'var(--sl-t2)',
             padding:      '12px 24px',
             fontSize:     14,
             fontWeight:   600,
@@ -253,14 +251,14 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
             transition:   'all 0.2s',
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.background  = 'rgba(255,255,255,0.1)';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
-            e.currentTarget.style.color       = '#fff';
+            e.currentTarget.style.background  = 'var(--demo-surface-bg-hover)';
+            e.currentTarget.style.borderColor = 'var(--demo-surface-border-hover)';
+            e.currentTarget.style.color       = 'var(--sl-t1)';
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.background  = 'rgba(255,255,255,0.05)';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
-            e.currentTarget.style.color       = 'rgba(255,255,255,0.75)';
+            e.currentTarget.style.background  = 'var(--demo-surface-bg)';
+            e.currentTarget.style.borderColor = 'var(--demo-surface-border)';
+            e.currentTarget.style.color       = 'var(--sl-t2)';
           }}
         >
           🚀 Créer mon club gratuitement
@@ -271,11 +269,11 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
             onClick={onChangeProfile}
             style={{
               background: 'none', border: 'none', padding: '6px 0',
-              fontSize: 13, color: 'rgba(255,255,255,0.35)',
+              fontSize: 13, color: 'var(--sl-t2)',
               cursor: 'pointer', textAlign: 'center', transition: 'color 0.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--sl-t1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--sl-t2)'; }}
           >
             ↩ Voir la démo avec un autre profil
           </button>

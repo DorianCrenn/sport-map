@@ -165,6 +165,96 @@
   --sl-popup-border: #D4DDD6;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS — MODE DÉMO
+   Composants overlay (DemoLandingPage, DemoGuide, SandboxWelcome, SandboxBadge)
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  /* Fond plein écran */
+  --demo-full-bg:       linear-gradient(160deg, #0a0f1e 0%, #0f1729 50%, #0d1526 100%);
+
+  /* Décorations radiales */
+  --demo-deco1: radial-gradient(circle, rgba(29,78,216,0.12) 0%, transparent 70%);
+  --demo-deco2: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%);
+  --demo-deco3: radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%);
+  --demo-deco4: radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%);
+
+  /* Panel flottant (DemoGuide) */
+  --demo-card-bg:      rgba(10,14,28,0.97);
+  --demo-card-border:  rgba(99,102,241,0.25);
+  --demo-card-shadow:  0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.1);
+
+  /* Pill collapsée + badge sandbox */
+  --demo-pill-bg:      rgba(10,14,28,0.96);
+  --demo-pill-border:  rgba(99,102,241,0.3);
+  --demo-pill-shadow:  0 4px 20px rgba(0,0,0,0.5);
+  --demo-badge-shadow: 0 4px 24px rgba(0,0,0,0.5);
+
+  /* Barre de progression */
+  --demo-progress-bg:  rgba(255,255,255,0.06);
+
+  /* Boutons secondaires / surface */
+  --demo-surface-bg:           rgba(255,255,255,0.05);
+  --demo-surface-bg-hover:     rgba(255,255,255,0.1);
+  --demo-surface-border:       rgba(255,255,255,0.1);
+  --demo-surface-border-hover: rgba(255,255,255,0.22);
+
+  /* Accent indigo (boutons, badges) */
+  --demo-indigo-bg:          rgba(99,102,241,0.12);
+  --demo-indigo-bg-hover:    rgba(99,102,241,0.22);
+  --demo-indigo-bg-next:     rgba(99,102,241,0.18);
+  --demo-indigo-bg-next-h:   rgba(99,102,241,0.28);
+  --demo-indigo-border:      rgba(99,102,241,0.35);
+  --demo-indigo-text:        rgba(165,180,252,0.95);
+  --demo-indigo-text-dim:    rgba(165,180,252,0.85);
+  --demo-indigo-why:         rgba(165,180,252,0.75);
+  --demo-indigo-why-border:  rgba(99,102,241,0.3);
+
+  /* Cartes profil (DemoLandingPage) */
+  --demo-profile-card-bg:     rgba(255,255,255,0.04);
+  --demo-profile-card-border: rgba(255,255,255,0.1);
+  --demo-profile-shadow:      0 2px 8px rgba(0,0,0,0.2);
+}
+
+[data-theme="light"] {
+  --demo-full-bg:       linear-gradient(160deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%);
+
+  --demo-deco1: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
+  --demo-deco2: radial-gradient(circle, rgba(124,58,237,0.04) 0%, transparent 70%);
+  --demo-deco3: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
+  --demo-deco4: radial-gradient(circle, rgba(16,185,129,0.04) 0%, transparent 70%);
+
+  --demo-card-bg:      rgba(255,255,255,0.98);
+  --demo-card-border:  rgba(99,102,241,0.18);
+  --demo-card-shadow:  0 8px 40px rgba(15,30,58,0.12), 0 0 0 1px rgba(99,102,241,0.08);
+
+  --demo-pill-bg:      rgba(255,255,255,0.96);
+  --demo-pill-border:  rgba(99,102,241,0.2);
+  --demo-pill-shadow:  0 4px 20px rgba(15,30,58,0.12);
+  --demo-badge-shadow: 0 4px 24px rgba(15,30,58,0.12);
+
+  --demo-progress-bg:  rgba(15,30,58,0.08);
+
+  --demo-surface-bg:           rgba(15,30,58,0.04);
+  --demo-surface-bg-hover:     rgba(15,30,58,0.08);
+  --demo-surface-border:       rgba(15,30,58,0.1);
+  --demo-surface-border-hover: rgba(15,30,58,0.2);
+
+  --demo-indigo-bg:          rgba(99,102,241,0.08);
+  --demo-indigo-bg-hover:    rgba(99,102,241,0.16);
+  --demo-indigo-bg-next:     rgba(99,102,241,0.12);
+  --demo-indigo-bg-next-h:   rgba(99,102,241,0.20);
+  --demo-indigo-border:      rgba(99,102,241,0.22);
+  --demo-indigo-text:        #4338ca;
+  --demo-indigo-text-dim:    #4338ca;
+  --demo-indigo-why:         #4f46e5;
+  --demo-indigo-why-border:  rgba(99,102,241,0.2);
+
+  --demo-profile-card-bg:     rgba(15,30,58,0.04);
+  --demo-profile-card-border: rgba(15,30,58,0.1);
+  --demo-profile-shadow:      0 2px 8px rgba(15,30,58,0.08);
+}
+
 /* Prevent horizontal scroll caused by slide animations */
 html, body, #root {
   overflow-x: hidden;

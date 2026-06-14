@@ -224,42 +224,42 @@ function SandboxBadge({ profile, onCreateAccount, onReplayTour }) {
 
   return (
     <div style={{
-      position:     'fixed',
-      bottom:       80,
-      left:         '50%',
-      transform:    'translateX(-50%)',
-      zIndex:       9990,
-      display:      'flex',
-      alignItems:   'center',
-      gap:          8,
-      background:   'rgba(10,14,28,0.96)',
+      position:       'fixed',
+      bottom:         80,
+      left:           '50%',
+      transform:      'translateX(-50%)',
+      zIndex:         9990,
+      display:        'flex',
+      alignItems:     'center',
+      gap:            8,
+      background:     'var(--demo-pill-bg)',
       backdropFilter: 'blur(16px)',
-      border:       '1px solid rgba(99,102,241,0.3)',
-      borderRadius: 28,
-      padding:      '8px 8px 8px 14px',
-      boxShadow:    '0 4px 24px rgba(0,0,0,0.5)',
-      whiteSpace:   'nowrap',
+      border:         '1px solid var(--demo-pill-border)',
+      borderRadius:   28,
+      padding:        '8px 8px 8px 14px',
+      boxShadow:      'var(--demo-badge-shadow)',
+      whiteSpace:     'nowrap',
     }}>
       <span style={{ fontSize: 16 }}>{emoji}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.65)' }}>
+      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)' }}>
         Sandbox
       </span>
 
       <button
         onClick={onReplayTour}
         style={{
-          background:   'rgba(255,255,255,0.06)',
-          border:       '1px solid rgba(255,255,255,0.12)',
+          background:   'var(--demo-surface-bg)',
+          border:       '1px solid var(--demo-surface-border)',
           borderRadius: 20,
-          color:        'rgba(255,255,255,0.5)',
+          color:        'var(--sl-t3)',
           padding:      '5px 12px',
           fontSize:     11,
           fontWeight:   600,
           cursor:       'pointer',
           transition:   'all 0.2s',
         }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--demo-surface-bg-hover)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'var(--demo-surface-bg)'; }}
       >
         Revoir la visite
       </button>

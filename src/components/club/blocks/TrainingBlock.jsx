@@ -116,7 +116,7 @@ function EditView({ sessions, onUpdate, allTeams = [], currentTeamId = null }) {
                     className={`text-xs px-2 py-0.5 rounded-full border transition-colors font-medium ${
                       merged
                         ? 'bg-indigo-50 border-indigo-300 text-indigo-600'
-                        : 'bg-gray-50 border-gray-200 text-gray-400 hover:border-indigo-200 hover:text-indigo-400'
+                        : 'bg-[var(--sl-pill-bg)] border-[var(--sl-border)] text-[var(--sl-t2)] hover:border-[var(--sl-border-s)] hover:text-[var(--sl-t1)]'
                     }`}
                   >
                     {merged ? '✓ ' : ''}{team.name}

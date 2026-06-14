@@ -358,10 +358,15 @@ function AppInner() {
         setFocusEventId('demo-event-001');
       }
       if (action === 'open-dashboard') {
-        demoNavRef.current.handleClubAdminFabAction('dashboard');
+        // Guard : si le club n'est pas encore chargé, réessayer après 600ms
+        if (demoNavRef.current.handleClubAdminFabAction('dashboard') === false) {
+          setTimeout(() => demoNavRef.current.handleClubAdminFabAction('dashboard'), 600);
+        }
       }
       if (action === 'open-convocations') {
-        demoNavRef.current.handleClubAdminFabAction('open-matchs-tab');
+        if (demoNavRef.current.handleClubAdminFabAction('open-convocations') === false) {
+          setTimeout(() => demoNavRef.current.handleClubAdminFabAction('open-convocations'), 600);
+        }
       }
       if (action === 'focus-score-event') {
         setShowNewEventForm(false);
@@ -458,7 +463,9 @@ function AppInner() {
       setSelectedSearchClub(myClub);
       _setActiveTab('mon-club');
       setPendingClubAction(actionId);
+      return true;
     }
+    return false;
   }
 
   function handleAuthClose() {
@@ -797,7 +804,25 @@ export default function App() {
         <FavoritesProvider>
           <AttendanceProvider>
             {isDemo
-              ? <Suspense fallback={null}><DemoApp AppInner={AppInner} /></Suspense>
+              ? (
+                <Suspense fallback={
+                  <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'linear-gradient(160deg, #0a0f1e 0%, #0f1729 50%, #0d1526 100%)',
+                  }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: '50%',
+                      border: '3px solid rgba(99,102,241,0.3)',
+                      borderTopColor: '#818cf8',
+                      animation: 'sl-spin 0.7s linear infinite',
+                    }} />
+                    <style>{`@keyframes sl-spin { to { transform: rotate(360deg) } }`}</style>
+                  </div>
+                }>
+                  <DemoApp AppInner={AppInner} />
+                </Suspense>
+              )
               : <AppInner />
             }
           </AttendanceProvider>

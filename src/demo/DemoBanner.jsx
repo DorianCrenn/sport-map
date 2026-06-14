@@ -64,7 +64,7 @@ export default function DemoBanner({ onCreateAccount }) {
             textOverflow: 'ellipsis',
           }}>
             <span style={{ color: '#a5b4fc' }}>Démonstration SportLink</span>
-            <span style={{ color: 'rgba(255,255,255,0.4)', marginLeft: 6 }}>
+            <span style={{ color: 'rgba(255,255,255,0.65)', marginLeft: 6 }}>
               — Aucune donnée enregistrée
             </span>
           </span>

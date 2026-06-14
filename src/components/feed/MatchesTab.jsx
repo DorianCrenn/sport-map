@@ -275,7 +275,7 @@ function AdminMatchRowFull({ event, onScoreUpdated }) {
         </div>
 
         {/* Edit chip */}
-        <div className={`flex items-center gap-1 text-[11px] font-semibold shrink-0 px-2 py-1 rounded-full transition-colors ${expanded ? 'bg-indigo-500/20 text-indigo-400' : 'bg-[var(--sl-pill-bg)] text-[var(--sl-t3)]'}`}>
+        <div className={`flex items-center gap-1 text-[11px] font-semibold shrink-0 px-2 py-1 rounded-full transition-colors ${expanded ? 'bg-indigo-500/20 text-indigo-300' : 'bg-[var(--sl-pill-bg)] text-[var(--sl-t3)]'}`}>
           <EditIcon />
           <span>{hasScore ? 'Modifier' : 'Saisir'}</span>
         </div>

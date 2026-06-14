@@ -10,7 +10,7 @@ const PROFILES = [
     description: 'Événements, communication, statistiques et gestion complète du club',
     color:       '#1d4ed8',
     gradient:    'linear-gradient(135deg, #1d4ed8, #3b82f6)',
-    steps:       12,
+    steps:       9,
   },
   {
     id:          'coach',
@@ -19,7 +19,7 @@ const PROFILES = [
     description: 'Entraînements, convocations, présences et communication équipe',
     color:       '#059669',
     gradient:    'linear-gradient(135deg, #059669, #10b981)',
-    steps:       6,
+    steps:       7,
   },
   {
     id:          'communication',
@@ -28,7 +28,7 @@ const PROFILES = [
     description: 'Affiches PosterStudio, annonces, réseaux sociaux et sponsors',
     color:       '#7c3aed',
     gradient:    'linear-gradient(135deg, #7c3aed, #a78bfa)',
-    steps:       7,
+    steps:       5,
   },
   {
     id:          'parent',
@@ -84,7 +84,7 @@ export default function DemoLandingPage({ onSelect }) {
         position:       'fixed',
         inset:          0,
         zIndex:         9999,
-        background:     'linear-gradient(160deg, #0a0f1e 0%, #0f1729 50%, #0d1526 100%)',
+        background:     'var(--demo-full-bg)',
         display:        'flex',
         flexDirection:  'column',
         alignItems:     'center',
@@ -98,12 +98,12 @@ export default function DemoLandingPage({ onSelect }) {
         <div style={{
           position: 'absolute', top: '-20%', left: '50%', transform: 'translateX(-50%)',
           width: 700, height: 700, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(29,78,216,0.12) 0%, transparent 70%)',
+          background: 'var(--demo-deco1)',
         }} />
         <div style={{
           position: 'absolute', bottom: '-10%', right: '-10%',
           width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)',
+          background: 'var(--demo-deco2)',
         }} />
       </div>
 
@@ -116,17 +116,17 @@ export default function DemoLandingPage({ onSelect }) {
       >
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 10,
-          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+          background: 'var(--demo-surface-bg)', border: '1px solid var(--demo-surface-border)',
           borderRadius: 12, padding: '5px 14px', marginBottom: 16,
         }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: 2, textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t2)', letterSpacing: 2, textTransform: 'uppercase' }}>
             Démonstration interactive
           </span>
         </div>
 
         <h1 style={{
           fontSize:   'clamp(24px, 6vw, 40px)',
-          fontWeight: 800, color: '#fff',
+          fontWeight: 800, color: 'var(--sl-t1)',
           margin: '0 0 10px', lineHeight: 1.2, letterSpacing: -0.5,
         }}>
           Découvrez SportLink
@@ -139,7 +139,7 @@ export default function DemoLandingPage({ onSelect }) {
           </span>
         </h1>
 
-        <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', margin: 0, maxWidth: 440 }}>
+        <p style={{ fontSize: 15, color: 'var(--sl-t2)', margin: 0, maxWidth: 440 }}>
           Choisissez votre profil pour une démonstration personnalisée.
           <br />
           Aucune inscription requise — aucune donnée enregistrée.
@@ -167,38 +167,39 @@ export default function DemoLandingPage({ onSelect }) {
               onMouseEnter={() => setHovered(profile.id)}
               onMouseLeave={() => setHovered(null)}
               style={{
-                position:   'relative',
-                background: active ? profile.gradient : 'rgba(255,255,255,0.04)',
-                border:     `1px solid ${active ? 'transparent' : 'rgba(255,255,255,0.1)'}`,
+                position:     'relative',
+                background:   active ? profile.gradient : 'var(--demo-profile-card-bg)',
+                border:       `1px solid ${active ? 'transparent' : 'var(--demo-profile-card-border)'}`,
                 borderRadius: 14,
-                padding:    '16px 14px',
-                cursor:     'pointer',
-                textAlign:  'left',
-                transition: 'all 0.2s ease',
-                transform:  hovered === profile.id ? 'translateY(-2px)' : 'none',
-                boxShadow:  hovered === profile.id
+                padding:      '16px 14px',
+                cursor:       'pointer',
+                textAlign:    'left',
+                transition:   'all 0.2s ease',
+                transform:    hovered === profile.id ? 'translateY(-2px)' : 'none',
+                boxShadow:    hovered === profile.id
                   ? `0 8px 28px ${profile.color}40`
-                  : '0 2px 8px rgba(0,0,0,0.2)',
-                overflow:   'hidden',
+                  : 'var(--demo-profile-shadow)',
+                overflow:     'hidden',
               }}
             >
               <div style={{ fontSize: 28, marginBottom: 8, lineHeight: 1 }}>{profile.emoji}</div>
               <div style={{
-                fontSize: 13, fontWeight: 700, color: '#fff',
+                fontSize: 13, fontWeight: 700,
+                color: active ? '#fff' : 'var(--sl-t1)',
                 marginBottom: 4, lineHeight: 1.3,
               }}>
                 {profile.label}
               </div>
               <div style={{
                 fontSize: 11, lineHeight: 1.4, marginBottom: 10,
-                color: active ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.42)',
+                color: active ? 'rgba(255,255,255,0.82)' : 'var(--sl-t2)',
               }}>
                 {profile.description}
               </div>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 5,
                 fontSize: 10, fontWeight: 600,
-                color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.28)',
+                color: active ? 'rgba(255,255,255,0.9)' : 'var(--sl-t2)',
               }}>
                 <span>{profile.steps} étapes</span>
                 <span>→</span>
@@ -231,13 +232,19 @@ export default function DemoLandingPage({ onSelect }) {
           onClick={() => trackCreateAccountClicked('landing-footer')}
           style={{
             background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10,
-            color: 'rgba(255,255,255,0.5)', padding: '10px 20px',
+            border: '1px solid var(--demo-surface-border)', borderRadius: 10,
+            color: 'var(--sl-t2)', padding: '10px 20px',
             fontSize: 13, cursor: 'pointer', transition: 'all 0.2s',
             textDecoration: 'none', display: 'inline-block',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = 'var(--demo-surface-border-hover)';
+            e.currentTarget.style.color = 'var(--sl-t1)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'var(--demo-surface-border)';
+            e.currentTarget.style.color = 'var(--sl-t2)';
+          }}
         >
           Créer directement mon compte →
         </a>

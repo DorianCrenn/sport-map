@@ -310,7 +310,7 @@ export default function TrainingManagerPage({ onBack }) {
                   padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
                   cursor: 'pointer', transition: 'all 0.15s',
                   border: String(club.id) === selectedClubId ? 'none' : '1px solid var(--sl-border)',
-                  backgroundColor: String(club.id) === selectedClubId ? '#6366f1' : 'var(--sl-pill-bg)',
+                  backgroundColor: String(club.id) === selectedClubId ? '#4f46e5' : 'var(--sl-pill-bg)',
                   color: String(club.id) === selectedClubId ? '#fff' : 'var(--sl-pill-text)',
                 }}
               >
@@ -337,7 +337,7 @@ export default function TrainingManagerPage({ onBack }) {
               padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 600,
               cursor: 'pointer', transition: 'all 0.15s',
               border: mode === key ? 'none' : '1px solid var(--sl-border)',
-              backgroundColor: mode === key ? '#6366f1' : 'var(--sl-pill-bg)',
+              backgroundColor: mode === key ? '#4f46e5' : 'var(--sl-pill-bg)',
               color: mode === key ? '#fff' : 'var(--sl-pill-text)',
             }}
           >
@@ -423,7 +423,7 @@ export default function TrainingManagerPage({ onBack }) {
                       padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
                       cursor: 'pointer', whiteSpace: 'nowrap',
                       border: selectedTeam === t.id ? 'none' : '1px solid var(--sl-border)',
-                      backgroundColor: selectedTeam === t.id ? '#6366f1' : 'var(--sl-pill-bg)',
+                      backgroundColor: selectedTeam === t.id ? '#4f46e5' : 'var(--sl-pill-bg)',
                       color: selectedTeam === t.id ? '#fff' : 'var(--sl-pill-text)',
                     }}
                   >
