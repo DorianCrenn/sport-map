@@ -313,68 +313,17 @@ function AppInner() {
     }
   }, [convocationsPending]);
 
-  // ── Demo navigation — listens to DemoApp step dispatches ─────────────────────
-  // Keep ref current so the stable event handler always reads latest values
+  // ── Demo navigation — écoute uniquement close-overlay (la navigation est 100% manuelle) ──
+  // Le DemoApp gère les clics via son propre listener sur document.
+  // App.jsx ne fait plus de navigation automatique (tab, form, etc.).
   demoNavRef.current = { handleTabChange, handleOpenPoster, userEvents, handleClubAdminFabAction };
 
   useEffect(() => {
     if (!isDemoMode()) return;
 
     function onDemoNav(e) {
-      const { tab, action } = e.detail ?? {};
-      const { handleTabChange, handleOpenPoster, userEvents } = demoNavRef.current;
-
-      // Fermer les overlays ouverts avant tout changement d'onglet
-      if (tab) {
-        setShowNewEventForm(false);
-        setShowAnnouncements(false);
-        setStudioEvent(null);
-        setStudioClub(null);
-      }
-
-      if (tab === 'mon-club') {
-        if (allClubsRef.current.length === 0) {
-          pendingDemoTabRef.current = 'mon-club';
-        } else {
-          handleTabChange('mon-club');
-        }
-      } else if (tab) {
-        handleTabChange(tab);
-      }
-
-      if (action === 'open-event-form')    setShowNewEventForm(true);
-      if (action === 'open-announcements') {
-        demoNavRef.current.handleClubAdminFabAction('open-news-announce');
-      }
-      if (action === 'open-poster-studio') {
-        // Priorité à l'événement que l'utilisateur vient de créer, sinon premier event démo sans score
-        const demoEvent = lastDemoCreatedEventRef.current
-          ?? userEvents.find(ev => ev.clubId === 'demo-club-001' && !ev.score);
-        if (demoEvent) handleOpenPoster(demoEvent, { quickMode: false });
-      }
-      if (action === 'focus-demo-event') {
-        setShowNewEventForm(false);
-        setShowAnnouncements(false);
-        setFocusEventId('demo-event-001');
-      }
-      if (action === 'open-dashboard') {
-        // Guard : si le club n'est pas encore chargé, réessayer après 600ms
-        if (demoNavRef.current.handleClubAdminFabAction('dashboard') === false) {
-          setTimeout(() => demoNavRef.current.handleClubAdminFabAction('dashboard'), 600);
-        }
-      }
-      if (action === 'open-convocations') {
-        if (demoNavRef.current.handleClubAdminFabAction('open-convocations') === false) {
-          setTimeout(() => demoNavRef.current.handleClubAdminFabAction('open-convocations'), 600);
-        }
-      }
-      if (action === 'focus-score-event') {
-        setShowNewEventForm(false);
-        setShowAnnouncements(false);
-        setStudioEvent(null);
-        setStudioClub(null);
-        setFocusEventId('demo-event-016'); // match d'hier sans score
-      }
+      const { action } = e.detail ?? {};
+      // Seule action encore auto : fermer les overlays ouverts (formulaire, annonces...)
       if (action === 'close-overlay') {
         setShowNewEventForm(false);
         setShowAnnouncements(false);

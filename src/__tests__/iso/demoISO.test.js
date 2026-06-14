@@ -147,18 +147,16 @@ import { playerTour }    from '../../demo/tours/player.js';
 import { communicationTour } from '../../demo/tours/communication.js';
 import { supporterTour } from '../../demo/tours/supporter.js';
 
-const VALID_ACTIONS = [
-  null, 'open-event-form', 'open-announcements', 'open-poster-studio',
-  'focus-demo-event', 'open-dashboard', 'open-convocations',
-  'focus-score-event', 'close-overlay',
-];
+// Mode interactif : les tours utilisent désormais clickTarget au lieu de action/target.
+// Les champs `action` et `target` sont supprimés.
 
-const VALID_TARGETS = [
+const VALID_CLICK_TARGETS = [
   undefined, null,
-  'fab-add', 'convocations-tab', 'admin-dashboard',
-  'favorite-btn', 'follow-club-btn', 'training-card',
-  'live-score-pupitre', 'live-multiplex', 'coach-match-card',
-  'convocation-respond', 'convocation-btn', 'agenda-section', 'carpool-card',
+  'tab-home', 'tab-map', 'tab-favoris', 'tab-clubs', 'tab-profil', 'tab-mon-club',
+  'fab-add', 'fab-dashboard', 'fab-event', 'fab-announce',
+  'convocation-btn', 'convocation-respond', 'favorite-btn', 'follow-club-btn',
+  'live-score-pupitre', 'live-multiplex', 'coach-match-card', 'carpool-card',
+  'admin-dashboard', 'training-card', 'agenda-section', 'convocations-tab',
 ];
 
 const VALID_TRY_IT_ACTIONS = [
@@ -179,9 +177,9 @@ const TOURS = [
 
 for (const [name, tour] of TOURS) {
   describe(`Tour ${name} — structure des étapes`, () => {
-    it('a entre 4 et 10 étapes', () => {
+    it('a entre 4 et 15 étapes', () => {
       expect(tour.length).toBeGreaterThanOrEqual(4);
-      expect(tour.length).toBeLessThanOrEqual(10);
+      expect(tour.length).toBeLessThanOrEqual(15);
     });
 
     it('chaque étape a un id, title, body, emoji', () => {
@@ -193,28 +191,17 @@ for (const [name, tour] of TOURS) {
       }
     });
 
-    it('la dernière étape est un CTA ou une étape normale', () => {
+    it('la dernière étape est un CTA (isCTA: true)', () => {
       const last = tour[tour.length - 1];
-      expect(typeof last.isCTA === 'boolean' || last.isCTA === undefined).toBe(true);
+      expect(last.isCTA).toBe(true);
     });
 
-    it('toutes les actions sont dans la liste des actions valides', () => {
+    it('tous les clickTargets sont dans la liste des cibles valides', () => {
       for (const step of tour) {
         expect(
-          VALID_ACTIONS.includes(step.action ?? null),
-          `Action invalide "${step.action}" à l'étape ${step.id}`
+          VALID_CLICK_TARGETS.includes(step.clickTarget),
+          `clickTarget invalide "${step.clickTarget}" à l'étape ${step.id}`
         ).toBe(true);
-      }
-    });
-
-    it('tous les targets sont dans la liste des targets valides', () => {
-      for (const step of tour) {
-        if (step.target !== undefined) {
-          expect(
-            VALID_TARGETS.includes(step.target),
-            `Target invalide "${step.target}" à l'étape ${step.id}`
-          ).toBe(true);
-        }
       }
     });
 
@@ -229,21 +216,20 @@ for (const [name, tour] of TOURS) {
       }
     });
 
-    it('si tryItAction est défini, tryItLabel l\'est aussi', () => {
+    it('si tryItAction est défini, tryItLabel et clickTarget le sont aussi', () => {
       for (const step of tour) {
         if (step.tryItAction) {
-          expect(step.tryItLabel, `tryItLabel manquant à l'étape ${step.id}`).toBeTruthy();
+          expect(step.tryItLabel,  `tryItLabel manquant à l'étape ${step.id}`).toBeTruthy();
+          expect(step.clickTarget, `clickTarget manquant à l'étape ${step.id} qui a tryItAction`).toBeTruthy();
         }
       }
     });
 
-    it('PAS d\'actions cassées (scroll-to-*, open-matchs-tab)', () => {
-      const BROKEN_ACTIONS = ['scroll-to-events', 'scroll-to-trainings', 'open-matchs-tab'];
+    it('les étapes CTA n\'ont pas de clickTarget', () => {
       for (const step of tour) {
-        expect(
-          BROKEN_ACTIONS.includes(step.action),
-          `Action cassée "${step.action}" à l'étape ${step.id}`
-        ).toBe(false);
+        if (step.isCTA) {
+          expect(step.clickTarget).toBeFalsy();
+        }
       }
     });
   });

@@ -3,8 +3,6 @@
  *
  * Garantit que le nombre d'étapes affiché sur la card de sélection correspond
  * exactement au nombre d'étapes dans le tour correspondant.
- *
- * Régression prévenue : president affiché "12 étapes" mais tour a 9 étapes.
  */
 import { describe, it, expect } from 'vitest';
 import { presidentTour }    from '../../demo/tours/president.js';
@@ -16,15 +14,14 @@ import { supporterTour }    from '../../demo/tours/supporter.js';
 
 // ── Référentiel des étapes affichées dans DemoLandingPage ────────────────────
 // CES VALEURS DOIVENT ÊTRE MISES À JOUR SI LES TOURS CHANGENT.
-// Le test force la synchronisation entre la card et le tour réel.
 
 const DISPLAYED_STEPS = {
-  president:     9,
-  coach:         7,
-  communication: 5,
-  parent:        6,
+  president:     12,
+  coach:         8,
+  communication: 6,
+  parent:        8,
   player:        6,
-  supporter:     5,
+  supporter:     7,
 };
 
 const TOURS = {
@@ -50,8 +47,8 @@ describe('Tours — structure minimale garantie', () => {
       expect(tour.length).toBeGreaterThanOrEqual(4);
     });
 
-    it(`${profile} : au plus 10 étapes (guide lisible sur mobile)`, () => {
-      expect(tour.length).toBeLessThanOrEqual(10);
+    it(`${profile} : au plus 15 étapes (guide lisible sur mobile)`, () => {
+      expect(tour.length).toBeLessThanOrEqual(15);
     });
 
     it(`${profile} : première étape a id, title, body, emoji`, () => {
@@ -62,12 +59,9 @@ describe('Tours — structure minimale garantie', () => {
       expect(first.emoji).toBeTruthy();
     });
 
-    it(`${profile} : dernière étape a isCTA ou est une étape normale`, () => {
+    it(`${profile} : dernière étape est CTA ou info`, () => {
       const last = tour[tour.length - 1];
       expect(typeof last.id).toBe('number');
-      if (last.isCTA !== undefined) {
-        expect(typeof last.isCTA).toBe('boolean');
-      }
     });
 
     it(`${profile} : step IDs uniques`, () => {
@@ -78,41 +72,65 @@ describe('Tours — structure minimale garantie', () => {
   }
 });
 
-describe('Tours — actions et targets valides', () => {
-  const VALID_ACTIONS = [
-    null, 'open-event-form', 'open-announcements', 'open-poster-studio',
-    'focus-demo-event', 'open-dashboard', 'open-convocations',
-    'focus-score-event', 'close-overlay',
+describe('Tours interactifs — structure des étapes clickTarget', () => {
+  const VALID_CLICK_TARGETS = [
+    undefined, null,
+    // Navigation
+    'tab-home', 'tab-map', 'tab-favoris', 'tab-clubs', 'tab-profil', 'tab-mon-club',
+    // FAB + sous-items
+    'fab-add', 'fab-dashboard', 'fab-event', 'fab-announce',
+    // Éléments app
+    'convocation-btn', 'convocation-respond', 'favorite-btn', 'follow-club-btn',
+    'live-score-pupitre', 'live-multiplex', 'coach-match-card', 'carpool-card',
+    'admin-dashboard', 'training-card', 'agenda-section',
   ];
 
-  const BROKEN_ACTIONS = ['scroll-to-events', 'scroll-to-trainings', 'open-matchs-tab'];
+  const VALID_TRY_IT_ACTIONS = [
+    undefined,
+    'event-created', 'announcement-sent', 'convocation-sent',
+    'convocation-responded', 'event-favorited', 'carpool-requested',
+    'poster-generated', 'club-followed',
+  ];
 
   for (const [profile, tour] of Object.entries(TOURS)) {
-    it(`${profile} : aucune action cassée`, () => {
+    it(`${profile} : tous les clickTarget sont dans la liste valide`, () => {
       for (const step of tour) {
         expect(
-          BROKEN_ACTIONS.includes(step.action),
-          `Action cassée "${step.action}" à l'étape ${step.id} du tour ${profile}`
-        ).toBe(false);
-      }
-    });
-
-    it(`${profile} : toutes les actions sont dans la liste valide`, () => {
-      for (const step of tour) {
-        expect(
-          VALID_ACTIONS.includes(step.action ?? null),
-          `Action invalide "${step.action}" à l'étape ${step.id} du tour ${profile}`
+          VALID_CLICK_TARGETS.includes(step.clickTarget),
+          `clickTarget invalide "${step.clickTarget}" à l'étape ${step.id} du tour ${profile}`
         ).toBe(true);
       }
     });
 
-    it(`${profile} : si tryItAction défini, tryItLabel aussi`, () => {
+    it(`${profile} : tous les tryItActions sont dans la liste valide`, () => {
+      for (const step of tour) {
+        expect(
+          VALID_TRY_IT_ACTIONS.includes(step.tryItAction),
+          `tryItAction invalide "${step.tryItAction}" à l'étape ${step.id} du tour ${profile}`
+        ).toBe(true);
+      }
+    });
+
+    it(`${profile} : si tryItAction défini, clickTarget aussi`, () => {
       for (const step of tour) {
         if (step.tryItAction) {
           expect(
-            step.tryItLabel,
-            `tryItLabel manquant à l'étape ${step.id} du tour ${profile}`
+            step.clickTarget,
+            `tryItAction "${step.tryItAction}" défini sans clickTarget à l'étape ${step.id} du tour ${profile}`
           ).toBeTruthy();
+        }
+      }
+    });
+
+    it(`${profile} : la dernière étape est CTA (isCTA: true)`, () => {
+      const last = tour[tour.length - 1];
+      expect(last.isCTA).toBe(true);
+    });
+
+    it(`${profile} : les étapes CTA n'ont pas de clickTarget`, () => {
+      for (const step of tour) {
+        if (step.isCTA) {
+          expect(step.clickTarget).toBeFalsy();
         }
       }
     });

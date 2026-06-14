@@ -110,10 +110,10 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
               <div style={{ padding: 6 }}>
                 {isClubAdminOnly ? (
                   <>
-                    <FabAction icon="📊" label="Tableau de bord"    desc="Stats, vues, conversions"              color="#6366f1" onClick={() => handleClubAdminFabAction('dashboard')} />
+                    <FabAction icon="📊" label="Tableau de bord"    desc="Stats, vues, conversions"              color="#6366f1" onClick={() => handleClubAdminFabAction('dashboard')} data-demo="fab-dashboard" />
                     <FabAction icon="✏️" label="Modifier la page"   desc="Blocs, design, typographie"            color="#f59e0b" onClick={() => handleClubAdminFabAction('edit-page')} />
-                    <FabAction icon="📅" label="Créer un événement" desc="Match, tournoi, entraînement"          color="var(--sl-green)" onClick={() => handleClubAdminFabAction('event')} />
-                    <FabAction icon="📢" label="Envoyer une annonce" desc="Tous les abonnés ou une équipe"       color="#3b82f6" onClick={() => handleClubAdminFabAction('announce')} />
+                    <FabAction icon="📅" label="Créer un événement" desc="Match, tournoi, entraînement"          color="var(--sl-green)" onClick={() => handleClubAdminFabAction('event')} data-demo="fab-event" />
+                    <FabAction icon="📢" label="Envoyer une annonce" desc="Tous les abonnés ou une équipe"       color="#3b82f6" onClick={() => handleClubAdminFabAction('announce')} data-demo="fab-announce" />
                     <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 6px' }} />
                     <FabAction icon="📋" label="Infos du club"      desc="Nom, sport, ville, équipes"            color="#0ea5e9" onClick={() => handleClubAdminFabAction('edit-info')} />
                     <FabAction icon="👕" label="Créer une équipe"   desc="Ajouter une catégorie ou une équipe"   color="#22d96a" onClick={() => handleClubAdminFabAction('add-team')} />
@@ -271,7 +271,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
   );
 }
 
-function FabAction({ icon, label, desc, color, onClick }) {
+function FabAction({ icon, label, desc, color, onClick, ...rest }) {
   const [hover, setHover] = useState(false);
   const isEmoji = typeof icon === 'string';
   return (
@@ -279,6 +279,7 @@ function FabAction({ icon, label, desc, color, onClick }) {
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      {...rest}
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 12,
         padding: '10px 12px', borderRadius: 12, border: 'none', cursor: 'pointer',

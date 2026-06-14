@@ -10,7 +10,7 @@ const PROFILES = [
     description: 'Événements, communication, statistiques et gestion complète du club',
     color:       '#1d4ed8',
     gradient:    'linear-gradient(135deg, #1d4ed8, #3b82f6)',
-    steps:       9,
+    steps:       12,
   },
   {
     id:          'coach',
@@ -19,7 +19,7 @@ const PROFILES = [
     description: 'Entraînements, convocations, présences et communication équipe',
     color:       '#059669',
     gradient:    'linear-gradient(135deg, #059669, #10b981)',
-    steps:       7,
+    steps:       8,
   },
   {
     id:          'communication',
@@ -28,7 +28,7 @@ const PROFILES = [
     description: 'Affiches PosterStudio, annonces, réseaux sociaux et sponsors',
     color:       '#7c3aed',
     gradient:    'linear-gradient(135deg, #7c3aed, #a78bfa)',
-    steps:       5,
+    steps:       6,
   },
   {
     id:          'parent',
@@ -37,7 +37,7 @@ const PROFILES = [
     description: 'Convocations, covoiturage, calendrier et notifications enfant',
     color:       '#dc2626',
     gradient:    'linear-gradient(135deg, #dc2626, #f87171)',
-    steps:       6,
+    steps:       8,
   },
   {
     id:          'player',
@@ -55,7 +55,7 @@ const PROFILES = [
     description: 'Suivez vos clubs favoris, découvrez les événements autour de vous',
     color:       '#f97316',
     gradient:    'linear-gradient(135deg, #f97316, #fb923c)',
-    steps:       5,
+    steps:       7,
   },
 ];
 
