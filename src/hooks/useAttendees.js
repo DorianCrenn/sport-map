@@ -45,7 +45,7 @@ export function useAttendees() {
         const serverSet = new Set(data.map(r => String(r.event_id)));
         setAttending(serverSet);
         // Mettre à jour le cache localStorage
-        try { localStorage.setItem(lsKey(userId), JSON.stringify([...serverSet])); } catch {}
+        try { localStorage.setItem(lsKey(userId), JSON.stringify([...serverSet])); } catch { /* ignore */ }
       });
     return () => { cancelled = true; };
   }, [userId]);

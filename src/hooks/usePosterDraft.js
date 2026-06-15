@@ -19,7 +19,7 @@ function ls_get(key, fallback) {
   catch { return fallback; }
 }
 function ls_set(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch { /* ignore */ }
 }
 
 // ── Brouillon auto-sauvegardé ─────────────────────────────────────────────────
@@ -85,7 +85,7 @@ export function usePosterDraft(eventId) {
   }
 
   function clearDraft() {
-    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
     if (!isRealEvent || !userId) return;
     supabase.from('posters')
       .delete()

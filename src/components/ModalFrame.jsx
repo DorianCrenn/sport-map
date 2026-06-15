@@ -143,8 +143,11 @@ export default function ModalFrame({
             {/* Drag handle — sheet variant uniquement */}
             {variant === 'sheet' && (
               <div
+                role="button"
+                tabIndex={-1}
                 onMouseDown={handleDragHandleDown}
                 onTouchStart={handleDragHandleDown}
+                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClose?.()}
                 aria-label="Glisser pour fermer"
                 style={{
                   display: 'flex', justifyContent: 'center',

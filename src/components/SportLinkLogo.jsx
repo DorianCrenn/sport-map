@@ -1,7 +1,7 @@
 import iconA  from '../assets/logos/SportLink Icon A.svg';
 import horizA from '../assets/logos/SportLink Horizontal A.svg';
 
-export default function SportLinkLogo({ size = 32, onDark = false, variant = 'icon' }) {
+export default function SportLinkLogo({ size = 32, variant = 'icon' }) {
   const useHorizontal = variant === 'horizontal' || variant === 'full';
   const src = useHorizontal ? horizA : iconA;
   const sizeStyle = useHorizontal

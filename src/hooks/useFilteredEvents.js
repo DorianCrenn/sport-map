@@ -19,7 +19,6 @@ function isToday(dateStr) {
 
 function isThisWeekend(dateStr) {
   const d = new Date(dateStr);
-  const day = d.getDay();
   const today = new Date();
   const todayDay = today.getDay();
   // Find next Saturday — || 7 ensures today=Saturday still looks forward 7 days

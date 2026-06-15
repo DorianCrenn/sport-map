@@ -55,7 +55,7 @@ export function loadSavedBgs(clubId) {
 }
 export function persistSavedBgs(clubId, bgs) {
   try { localStorage.setItem(aiBgLsKey(clubId), JSON.stringify(bgs)); }
-  catch {}
+  catch { /* localStorage unavailable (private mode, quota) */ }
 }
 
 export const aiElLsKey = (clubId) => `sl-ai-els-${clubId || 'anon'}`;
@@ -65,5 +65,5 @@ export function loadSavedEls(clubId) {
 }
 export function persistSavedEls(clubId, els) {
   try { localStorage.setItem(aiElLsKey(clubId), JSON.stringify(els)); }
-  catch {}
+  catch { /* localStorage unavailable (private mode, quota) */ }
 }

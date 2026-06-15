@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/purity */
 // PS-HK-001/002 — Club media asset library hook
 // localStorage-first, Supabase sync when available.
 // Phase 1: data-URIs in localStorage (mock mode, no Storage bucket)
@@ -117,7 +118,7 @@ export function useClubMedia(clubId) {
         thumbnail_url: null,
         metadata: { ...asset.metadata, localId: asset.id },
       });
-    } catch {} // fail silently in mock mode
+    } catch { /* ignore */ } // fail silently in mock mode
   }
 
   function resetUpload() {

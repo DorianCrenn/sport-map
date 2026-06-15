@@ -4,7 +4,7 @@ import { useSports } from '../hooks/useSports.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import SportIcon from './SportIcon.jsx';
 
-const SportFilterBar = memo(function SportFilterBar({ active, onChange, nearbyActive, onNearbyToggle, geoLoading, showAllSports, onShowAllSports, onHideSomeSports }) {
+const SportFilterBar = memo(function SportFilterBar({ active, onChange, showAllSports, onShowAllSports, onHideSomeSports }) {
   const { allSports } = useSports();
   const { currentUser } = useAuth();
 

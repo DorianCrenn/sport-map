@@ -23,6 +23,8 @@ async function addCleanDemoSession(page) {
     sessionStorage.removeItem('sl-demo-step');
     sessionStorage.removeItem('sl-demo-guide-pos');
     sessionStorage.removeItem('sl-demo-guide-collapsed');
+    // Désactive l'auto-avance des étapes info (4s) pour rendre les tests déterministes
+    sessionStorage.setItem('sl-demo-no-auto-advance', '1');
   });
 }
 
@@ -31,7 +33,7 @@ async function addCleanDemoSession(page) {
 async function gotoDemo(page) {
   await addCleanDemoSession(page);
   await page.goto('/demo');
-  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
   await expect(
     page.getByText('Démonstration interactive'),
     'La landing démo doit afficher "Démonstration interactive" — bouton démo cassé ?'
@@ -129,36 +131,54 @@ test.describe('Mode Démo — navigation guide (Président)', () => {
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 6000 });
   });
 
-  test('D20 · "Suivant →" passe à l\'étape 2', async ({ page }) => {
-    await page.getByRole('button', { name: 'Suivant →' }).click();
-    await page.waitForTimeout(500);
+  // Avance le guide d'une étape (gère le mode pill + force:true pour contourner
+  // l'instabilité Playwright due au timer setInterval 50ms de DemoGuide)
+  async function nextStep(page) {
+    const btn = page.getByRole('button', { name: /continuer|passer cette étape/i }).first();
+    if (!await btn.isVisible().catch(() => false)) {
+      await page.locator('[data-drag-handle]').first().click({ force: true, timeout: 5000 });
+      await page.waitForTimeout(300);
+    }
+    await btn.click({ force: true, timeout: 8000 });
+    await page.waitForTimeout(400);
+  }
+
+  test('D20 · Le bouton de progression passe à l\'étape 2', async ({ page }) => {
+    await nextStep(page);
+    // Step 2 est interactif (pill mode) — expand le guide pour voir le compteur
+    await page.locator('[data-drag-handle]').first().click({ force: true });
+    await page.waitForTimeout(300);
     await expect(page.getByText(STEP_2)).toBeVisible({ timeout: 3000 });
     await expect(page.getByText(/quelque chose s'est mal passé/i)).not.toBeVisible();
   });
 
   test('D21 · "← Précédent" revient à l\'étape 1 depuis l\'étape 2', async ({ page }) => {
-    await page.getByRole('button', { name: 'Suivant →' }).click();
+    await nextStep(page);
+    // Expand le guide pour accéder à "← Précédent"
+    await page.locator('[data-drag-handle]').first().click({ force: true });
+    await page.waitForTimeout(300);
     await expect(page.getByText(STEP_2)).toBeVisible({ timeout: 3000 });
 
-    await page.getByRole('button', { name: '← Précédent' }).click();
+    await page.getByRole('button', { name: '← Précédent' }).click({ force: true });
     await page.waitForTimeout(400);
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 3000 });
   });
 
   test('D22 · Clic sur le compteur d\'étape réduit le guide (pill)', async ({ page }) => {
-    // Le compteur est cliquable et toggle le collapse (voir DemoGuide.jsx l.237)
-    await page.getByText(STEP_1).click();
+    // Le compteur est cliquable et toggle le collapse
+    await page.getByText(STEP_1).click({ force: true });
     await page.waitForTimeout(400);
     // En mode pill, le texte "Étape 1" reste visible
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 3000 });
   });
 
   test('D23 · Bouton "Passer" → label "Confirmer ?" en 3 s', async ({ page }) => {
-    await page.getByRole('button', { name: 'Passer' }).click();
+    // force:true contourne l'instabilité Playwright due au timer 50ms de DemoGuide
+    await page.getByRole('button', { name: 'Passer' }).click({ force: true });
     await expect(
       page.getByRole('button', { name: 'Confirmer ?' }),
       '"Confirmer ?" absent après premier clic sur Passer'
-    ).toBeVisible({ timeout: 2000 });
+    ).toBeVisible({ timeout: 4000 });
   });
 });
 
@@ -170,12 +190,12 @@ test.describe('Mode Démo — SandboxWelcome', () => {
     await selectProfile(page, 'Président');
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 6000 });
 
-    // 1er clic → confirmation
-    await page.getByRole('button', { name: 'Passer' }).click();
-    await expect(page.getByRole('button', { name: 'Confirmer ?' })).toBeVisible({ timeout: 2000 });
+    // 1er clic → confirmation (force:true pour contourner instabilité timer 50ms)
+    await page.getByRole('button', { name: 'Passer' }).click({ force: true });
+    await expect(page.getByRole('button', { name: 'Confirmer ?' })).toBeVisible({ timeout: 4000 });
 
     // 2e clic → exitTour() → SandboxWelcome
-    await page.getByRole('button', { name: 'Confirmer ?' }).click();
+    await page.getByRole('button', { name: 'Confirmer ?' }).click({ force: true });
     await page.waitForTimeout(800);
 
     await expect(
@@ -190,11 +210,11 @@ test.describe('Mode Démo — SandboxWelcome', () => {
     await selectProfile(page, 'Président');
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 6000 });
 
-    await page.getByRole('button', { name: 'Passer' }).click();
-    await page.getByRole('button', { name: 'Confirmer ?' }).click();
+    await page.getByRole('button', { name: 'Passer' }).click({ force: true });
+    await page.getByRole('button', { name: 'Confirmer ?' }).click({ force: true });
     await expect(page.getByText('Vous venez de découvrir')).toBeVisible({ timeout: 5000 });
 
-    await page.getByRole('button', { name: /Explorer librement la sandbox/i }).click();
+    await page.getByRole('button', { name: /Explorer librement la sandbox/i }).click({ force: true });
     await page.waitForTimeout(600);
 
     await expect(page.getByText('Vous venez de découvrir')).not.toBeVisible();

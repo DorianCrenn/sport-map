@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Z } from '../constants/zIndex.js';
-import { useAuth } from '../contexts/AuthContext.jsx';
 import { useClubs } from '../hooks/useClubs.js';
 import { useSports } from '../hooks/useSports.js';
 

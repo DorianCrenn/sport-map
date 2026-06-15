@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
@@ -23,6 +23,7 @@ export function useMyAnnouncements() {
   const [readIds, setReadIds]             = useState(new Set());
   const [loading, setLoading]             = useState(false);
   const followedClubIds = follows.map(f => String(f.clubId));
+  const followedKey = followedClubIds.join(',');
 
   const fetchAll = useCallback(async () => {
     if (!currentUser || followedClubIds.length === 0) {
@@ -60,7 +61,7 @@ export function useMyAnnouncements() {
     setAnnouncements(filtered);
     setReadIds(reads);
     setLoading(false);
-  }, [currentUser?.id, followedClubIds.join(',')]);
+  }, [currentUser?.id, followedKey]);
 
   useEffect(() => {
     fetchAll();

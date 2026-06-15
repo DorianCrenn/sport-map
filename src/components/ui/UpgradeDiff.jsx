@@ -80,8 +80,7 @@ function getQuotaImprovements(fromPlan, toPlan) {
 export default function UpgradeDiff({ currentPlanId, nextPlanId, onUpgrade, compact = false }) {
   if (!currentPlanId || !nextPlanId) return null;
 
-  const currentMeta = getPlanMeta(currentPlanId);
-  const nextMeta    = getPlanMeta(nextPlanId);
+  const nextMeta = getPlanMeta(nextPlanId);
 
   const gainedFeatures = ALL_ROWS.filter(({ key }) =>
     canUseFeature(key, nextPlanId) && !canUseFeature(key, currentPlanId)

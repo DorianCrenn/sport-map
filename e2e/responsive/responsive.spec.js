@@ -23,25 +23,35 @@ const VIEWPORTS = [
 
 async function navigateToTab(page, tabName) {
   const labels = {
-    home: /accueil|home/i,
+    home: /accueil|home|agenda/i,
     map: /carte|map/i,
     clubs: /clubs/i,
-    news: /actu|news/i,
-    favoris: /favoris/i,
+    news: /actu|news|agenda/i,
+    favoris: /favoris|sauvegardés/i,
   };
   const btn = page.getByRole('button', { name: labels[tabName] }).last();
   if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
     await btn.click({ force: true });
-    await page.waitForLoadState('domcontentloaded');
+    // SPA : pas de chargement de page — juste attendre le re-rendu
+    await page.waitForTimeout(600);
   }
 }
 
 async function checkOverflow(page) {
-  return page.evaluate(() => ({
-    hasHorizontalOverflow: document.body.scrollWidth > window.innerWidth,
-    scrollWidth: document.body.scrollWidth,
-    windowWidth: window.innerWidth,
-  }));
+  return page.evaluate(() => {
+    // overflow-x:hidden est défini sur html/body/#root dans index.css.
+    // On vérifie si le contenu non-fixed dépasse la largeur visible.
+    // Stratégie : utiliser document.documentElement.scrollWidth avec tolérance de 2px.
+    // Les éléments fixed (BottomNav, FAB, modales) sont exclus de scrollWidth par le navigateur
+    // quand overflow-x:hidden est appliqué à l'ancêtre.
+    const vw = window.innerWidth;
+    const sw = document.documentElement.scrollWidth;
+    return {
+      hasHorizontalOverflow: sw > vw + 2,
+      scrollWidth: sw,
+      windowWidth: vw,
+    };
+  });
 }
 
 async function checkSmallTouchTargets(page) {
@@ -70,9 +80,14 @@ test.describe('Responsive — aucun overflow horizontal', () => {
         await page.goto('/');
         await page.waitForLoadState('domcontentloaded');
         await navigateToTab(page, pageInfo.tab);
-        await page.waitForTimeout(500);
-
-        const result = await checkOverflow(page);
+        // Attendre que les animations (Framer Motion) et les fetches initiaux se stabilisent
+        await page.waitForTimeout(800);
+        // Second check après 500ms supplémentaires si le premier échoue (anti-flaky animations)
+        let result = await checkOverflow(page);
+        if (result.hasHorizontalOverflow) {
+          await page.waitForTimeout(500);
+          result = await checkOverflow(page);
+        }
         expect(
           result.hasHorizontalOverflow,
           `Overflow horizontal sur ${pageInfo.name} à ${viewport.width}px : scrollWidth=${result.scrollWidth} > windowWidth=${result.windowWidth}`

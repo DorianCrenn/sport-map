@@ -97,7 +97,7 @@ export default function TennisEncountersManager({ event, onUpdateEvent }) {
       {/* Bouton validation finale */}
       <button
         onClick={handleValidate}
-        disabled={!isComplete || saving}
+        disabled={!isComplete || savingTotal}
         style={{
           width: '100%', marginTop: 14, padding: '11px 0', borderRadius: 12,
           border: savedTotal ? '1px solid var(--sl-green)' : 'none',

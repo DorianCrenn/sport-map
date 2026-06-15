@@ -1,4 +1,4 @@
-import { forwardRef, memo, useState, useEffect } from 'react';
+import { forwardRef, memo, useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isDemoMode } from '../lib/supabase.js';
 import { useSports } from '../hooks/useSports.js';
@@ -18,7 +18,7 @@ import { useAttendanceContext } from '../contexts/AttendanceContext.jsx';
 import { downloadICS } from '../utils/exportICS.js';
 import { generateEventDescription, openWhatsAppShare, openFacebookShare, openInstagramShare } from '../lib/eventShare.js';
 import SportIcon from './SportIcon.jsx';
-import PosterStudio from './PosterStudio.jsx';
+const PosterStudio = lazy(() => import('./PosterStudio.jsx'));
 import PosterShareBtn from './PosterShareBtn.jsx';
 
 const EVENT_TYPE_META = {
@@ -873,14 +873,16 @@ const EventCard = forwardRef(function EventCard({ event, club, isSelected, onSel
     </motion.article>
 
     {(showPoster || resultScore) && (
-      <PosterStudio
-        event={event}
-        club={club}
-        onClose={() => { setShowPoster(false); setResultScore(null); setPosterInitBg(null); }}
-        resultMode={resultScore}
-        quickMode={!!resultScore}
-        initialBgSrc={posterInitBg}
-      />
+      <Suspense fallback={null}>
+        <PosterStudio
+          event={event}
+          club={club}
+          onClose={() => { setShowPoster(false); setResultScore(null); setPosterInitBg(null); }}
+          resultMode={resultScore}
+          quickMode={!!resultScore}
+          initialBgSrc={posterInitBg}
+        />
+      </Suspense>
     )}
     <ConfirmDialog
       open={confirmDelete}

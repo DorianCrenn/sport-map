@@ -133,7 +133,7 @@ export function useClubAnalytics(clubId) {
   useEffect(() => {
     const next = views + 1;
     setViews(next);
-    try { localStorage.setItem(key, String(next)); } catch {}
+    try { localStorage.setItem(key, String(next)); } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
@@ -187,7 +187,7 @@ export function useClubPage(club) {
               setTypoState(t);
               latestRef.current.typography = t;
             }
-          } catch {}
+          } catch { /* ignore */ }
         } else if (data) {
           const saved = data.blocks ?? [];
           const b = saved.length > 0
@@ -214,7 +214,7 @@ export function useClubPage(club) {
                 .upsert({ club_id: clubIdStr, blocks: b, typography: t }, { onConflict: 'club_id' })
                 .then(({ error }) => { if (error) console.error('[ClubPage] migration upsert failed:', error.message); });
             }
-          } catch {}
+          } catch { /* ignore */ }
         }
         setLoaded(true);
       });
@@ -246,7 +246,7 @@ export function useClubPage(club) {
         try {
           localStorage.setItem(`club-page-${clubIdStr}`, JSON.stringify(b));
           localStorage.setItem(`club-typography-${clubIdStr}`, JSON.stringify(t));
-        } catch {}
+        } catch { /* ignore */ }
       }
     }, 1500);
   }, [clubIdStr]);

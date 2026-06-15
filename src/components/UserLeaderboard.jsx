@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useUserLeaderboard } from '../hooks/useUserLeaderboard.js';
-import { LEVELS, getLevel } from '../hooks/useBadges.js';
+import { getLevel } from '../hooks/useBadges.js';
 import { Skeleton } from './Skeleton.jsx';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
@@ -9,7 +9,7 @@ const MEDAL = ['🥇', '🥈', '🥉'];
 function UserRow({ user, rank, index }) {
   const medal = MEDAL[rank] ?? null;
   const xp = user.xp ?? 0;
-  const { level, name: levelName, progress, nextLevel } = getLevel(xp);
+  const { level, name: levelName, progress } = getLevel(xp);
   const initials = (user.name ?? '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (

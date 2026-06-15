@@ -1,4 +1,4 @@
-import { fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx';
+import { fmtDate, truncate, blockStyle, venueFs } from './tourUtils.jsx'; // truncate used at lines 237,247
 
 const H = { story: 640, post: 450 };
 
@@ -7,9 +7,9 @@ const H = { story: 640, post: 450 };
 // or basketball parquet geometry on navy. Lower dark panel holds the text.
 // Tailwind v4 + inline styles for dynamic values.
 
-function FootballField({ h, isStory }) {
+function FootballField({ h }) {
   const w = 360;
-  const fy = isStory ? 0 : 0;        // field top
+  // fy = 0 for both modes — kept intentionally for future layouts
   const fh = Math.round(h * 0.56);   // field visible height
 
   return (
@@ -72,7 +72,7 @@ function FootballField({ h, isStory }) {
   );
 }
 
-function BasketballField({ h, isStory }) {
+function BasketballField({ h }) {
   const w = 360;
   const fh = Math.round(h * 0.56);
   const pw = 140;    // paint width
@@ -253,7 +253,7 @@ export default function TplTrField({
 
         {/* ── Main title in dark panel ── */}
         <div data-block="title" style={{ marginBottom: isStory ? 16 : 10, ...tr('title') }}>
-          {title.split(' ').map((word, i, arr) => (
+          {title.split(' ').map((word, i) => (
             <div
               key={i}
               className="block uppercase leading-[0.90]"

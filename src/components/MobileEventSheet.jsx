@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useShare } from '../hooks/useShare.js';
@@ -10,7 +10,7 @@ import { downloadICS } from '../utils/exportICS.js';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import SportIcon from './SportIcon.jsx';
-import PosterStudio from './PosterStudio.jsx';
+const PosterStudio = lazy(() => import('./PosterStudio.jsx'));
 import RideSection from './rides/RideSection.jsx';
 import EventPhotoGallery from './EventPhotoGallery.jsx';
 import ScoreEntryContainer from './score/ScoreEntryContainer.jsx';
@@ -452,7 +452,7 @@ export default function MobileEventSheet({
       </div>
     </motion.div>
 
-    {showPoster && <PosterStudio event={event} club={club} onClose={() => setShowPoster(false)} />}
+    {showPoster && <Suspense fallback={null}><PosterStudio event={event} club={club} onClose={() => setShowPoster(false)} /></Suspense>}
   </>
   );
 }

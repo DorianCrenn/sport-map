@@ -12,9 +12,9 @@ export default function TemplatePanelTab({ ps }) {
     displayTemplates, hasPremium, favTplHook, toggleFavTpl, setShowUpgradeModal,
     club, defTplHook, libHook, libName, setLibName, saveToLib, loadFromLibrary,
     clubDNA, poster, format,
-    variants, setVariants, variantSeed, setVariantSeed, variantsOpen, setVariantsOpen,
+    variants, setVariants, variantSeed, setVariantSeed, setVariantsOpen,
     dispatch, aiPosterHint, setAiPosterHint, aiPosterLoading, handleGenerateAIPoster,
-    aiPosterVariants, bgSrc, homeName, awayName, championship, event, isTournamentEvent,
+    aiPosterVariants, bgSrc, homeName, awayName, championship, event,
     posterData,
   } = ps;
 

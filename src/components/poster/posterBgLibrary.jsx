@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // ── Premium Background Library ─────────────────────────────────────────────────
 // 20 CSS-only cinematic backgrounds for match posters.
 // Each component fills its parent container (100% × 100%, position relative).
@@ -50,7 +51,6 @@ function BgGoldRush({ format }) {
 // ── 2. Stadium Cinematic ──────────────────────────────────────────────────────
 function BgStadiumNight({ format }) {
   const isStory = format === 'story';
-  const h = isStory ? 640 : 450;
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#020612' }}>
       {/* Stadium arcs (top) */}
@@ -84,9 +84,7 @@ function BgStadiumNight({ format }) {
 }
 
 // ── 3. Neon Pulse ─────────────────────────────────────────────────────────────
-function BgNeonPulse({ format }) {
-  const isStory = format === 'story';
-  const h = isStory ? 640 : 450;
+function BgNeonPulse() {
   const cyan = '#00F5FF';
   const mag = '#FF00AA';
   return (
@@ -239,8 +237,7 @@ function BgPowerSurge({ format }) {
 }
 
 // ── 7. Blue Steel ─────────────────────────────────────────────────────────────
-function BgBlueSteel({ format }) {
-  const isStory = format === 'story';
+function BgBlueSteel() {
   const royal = '#1D4ED8';
   const silver = '#C8D8F0';
   return (
@@ -319,7 +316,6 @@ function BgSmokeLights({ format }) {
 // ── 9. Cyber Grid ─────────────────────────────────────────────────────────────
 function BgCyberGrid({ format }) {
   const isStory = format === 'story';
-  const h = isStory ? 640 : 450;
   const cyan = '#00FFD4';
   const purple = '#9B4AFF';
   return (
@@ -368,8 +364,7 @@ function BgCyberGrid({ format }) {
 }
 
 // ── 10. Abstract Force ────────────────────────────────────────────────────────
-function BgAbstractForce({ format }) {
-  const isStory = format === 'story';
+function BgAbstractForce() {
   const blue = '#2563EB';
   const orange = '#EA580C';
   return (
@@ -395,8 +390,7 @@ function BgAbstractForce({ format }) {
 }
 
 // ── 11. Chrome Rush ───────────────────────────────────────────────────────────
-function BgChromeRush({ format }) {
-  const isStory = format === 'story';
+function BgChromeRush() {
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#090909' }}>
       {/* Brushed metal bands */}
@@ -652,7 +646,6 @@ function BgGoldenHour({ format }) {
 function BgTrophyRoom({ format }) {
   const isStory = format === 'story';
   const gold = '#C9A84C';
-  const gold2 = '#F2DC90';
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#010413' }}>
       {/* Deep velvet texture — subtle color gradient */}
@@ -678,7 +671,7 @@ function BgTrophyRoom({ format }) {
 }
 
 // ── 20. Carbon Fiber ──────────────────────────────────────────────────────────
-function BgCarbonFiber({ format }) {
+function BgCarbonFiber() {
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#050505' }}>
       {/* Carbon weave — SVG pattern */}

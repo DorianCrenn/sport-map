@@ -14,17 +14,10 @@ function lsRead(clubId) {
 }
 function lsWrite(clubId, profile) {
   try { localStorage.setItem(lsKey(clubId), JSON.stringify(profile)); }
-  catch {}
+  catch { /* ignore */ }
 }
 
 // ── Canvas-based color extraction ─────────────────────────────────────────────
-
-function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return [r, g, b];
-}
 
 function rgbToHex(r, g, b) {
   return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');

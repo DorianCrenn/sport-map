@@ -19,22 +19,15 @@ test.describe('Page Authentification', () => {
   });
 
   test('affiche le formulaire de connexion quand non connecté', async ({ page }) => {
-    // L'app doit permettre d'accéder à l'auth
-    const authButton = page
-      .getByRole('button', { name: /connexion|se connecter|login|sign in/i })
-      .or(page.getByRole('link', { name: /connexion|se connecter/i }))
-      .first();
-
-    // Si l'utilisateur n'est pas connecté, un bouton d'accès à l'auth doit exister
-    // (ou la page profil affiche directement le formulaire)
+    // Naviguer vers la page Profil (visible pour les non-connectés)
     const profilTab = page.getByRole('button', { name: /profil/i }).last();
     await profilTab.click({ force: true });
-    await page.waitForLoadState('domcontentloaded');
 
-    // AuthPage ou bouton de connexion visible
-    const loginForm = page.locator('form, [data-testid="auth-form"]')
-      .or(page.getByText(/connexion|se connecter|créer un compte/i).first());
-    await expect(loginForm).toBeVisible({ timeout: 5000 });
+    // ProfilPage non-connecté → bouton "Se connecter / S'inscrire"
+    const connectBtn = page.getByRole('button', { name: /se connecter|connexion|créer/i }).first();
+    await expect(connectBtn).toBeVisible({ timeout: 5000 });
+    // Pas d'ErrorBoundary
+    await expect(page.getByText(/quelque chose s'est mal passé/i)).not.toBeVisible();
   });
 
   test('affiche les champs email et mot de passe', async ({ page }) => {

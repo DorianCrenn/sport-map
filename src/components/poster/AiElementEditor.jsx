@@ -5,7 +5,7 @@ const ACCENT = '#a78bfa';
 const PREVIEW_W = 300;
 
 export default function AiElementEditor({ elements, initialUid, posterData, templateId, format, bgPresetId, effects, overlayElements, onChange, onRemove, onClose }) {
-  const { w, h } = BASE_DIMS[format] || BASE_DIMS.story;
+  const { w } = BASE_DIMS[format] || BASE_DIMS.story;
   const scale = PREVIEW_W / w;
 
   const [activeUid, setActiveUid] = useState(initialUid ?? elements[0]?.uid ?? null);

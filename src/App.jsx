@@ -20,7 +20,7 @@ import BottomNav from './components/BottomNav.jsx';
 const ClubPageView   = lazy(() => import('./components/club/ClubPageView.jsx'));
 const UserPublicView = lazy(() => import('./components/UserPublicView.jsx'));
 import HomeScreen from './pages/HomeScreen.tsx';
-import MapPage from './pages/MapPage.jsx';
+const MapPage = lazy(() => import('./pages/MapPage.jsx'));
 const FavorisPage = lazy(() => import('./pages/FavorisPage.jsx'));
 const ClubsPage   = lazy(() => import('./pages/ClubsPage.jsx'));
 const ProfilPage  = lazy(() => import('./pages/ProfilPage.jsx'));
@@ -514,22 +514,24 @@ function AppInner() {
             )}
             {activeTab === 'map' && (
               <ErrorBoundary name="Carte" onReport={handleErrorReport}>
-                <MapPage
-                  allEvents={allEvents}
-                  allClubs={allClubs}
-                  activeDepartment={activeDepartment}
-                  canAddEvent={isAdmin || isClubAdmin}
-                  onAddEvent={addEventWithToast}
-                  onUpdateEvent={updateEvent}
-                  onDeleteEvent={deleteEvent}
-                  onGoToFavoris={() => setActiveTab('favoris')}
-                  cityFilter={cityFilter}
-                  focusEventId={focusEventId}
-                  onFocusDone={() => setFocusEventId(null)}
-                  eventsLoading={eventsLoading}
-                  initialSportFilter={onboardingSport}
-                  onInitialFilterApplied={() => setOnboardingSport(null)}
-                />
+                <Suspense fallback={<ModalLoader />}>
+                  <MapPage
+                    allEvents={allEvents}
+                    allClubs={allClubs}
+                    activeDepartment={activeDepartment}
+                    canAddEvent={isAdmin || isClubAdmin}
+                    onAddEvent={addEventWithToast}
+                    onUpdateEvent={updateEvent}
+                    onDeleteEvent={deleteEvent}
+                    onGoToFavoris={() => setActiveTab('favoris')}
+                    cityFilter={cityFilter}
+                    focusEventId={focusEventId}
+                    onFocusDone={() => setFocusEventId(null)}
+                    eventsLoading={eventsLoading}
+                    initialSportFilter={onboardingSport}
+                    onInitialFilterApplied={() => setOnboardingSport(null)}
+                  />
+                </Suspense>
               </ErrorBoundary>
             )}
             {activeTab === 'favoris' && (

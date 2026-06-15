@@ -11,6 +11,7 @@ import CityAutocomplete from '../CityAutocomplete.jsx';
 import { clubSchema, validate } from '../../lib/schemas.js';
 import { supabase } from '../../lib/supabase.js';
 import { compressImage } from '../../lib/imageUtils.js';
+import { sanitizeText } from '../../lib/sanitize.js';
 
 const AGE_CATEGORIES = [
   'U7', 'U7F', 'U9', 'U9F', 'U11', 'U11F', 'U13', 'U13F',
@@ -332,7 +333,12 @@ export default function ClubFormModal({ club, onSave, onClose }) {
     if (!runValidation() || submitting) return;
     setSubmitting(true);
     try {
-      await onSave({ ...form });
+      await onSave({
+        ...form,
+        name:  sanitizeText(form.name),
+        city:  sanitizeText(form.city),
+        email: sanitizeText(form.email),
+      });
       try { localStorage.removeItem(CLUB_DRAFT_KEY); } catch { /* ignore */ }
     } finally {
       setSubmitting(false);

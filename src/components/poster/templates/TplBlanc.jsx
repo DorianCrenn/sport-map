@@ -3,7 +3,7 @@ import { parseVs, fmtDate, champLabel, initials, truncate, scaledFs, blockStyle 
 const H = { story: 640, post: 450 };
 const DARK = '#18100A';
 
-function TeamCircleLight({ name, logo, accent, blockId, bStyle = {} }) {
+function TeamCircleLight({ name, logo, blockId, bStyle = {} }) {
   return (
     <div data-block={blockId} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, ...bStyle }}>
       <div style={{

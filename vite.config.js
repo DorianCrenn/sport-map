@@ -101,6 +101,7 @@ export default defineConfig({
             return 'vendor-react';
           }
           // Pages rarement visitées sur premier chargement
+          if (id.includes('pages/MapPage'))     return 'page-map';
           if (id.includes('pages/FavorisPage')) return 'page-favoris';
           if (id.includes('pages/ClubsPage'))   return 'page-clubs';
           if (id.includes('pages/ProfilPage') || id.includes('pages/AuthPage')) return 'page-profil';

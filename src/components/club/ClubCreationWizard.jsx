@@ -8,6 +8,7 @@ import CityAutocomplete from '../CityAutocomplete.jsx';
 import SportIcon from '../SportIcon.jsx';
 import { supabase } from '../../lib/supabase.js';
 import { Z } from '../../constants/zIndex.js';
+import { sanitizeText } from '../../lib/sanitize.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -304,8 +305,10 @@ export default function ClubCreationWizard({ onSave, onClose }) {
     try {
       await onSave({
         ...form,
-        name:        form.name.trim(),
-        memberCount: form.memberCount ? Number(form.memberCount) : null,
+        name:         sanitizeText(form.name.trim()),
+        city:         sanitizeText(form.city ?? ''),
+        description:  sanitizeText(form.description ?? ''),
+        memberCount:  form.memberCount  ? Number(form.memberCount)  : null,
         foundingYear: form.foundingYear ? Number(form.foundingYear) : null,
       });
     } catch (e) {
@@ -339,7 +342,10 @@ export default function ClubCreationWizard({ onSave, onClose }) {
             <label style={labelStyle}>Sport *</label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(88px, 1fr))', gap: 6 }}>
               {sportList.slice(0, 12).map(s => (
-                <button key={s.id} onClick={() => { set('sport', s.id); if (!form.primaryColor || form.primaryColor === '#22C55E') set('primaryColor', s.color ?? '#22C55E'); }}
+                <button key={s.id}
+                  aria-label={s.id}
+                  aria-pressed={form.sport === s.id}
+                  onClick={() => { set('sport', s.id); if (!form.primaryColor || form.primaryColor === '#22C55E') set('primaryColor', s.color ?? '#22C55E'); }}
                   style={{
                     padding: '8px 6px', borderRadius: 10, cursor: 'pointer',
                     border: `2px solid ${form.sport === s.id ? (s.color ?? '#22C55E') : 'var(--sl-border)'}`,
@@ -387,6 +393,8 @@ export default function ClubCreationWizard({ onSave, onClose }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               {COLOR_PRESETS.map(c => (
                 <button key={c} onClick={() => set('primaryColor', c)}
+                  aria-label={`Couleur ${c}`}
+                  aria-pressed={form.primaryColor === c}
                   style={{
                     width: 30, height: 30, borderRadius: 8, border: 'none', cursor: 'pointer', flexShrink: 0,
                     backgroundColor: c,
@@ -395,10 +403,13 @@ export default function ClubCreationWizard({ onSave, onClose }) {
                     transition: 'transform 0.1s',
                   }} />
               ))}
-              <input type="color" value={form.primaryColor}
-                onChange={e => set('primaryColor', e.target.value)}
-                style={{ width: 30, height: 30, borderRadius: 8, cursor: 'pointer', border: 'none', padding: 0 }}
-                title="Couleur personnalisée" />
+              <label style={{ display: 'contents' }}>
+                <span className="sr-only">Couleur personnalisée</span>
+                <input type="color" value={form.primaryColor}
+                  onChange={e => set('primaryColor', e.target.value)}
+                  aria-label="Couleur personnalisée"
+                  style={{ width: 30, height: 30, borderRadius: 8, cursor: 'pointer', border: 'none', padding: 0 }} />
+              </label>
             </div>
           </div>
 
@@ -521,8 +532,9 @@ export default function ClubCreationWizard({ onSave, onClose }) {
             🏟️ Créer un club
           </span>
           <button onClick={onClose}
+            aria-label="Fermer"
             style={{ width: 36, height: 36, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>

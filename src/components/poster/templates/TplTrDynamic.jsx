@@ -38,13 +38,7 @@ export default function TplTrDynamic({
   const clipDark  = `polygon(0 0, ${splitX + skew}px 0, ${splitX - skew}px ${h}px, 0 ${h}px)`;
   const clipLight = `polygon(${splitX + skew}px 0, 360px 0, 360px ${h}px, ${splitX - skew}px ${h}px)`;
 
-  // Font size: fit widest word across full 320px, clamp
   const titleWords = title.split(' ');
-  const longestWord = titleWords.reduce((a, b) => (b.length > a.length ? b : a), '');
-  const baseFontSize = Math.max(isStory ? 46 : 34, Math.min(isStory ? 88 : 65,
-    Math.floor((isStory ? 330 : 250) / Math.max(longestWord.length, 3))
-  ));
-
   const sharedTitleStyle = {
     position: 'absolute',
     top: titleY,

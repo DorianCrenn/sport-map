@@ -1,4 +1,4 @@
-import { getSportMeta, SportBall, InfoRow, Grain, Vignette, LightOrb, fmtDate, truncate, blockStyle, venueFs, scaledTitle } from './tourUtils.jsx';
+import { getSportMeta, InfoRow, Grain, Vignette, LightOrb, fmtDate, blockStyle, scaledTitle } from './tourUtils.jsx';
 
 const H = { story: 640, post: 450 };
 

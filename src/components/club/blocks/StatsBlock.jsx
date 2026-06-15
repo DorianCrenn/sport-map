@@ -12,7 +12,7 @@ function FormPill({ result }) {
   );
 }
 
-export default function StatsBlock({ data, clubId }) {
+export default function StatsBlock({ clubId }) {
   const { stats, form5, topMotm, loading } = useClubStats(clubId);
 
   if (loading) return <div className="text-xs text-gray-400 py-4 text-center">Chargement…</div>;

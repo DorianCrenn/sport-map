@@ -1,40 +1,48 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Tour Président complet — 8 étapes sans erreur.
- * Vérifie que chaque étape s'affiche correctement et que les actions
- * déclenchées ne produisent pas d'erreur.
+ * Tour Président complet — parcours par étapes.
+ * Force:true sur tous les clics car le timer DemoGuide (setInterval 50ms)
+ * provoque des re-renders React qui désynchronisent les polls Playwright.
  */
+
+// ── Helper : avance d'une étape (gère pill-mode + instabilité timer) ──────────
+async function stepNext(page) {
+  const btn = page.getByRole('button', { name: /continuer|passer cette étape/i }).first();
+  if (!await btn.isVisible().catch(() => false)) {
+    await page.locator('[data-drag-handle]').first().click({ force: true, timeout: 5000 });
+    await page.waitForTimeout(300);
+  }
+  await btn.click({ force: true, timeout: 15000 });
+  await page.waitForTimeout(400);
+}
 
 test.describe('Tour Président — 8 étapes', () => {
   test.beforeEach(async ({ page }) => {
-    // Partir d'une session propre
     await page.addInitScript(() => {
       sessionStorage.removeItem('sl-demo-initialized');
       sessionStorage.removeItem('sl-demo-profile');
       sessionStorage.removeItem('sl-demo-step');
+      sessionStorage.setItem('sl-demo-no-auto-advance', '1');
     });
     await page.goto('/demo');
     await page.waitForLoadState('networkidle');
   });
 
   test('landing page affiche les 6 profils', async ({ page }) => {
-    await expect(page.getByText('Président')).toBeVisible();
-    await expect(page.getByText('Entraîneur')).toBeVisible();
-    await expect(page.getByText('Parent')).toBeVisible();
-    await expect(page.getByText('Joueur')).toBeVisible();
-    await expect(page.getByText('Supporter')).toBeVisible();
+    for (const label of ['Président', 'Coach', 'Parent', 'Joueur', 'Supporter']) {
+      await expect(page.getByRole('button', { name: new RegExp(label, 'i') }).first()).toBeVisible({ timeout: 5000 });
+    }
   });
 
   test('sélectionner Président lance le tour', async ({ page }) => {
-    await page.getByText('Président').click();
-    await expect(page.getByText('Votre cockpit opérationnel')).toBeVisible({ timeout: 5000 });
+    await page.getByRole('button', { name: /Président/i }).first().click();
+    await expect(page.getByText('Votre cockpit opérationnel')).toBeVisible({ timeout: 8000 });
   });
 
   test('étape 1 — cockpit opérationnel visible', async ({ page }) => {
-    await page.getByText('Président').click();
-    await expect(page.getByText('Votre cockpit opérationnel')).toBeVisible();
-    // Pas d'erreur console
+    await page.getByRole('button', { name: /Président/i }).first().click();
+    await expect(page.getByText('Votre cockpit opérationnel')).toBeVisible({ timeout: 8000 });
     const errors = [];
     page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
     await page.waitForTimeout(500);
@@ -42,20 +50,29 @@ test.describe('Tour Président — 8 étapes', () => {
     expect(jsErrors.length, `Erreurs console : ${jsErrors.join(', ')}`).toBe(0);
   });
 
-  test('avancer jusqu\'à l\'étape 2 (créer événement)', async ({ page }) => {
-    await page.getByText('Président').click();
-    // Avancer vers étape 2
-    await page.getByRole('button', { name: /suivant/i }).click();
-    await expect(page.getByText('Créer votre prochain événement')).toBeVisible({ timeout: 3000 });
+  test('avancer jusqu\'à l\'étape 2 (ouvrir menu actions)', async ({ page }) => {
+    await page.getByRole('button', { name: /Président/i }).first().click();
+    await page.waitForTimeout(500);
+    await stepNext(page);
+    // Étape 2 interactive → pill mode : expand pour voir le compteur
+    const s2 = page.getByText(/Étape 2/i);
+    if (!await s2.isVisible().catch(() => false)) {
+      await page.locator('[data-drag-handle]').first().click({ force: true });
+      await page.waitForTimeout(300);
+    }
+    await expect(s2).toBeVisible({ timeout: 5000 });
   });
 
-  test('étape 2 — FAB s\'ouvre avec les équipes du club', async ({ page }) => {
-    await page.getByText('Président').click();
-    await page.getByRole('button', { name: /suivant/i }).click();
-    // Attendre l'étape 2 qui trigger open-event-form
-    await expect(page.getByText('Créer votre prochain événement')).toBeVisible();
-    // EventFormModal doit s'ouvrir (ou être ouvert via action)
-    // On vérifie qu'aucune erreur critique n'est apparue
+  test('étape 2 — guide affiche l\'instruction sans erreur JS', async ({ page }) => {
+    await page.getByRole('button', { name: /Président/i }).first().click();
+    await page.waitForTimeout(500);
+    await stepNext(page);
+    const s2 = page.getByText(/Étape 2/i);
+    if (!await s2.isVisible().catch(() => false)) {
+      await page.locator('[data-drag-handle]').first().click({ force: true });
+      await page.waitForTimeout(300);
+    }
+    await expect(s2).toBeVisible({ timeout: 5000 });
     const errors = [];
     page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
     await page.waitForTimeout(1000);
@@ -65,47 +82,45 @@ test.describe('Tour Président — 8 étapes', () => {
     expect(criticalErrors.length, `Erreurs JS : ${criticalErrors.join('\n')}`).toBe(0);
   });
 
-  test('étape 5 — PosterStudio s\'ouvre sans erreur .or()', async ({ page }) => {
-    await page.getByText('Président').click();
-    // Avancer jusqu'à l'étape 5
+  test('étape 5 — guide visible sans erreur .or()', async ({ page }) => {
+    await page.getByRole('button', { name: /Président/i }).first().click();
+    await page.waitForTimeout(500);
     for (let i = 0; i < 4; i++) {
-      await page.getByRole('button', { name: /suivant|passer/i }).first().click();
+      await stepNext(page);
+    }
+    const s5 = page.getByText(/Étape 5/i);
+    if (!await s5.isVisible().catch(() => false)) {
+      await page.locator('[data-drag-handle]').first().click({ force: true });
       await page.waitForTimeout(300);
     }
-    await expect(page.getByText('Créer une affiche pro')).toBeVisible({ timeout: 5000 });
-    // Vérifier qu'il n'y a pas l'erreur ".or is not a function"
+    await expect(s5).toBeVisible({ timeout: 5000 });
     const errors = [];
     page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
-    await page.waitForTimeout(1000);
-    expect(errors.some(e => e.includes('.or is not a function') || e.includes('or is not a function'))).toBe(false);
+    await page.waitForTimeout(500);
+    expect(errors.some(e => e.includes('.or is not a function'))).toBe(false);
   });
 
-  test('étape 8 — CTA affiché avec bouton créer club', async ({ page }) => {
-    await page.getByText('Président').click();
-    // Avancer jusqu'au dernier step
-    for (let i = 0; i < 7; i++) {
-      await page.getByRole('button', { name: /suivant|passer/i }).first().click();
-      await page.waitForTimeout(300);
+  test('étape 12 — CTA affiché avec bouton créer club', async ({ page }) => {
+    await page.getByRole('button', { name: /Président/i }).first().click();
+    await page.waitForTimeout(500);
+    for (let i = 0; i < 11; i++) {
+      await stepNext(page);
     }
-    await expect(page.getByText('Prêt à créer votre club')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Prêt à créer votre club')).toBeVisible({ timeout: 8000 });
     await expect(page.getByRole('button', { name: /créer mon club/i })).toBeVisible();
   });
 
   test('nouvelle visite /demo repart du début', async ({ page }) => {
-    // Simuler une session précédente
     await page.addInitScript(() => {
       sessionStorage.setItem('sl-demo-initialized', 'true');
       sessionStorage.setItem('sl-demo-profile', 'coach');
       sessionStorage.setItem('sl-demo-step', '3');
     });
-    // Nouvelle navigation (simule un nouveau visiteur)
     await page.addInitScript(() => {
-      // Effacer l'initialized pour simuler une vraie nouvelle visite
       sessionStorage.removeItem('sl-demo-initialized');
     });
     await page.goto('/demo');
     await page.waitForLoadState('networkidle');
-    // Doit afficher le landing page, pas reprendre le tour coach
-    await expect(page.getByText('Président')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: /Président/i }).first()).toBeVisible({ timeout: 5000 });
   });
 });

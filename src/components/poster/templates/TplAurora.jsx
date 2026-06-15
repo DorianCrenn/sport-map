@@ -13,8 +13,6 @@ export default function TplAurora({ event, homeTeam, awayTeam, championship, tag
   const isStory = format === 'story';
   const tr = (id) => blockStyle(transforms, id);
 
-  const secondAccent = `${a}88`;
-
   return (
     <div style={{
       width: 360, height: h, position: 'relative', overflow: 'hidden',

@@ -34,7 +34,7 @@ export function useClubTrainings(clubId) {
               setTrainingsState(parsed);
               latestRef.current = parsed;
             }
-          } catch {}
+          } catch { /* ignore */ }
         } else if (data && data.length > 0) {
           const map = Object.fromEntries(data.map(r => [r.team_id, r.sessions]));
           setTrainingsState(map);
@@ -55,7 +55,7 @@ export function useClubTrainings(clubId) {
                   .then(({ error }) => { if (error) console.error('[Trainings] migration upsert failed:', error.message); });
               }
             }
-          } catch {}
+          } catch { /* ignore */ }
         }
         loaded.current = true;
       });
@@ -86,7 +86,7 @@ export function useClubTrainings(clubId) {
         .upsert(upserts, { onConflict: 'club_id,team_id' });
       if (error) {
         console.error('[Trainings] save failed:', error.message);
-        try { localStorage.setItem(`club-trainings-${clubIdStr}`, JSON.stringify(map)); } catch {}
+        try { localStorage.setItem(`club-trainings-${clubIdStr}`, JSON.stringify(map)); } catch { /* ignore */ }
       }
     }, 1200);
   }, [clubIdStr]);
