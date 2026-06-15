@@ -85,6 +85,8 @@ export default function DemoGuide({
 
   // ── Drag handlers ─────────────────────────────────────────────────────────
   const handleDragStart = useCallback((e) => {
+    // Ne pas capturer si le clic vient d'un bouton (ex: "Passer")
+    if (e.target.closest('button')) return;
     if (!e.currentTarget.hasAttribute('data-drag-handle')) return;
     isDraggingRef.current = true;
     dragOffsetRef.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };

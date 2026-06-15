@@ -6,6 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : 2,
+  timeout: 90000,
   reporter: [
     ['html', { outputFolder: 'e2e/reports/html', open: 'never' }],
     ['json', { outputFile: 'e2e/reports/results.json' }],

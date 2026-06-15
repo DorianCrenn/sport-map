@@ -99,12 +99,23 @@ function renderModal(props = {}) {
   return render(<EventFormModal {...defaultProps} {...props} />);
 }
 
+// React 19 + jsdom : met à jour un input contrôlé et force le flush du state.
+// Le tab() déclenche le blur sur l'input, ce qui commit la valeur dans React 19.
+async function setInputValue(el, value) {
+  el.focus();
+  const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+  nativeSetter.call(el, value);
+  fireEvent.change(el, { target: { value } });
+  // Tab away pour déclencher le blur et forcer le commit React 19
+  await userEvent.tab();
+}
+
 // Navigate through the 3-step form: step1 → step2 (optionally fill teams) → step3
 async function goToStep3({ homeTeam = '', awayTeam = '' } = {}) {
   // Step 1 → 2
   const next1 = screen.getByRole('button', { name: /suivant/i });
   await userEvent.click(next1);
-  // Fill team names in step 2 (Football full mode)
+  // Fill team names in step 2 (Football full mode) — text inputs work with fireEvent.change
   if (homeTeam) fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: homeTeam } });
   if (awayTeam) fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: awayTeam } });
   // Step 2 → 3
@@ -187,7 +198,7 @@ describe('EventFormModal — validation Zod', () => {
     // Navigate: step1 → step2 (fill teams) → step3 (fill date)
     await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
     const dateInputEl = document.querySelector('input[type="date"]');
-    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+    await setInputValue(dateInputEl, '2030-06-15');
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
@@ -209,7 +220,7 @@ describe('EventFormModal — validation Zod', () => {
 
     await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
     const dateInputEl = document.querySelector('input[type="date"]');
-    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+    await setInputValue(dateInputEl, '2030-06-15');
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
@@ -231,7 +242,7 @@ describe('EventFormModal — récurrence', () => {
 
     // Fill date (step 3)
     const dateInputEl = document.querySelector('input[type="date"]');
-    fireEvent.change(dateInputEl, { target: { value: '2026-09-01' } });
+    await setInputValue(dateInputEl, '2026-09-01');
 
     // Enable recurrence (step 3 button)
     const recurrenceBtn = screen.getByRole('button', { name: /récurrence/i });
@@ -240,7 +251,7 @@ describe('EventFormModal — récurrence', () => {
     // Set end date
     const allDateInputs = document.querySelectorAll('input[type="date"]');
     const untilInput = allDateInputs[allDateInputs.length - 1];
-    fireEvent.change(untilInput, { target: { value: '2026-09-22' } });
+    await setInputValue(untilInput, '2026-09-22');
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
@@ -262,14 +273,14 @@ describe('EventFormModal — récurrence', () => {
     await goToStep3();
 
     const dateInputEl = document.querySelector('input[type="date"]');
-    fireEvent.change(dateInputEl, { target: { value: '2026-09-01' } });
+    await setInputValue(dateInputEl, '2026-09-01');
 
     const recurrenceBtn = screen.getByRole('button', { name: /récurrence/i });
     await userEvent.click(recurrenceBtn);
 
     const allDateInputs = document.querySelectorAll('input[type="date"]');
     const untilInput = allDateInputs[allDateInputs.length - 1];
-    fireEvent.change(untilInput, { target: { value: '2026-09-22' } });
+    await setInputValue(untilInput, '2026-09-22');
 
     await waitFor(() => {
       expect(screen.getByText(/4 occurrence/i)).toBeInTheDocument();
@@ -287,7 +298,7 @@ describe('EventFormModal — erreur lors de la sauvegarde', () => {
     await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
 
     const dateInputEl = document.querySelector('input[type="date"]');
-    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+    await setInputValue(dateInputEl, '2030-06-15');
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
@@ -308,7 +319,7 @@ describe('EventFormModal — titre vide bloqué', () => {
     // Navigate to step 3 WITHOUT filling homeTeam/awayTeam → title will be empty
     await goToStep3();
     const dateInputEl = document.querySelector('input[type="date"]');
-    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+    await setInputValue(dateInputEl, '2030-06-15');
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);
@@ -331,7 +342,7 @@ describe('EventFormModal — structure des données envoyées', () => {
     await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
 
     const dateInputEl = document.querySelector('input[type="date"]');
-    fireEvent.change(dateInputEl, { target: { value: '2026-06-15' } });
+    await setInputValue(dateInputEl, '2030-06-15');
 
     const submitBtn = screen.getByRole('button', { name: /créer l'événement/i });
     await userEvent.click(submitBtn);

@@ -162,6 +162,7 @@ export default function DemoLandingPage({ onSelect }) {
               key={profile.id}
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -2 }}
               transition={{ delay: 0.12 + i * 0.06, duration: 0.35 }}
               onClick={() => handleSelect(profile.id)}
               onMouseEnter={() => setHovered(profile.id)}
@@ -174,8 +175,7 @@ export default function DemoLandingPage({ onSelect }) {
                 padding:      '16px 14px',
                 cursor:       'pointer',
                 textAlign:    'left',
-                transition:   'all 0.2s ease',
-                transform:    hovered === profile.id ? 'translateY(-2px)' : 'none',
+                transition:   'background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
                 boxShadow:    hovered === profile.id
                   ? `0 8px 28px ${profile.color}40`
                   : 'var(--demo-profile-shadow)',

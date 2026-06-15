@@ -12,8 +12,11 @@ import DemoGuide        from './DemoGuide.jsx';
 import DemoSpotlight    from './DemoSpotlight.jsx';
 import SandboxWelcome   from './SandboxWelcome.jsx';
 
-// INFO_STEP_DELAY : durée (ms) avant auto-avancement des étapes informatives
-const INFO_STEP_DELAY = 4000;
+// INFO_STEP_DELAY : durée avant auto-avancement des étapes informatives
+// sl-demo-no-auto-advance désactive le timer (utile pour tests E2E Playwright)
+const INFO_STEP_DELAY = (() => {
+  try { return sessionStorage.getItem('sl-demo-no-auto-advance') ? 999999 : 4000; } catch { return 4000; }
+})();
 
 const PROFILE_EMOJIS = {
   president:    '👑',
