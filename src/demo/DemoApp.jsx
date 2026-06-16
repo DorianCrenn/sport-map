@@ -36,9 +36,15 @@ function isInteractiveStep(step) {
 // AppInner est passé en prop pour éviter l'import circulaire
 export default function DemoApp({ AppInner }) {
   const [profile,            setProfile]            = useState(() => {
+    // ?reset=1 dans l'URL → efface toute la session démo et repart de zéro
+    if (new URLSearchParams(window.location.search).get('reset') === '1') {
+      ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox'].forEach(k => sessionStorage.removeItem(k));
+      return null;
+    }
     if (!sessionStorage.getItem('sl-demo-initialized')) {
       sessionStorage.removeItem('sl-demo-profile');
       sessionStorage.removeItem('sl-demo-step');
+      sessionStorage.removeItem('sl-demo-sandbox');
       return null;
     }
     return sessionStorage.getItem('sl-demo-profile') || null;
@@ -47,7 +53,10 @@ export default function DemoApp({ AppInner }) {
     if (!sessionStorage.getItem('sl-demo-initialized')) return 0;
     return parseInt(sessionStorage.getItem('sl-demo-step') || '0', 10);
   });
-  const [isInSandbox,        setIsInSandbox]        = useState(false);
+  const [isInSandbox,        setIsInSandbox]        = useState(() => {
+    if (!sessionStorage.getItem('sl-demo-initialized')) return false;
+    return sessionStorage.getItem('sl-demo-sandbox') === 'true';
+  });
   const [showSandboxWelcome, setShowSandboxWelcome] = useState(false);
   const [tourSteps,          setTourSteps]          = useState(() => {
     const saved = sessionStorage.getItem('sl-demo-profile');
@@ -180,14 +189,13 @@ export default function DemoApp({ AppInner }) {
   const enterSandbox = useCallback(() => {
     setShowSandboxWelcome(false);
     setIsInSandbox(true);
+    sessionStorage.setItem('sl-demo-sandbox', 'true');
     trackSandboxEntered();
   }, []);
 
   const exitDemo = useCallback(() => {
     trackDemoExited(currentStep);
-    sessionStorage.removeItem('sl-demo-initialized');
-    sessionStorage.removeItem('sl-demo-profile');
-    sessionStorage.removeItem('sl-demo-step');
+    ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox'].forEach(k => sessionStorage.removeItem(k));
     window.location.href = '/';
   }, [currentStep]);
 
@@ -197,13 +205,12 @@ export default function DemoApp({ AppInner }) {
     setTryItInProgress(false);
     setShaking(false);
     sessionStorage.setItem('sl-demo-step', '0');
+    sessionStorage.removeItem('sl-demo-sandbox');
     startDemoSession(profile);
   }, [profile]);
 
   const changeProfile = useCallback(() => {
-    sessionStorage.removeItem('sl-demo-initialized');
-    sessionStorage.removeItem('sl-demo-profile');
-    sessionStorage.removeItem('sl-demo-step');
+    ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox'].forEach(k => sessionStorage.removeItem(k));
     setProfile(null);
     setTourSteps([]);
     setCurrentStep(0);
