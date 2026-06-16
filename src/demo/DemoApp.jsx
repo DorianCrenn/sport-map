@@ -30,36 +30,14 @@ function isInteractiveStep(step) {
 // AppInner est passé en prop pour éviter l'import circulaire
 export default function DemoApp({ AppInner }) {
   const [profile,            setProfile]            = useState(() => {
-    // ?reset=1 dans l'URL → efface toute la session démo et repart de zéro
-    if (new URLSearchParams(window.location.search).get('reset') === '1') {
-      ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox'].forEach(k => sessionStorage.removeItem(k));
-      return null;
-    }
-    if (!sessionStorage.getItem('sl-demo-initialized')) {
-      sessionStorage.removeItem('sl-demo-profile');
-      sessionStorage.removeItem('sl-demo-step');
-      sessionStorage.removeItem('sl-demo-sandbox');
-      return null;
-    }
-    // Si l'utilisateur était en sandbox (tour terminé), on repart de la landing
-    // pour ne pas afficher une page vide lors d'une nouvelle visite sur /demo.
-    if (sessionStorage.getItem('sl-demo-sandbox') === 'true') {
-      ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox'].forEach(k => sessionStorage.removeItem(k));
-      return null;
-    }
-    return sessionStorage.getItem('sl-demo-profile') || null;
+    // Toujours repartir de la landing page — efface toute session précédente
+    ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox'].forEach(k => sessionStorage.removeItem(k));
+    return null;
   });
-  const [currentStep,        setCurrentStep]        = useState(() => {
-    if (!sessionStorage.getItem('sl-demo-initialized')) return 0;
-    if (sessionStorage.getItem('sl-demo-sandbox') === 'true') return 0;
-    return parseInt(sessionStorage.getItem('sl-demo-step') || '0', 10);
-  });
+  const [currentStep,        setCurrentStep]        = useState(0);
   const [isInSandbox,        setIsInSandbox]        = useState(false);
   const [showSandboxWelcome, setShowSandboxWelcome] = useState(false);
-  const [tourSteps,          setTourSteps]          = useState(() => {
-    const saved = sessionStorage.getItem('sl-demo-profile');
-    return saved ? loadTour(saved) : [];
-  });
+  const [tourSteps,          setTourSteps]          = useState([]);
   // Shake state — passé à DemoSpotlight pour l'animation
   const [shaking,            setShaking]            = useState(false);
   // En cours d'action tryIt (entre le clic sur le bouton et l'action complétée)
