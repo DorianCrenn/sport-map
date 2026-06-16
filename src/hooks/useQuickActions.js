@@ -225,6 +225,25 @@ export function useQuickActions({
     return () => { supabase.removeChannel(channel); };
   }, [currentUser?.id, allManagedIds, load]);
 
+  // ── Realtime : event_convocations → met à jour les compteurs en temps réel ─
+  useEffect(() => {
+    if (!currentUser?.id || !isCoachOrManager) return;
+
+    const convocChannel = supabase
+      .channel(`quick-actions-convocs-${currentUser.id}`)
+      .on('postgres_changes', {
+        event:  '*',
+        schema: 'public',
+        table:  'event_convocations',
+      }, () => {
+        // Reload simple pour recalculer les compteurs agrégés
+        load();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(convocChannel); };
+  }, [currentUser?.id, isCoachOrManager, load]);
+
   return {
     todayTraining,
     coachMatches,

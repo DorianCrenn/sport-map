@@ -225,6 +225,7 @@ export default function ActualitesPage({
         <Suspense fallback={null}>
           <EventFormStepConvocation
             event={convocationEvent}
+            onDone={() => setConvocationEvent(null)}
             onClose={() => setConvocationEvent(null)}
           />
         </Suspense>
