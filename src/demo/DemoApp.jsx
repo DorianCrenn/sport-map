@@ -41,16 +41,20 @@ export default function DemoApp({ AppInner }) {
       sessionStorage.removeItem('sl-demo-sandbox');
       return null;
     }
+    // Si l'utilisateur était en sandbox (tour terminé), on repart de la landing
+    // pour ne pas afficher une page vide lors d'une nouvelle visite sur /demo.
+    if (sessionStorage.getItem('sl-demo-sandbox') === 'true') {
+      ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox'].forEach(k => sessionStorage.removeItem(k));
+      return null;
+    }
     return sessionStorage.getItem('sl-demo-profile') || null;
   });
   const [currentStep,        setCurrentStep]        = useState(() => {
     if (!sessionStorage.getItem('sl-demo-initialized')) return 0;
+    if (sessionStorage.getItem('sl-demo-sandbox') === 'true') return 0;
     return parseInt(sessionStorage.getItem('sl-demo-step') || '0', 10);
   });
-  const [isInSandbox,        setIsInSandbox]        = useState(() => {
-    if (!sessionStorage.getItem('sl-demo-initialized')) return false;
-    return sessionStorage.getItem('sl-demo-sandbox') === 'true';
-  });
+  const [isInSandbox,        setIsInSandbox]        = useState(false);
   const [showSandboxWelcome, setShowSandboxWelcome] = useState(false);
   const [tourSteps,          setTourSteps]          = useState(() => {
     const saved = sessionStorage.getItem('sl-demo-profile');
