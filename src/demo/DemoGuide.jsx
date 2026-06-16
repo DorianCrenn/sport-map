@@ -3,13 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { trackCreateAccountClicked } from './demoAnalytics.js';
 
 function getInitialPos() {
-  const vw = window.innerWidth;
   const vh = window.innerHeight;
-  // On ne restaure PAS la position sauvegardée : DemoApp efface sl-demo-guide-pos
-  // au montage pour garantir que le guide est toujours dans le viewport.
+  // Position initiale : bas-gauche de l'écran, au-dessus de la BottomNav (~64px)
   return {
-    x: Math.max(8, Math.min(vw / 2 - 240, vw - 496)),
-    y: Math.max(56, vh - 340),
+    x: 8,
+    y: Math.max(120, vh - 320),
   };
 }
 
@@ -67,7 +65,7 @@ export default function DemoGuide({
   const handleDragEnd = useCallback(() => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
-  }, [pos]);
+  }, []);
 
   // ── Actions ───────────────────────────────────────────────────────────────
   function toggleCollapsed() {
@@ -98,9 +96,12 @@ export default function DemoGuide({
         ? `👆 ${step.clickLabel || step.title}`
         : step.title;
 
+    // Si l'étape précise un onglet à rejoindre, l'afficher comme sous-titre
     const pillSub = tryItInProgress
       ? 'Complète l\'action pour continuer'
-      : `Étape ${stepIndex + 1} / ${totalSteps}`;
+      : step.onTab
+        ? `Étape ${stepIndex + 1} / ${totalSteps} · Onglet ${step.onTab}`
+        : `Étape ${stepIndex + 1} / ${totalSteps}`;
 
     const pillBg = tryItInProgress
       ? 'linear-gradient(135deg, rgba(16,185,129,0.92), rgba(5,150,105,0.92))'
@@ -128,15 +129,16 @@ export default function DemoGuide({
           zIndex:         10001,
           background:     pillBg,
           border:         `1px solid ${pillBorder}`,
-          borderRadius:   24,
-          padding:        '8px 8px 8px 14px',
+          borderRadius:   16,
+          padding:        '10px 10px 10px 14px',
           display:        'flex',
           alignItems:     'center',
           gap:            8,
           cursor:         'grab',
           backdropFilter: 'blur(16px)',
-          boxShadow:      'var(--demo-pill-shadow)',
-          maxWidth:       340,
+          boxShadow:      '0 4px 24px rgba(0,0,0,0.35)',
+          maxWidth:       'calc(100vw - 24px)',
+          width:          320,
           userSelect:     'none',
           touchAction:    'none',
         }}
@@ -147,22 +149,22 @@ export default function DemoGuide({
         onClick={toggleCollapsed}
       >
         {/* Icône étape */}
-        <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{step.emoji}</span>
+        <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>{step.emoji}</span>
 
         {/* Texte */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <span style={{
             fontSize: 10, fontWeight: 600,
-            color: isColored ? 'rgba(255,255,255,0.7)' : 'var(--sl-t3)',
-            display: 'block',
+            color: isColored ? 'rgba(255,255,255,0.75)' : 'var(--sl-t3)',
+            display: 'block', marginBottom: 1,
           }}>
             {pillSub}
           </span>
           <span style={{
-            fontSize: 12, fontWeight: 700,
+            fontSize: 12, fontWeight: 700, lineHeight: 1.3,
             color: isColored ? '#fff' : 'var(--sl-t1)',
-            display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            maxWidth: 160,
+            overflow: 'hidden', textOverflow: 'ellipsis',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
           }}>
             {pillLabel}
           </span>
@@ -173,12 +175,12 @@ export default function DemoGuide({
           onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }}
           title="Agrandir le guide"
           style={{
-            background:   'rgba(255,255,255,0.12)',
-            border:       '1px solid rgba(255,255,255,0.2)',
+            background:   'rgba(255,255,255,0.15)',
+            border:       '1px solid rgba(255,255,255,0.25)',
             borderRadius: 10,
             color:        isColored ? '#fff' : 'var(--sl-t2)',
-            padding:      '4px 8px',
-            fontSize:     11,
+            padding:      '5px 9px',
+            fontSize:     12,
             cursor:       'pointer',
             flexShrink:   0,
           }}
@@ -186,17 +188,17 @@ export default function DemoGuide({
           ▲
         </button>
 
-        {/* Bouton fermer/quitter */}
+        {/* Bouton quitter */}
         <button
           onClick={(e) => { e.stopPropagation(); onExit(); }}
           title="Quitter le tutoriel"
           style={{
-            background:   confirmExit ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.1)',
+            background:   'rgba(255,255,255,0.1)',
             border:       '1px solid rgba(255,255,255,0.15)',
             borderRadius: 10,
-            color:        isColored ? 'rgba(255,255,255,0.7)' : 'var(--sl-t3)',
-            padding:      '4px 7px',
-            fontSize:     13,
+            color:        isColored ? 'rgba(255,255,255,0.8)' : 'var(--sl-t3)',
+            padding:      '5px 8px',
+            fontSize:     14,
             cursor:       'pointer',
             flexShrink:   0,
             lineHeight:   1,
@@ -218,8 +220,8 @@ export default function DemoGuide({
       transition={{ duration: 0.22, ease: 'easeOut' }}
       style={{
         position:             'fixed',
-        left:                 pos.x,
-        top:                  pos.y,
+        left:                 Math.min(pos.x, Math.max(0, window.innerWidth - GUIDE_W - 12)),
+        top:                  Math.min(pos.y, window.innerHeight - 100),
         zIndex:               10001,
         width:                GUIDE_W,
         maxWidth:             'calc(100vw - 16px)',

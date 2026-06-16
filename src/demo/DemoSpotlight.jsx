@@ -131,6 +131,9 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
   const VW  = window.innerWidth;
   const VH  = window.innerHeight;
 
+  // Ne pas afficher si l'élément est hors du viewport (autre onglet, overlay fermé)
+  if (rect.top > VH || rect.bottom < 0 || rect.left > VW || rect.right < 0) return null;
+
   const centerX   = rect.left + rect.width / 2;
   const rectBottom = rect.top + rect.height;
 
