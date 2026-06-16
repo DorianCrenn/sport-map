@@ -15,8 +15,40 @@ const STATUS_LABELS = {
   closed:    { label: 'Fermé',       color: '#6b7280' },
 };
 
-export default function HelpPage({ onClose, onOpenFeedback }) {
-  const [tab, setTab]                 = useState('faq');
+const NOTIF_STATUS_LABELS = {
+  new:       'Nouveau',
+  analyzing: 'En analyse',
+  planned:   'Planifié',
+  in_dev:    'En cours',
+  resolved:  'Déployé',
+  closed:    'Fermé',
+};
+
+const NOTIF_STATUS_COLORS = {
+  new:       '#6b7280',
+  analyzing: '#6366f1',
+  planned:   '#8b5cf6',
+  in_dev:    '#f59e0b',
+  resolved:  '#10b981',
+  closed:    '#6b7280',
+};
+
+const NOTIF_TYPE_EMOJI = { bug: '🐛', idea: '💡', question: '❓' };
+
+function formatNotifDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return "À l'instant";
+  if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+}
+
+export default function HelpPage({ onClose, onOpenFeedback, notifications = [], unreadCount = 0, onMarkRead, onMarkAllRead }) {
+  const initialTab = unreadCount > 0 ? 'notifs' : 'faq';
+  const [tab, setTab]                 = useState(initialTab);
   const [query, setQuery]             = useState('');
   const [activeCategory, setCategory] = useState(null);
   const [openId, setOpenId]           = useState(null);
@@ -105,7 +137,7 @@ export default function HelpPage({ onClose, onOpenFeedback }) {
             Centre d'aide
           </h1>
           <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0, marginTop: 1 }}>
-            {tab === 'faq' ? `${HELP_CONTENT.length} réponses disponibles` : `${ideas.length} idées de la communauté`}
+            {tab === 'faq' ? `${HELP_CONTENT.length} réponses disponibles` : tab === 'ideas' ? `${ideas.length} idées de la communauté` : `${notifications.length} notification${notifications.length !== 1 ? 's' : ''}`}
           </p>
         </div>
         {onOpenFeedback && (
@@ -133,8 +165,9 @@ export default function HelpPage({ onClose, onOpenFeedback }) {
         padding: '0 16px',
       }}>
         {[
-          { id: 'faq',   label: 'FAQ', emoji: '❓' },
-          { id: 'ideas', label: 'Idées', emoji: '💡' },
+          { id: 'faq',    label: 'FAQ',   emoji: '❓' },
+          { id: 'ideas',  label: 'Idées', emoji: '💡' },
+          ...(notifications.length > 0 ? [{ id: 'notifs', label: 'Notifications', emoji: '🔔', badge: unreadCount }] : []),
         ].map(t => (
           <button
             key={t.id}
@@ -145,10 +178,20 @@ export default function HelpPage({ onClose, onOpenFeedback }) {
               color: tab === t.id ? '#6366f1' : 'var(--sl-t3)',
               borderBottom: `2px solid ${tab === t.id ? '#6366f1' : 'transparent'}`,
               marginBottom: -1, transition: 'all 0.12s',
-              display: 'flex', alignItems: 'center', gap: 5,
+              display: 'flex', alignItems: 'center', gap: 5, position: 'relative',
             }}
           >
             {t.emoji} {t.label}
+            {t.badge > 0 && (
+              <span aria-hidden="true" style={{
+                minWidth: 16, height: 16, borderRadius: 8, padding: '0 4px',
+                backgroundColor: '#ef4444', color: '#fff',
+                fontSize: 9, fontWeight: 800,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {t.badge > 9 ? '9+' : t.badge}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -327,7 +370,7 @@ export default function HelpPage({ onClose, onOpenFeedback }) {
               )}
             </div>
           </motion.div>
-        ) : (
+        ) : tab === 'ideas' ? (
           <motion.div
             key="ideas"
             initial={{ opacity: 0 }}
@@ -439,7 +482,91 @@ export default function HelpPage({ onClose, onOpenFeedback }) {
               </div>
             )}
           </motion.div>
-        )}
+        ) : tab === 'notifs' ? (
+          <motion.div
+            key="notifs"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 32px' }}
+          >
+            {/* Tout marquer comme lu */}
+            {unreadCount > 0 && onMarkAllRead && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+                <button
+                  onClick={onMarkAllRead}
+                  style={{
+                    fontSize: 11, fontWeight: 600, color: '#6366f1',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
+                  }}
+                >
+                  Tout marquer comme lu
+                </button>
+              </div>
+            )}
+
+            {notifications.length === 0 ? (
+              <EmptyState
+                emoji="🔔"
+                title="Aucune notification"
+                subtitle="Vous serez notifié ici quand vos retours évoluent"
+              />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {notifications.map(n => {
+                  const newStatusColor = NOTIF_STATUS_COLORS[n.new_status] ?? '#6b7280';
+                  const typeEmoji = NOTIF_TYPE_EMOJI[n.feedback_type] ?? '💬';
+                  return (
+                    <motion.div
+                      key={n.id}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{
+                        padding: '12px 14px', borderRadius: 14,
+                        backgroundColor: n.read ? 'var(--sl-card)' : 'rgba(99,102,241,0.06)',
+                        border: `1px solid ${n.read ? 'var(--sl-border)' : 'rgba(99,102,241,0.2)'}`,
+                        cursor: !n.read && onMarkRead ? 'pointer' : 'default',
+                      }}
+                      onClick={() => !n.read && onMarkRead?.(n.id)}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                        {!n.read && (
+                          <span style={{
+                            width: 7, height: 7, borderRadius: '50%',
+                            backgroundColor: '#6366f1', flexShrink: 0, marginTop: 5,
+                          }} aria-hidden="true" />
+                        )}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)', lineHeight: 1.4 }}>
+                            {typeEmoji} Votre {n.feedback_type === 'bug' ? 'bug' : n.feedback_type === 'idea' ? 'idée' : 'question'}
+                          </p>
+                          <p style={{ margin: '0 0 6px', fontSize: 12, color: 'var(--sl-t2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            «{n.feedback_title}»
+                          </p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>est maintenant</span>
+                            <span style={{
+                              fontSize: 11, fontWeight: 700,
+                              color: newStatusColor,
+                              backgroundColor: `${newStatusColor}18`,
+                              padding: '2px 8px', borderRadius: 20,
+                            }}>
+                              {NOTIF_STATUS_LABELS[n.new_status] ?? n.new_status}
+                            </span>
+                            <span style={{ fontSize: 10, color: 'var(--sl-t3)', marginLeft: 'auto' }}>
+                              {formatNotifDate(n.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        ) : null}
       </AnimatePresence>
     </motion.div>
   );

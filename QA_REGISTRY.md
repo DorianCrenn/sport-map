@@ -1,7 +1,7 @@
 # SportLink — QA Registry
 
 > Registre vivant de la couverture qualité. Mis à jour après chaque sprint.
-> Dernière mise à jour : 2026-06-11 (Sprint QA complet)
+> Dernière mise à jour : 2026-06-16 (Sprint Analytics + Feedback Admin)
 
 ---
 
@@ -17,6 +17,8 @@
 | Profil | `profil` | `ProfilPage.jsx` | P1 | ⬜ | `profil.spec.js` ✅ | ✅ | ⬜ |
 | Authentification | overlay | `AuthPage.jsx` | P0 | `AuthPage.test.jsx` ✅ | `auth.spec.js` ✅ | ✅ | ⬜ |
 | Admin | `admin` | `AdminPage.jsx` | P1 | ⬜ | `admin.spec.js` ✅ | ✅ | ⬜ |
+| Admin — Feedback | `admin` (sous-vue) | `AdminFeedbackPage.jsx` | P1 | ⬜ | ⬜ | ⬜ | ⬜ |
+| Admin — Analytics | `admin` (sous-vue) | `AdminAnalyticsPage.jsx` | P1 | ⬜ | ⬜ | ⬜ | ⬜ |
 | Covoiturage | lazy | `MyRidesPage.jsx` | P1 | ⬜ | `carpooling.spec.js` ✅ | ⬜ | ⬜ |
 | Entraînements | lazy | `TrainingManagerPage.jsx` | P2 | ⬜ | `trainings.spec.js` ⬜ | ⬜ | ⬜ |
 | Aide / FAQ | lazy | `HelpPage.jsx` | P2 | `HelpFab.test.jsx` ✅ | ⬜ | ⬜ | ⬜ |
@@ -137,7 +139,7 @@
 
 ## Hooks — État de Couverture
 
-### Hooks avec tests ✅ (30/59)
+### Hooks avec tests ✅ (34/63)
 
 | Hook | Tests |
 |------|-------|
@@ -171,6 +173,10 @@
 | `useStability` | ✅ |
 | `useUpcomingFavorites` | ✅ |
 | `useBadges` | ✅ |
+| `useFeedbackAdmin` | ✅ **nouveau** |
+| `useFeedbackNotifications` | ✅ **nouveau** |
+| `useAnalyticsConsent` | ✅ **nouveau** |
+| `useAnalytics` | ✅ **nouveau** |
 
 ### Hooks sans tests ⬜ (29 restants — prioritaires)
 

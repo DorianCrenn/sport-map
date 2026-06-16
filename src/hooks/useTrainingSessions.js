@@ -44,6 +44,7 @@ export function useTrainingSessions(clubId, teamId = null) {
       .single();
     if (error) { console.error('[TrainingSessions] create failed:', error.message); return null; }
     setSessions(prev => [...prev, data].sort((a, b) => a.date.localeCompare(b.date)));
+    window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'training_created' } }));
     return data;
   }, [clubIdStr]);
 

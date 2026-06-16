@@ -53,6 +53,7 @@ export function useEventConvocations(eventId) {
     if (!error) {
       load();
       if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'convocation-sent', count: playerIds.length } }));
+      window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'convocation_sent', data: { count: playerIds.length, event_id: eventId } } }));
     }
     return { error };
   }, [eventId, load]);

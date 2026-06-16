@@ -12,12 +12,6 @@ import DemoGuide        from './DemoGuide.jsx';
 import DemoSpotlight    from './DemoSpotlight.jsx';
 import SandboxWelcome   from './SandboxWelcome.jsx';
 
-// INFO_STEP_DELAY : durée avant auto-avancement des étapes informatives
-// sl-demo-no-auto-advance désactive le timer (utile pour tests E2E Playwright)
-const INFO_STEP_DELAY = (() => {
-  try { return sessionStorage.getItem('sl-demo-no-auto-advance') ? 999999 : 4000; } catch { return 4000; }
-})();
-
 const PROFILE_EMOJIS = {
   president:    '👑',
   coach:        '🎯',
@@ -89,13 +83,6 @@ export default function DemoApp({ AppInner }) {
   }, [tourSteps]);
 
   useEffect(() => { nextStepRef.current = nextStep; }, [nextStep]);
-
-  // ── Timer auto-avancement pour étapes informatives (4s) ──────────────────
-  useEffect(() => {
-    if (!step || step.isCTA || isInteractiveStep(step) || showLanding || isInSandbox || showSandboxWelcome) return;
-    const timer = setTimeout(() => nextStepRef.current?.(), INFO_STEP_DELAY);
-    return () => clearTimeout(timer);
-  }, [currentStep, step, showLanding, isInSandbox, showSandboxWelcome]);
 
   // ── Détection des clics utilisateur (tutoriel interactif) ────────────────
   useEffect(() => {
@@ -261,7 +248,6 @@ export default function DemoApp({ AppInner }) {
           totalSteps={tourSteps.length}
           isInteractive={isInteractiveStep(step)}
           tryItInProgress={tryItInProgress}
-          autoAdvanceMs={!isInteractiveStep(step) && !step?.isCTA ? INFO_STEP_DELAY : null}
           onNext={nextStep}
           onPrev={prevStep}
           onExit={exitTour}
@@ -288,6 +274,7 @@ export default function DemoApp({ AppInner }) {
           profile={profile}
           onCreateAccount={() => window.location.assign('/#register')}
           onReplayTour={replayTour}
+          onChangeProfile={changeProfile}
         />
       )}
     </DemoContext.Provider>
@@ -296,22 +283,27 @@ export default function DemoApp({ AppInner }) {
 
 // ── SandboxBadge ─────────────────────────────────────────────────────────────
 
-function SandboxBadge({ profile, onCreateAccount, onReplayTour }) {
+function SandboxBadge({ profile, onCreateAccount, onReplayTour, onChangeProfile }) {
   const emoji = PROFILE_EMOJIS[profile] || '🏖️';
   return (
     <div style={{
       position:       'fixed', bottom: 80, left: '50%',
       transform:      'translateX(-50%)', zIndex: 9990,
-      display:        'flex', alignItems: 'center', gap: 8,
+      display:        'flex', alignItems: 'center', gap: 6,
       background:     'var(--demo-pill-bg)', backdropFilter: 'blur(16px)',
       border:         '1px solid var(--demo-pill-border)', borderRadius: 28,
       padding:        '8px 8px 8px 14px', boxShadow: 'var(--demo-badge-shadow)',
       whiteSpace:     'nowrap',
+      flexWrap:       'wrap',
+      maxWidth:       'calc(100vw - 32px)',
+      justifyContent: 'center',
     }}>
       <span style={{ fontSize: 16 }}>{emoji}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)' }}>Sandbox</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)' }}>Sandbox libre</span>
+
       <button
         onClick={onReplayTour}
+        title="Revoir le tutoriel du profil actuel"
         style={{
           background: 'var(--demo-surface-bg)', border: '1px solid var(--demo-surface-border)',
           borderRadius: 20, color: 'var(--sl-t3)', padding: '5px 12px',
@@ -320,8 +312,23 @@ function SandboxBadge({ profile, onCreateAccount, onReplayTour }) {
         onMouseEnter={e => { e.currentTarget.style.background = 'var(--demo-surface-bg-hover)'; }}
         onMouseLeave={e => { e.currentTarget.style.background = 'var(--demo-surface-bg)'; }}
       >
-        Revoir la visite
+        ↺ Revoir
       </button>
+
+      <button
+        onClick={onChangeProfile}
+        title="Choisir un autre profil de tutoriel"
+        style={{
+          background: 'var(--demo-surface-bg)', border: '1px solid var(--demo-surface-border)',
+          borderRadius: 20, color: 'var(--sl-t3)', padding: '5px 12px',
+          fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--demo-surface-bg-hover)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'var(--demo-surface-bg)'; }}
+      >
+        ← Autre profil
+      </button>
+
       <button
         onClick={onCreateAccount}
         style={{

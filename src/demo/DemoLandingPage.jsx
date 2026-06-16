@@ -37,7 +37,7 @@ const PROFILES = [
     description: 'Convocations, covoiturage, calendrier et notifications enfant',
     color:       '#dc2626',
     gradient:    'linear-gradient(135deg, #dc2626, #f87171)',
-    steps:       8,
+    steps:       7,
   },
   {
     id:          'player',

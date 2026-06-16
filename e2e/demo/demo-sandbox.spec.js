@@ -131,12 +131,17 @@ test.describe('Mode Démo — navigation guide (Président)', () => {
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 6000 });
   });
 
-  // Avance le guide d'une étape (gère le mode pill + force:true pour contourner
-  // l'instabilité Playwright due au timer setInterval 50ms de DemoGuide)
+  // Avance le guide d'une étape (gère le mode pill via bouton ▲ Agrandir)
   async function nextStep(page) {
-    const btn = page.getByRole('button', { name: /continuer|passer cette étape/i }).first();
+    const btn = page.getByRole('button', { name: /suivant|passer cette étape/i }).first();
     if (!await btn.isVisible().catch(() => false)) {
-      await page.locator('[data-drag-handle]').first().click({ force: true, timeout: 5000 });
+      // Mode pill — utiliser le bouton "Agrandir le guide" (▲) ou le drag-handle
+      const expandBtn = page.getByTitle('Agrandir le guide').first();
+      if (await expandBtn.isVisible().catch(() => false)) {
+        await expandBtn.click({ force: true, timeout: 5000 });
+      } else {
+        await page.locator('[data-drag-handle]').first().click({ force: true, timeout: 5000 });
+      }
       await page.waitForTimeout(300);
     }
     await btn.click({ force: true, timeout: 8000 });
@@ -164,20 +169,19 @@ test.describe('Mode Démo — navigation guide (Président)', () => {
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 3000 });
   });
 
-  test('D22 · Clic sur le compteur d\'étape réduit le guide (pill)', async ({ page }) => {
-    // Le compteur est cliquable et toggle le collapse
-    await page.getByText(STEP_1).click({ force: true });
+  test('D22 · Bouton "▼ Réduire" réduit le guide en pill', async ({ page }) => {
+    // Le bouton "▼ Réduire" dans l'en-tête réduit le guide en bulle
+    await page.getByRole('button', { name: /réduire/i }).click({ force: true });
     await page.waitForTimeout(400);
-    // En mode pill, le texte "Étape 1" reste visible
+    // En mode pill, le texte "Étape 1" reste visible dans la bulle
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 3000 });
   });
 
-  test('D23 · Bouton "Passer" → label "Confirmer ?" en 3 s', async ({ page }) => {
-    // force:true contourne l'instabilité Playwright due au timer 50ms de DemoGuide
-    await page.getByRole('button', { name: 'Passer' }).click({ force: true });
+  test('D23 · Bouton "× Quitter" → label "Confirmer ?" en 3 s', async ({ page }) => {
+    await page.getByRole('button', { name: /quitter/i }).first().click({ force: true });
     await expect(
       page.getByRole('button', { name: 'Confirmer ?' }),
-      '"Confirmer ?" absent après premier clic sur Passer'
+      '"Confirmer ?" absent après premier clic sur Quitter'
     ).toBeVisible({ timeout: 4000 });
   });
 });
@@ -185,13 +189,13 @@ test.describe('Mode Démo — navigation guide (Président)', () => {
 // ── GROUPE 5 : SandboxWelcome ─────────────────────────────────────────────────
 
 test.describe('Mode Démo — SandboxWelcome', () => {
-  test('D30 · "Passer" × 2 → SandboxWelcome affiché', async ({ page }) => {
+  test('D30 · "× Quitter" × 2 → SandboxWelcome affiché', async ({ page }) => {
     await gotoDemo(page);
     await selectProfile(page, 'Président');
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 6000 });
 
-    // 1er clic → confirmation (force:true pour contourner instabilité timer 50ms)
-    await page.getByRole('button', { name: 'Passer' }).click({ force: true });
+    // 1er clic sur × Quitter → demande confirmation
+    await page.getByRole('button', { name: /quitter/i }).first().click({ force: true });
     await expect(page.getByRole('button', { name: 'Confirmer ?' })).toBeVisible({ timeout: 4000 });
 
     // 2e clic → exitTour() → SandboxWelcome
@@ -210,7 +214,7 @@ test.describe('Mode Démo — SandboxWelcome', () => {
     await selectProfile(page, 'Président');
     await expect(page.getByText(STEP_1)).toBeVisible({ timeout: 6000 });
 
-    await page.getByRole('button', { name: 'Passer' }).click({ force: true });
+    await page.getByRole('button', { name: /quitter/i }).first().click({ force: true });
     await page.getByRole('button', { name: 'Confirmer ?' }).click({ force: true });
     await expect(page.getByText('Vous venez de découvrir')).toBeVisible({ timeout: 5000 });
 

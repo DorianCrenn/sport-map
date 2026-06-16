@@ -149,7 +149,7 @@ function roleLabel(role) {
 
 // ── Admin page ────────────────────────────────────────────────────────────────
 
-export default function AdminPage() {
+export default function AdminPage({ onNavigate }) {
   const { isAdmin, currentUser } = useAuth();
   const { verifyClub, rejectClub, requestClubInfo, suspendClub } = useClubs();
   const { allSports, customSports, deletedDefaults, addSport, updateSport, deleteSport, restoreSport, toggleArchive } = useSports();
@@ -350,6 +350,77 @@ export default function AdminPage() {
                 <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>Consultez l'onglet "Clubs" pour traiter les demandes.</p>
               </motion.div>
             )}
+
+            {/* ── Cards navigation espaces dédiés ── */}
+            <div style={{ marginTop: 4 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>
+                Espaces dédiés
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {/* Feedback */}
+                <button
+                  onClick={() => onNavigate?.('feedback')}
+                  style={{
+                    width: '100%', textAlign: 'left',
+                    backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16,
+                    border: '1px solid rgba(99,102,241,0.25)', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    transition: 'border-color 0.15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.25)'; }}
+                >
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                    backgroundColor: 'rgba(99,102,241,0.12)', color: '#818cf8',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)' }}>Feedback communautaire</p>
+                    <p style={{ margin: 0, fontSize: 12, color: 'var(--sl-t3)' }}>Bugs, idées, questions — gestion des statuts</p>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2.5" strokeLinecap="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </button>
+
+                {/* Analytics */}
+                <button
+                  onClick={() => onNavigate?.('analytics')}
+                  style={{
+                    width: '100%', textAlign: 'left',
+                    backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16,
+                    border: '1px solid rgba(16,185,129,0.25)', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    transition: 'border-color 0.15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#10b981'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(16,185,129,0.25)'; }}
+                >
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                    backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+                      <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)' }}>Analytics</p>
+                    <p style={{ margin: 0, fontSize: 12, color: 'var(--sl-t3)' }}>KPIs, graphiques, fonctionnalités utilisées</p>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2.5" strokeLinecap="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </motion.div>
         )}
 

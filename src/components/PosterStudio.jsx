@@ -322,12 +322,17 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   function trackExport(channel) {
     if (!currentUser?.id || !club?.id) return;
     supabase.from('poster_exports').insert({
-      club_id: String(club.id),
-      event_id: event?.id ? String(event.id) : null,
-      user_id: currentUser.id,
+      club_id:     String(club.id),
+      event_id:    event?.id ? String(event.id) : null,
+      user_id:     currentUser.id,
       format,
       channel,
+      template_id: templateId ?? null,
     }).then(() => {});
+    // Bus analytics décentralisé
+    window.dispatchEvent(new CustomEvent('sl-analytics', {
+      detail: { type: 'poster_exported', data: { format, channel, template_id: templateId } },
+    }));
   }
 
   function trackAIGeneration() {

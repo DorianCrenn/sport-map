@@ -5,7 +5,7 @@ import { Z } from '../constants/zIndex.js';
  * HelpFab — Bouton d'aide flottant "?" en bas à gauche.
  * Masqué quand hidden=true (overlay ouvert).
  */
-export default function HelpFab({ onClick, hidden = false }) {
+export default function HelpFab({ onClick, hidden = false, notificationCount = 0 }) {
   return (
     <AnimatePresence>
       {!hidden && (
@@ -16,7 +16,7 @@ export default function HelpFab({ onClick, hidden = false }) {
           transition={{ type: 'spring', stiffness: 400, damping: 28 }}
           whileTap={{ scale: 0.92 }}
           onClick={onClick}
-          aria-label="Centre d'aide"
+          aria-label={notificationCount > 0 ? `Centre d'aide — ${notificationCount} notification${notificationCount > 1 ? 's' : ''}` : "Centre d'aide"}
           style={{
             position: 'fixed',
             bottom: 'calc(72px + env(safe-area-inset-bottom, 0px) + 12px)',
@@ -37,6 +37,22 @@ export default function HelpFab({ onClick, hidden = false }) {
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.15)'; }}
         >
           ?
+          {notificationCount > 0 && (
+            <span
+              aria-hidden="true"
+              style={{
+                position: 'absolute', top: 0, right: 0,
+                width: 16, height: 16, borderRadius: '50%',
+                backgroundColor: '#ef4444',
+                border: '2px solid var(--sl-bg)',
+                fontSize: 9, fontWeight: 800, color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                lineHeight: 1,
+              }}
+            >
+              {notificationCount > 9 ? '9+' : notificationCount}
+            </span>
+          )}
         </motion.button>
       )}
     </AnimatePresence>

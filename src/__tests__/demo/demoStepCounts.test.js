@@ -19,7 +19,7 @@ const DISPLAYED_STEPS = {
   president:     12,
   coach:         8,
   communication: 6,
-  parent:        8,
+  parent:        7,
   player:        6,
   supporter:     7,
 };

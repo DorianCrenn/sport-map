@@ -95,8 +95,9 @@ export function useMyConvocations(userId) {
       setConvocations(prev =>
         prev.map(c => c.id === convocationId ? { ...c, status: 'pending' } : c)
       );
-    } else if (isDemoMode()) {
-      window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'convocation-responded', status } }));
+    } else {
+      if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'convocation-responded', status } }));
+      window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'convocation_responded', data: { status } } }));
     }
   }, []);
 

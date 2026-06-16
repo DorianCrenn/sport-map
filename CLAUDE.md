@@ -18,6 +18,8 @@
 - Générateur d'affiches sportives IA (PosterStudio) — 37 templates
 - Covoiturage événementiel intégré
 - Système communautaire : favoris, annonces, réactions, commentaires, badges XP
+- **Analytics** — tracking comportemental avec consentement RGPD, dashboard admin (KPIs, graphiques, funnels)
+- **Feedback communautaire** — remontées bugs/idées/questions, workflow admin de gestion des statuts, notifications in-app
 
 ---
 
@@ -30,6 +32,7 @@
 | Maps | Leaflet + React-Leaflet + React-Leaflet-Cluster |
 | Backend | Supabase (PostgreSQL + Auth PKCE + Realtime + RLS + Storage) |
 | Export image | html-to-image (pixelRatio 3 → HD) |
+| Graphiques | Chart.js 4 + react-chartjs-2 5 (AdminAnalyticsPage) |
 | Validation | Zod 4 |
 | Tests | Vitest + Testing Library (couverture partielle) |
 | PWA | vite-plugin-pwa + Workbox |
@@ -75,7 +78,23 @@ Persistance de l'onglet actif : `sessionStorage('sl-tab')`.
 - `#event/:id` → focus sur l'event dans MapPage
 
 ### Lazy-loaded (code split)
-AdminPage, OnboardingPage, EventFormModal, CSVImportModal, BadgeUnlockModal, MyRidesPage, AnnouncementsCenter
+AdminPage, AdminFeedbackPage, AdminAnalyticsPage, OnboardingPage, EventFormModal, CSVImportModal, BadgeUnlockModal, MyRidesPage, AnnouncementsCenter
+
+### Navigation admin (adminSubView state dans App.jsx)
+```
+admin tab → AdminPage (overview + navigation)
+  ├── adminSubView='feedback'   → AdminFeedbackPage (plein écran)
+  └── adminSubView='analytics'  → AdminAnalyticsPage (plein écran)
+```
+
+### Bus d'événements analytics (`sl-analytics` CustomEvent)
+Pattern décentralisé pour éviter de passer `track` en props partout :
+```js
+// N'importe quel composant/hook peut dispatcher :
+window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'event_created', data: { sport } } }));
+// App.jsx écoute et appelle track() si consent=true && !isDemoMode()
+```
+Événements trackés : `user_login`, `page_view`, `event_created`, `poster_opened`, `club_created`, `poster_exported`, `ride_created`, `announcement_sent`, `training_created`, `convocation_sent`, `convocation_responded`
 
 ---
 
@@ -98,7 +117,9 @@ src/
 │   ├── ClubsPage.jsx              # Annuaire clubs + leaderboard
 │   ├── ProfilPage.jsx             # Profil + badges + XP
 │   ├── AuthPage.jsx               # Google OAuth + email/password
-│   ├── AdminPage.jsx              # Dashboard admin (lazy)
+│   ├── AdminPage.jsx              # Dashboard admin (lazy) — navigation vers sous-pages
+│   ├── AdminFeedbackPage.jsx      # Gestion feedback communautaire (lazy)
+│   ├── AdminAnalyticsPage.jsx     # Dashboard analytics Chart.js (lazy)
 │   ├── OnboardingPage.jsx         # Sélection sports (lazy)
 │   └── MyRidesPage.jsx            # Covoiturage (lazy)
 ├── components/
@@ -125,6 +146,10 @@ src/
 │   ├── OfflineBanner.jsx          # Bannière mode hors ligne
 │   ├── ReminderBanner.jsx         # Rappel événements du jour/lendemain
 │   ├── PushNotificationToggle.jsx # Toggle push notifications PWA
+│   ├── ConsentBanner.jsx          # Bandeau consentement RGPD analytics
+│   ├── FeedbackModal.jsx          # Formulaire feedback (bug/idée/question) + mention RGPD
+│   ├── HelpFab.jsx                # Bouton aide flottant + badge notifications
+│   └── HelpPage.jsx               # Centre d'aide (FAQ + Idées + Notifications)
 │   └── club/
 │       ├── ClubPageView.jsx       # Page club complète (overlay)
 │       └── [blocs éditeur club]   # SponsorsBlock, NextMatchBlock, etc.
@@ -139,7 +164,12 @@ src/
 │       ├── posterUtils.js         # blockStyle(), scaledTitle(), venueFs()
 │       ├── Tpl*.jsx               # 24 templates matchs
 │       └── TplTr*.jsx             # 10 templates tournois + 3 spéciaux
-├── hooks/                         # 36 hooks (tous named exports)
+├── hooks/                         # 63 hooks (tous named exports)
+│   ├── useAnalytics.js            # track(eventType, props) — vérifie consent + isDemoMode
+│   ├── useAnalyticsConsent.js     # Consentement RGPD (localStorage + DB profiles.analytics_consent)
+│   ├── useAdminAnalytics.js       # Requêtes dashboard admin (KPIs, courbes, funnel, templates)
+│   ├── useFeedbackAdmin.js        # CRUD admin feedback (fetchAll, fetchStats, updateFeedback)
+│   └── useFeedbackNotifications.js # Notifications statut feedback (fetch, markRead, markAllRead)
 ├── lib/
 │   ├── supabase.js                # Client Supabase (PKCE, realtime disabled)
 │   ├── posterVariants.js          # generateVariants(), generateCustomBackground()
@@ -186,7 +216,20 @@ club_brand_kits     -- identité visuelle club (club_id, da_profile JSONB, defau
 posters             -- affiches sauvegardées (event_id, user_id, name, status, layers JSONB)
 push_subscriptions  -- abonnements push PWA (user_id, endpoint, keys)
 ai_jobs             -- logs jobs IA (type, status, club_id)
-club_page_views     -- analytics pages clubs
+club_page_views     -- analytics pages clubs (user_id, club_id, viewed_at)
+app_feedback        -- feedback utilisateurs (type ENUM bug/idea/question, status, vote_count, admin_note)
+app_feedback_votes  -- votes feedback (feedback_id, user_id) — trigger incrémente vote_count
+feedback_notifications -- notifs in-app statut feedback (user_id, feedback_id, old/new_status, read)
+analytics_events    -- tracking comportemental (user_id, session_id UUID, event_type, properties JSONB)
+poster_exports      -- exports affiches (club_id, user_id, format, channel, template_id)
+club_ai_usage       -- quota IA mensuel (club_id, month, generate_count, import_count)
+```
+
+**Colonnes ajoutées sur tables existantes :**
+```sql
+profiles.analytics_consent    -- boolean nullable — consentement RGPD analytics
+app_feedback.admin_note       -- text — note interne admin (non visible utilisateur)
+app_feedback.admin_updated_by -- uuid ref auth.users
 ```
 
 ### Rôles utilisateur (colonne `profiles.role`)
@@ -400,14 +443,21 @@ Générés via **Pollinations.ai Flux** (`576×1024` px = ratio 9:16 exact).
 - ✅ `ROLES-001` — canAddEvent inclut isManager
 - ✅ `MEDIA-001` — Photos événements (bucket event-photos, EventPhotoGallery)
 
+**Systèmes livrés (sprint 2026-06-16) :**
+- ✅ `ANALYTICS-001` — Système analytics complet (analytics_events, consentement RGPD, 11 événements trackés, bus sl-analytics)
+- ✅ `ANALYTICS-002` — Dashboard admin Analytics (KPIs, Chart.js Line/Bar/Doughnut, funnel 6 étapes, top templates, % évolution)
+- ✅ `FEEDBACK-001` — Feedback communautaire admin (AdminFeedbackPage, statuts, note interne, notifications in-app)
+- ✅ `FEEDBACK-002` — Notifications statut feedback dans HelpPage (onglet Notifications, badge HelpFab)
+
 **Reste à faire :**
 - `PUSH-PROD-001` — Notifications push : code déployé, nécessite 3 étapes manuelles prod
 - `FAL_API_KEY` — Configurer dans Supabase Secrets (Edge Functions)
 - ✅ `VIRAL-002` — Profil public (`UserPublicView.jsx` + deep link `#user/:id`)
 - ✅ `VIRAL-003` — Défis inter-clubs (`club_challenges` table + `useClubChallenges.js` + section dans ClubDashboard)
 - ✅ IA suggestions annonces — Edge Function `generate-announcement` + bouton IA dans `SendAnnouncementModal`
+- `STRIPE-001` — Monétisation (paiement plans Pro/Elite) — **P0 backlog**
 - Offline handling complet (PWA cache Supabase)
-- Tests automatisés (aucune couverture actuellement)
+- Tests E2E AdminFeedbackPage et AdminAnalyticsPage
 
 **Déploiement prod push notifications :**
 ```bash
@@ -429,7 +479,68 @@ npm run lint         # eslint
 
 ---
 
-## 11. Fichiers à ne jamais toucher sans comprendre l'impact
+## 11. Système Analytics
+
+### Consentement RGPD
+Le tracking ne démarre **jamais** sans `consent === true`. Flux :
+1. Utilisateur se connecte → `useAnalyticsConsent` charge `profiles.analytics_consent`
+2. Si null → `ConsentBanner` affiché au-dessus de BottomNav
+3. Accept → `consent = true` en DB + localStorage → `useAnalytics.track()` actif
+4. Refuse → `consent = false` → aucun tracking pour cet utilisateur
+
+**Jamais de tracking en mode démo.** `useAnalytics.track()` vérifie `isDemoMode()` avant tout.
+
+### Bus sl-analytics (pattern décentralisé)
+Au lieu de passer `track` en prop dans toute l'arborescence :
+```js
+// Depuis n'importe quel hook/composant :
+window.dispatchEvent(new CustomEvent('sl-analytics', {
+  detail: { type: 'ride_created', data: { optional_props } }
+}));
+// App.jsx écoute et appelle track() si conditions remplies
+```
+
+### Tables
+- `analytics_events` — événements bruts (RLS : INSERT own, SELECT admin)
+- `profiles.analytics_consent` — boolean nullable, null = pas encore décidé
+
+### Dashboard (AdminAnalyticsPage)
+Accessible depuis AdminPage → card "Analytics".
+- Période 7/30/90 jours
+- Courbes Line/Bar Chart.js pour inscriptions, clubs, événements, exports
+- Doughnut canaux export, barres formats affiches, histogramme features
+- Funnel 6 étapes : Inscrits → Onboarding → Suit club → Événement → Affiche → Annonce
+- Top 10 templates (depuis `poster_exports.template_id`)
+- % d'évolution vs période précédente sur KPIs principaux
+
+---
+
+## 12. Système Feedback Communautaire
+
+### Côté utilisateur
+- `HelpFab` — bouton "?" avec badge rouge si notifications non lues
+- `HelpPage` — 3 onglets : FAQ / Idées (avec votes) / Notifications
+- `FeedbackModal` — formulaire bug/idée/question avec déduplication temps réel, draft auto, mention RGPD
+
+### Côté admin
+`AdminPage` → card "Feedback communautaire" → `AdminFeedbackPage`
+- Filtres : type (bug/idée/question), statut, texte libre
+- Tri : récents / votes / mis à jour
+- Detail panel : description, infos techniques, changement statut, note interne
+- Statuts : new → analyzing → planned → in_dev → resolved → closed
+
+### Notifications automatiques
+Trigger SQL `trg_feedback_status_notify` : à chaque UPDATE statut → INSERT dans `feedback_notifications`.
+L'utilisateur voit sa notification dans HelpPage onglet Notifications au prochain login.
+
+### Tables
+- `app_feedback` — (type ENUM, status ENUM, vote_count dénormalisé, admin_note)
+- `app_feedback_votes` — (feedback_id, user_id) PK
+- `feedback_notifications` — (user_id, feedback_id, old_status, new_status, read)
+
+---
+
+## 13. Fichiers à ne jamais toucher sans comprendre l'impact
 
 | Fichier | Risque |
 |---------|--------|

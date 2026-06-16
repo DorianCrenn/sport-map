@@ -19,23 +19,19 @@ export default function DemoGuide({
   step, stepIndex, totalSteps,
   onNext, onPrev, onExit,
   onChangeProfile,
-  isInteractive,      // step.clickTarget est défini → guide en pill + spotlight actif
-  tryItInProgress,    // l'utilisateur a cliqué la cible, action en cours
-  autoAdvanceMs,      // ms avant auto-avancement (info steps) — null si pas d'auto
+  isInteractive,     // step.clickTarget est défini → guide en pill + spotlight actif
+  tryItInProgress,   // l'utilisateur a cliqué la cible, action en cours
 }) {
-  // Les étapes interactives (clickTarget) → pill automatique
   const [collapsed, setCollapsed] = useState(() => {
     if (isInteractive) return true;
     try { return sessionStorage.getItem('sl-demo-guide-collapsed') === '1'; } catch { return false; }
   });
   const [confirmExit,  setConfirmExit]  = useState(false);
   const [whyOpen,      setWhyOpen]      = useState(false);
-  const [showSuccess,  setShowSuccess]  = useState(false);
-  const [timerPct,     setTimerPct]     = useState(100); // countdown 100→0
   const [pos,          setPos]          = useState(getInitialPos);
   const isDraggingRef  = useRef(false);
   const dragOffsetRef  = useRef({ x: 0, y: 0 });
-  const timerRef       = useRef(null);
+  const didDragRef     = useRef(false);
 
   const isFirst = stepIndex === 0;
   const isLast  = stepIndex === totalSteps - 1;
@@ -45,15 +41,11 @@ export default function DemoGuide({
   // ── Reset per-step ────────────────────────────────────────────────────────
   useEffect(() => {
     setWhyOpen(false);
-    setShowSuccess(false);
     setConfirmExit(false);
-    setTimerPct(100);
 
-    // Étapes interactives → collapsé automatiquement
     if (isInteractive) {
       setCollapsed(true);
     } else {
-      // Étapes info → restaurer la préférence utilisateur
       try {
         setCollapsed(sessionStorage.getItem('sl-demo-guide-collapsed') === '1');
       } catch {
@@ -62,39 +54,18 @@ export default function DemoGuide({
     }
   }, [stepIndex, isInteractive]);
 
-  // ── Timer countdown pour étapes informatives ──────────────────────────────
-  useEffect(() => {
-    if (!autoAdvanceMs || isInteractive) return;
-    const INTERVAL = 50; // ms entre chaque tick
-    const steps    = autoAdvanceMs / INTERVAL;
-    let tick = 0;
-    timerRef.current = setInterval(() => {
-      tick++;
-      setTimerPct(Math.max(0, 100 - (tick / steps) * 100));
-      if (tick >= steps) clearInterval(timerRef.current);
-    }, INTERVAL);
-    return () => clearInterval(timerRef.current);
-  }, [stepIndex, autoAdvanceMs, isInteractive]);
-
-  // ── Afficher ✅ quand action tryIt réussie (depuis DemoApp) ──────────────
-  useEffect(() => {
-    if (tryItInProgress === false && showSuccess) {
-      // tryItInProgress passé à false → action terminée
-    }
-  }, [tryItInProgress, showSuccess]);
-
   // ── Drag handlers ─────────────────────────────────────────────────────────
   const handleDragStart = useCallback((e) => {
-    // Ne pas capturer si le clic vient d'un bouton (ex: "Passer")
     if (e.target.closest('button')) return;
-    if (!e.currentTarget.hasAttribute('data-drag-handle')) return;
     isDraggingRef.current = true;
+    didDragRef.current    = false;
     dragOffsetRef.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
     e.currentTarget.setPointerCapture(e.pointerId);
   }, [pos]);
 
   const handleDragMove = useCallback((e) => {
     if (!isDraggingRef.current) return;
+    didDragRef.current = true;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const nx = Math.max(0, Math.min(e.clientX - dragOffsetRef.current.x, vw - GUIDE_W - 8));
@@ -110,6 +81,7 @@ export default function DemoGuide({
 
   // ── Actions ───────────────────────────────────────────────────────────────
   function toggleCollapsed() {
+    if (didDragRef.current) { didDragRef.current = false; return; }
     setCollapsed(c => {
       const next = !c;
       if (!isInteractive) {
@@ -134,7 +106,7 @@ export default function DemoGuide({
 
   if (!step) return null;
 
-  // ── Mode pill ─────────────────────────────────────────────────────────────
+  // ── Mode pill (bulle mini) ────────────────────────────────────────────────
   if (collapsed) {
     const pillLabel = tryItInProgress
       ? '✨ À toi de jouer !'
@@ -144,9 +116,19 @@ export default function DemoGuide({
 
     const pillSub = tryItInProgress
       ? 'Complète l\'action pour continuer'
+      : `Étape ${stepIndex + 1} / ${totalSteps}`;
+
+    const pillBg = tryItInProgress
+      ? 'linear-gradient(135deg, rgba(16,185,129,0.92), rgba(5,150,105,0.92))'
       : isInteractive
-        ? 'Tape pour rouvrir le guide'
-        : `Étape ${stepIndex + 1}/${totalSteps}`;
+        ? 'linear-gradient(135deg, rgba(99,102,241,0.92), rgba(79,70,229,0.92))'
+        : 'var(--demo-pill-bg)';
+
+    const pillBorder = tryItInProgress ? 'rgba(16,185,129,0.5)'
+      : isInteractive ? 'rgba(99,102,241,0.6)'
+      : 'var(--demo-pill-border)';
+
+    const isColored = tryItInProgress || isInteractive;
 
     return (
       <motion.div
@@ -160,55 +142,84 @@ export default function DemoGuide({
           left:           pos.x,
           top:            pos.y,
           zIndex:         10001,
-          background:     tryItInProgress
-            ? 'linear-gradient(135deg, rgba(16,185,129,0.92), rgba(5,150,105,0.92))'
-            : isInteractive
-              ? 'linear-gradient(135deg, rgba(99,102,241,0.92), rgba(79,70,229,0.92))'
-              : 'var(--demo-pill-bg)',
-          border:         `1px solid ${
-            tryItInProgress ? 'rgba(16,185,129,0.5)'
-            : isInteractive ? 'rgba(99,102,241,0.6)'
-            : 'var(--demo-pill-border)'
-          }`,
+          background:     pillBg,
+          border:         `1px solid ${pillBorder}`,
           borderRadius:   24,
-          padding:        '10px 16px',
+          padding:        '8px 8px 8px 14px',
           display:        'flex',
           alignItems:     'center',
-          gap:            10,
-          cursor:         'pointer',
+          gap:            8,
+          cursor:         'grab',
           backdropFilter: 'blur(16px)',
           boxShadow:      'var(--demo-pill-shadow)',
-          maxWidth:       320,
+          maxWidth:       340,
           userSelect:     'none',
+          touchAction:    'none',
         }}
-        onClick={toggleCollapsed}
         data-drag-handle
         onPointerDown={handleDragStart}
         onPointerMove={handleDragMove}
         onPointerUp={handleDragEnd}
+        onClick={toggleCollapsed}
       >
+        {/* Icône étape */}
         <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{step.emoji}</span>
+
+        {/* Texte */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <span style={{
-            fontSize: 11, fontWeight: 600,
-            color: tryItInProgress || isInteractive ? 'rgba(255,255,255,0.7)' : 'var(--sl-t3)',
+            fontSize: 10, fontWeight: 600,
+            color: isColored ? 'rgba(255,255,255,0.7)' : 'var(--sl-t3)',
             display: 'block',
           }}>
             {pillSub}
           </span>
           <span style={{
             fontSize: 12, fontWeight: 700,
-            color: tryItInProgress || isInteractive ? '#fff' : 'var(--sl-t1)',
+            color: isColored ? '#fff' : 'var(--sl-t1)',
             display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            maxWidth: 160,
           }}>
             {pillLabel}
           </span>
         </div>
-        <span style={{
-          fontSize: 14,
-          color: tryItInProgress || isInteractive ? 'rgba(255,255,255,0.6)' : 'var(--sl-t3)',
-          flexShrink: 0,
-        }}>▲</span>
+
+        {/* Bouton agrandir */}
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }}
+          title="Agrandir le guide"
+          style={{
+            background:   'rgba(255,255,255,0.12)',
+            border:       '1px solid rgba(255,255,255,0.2)',
+            borderRadius: 10,
+            color:        isColored ? '#fff' : 'var(--sl-t2)',
+            padding:      '4px 8px',
+            fontSize:     11,
+            cursor:       'pointer',
+            flexShrink:   0,
+          }}
+        >
+          ▲
+        </button>
+
+        {/* Bouton fermer/quitter */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onExit(); }}
+          title="Quitter le tutoriel"
+          style={{
+            background:   confirmExit ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.1)',
+            border:       '1px solid rgba(255,255,255,0.15)',
+            borderRadius: 10,
+            color:        isColored ? 'rgba(255,255,255,0.7)' : 'var(--sl-t3)',
+            padding:      '4px 7px',
+            fontSize:     13,
+            cursor:       'pointer',
+            flexShrink:   0,
+            lineHeight:   1,
+          }}
+        >
+          ×
+        </button>
       </motion.div>
     );
   }
@@ -249,56 +260,71 @@ export default function DemoGuide({
         />
       </div>
 
-      {/* Timer countdown pour étapes info (barre verte qui défile) */}
-      {autoAdvanceMs && !isInteractive && (
-        <div style={{ height: 2, background: 'rgba(34,217,106,0.15)', flexShrink: 0 }}>
-          <motion.div
-            key={`timer-${stepIndex}`}
-            initial={{ width: '100%' }}
-            animate={{ width: `${timerPct}%` }}
-            transition={{ duration: 0.05, ease: 'linear' }}
-            style={{ height: '100%', background: 'rgba(34,217,106,0.7)', borderRadius: '0 1px 1px 0' }}
-          />
-        </div>
-      )}
-
-      {/* Poignée déplaçable + collapse/skip */}
+      {/* En-tête draggable */}
       <div
         data-drag-handle
         onPointerDown={handleDragStart}
         onPointerMove={handleDragMove}
         onPointerUp={handleDragEnd}
         style={{
-          padding:        '10px 14px 8px',
-          display:        'flex', alignItems: 'center', justifyContent: 'space-between',
-          cursor:         'grab', touchAction: 'none', flexShrink: 0,
+          padding:     '10px 14px 8px',
+          display:     'flex', alignItems: 'center', justifyContent: 'space-between',
+          cursor:      'grab', touchAction: 'none', flexShrink: 0,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={toggleCollapsed}>
+        {/* Gauche : emoji + compteur d'étapes */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 18, lineHeight: 1 }}>{step.emoji}</span>
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', letterSpacing: 0.5 }}>
             Étape {stepIndex + 1} / {totalSteps}
           </span>
-          <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>▼</span>
+          <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>·</span>
+          <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{totalSteps - stepIndex - 1} restante{totalSteps - stepIndex - 1 > 1 ? 's' : ''}</span>
         </div>
+
+        {/* Droite : poignée + réduire + quitter */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span title="Glisser pour déplacer" style={{ fontSize: 11, color: 'var(--sl-t3)', letterSpacing: 3, lineHeight: 1 }}>⠿⠿</span>
+
+          {/* Réduire en bulle */}
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }}
+            title="Réduire en bulle"
+            style={{
+              background:   'var(--demo-surface-bg)',
+              border:       '1px solid var(--demo-surface-border)',
+              borderRadius: 8,
+              color:        'var(--sl-t3)',
+              padding:      '3px 9px',
+              fontSize:     10,
+              fontWeight:   600,
+              cursor:       'pointer',
+              transition:   'all 0.2s',
+              whiteSpace:   'nowrap',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--demo-surface-bg-hover)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--demo-surface-bg)'; }}
+          >
+            ▼ Réduire
+          </button>
+
+          {/* Quitter */}
           <button
             onClick={(e) => { e.stopPropagation(); handleExit(); }}
             style={{
-              background:  confirmExit ? 'rgba(239,68,68,0.2)' : 'transparent',
-              border:      '1px solid', borderColor: confirmExit ? '#ef4444' : 'var(--demo-surface-border)',
+              background:   confirmExit ? 'rgba(239,68,68,0.2)' : 'transparent',
+              border:       '1px solid', borderColor: confirmExit ? '#ef4444' : 'var(--demo-surface-border)',
               borderRadius: 8, color: confirmExit ? '#fca5a5' : 'var(--sl-t3)',
-              padding: '3px 9px', fontSize: 10, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
+              padding:      '3px 9px', fontSize: 10, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
             }}
           >
-            {confirmExit ? 'Confirmer ?' : 'Passer'}
+            {confirmExit ? 'Confirmer ?' : '× Quitter'}
           </button>
         </div>
       </div>
 
       {/* Contenu */}
-      <div style={{ padding: '0 18px 0', maxHeight: 'calc(100dvh - 280px)', overflowY: 'auto', flexShrink: 1 }}>
+      <div style={{ padding: '0 18px 0', maxHeight: 'calc(100dvh - 260px)', overflowY: 'auto', flexShrink: 1 }}>
         <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', margin: '0 0 6px', lineHeight: 1.3 }}>
           {step.title}
         </h3>
@@ -306,7 +332,7 @@ export default function DemoGuide({
           {step.body}
         </p>
 
-        {/* Badge "À toi de jouer" quand guide ouvert en mode interactif */}
+        {/* Badge interactif "À toi de jouer" */}
         {isInteractive && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
@@ -326,6 +352,21 @@ export default function DemoGuide({
           </div>
         )}
 
+        {/* Conseil / Astuce */}
+        {step.tip && (
+          <div style={{
+            display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 12px',
+            background: 'rgba(245,158,11,0.08)',
+            border: '1px solid rgba(245,158,11,0.2)',
+            borderRadius: 10, marginBottom: 10,
+          }}>
+            <span style={{ fontSize: 14, flexShrink: 0 }}>💡</span>
+            <span style={{ fontSize: 11.5, color: 'rgba(217,119,6,0.9)', lineHeight: 1.5 }}>
+              {step.tip}
+            </span>
+          </div>
+        )}
+
         {/* Pourquoi cette étape */}
         {step.why && (
           <div style={{ marginBottom: 10 }}>
@@ -337,8 +378,8 @@ export default function DemoGuide({
                 cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4,
               }}
             >
-              <span>💡</span>
-              <span>Pourquoi cette étape ?</span>
+              <span>📊</span>
+              <span>Pourquoi ça compte ?</span>
               <span style={{ transition: 'transform 0.2s', transform: whyOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
             </button>
             <AnimatePresence>
@@ -364,26 +405,10 @@ export default function DemoGuide({
         )}
       </div>
 
-      {/* Actions */}
-      <div style={{ padding: '10px 18px 14px', flexShrink: 0, position: 'relative' }}>
-        <AnimatePresence>
-          {showSuccess && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }} transition={{ duration: 0.3 }}
-              style={{
-                position: 'absolute', inset: 0, background: 'rgba(16,185,129,0.92)',
-                borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: 8, fontSize: 14, fontWeight: 800, color: '#fff', margin: '0 18px 14px',
-              }}
-            >
-              <span>✅</span> Parfait !
-            </motion.div>
-          )}
-        </AnimatePresence>
-
+      {/* Zone de navigation */}
+      <div style={{ padding: '10px 18px 14px', flexShrink: 0 }}>
         {step.isCTA ? (
-          // Étape CTA finale — boutons inscription / sandbox
+          // Étape CTA finale
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <button
               onClick={handleCreateAccount}
@@ -411,8 +436,7 @@ export default function DemoGuide({
             </button>
           </div>
         ) : isInteractive ? (
-          // Étape interactive — le "Suivant" n'existe pas, l'utilisateur doit cliquer la cible
-          // On montre seulement "Précédent" (si pas premier) et un lien "Passer"
+          // Étape interactive — navigation Précédent + Passer
           <div style={{ display: 'flex', gap: 8 }}>
             {!isFirst && (
               <button
@@ -445,7 +469,7 @@ export default function DemoGuide({
             </button>
           </div>
         ) : (
-          // Étape informative — navigation normale
+          // Étape informative — navigation normale Précédent / Suivant
           <div style={{ display: 'flex', gap: 8 }}>
             {!isFirst && (
               <button
@@ -474,7 +498,7 @@ export default function DemoGuide({
               onMouseEnter={e => { if (!isLast) e.currentTarget.style.background = 'var(--demo-indigo-bg-next-h)'; }}
               onMouseLeave={e => { if (!isLast) e.currentTarget.style.background = 'var(--demo-indigo-bg-next)'; }}
             >
-              {isLast ? '🚀 Terminer la visite' : autoAdvanceMs ? `Continuer (${Math.ceil(autoAdvanceMs / 1000)}s) →` : 'Suivant →'}
+              {isLast ? '🏁 Terminer la visite' : 'Suivant →'}
             </button>
           </div>
         )}

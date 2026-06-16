@@ -115,6 +115,7 @@ export function useRides(eventId) {
     if (error) throw error;
     await fetchRides();
     if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'carpool-requested' } }));
+    window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'ride_created' } }));
     return mapRide({ ...saved, ride_requests: [] });
   }, [currentUser, eventId, fetchRides]);
 

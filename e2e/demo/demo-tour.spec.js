@@ -42,15 +42,19 @@ function stepRegex(n) {
 }
 
 // Avance d'une étape. Pour les étapes interactives, le guide s'auto-collapse en pill —
-// il faut d'abord cliquer le pill pour l'expand. On utilise force:true car le timer
-// DemoGuide (setInterval 50ms) provoque des re-renders React qui désynchronisent
-// les polls de stabilité Playwright.
+// il faut d'abord cliquer le pill pour l'expand via le bouton ▲.
 async function clickNext(page) {
-  const nextBtn = page.getByRole('button', { name: /continuer|passer cette étape/i }).first();
+  const nextBtn = page.getByRole('button', { name: /suivant|passer cette étape/i }).first();
   const visible = await nextBtn.isVisible().catch(() => false);
   if (!visible) {
-    // Mode pill (étape interactive) — cliquer le pill pour ouvrir le guide complet
-    await page.locator('[data-drag-handle]').first().click({ force: true, timeout: 5000 });
+    // Mode pill (étape interactive) — cliquer le bouton ▲ pour rouvrir le guide
+    const expandBtn = page.getByTitle('Agrandir le guide').first();
+    const expandVisible = await expandBtn.isVisible().catch(() => false);
+    if (expandVisible) {
+      await expandBtn.click({ force: true, timeout: 5000 });
+    } else {
+      await page.locator('[data-drag-handle]').first().click({ force: true, timeout: 5000 });
+    }
     await page.waitForTimeout(300);
   }
   await nextBtn.click({ force: true, timeout: 10000 });
@@ -103,7 +107,7 @@ test.describe('Parcours complet — Président (12 étapes)', () => {
     await expect(
       page.getByRole('button', { name: /Explorer librement la sandbox/i }),
     ).toBeVisible({ timeout: 3000 });
-    await expect(page.getByRole('button', { name: /^Continuer|^Suivant →$/i })).not.toBeVisible();
+    await expect(page.getByRole('button', { name: /^Suivant →$/i })).not.toBeVisible();
     await expect(page.getByText(/quelque chose s'est mal passé/i)).not.toBeVisible();
   });
 });

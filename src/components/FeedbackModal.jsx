@@ -410,6 +410,12 @@ export default function FeedbackModal({ onClose, prefilled = {} }) {
                     </>
                   )}
                 </button>
+
+                {/* Mention RGPD */}
+                <p style={{ margin: '8px 0 0', fontSize: 10, color: 'var(--sl-t3)', textAlign: 'center', lineHeight: 1.5 }}>
+                  En soumettant ce retour, vous acceptez que vos données (contenu, navigateur, version) soient utilisées pour améliorer SportLink.
+                  {' '}<a href="#legal/privacy" style={{ color: 'var(--sl-t3)', textDecoration: 'underline' }} onClick={e => { e.preventDefault(); window.location.hash = '#legal/privacy'; }}>Politique de confidentialité</a>
+                </p>
               </motion.form>
             )}
           </AnimatePresence>

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { supabase } from '../lib/supabase.js';
 
 const STORAGE_KEY = 'sl_club_views';
 const MAX_ENTRIES = 500;
@@ -21,19 +22,28 @@ function writeStore(data) {
 
 export function useClubPageViews() {
   const recordView = useCallback((clubId) => {
-    const store = readStore();
-    const key = String(clubId);
+    // LocalStorage — comptage client rapide
+    const store    = readStore();
+    const key      = String(clubId);
     const existing = Array.isArray(store[key]) ? store[key] : [];
-    // Keep only the last MAX_ENTRIES to cap storage
-    const updated = [...existing, Date.now()].slice(-MAX_ENTRIES);
+    const updated  = [...existing, Date.now()].slice(-MAX_ENTRIES);
     writeStore({ ...store, [key]: updated });
+
+    // Supabase — persistance serveur, fire and forget, uniquement si connecté
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data?.user?.id) return;
+      supabase.from('club_page_views').insert({
+        club_id: String(clubId),
+        user_id: data.user.id,
+      }).then(() => {});
+    });
   }, []);
 
   const getViewCount = useCallback((clubId, days = 30) => {
-    const store = readStore();
-    const key = String(clubId);
+    const store   = readStore();
+    const key     = String(clubId);
     const entries = Array.isArray(store[key]) ? store[key] : [];
-    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    const cutoff  = Date.now() - days * 24 * 60 * 60 * 1000;
     return entries.filter(ts => ts >= cutoff).length;
   }, []);
 

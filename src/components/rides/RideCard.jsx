@@ -38,13 +38,16 @@ export default function RideCard({
   const avatar = (name) => (name ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div style={{
-      borderRadius: 16,
-      border: `1px solid ${isDriver ? 'rgba(34,217,106,0.3)' : isCancelled ? 'var(--sl-border)' : 'var(--sl-border)'}`,
-      backgroundColor: isDriver ? 'rgba(34,217,106,0.04)' : 'var(--sl-surface)',
-      padding: '14px',
-      opacity: isCancelled ? 0.6 : 1,
-    }}>
+    <div
+      data-demo="carpool-card"
+      style={{
+        borderRadius: 16,
+        border: `1px solid ${isDriver ? 'rgba(34,217,106,0.3)' : isCancelled ? 'var(--sl-border)' : 'var(--sl-border)'}`,
+        backgroundColor: isDriver ? 'rgba(34,217,106,0.04)' : 'var(--sl-surface)',
+        padding: '14px',
+        opacity: isCancelled ? 0.6 : 1,
+      }}
+    >
       {/* Driver row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <div style={{

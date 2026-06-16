@@ -90,6 +90,7 @@ export function useClubAnnouncements(clubId) {
     if (error) throw error;
     const ann = mapAnn(data);
     if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'announcement-sent' } }));
+    window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'announcement_sent', data: { announcement_type: type } } }));
     // Notify followers immediately for non-scheduled announcements (PUSH-PROD-001c)
     if (!scheduledFor) {
       const notifTitle = clubName

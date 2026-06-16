@@ -45,6 +45,12 @@ import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
 import { useAttendeeCountActions } from './contexts/AttendeeCountContext.jsx';
 import { useMyConvocations } from './hooks/useMyConvocations.js';
+import { useFeedbackNotifications } from './hooks/useFeedbackNotifications.js';
+import { useAnalyticsConsent } from './hooks/useAnalyticsConsent.js';
+import { useAnalytics } from './hooks/useAnalytics.js';
+import ConsentBanner from './components/ConsentBanner.jsx';
+const AdminFeedbackPage  = lazy(() => import('./pages/AdminFeedbackPage.jsx'));
+const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage.jsx'));
 
 function ModalLoader() {
   return (
@@ -105,7 +111,8 @@ function AppInner() {
   const setActiveTab = useCallback((tab) => {
     sessionStorage.setItem('sl-tab', tab);
     _setActiveTab(tab);
-  }, []);
+    track('page_view', { tab });
+  }, [track]);
   const [activeDepartment] = useState('finistere');
   const [showAuth, setShowAuth] = useState(false);
   const [pendingOnboarding, setPendingOnboarding] = useState(false);
@@ -131,6 +138,10 @@ function AppInner() {
   const { unreadCount: rideNotifCount } = useRideNotifications();
   const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
   const { convocations: myConvocations, pendingCount: convocationsPending, respond: respondToConvocation } = useMyConvocations(currentUser?.id);
+  const { notifications: feedbackNotifs, unreadCount: feedbackNotifsCount, markRead: markFeedbackNotifRead, markAllRead: markAllFeedbackNotifsRead } = useFeedbackNotifications();
+  const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent();
+  const { track } = useAnalytics(consent);
+  const [adminSubView, setAdminSubView] = useState(null);
   const [showMyRides, setShowMyRides] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showFeedback,    setShowFeedback]    = useState(false);
@@ -158,12 +169,14 @@ function AppInner() {
     setStudioQuickMode(opts.quickMode ?? false);
     setStudioEvent(eventData);
     setStudioClub(club);
-  }, []);
+    track('poster_opened', { sport: eventData?.sport, eventId: eventData?.id });
+  }, [track]);
 
   const addEventWithToast = useCallback(async (data) => {
     try {
       const result = await addEvent(data);
       toast({ message: 'Événement créé !' });
+      track('event_created', { sport: data.sport, type: data.type });
       if (isDemoMode()) {
         lastDemoCreatedEventRef.current = result ?? null;
         window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'event-created' } }));
@@ -173,7 +186,7 @@ function AppInner() {
       toast({ message: err.message || 'Erreur lors de la création', type: 'error' });
       throw err;
     }
-  }, [addEvent, toast]);
+  }, [addEvent, toast, track]);
 
   const bulkAddEvents = useCallback(async (events) => {
     const saved = await addEventsBatch(events);
@@ -290,6 +303,34 @@ function AppInner() {
       document.title = 'SportLink — Le sport près de toi';
     }
   }, [selectedSearchClub]);
+
+  // ── Analytics — tracking connexion utilisateur ────────────────────────────
+  const prevUserIdRef = useRef(null);
+  useEffect(() => {
+    if (currentUser?.id && !prevUserIdRef.current) {
+      track('user_login');
+    }
+    prevUserIdRef.current = currentUser?.id ?? null;
+  }, [currentUser?.id, track]);
+
+  // ── Analytics — tracking création de club ────────────────────────────────
+  const prevClubCountRef = useRef(null);
+  useEffect(() => {
+    if (prevClubCountRef.current !== null && allClubs.length > prevClubCountRef.current && !isDemoMode()) {
+      track('club_created');
+    }
+    prevClubCountRef.current = allClubs.length;
+  }, [allClubs.length, track]);
+
+  // ── Analytics — bus d'événements décentralisé (sl-analytics) ───────────────
+  useEffect(() => {
+    function handleAnalyticsEvent(e) {
+      const { type, data } = e.detail ?? {};
+      if (type) track(type, data ?? {});
+    }
+    window.addEventListener('sl-analytics', handleAnalyticsEvent);
+    return () => window.removeEventListener('sl-analytics', handleAnalyticsEvent);
+  }, [track]);
 
   // Badge modal — reset guard on user change, fire once when new badges are detected
   useEffect(() => { hasShownBadge.current = false; }, [currentUser?.id]);
@@ -559,7 +600,18 @@ function AppInner() {
                 />
               </ErrorBoundary>
             )}
-            {activeTab === 'admin' && isAdmin && <ErrorBoundary name="Admin" onReport={handleErrorReport}><Suspense fallback={<ModalLoader />}><AdminPage /></Suspense></ErrorBoundary>}
+            {activeTab === 'admin' && isAdmin && (
+              <ErrorBoundary name="Admin" onReport={handleErrorReport}>
+                <Suspense fallback={<ModalLoader />}>
+                  {adminSubView === 'feedback'
+                    ? <AdminFeedbackPage onBack={() => setAdminSubView(null)} />
+                    : adminSubView === 'analytics'
+                    ? <AdminAnalyticsPage onBack={() => setAdminSubView(null)} />
+                    : <AdminPage onNavigate={setAdminSubView} />
+                  }
+                </Suspense>
+              </ErrorBoundary>
+            )}
           </motion.div>
         </AnimatePresence>
 
@@ -614,6 +666,13 @@ function AppInner() {
           </Suspense>
         )}
       </main>
+
+      {/* Bandeau consentement RGPD analytics */}
+      <AnimatePresence>
+        {showConsentBanner && !showAuth && !showHelp && !showFeedback && !studioEvent && (
+          <ConsentBanner onAccept={acceptAnalytics} onRefuse={refuseAnalytics} />
+        )}
+      </AnimatePresence>
 
       <ErrorBoundary name="BottomNav" onReport={handleErrorReport}>
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} onClubAdminAction={handleClubAdminFabAction} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp} />
@@ -693,13 +752,24 @@ function AppInner() {
       </Suspense>
 
       {/* HelpFab — visible hors overlay */}
-      <HelpFab onClick={() => setShowHelp(true)} hidden={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp || showFeedback || !!studioEvent || !!legalSection} />
+      <HelpFab
+        onClick={() => setShowHelp(true)}
+        hidden={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp || showFeedback || !!studioEvent || !!legalSection}
+        notificationCount={feedbackNotifsCount}
+      />
 
       {/* HelpPage */}
       <AnimatePresence>
         {showHelp && (
           <Suspense fallback={null}>
-            <HelpPage onClose={() => setShowHelp(false)} onOpenFeedback={() => { setShowHelp(false); setShowFeedback(true); }} />
+            <HelpPage
+              onClose={() => setShowHelp(false)}
+              onOpenFeedback={() => { setShowHelp(false); setShowFeedback(true); }}
+              notifications={feedbackNotifs}
+              unreadCount={feedbackNotifsCount}
+              onMarkRead={markFeedbackNotifRead}
+              onMarkAllRead={markAllFeedbackNotifsRead}
+            />
           </Suspense>
         )}
       </AnimatePresence>

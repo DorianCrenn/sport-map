@@ -268,14 +268,22 @@ export default function SandboxWelcome({ profile, completedSteps, onEnterSandbox
           <button
             onClick={onChangeProfile}
             style={{
-              background: 'none', border: 'none', padding: '6px 0',
-              fontSize: 13, color: 'var(--sl-t2)',
-              cursor: 'pointer', textAlign: 'center', transition: 'color 0.2s',
+              width: '100%',
+              background: 'var(--demo-surface-bg)', border: '1px solid var(--demo-surface-border)',
+              borderRadius: 12, padding: '11px 24px',
+              fontSize: 13, color: 'var(--sl-t2)', fontWeight: 600,
+              cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--sl-t1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--sl-t2)'; }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background  = 'var(--demo-surface-bg-hover)';
+              e.currentTarget.style.color       = 'var(--sl-t1)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background  = 'var(--demo-surface-bg)';
+              e.currentTarget.style.color       = 'var(--sl-t2)';
+            }}
           >
-            ↩ Voir la démo avec un autre profil
+            🔄 Voir la démo avec un autre profil
           </button>
         )}
       </motion.div>
