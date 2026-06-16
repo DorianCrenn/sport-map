@@ -102,6 +102,10 @@ function UpdateBanner() {
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs } = useAuth();
+  // Analytics — déclarés avant tout useCallback qui utilise track (évite la TDZ en production)
+  const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent();
+  const { track } = useAnalytics(consent);
+
   const [activeTab, _setActiveTab] = useState(() => {
     const stored = sessionStorage.getItem('sl-tab') || 'home';
     // Tabs that don't survive a reload — redirect to 'home'
@@ -139,8 +143,6 @@ function AppInner() {
   const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
   const { convocations: myConvocations, pendingCount: convocationsPending, respond: respondToConvocation } = useMyConvocations(currentUser?.id);
   const { notifications: feedbackNotifs, unreadCount: feedbackNotifsCount, markRead: markFeedbackNotifRead, markAllRead: markAllFeedbackNotifsRead } = useFeedbackNotifications();
-  const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent();
-  const { track } = useAnalytics(consent);
   const [adminSubView, setAdminSubView] = useState(null);
   const [showMyRides, setShowMyRides] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
