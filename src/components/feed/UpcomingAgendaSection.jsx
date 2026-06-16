@@ -114,9 +114,11 @@ function PresenceButtons({ myStatus, onRespond, small = false }) {
 
 function TrainingItem({ item, onRespond }) {
   const { data: session, myStatus, teamName } = item;
+  // session.date est toujours une date seule (YYYY-MM-DD), ajout de l'heure pour éviter le fuseau UTC
+  const _sessionDateStr = session.date?.length === 10 ? session.date + 'T12:00:00' : (session.date ?? '');
   const dateLabel = new Intl.DateTimeFormat('fr-FR', {
     weekday: 'short', day: 'numeric', month: 'short',
-  }).format(new Date(session.date + 'T12:00:00'));
+  }).format(new Date(_sessionDateStr));
 
   return (
     <div style={{
@@ -157,9 +159,11 @@ function MatchItem({ item, onRespond, currentUser, isCoach, convocation, onConvo
   const [showLineup, setShowLineup]    = useState(false);
   const [showCarpool, setShowCarpool]  = useState(false);
 
+  // Si event.date est déjà un datetime ISO complet, ne pas concaténer 'T12:00:00'
+  const _eventDateStr = event.date?.length === 10 ? event.date + 'T12:00:00' : (event.date ?? '');
   const dateLabel = new Intl.DateTimeFormat('fr-FR', {
     weekday: 'short', day: 'numeric', month: 'short',
-  }).format(new Date(event.date + 'T12:00:00'));
+  }).format(new Date(_eventDateStr));
 
   const timeLabel = event.date?.length > 10
     ? new Date(event.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
