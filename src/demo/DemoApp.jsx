@@ -28,9 +28,18 @@ function isInteractiveStep(step) {
 }
 
 // AppInner est passé en prop pour éviter l'import circulaire
+// Version du système démo — incrémenter pour forcer un reset chez tous les utilisateurs
+const DEMO_VERSION = '4';
+
 export default function DemoApp({ AppInner }) {
   const [profile,            setProfile]            = useState(() => {
-    // Toujours repartir de la landing page — efface toute session précédente
+    // Reset si version démo changée (invalide les sessions en cache navigateur)
+    if (sessionStorage.getItem('sl-demo-version') !== DEMO_VERSION) {
+      ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox','sl-demo-version'].forEach(k => sessionStorage.removeItem(k));
+      sessionStorage.setItem('sl-demo-version', DEMO_VERSION);
+      return null;
+    }
+    // Toujours repartir de la landing page quelle que soit la session précédente
     ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox'].forEach(k => sessionStorage.removeItem(k));
     return null;
   });
