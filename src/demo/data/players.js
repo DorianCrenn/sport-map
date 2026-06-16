@@ -16,6 +16,7 @@ function makePlayer(idx, name, team, position, number, photoUrl, email, userId =
     photo_url:  photoUrl,
     email,
     phone:      null,
+    is_active:  true,
     created_at: '2026-01-15T10:00:00Z',
   };
 }
