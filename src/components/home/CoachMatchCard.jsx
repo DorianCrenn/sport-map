@@ -325,6 +325,7 @@ export default function CoachMatchCard({
                 </button>
                 <button
                   onClick={() => onConvocate ? onConvocate(event) : onNavigate?.('mon-club')}
+                  data-demo="convocation-btn"
                   className="flex-1 py-2.5 rounded-xl bg-[var(--sl-blue)] text-white
                              text-[12px] font-bold active:scale-95 transition-transform"
                 >
