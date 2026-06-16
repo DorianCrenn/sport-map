@@ -366,12 +366,17 @@ function AppInner() {
 
     function onDemoNav(e) {
       const { action } = e.detail ?? {};
-      // Seule action encore auto : fermer les overlays ouverts (formulaire, annonces...)
       if (action === 'close-overlay') {
+        // Ferme tous les overlays React
         setShowNewEventForm(false);
         setShowAnnouncements(false);
         setStudioEvent(null);
         setStudioClub(null);
+        // Ferme aussi les pages ouvertes par hash (#club/:id, #event/:id, etc.)
+        if (window.location.hash && window.location.hash.length > 1) {
+          history.pushState(null, '', window.location.pathname);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
       }
     }
 
