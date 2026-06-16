@@ -3,12 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { trackCreateAccountClicked } from './demoAnalytics.js';
 
 function getInitialPos() {
-  try {
-    const saved = sessionStorage.getItem('sl-demo-guide-pos');
-    if (saved) return JSON.parse(saved);
-  } catch { /* sessionStorage indisponible */ }
   const vw = window.innerWidth;
   const vh = window.innerHeight;
+  // On ne restaure PAS la position sauvegardée : DemoApp efface sl-demo-guide-pos
+  // au montage pour garantir que le guide est toujours dans le viewport.
   return {
     x: Math.max(8, Math.min(vw / 2 - 240, vw - 496)),
     y: Math.max(56, vh - 340),
@@ -23,8 +21,9 @@ export default function DemoGuide({
   tryItInProgress,   // l'utilisateur a cliqué la cible, action en cours
 }) {
   const [collapsed, setCollapsed] = useState(() => {
-    if (isInteractive) return true;
-    try { return sessionStorage.getItem('sl-demo-guide-collapsed') === '1'; } catch { return false; }
+    // Les étapes interactives (clickTarget) démarrent en mode pill
+    // Les étapes informatives démarrent toujours en mode plein (sessionStorage nettoyé au montage)
+    return isInteractive;
   });
   const [confirmExit,  setConfirmExit]  = useState(false);
   const [whyOpen,      setWhyOpen]      = useState(false);
@@ -43,15 +42,7 @@ export default function DemoGuide({
     setWhyOpen(false);
     setConfirmExit(false);
 
-    if (isInteractive) {
-      setCollapsed(true);
-    } else {
-      try {
-        setCollapsed(sessionStorage.getItem('sl-demo-guide-collapsed') === '1');
-      } catch {
-        setCollapsed(false);
-      }
-    }
+    setCollapsed(isInteractive);
   }, [stepIndex, isInteractive]);
 
   // ── Drag handlers ─────────────────────────────────────────────────────────
@@ -76,19 +67,12 @@ export default function DemoGuide({
   const handleDragEnd = useCallback(() => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
-    try { sessionStorage.setItem('sl-demo-guide-pos', JSON.stringify(pos)); } catch { /* intentional */ }
   }, [pos]);
 
   // ── Actions ───────────────────────────────────────────────────────────────
   function toggleCollapsed() {
     if (didDragRef.current) { didDragRef.current = false; return; }
-    setCollapsed(c => {
-      const next = !c;
-      if (!isInteractive) {
-        try { sessionStorage.setItem('sl-demo-guide-collapsed', next ? '1' : '0'); } catch { /* intentional */ }
-      }
-      return next;
-    });
+    setCollapsed(c => !c);
   }
 
   function handleExit() {

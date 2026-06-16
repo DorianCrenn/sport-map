@@ -28,19 +28,21 @@ function isInteractiveStep(step) {
 }
 
 // AppInner est passé en prop pour éviter l'import circulaire
-// Version du système démo — incrémenter pour forcer un reset chez tous les utilisateurs
-const DEMO_VERSION = '4';
+// Toutes les clés sessionStorage utilisées par le système démo
+const DEMO_SS_KEYS = [
+  'sl-demo-initialized', 'sl-demo-profile', 'sl-demo-step', 'sl-demo-sandbox',
+  'sl-demo-guide-pos', 'sl-demo-guide-collapsed',
+];
+
+function clearDemoSession() {
+  try { DEMO_SS_KEYS.forEach(k => sessionStorage.removeItem(k)); } catch { /* private browsing */ }
+}
 
 export default function DemoApp({ AppInner }) {
   const [profile,            setProfile]            = useState(() => {
-    // Reset si version démo changée (invalide les sessions en cache navigateur)
-    if (sessionStorage.getItem('sl-demo-version') !== DEMO_VERSION) {
-      ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox','sl-demo-version'].forEach(k => sessionStorage.removeItem(k));
-      sessionStorage.setItem('sl-demo-version', DEMO_VERSION);
-      return null;
-    }
-    // Toujours repartir de la landing page quelle que soit la session précédente
-    ['sl-demo-initialized','sl-demo-profile','sl-demo-step','sl-demo-sandbox'].forEach(k => sessionStorage.removeItem(k));
+    // Toujours repartir de la landing page — efface toute session précédente
+    // (position du guide incluse pour éviter qu'il soit hors écran)
+    clearDemoSession();
     return null;
   });
   const [currentStep,        setCurrentStep]        = useState(0);
