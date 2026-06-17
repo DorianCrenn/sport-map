@@ -7,7 +7,6 @@ import { useMyConvocations } from '../hooks/useMyConvocations.js';
 import { useParentChildren } from '../hooks/useParentChildren.js';
 import { useQuickActions }  from '../hooks/useQuickActions.js';
 import { useDemoFeed }      from '../hooks/useDemoFeed.js';
-import { useClubs }         from '../hooks/useClubs.js';
 import { isDemoMode, supabase } from '../lib/supabase.js';
 import QuickActionsSection  from '../components/home/QuickActionsSection.jsx';
 import LiveMultiplexSection from '../components/home/LiveMultiplexSection.jsx';
@@ -58,13 +57,13 @@ export default function ActualitesPage({
     [followedClubIds, managedClubIds],
   );
 
-  // Données clubs pour PlanningTimeline (logos, couleurs)
-  const { userClubs } = useClubs();
+  // managedClubs contient déjà les clubs avec toutes les infos nécessaires
+  // (via useManagedClubs → useClubs en interne) — pas besoin d'un second useClubs
   const allKnownClubs = useMemo(() => {
     const map = {};
-    [...(userClubs ?? []), ...managedClubs].forEach(c => { map[String(c.id)] = c; });
+    managedClubs.forEach(c => { map[String(c.id)] = c; });
     return Object.values(map);
-  }, [userClubs, managedClubs]);
+  }, [managedClubs]);
 
   // ── Quick Actions (coach / communicant) ───────────────────────────────────
   const quickActions = useQuickActions({
@@ -188,7 +187,8 @@ export default function ActualitesPage({
       </div>
 
       {/* ══ ZONE 3 — Planning de la saison ══════════════════════════════════ */}
-      <div className="flex-1 min-h-0">
+      {/* data-demo="agenda-section" conservé pour la compatibilité DemoGuide (tour Président étape 3) */}
+      <div className="flex-1 min-h-0" data-demo="agenda-section">
         <PlanningTimeline
           currentUser={currentUser}
           managedClubs={managedClubs}

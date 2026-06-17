@@ -75,7 +75,7 @@ export default function CompositionPoster({ event, club, onClose }) {
 
   const matchDate  = event?.date ? new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : '';
   const matchTime  = event?.date ? new Date(event.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
-  const clubPrimary = club?.primary_color ?? '#1d4ed8';
+  const clubPrimary = club?.primaryColor ?? club?.primary_color ?? '#1d4ed8';
 
   const handleExport = useCallback(async () => {
     if (!posterRef.current) return;
@@ -155,8 +155,8 @@ export default function CompositionPoster({ event, club, onClose }) {
               {/* Header club + match */}
               <div style={{ background: `linear-gradient(135deg, ${clubPrimary}dd, ${clubPrimary}88)`, padding: '20px 16px 16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  {club?.logo_url
-                    ? <img src={club.logo_url} alt={club.name} style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8 }} />
+                  {(club?.logoUrl ?? club?.logo_url)
+                    ? <img src={club.logoUrl ?? club.logo_url} alt={club.name} style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8 }} />
                     : <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <span style={{ color: '#fff', fontWeight: 900, fontSize: 14 }}>{(club?.name ?? 'FC')[0]}</span>
                       </div>

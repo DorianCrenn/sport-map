@@ -10,10 +10,11 @@ const WEEKDAYS_FR = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 const MONTHS_FR   = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
 function DateBubble({ dateStr }) {
-  const d   = new Date(dateStr + 'T12:00:00');
+  const d = new Date((dateStr ?? '') + 'T12:00:00');
+  if (isNaN(d.getTime())) return null;
   const day = d.getDate();
-  const mon = MONTHS_FR[d.getMonth()].slice(0, 3).toUpperCase();
-  const wk  = WEEKDAYS_FR[d.getDay()].toUpperCase();
+  const mon = (MONTHS_FR[d.getMonth()] ?? '').slice(0, 3).toUpperCase();
+  const wk  = (WEEKDAYS_FR[d.getDay()] ?? '').toUpperCase();
   return (
     <div className="flex items-center gap-3 mb-2">
       <div
@@ -60,11 +61,11 @@ function ClubPill({ label, active, onClick }) {
 
 export default function PlanningTimeline({
   currentUser,
-  managedClubs,
-  isCoachOrManager,
-  isCommunicant,
-  isClubAdmin,
-  isAdmin,
+  managedClubs = [],
+  isCoachOrManager = false,
+  isCommunicant = false,
+  isClubAdmin = false,
+  isAdmin = false,
   followedClubIds = [],
   onOpenPoster,
   onConvocate,
@@ -116,10 +117,11 @@ export default function PlanningTimeline({
     return items;
   }, [items, filter]);
 
-  // Groupement par date
+  // Groupement par date — on ignore les items avec date invalide ou manquante
   const groups = useMemo(() => {
     const map = {};
     filteredItems.forEach(item => {
+      if (!item.date || isNaN(new Date(item.date + 'T12:00:00').getTime())) return;
       if (!map[item.date]) map[item.date] = [];
       map[item.date].push(item);
     });
