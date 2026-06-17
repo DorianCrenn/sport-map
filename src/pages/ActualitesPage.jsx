@@ -1,8 +1,5 @@
 import { lazy, Suspense, useMemo, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useFeedItems }     from '../hooks/useFeedItems.ts';
-import { useFeaturedEvents } from '../hooks/useFeaturedEvents.ts';
-import { useClubSponsors }  from '../hooks/useClubSponsors.ts';
 import { useAuth }          from '../contexts/AuthContext.jsx';
 import { useToast }         from '../contexts/ToastContext.jsx';
 import { useManagedClubs }  from '../hooks/useManagedClubs.js';
@@ -10,14 +7,14 @@ import { useMyConvocations } from '../hooks/useMyConvocations.js';
 import { useParentChildren } from '../hooks/useParentChildren.js';
 import { useQuickActions }  from '../hooks/useQuickActions.js';
 import { useDemoFeed }      from '../hooks/useDemoFeed.js';
+import { useClubs }         from '../hooks/useClubs.js';
 import { isDemoMode, supabase } from '../lib/supabase.js';
-import ClubFeed              from '../components/feed/ClubFeed.tsx';
-import QuickActionsSection   from '../components/home/QuickActionsSection.jsx';
-import LiveMultiplexSection  from '../components/home/LiveMultiplexSection.jsx';
+import QuickActionsSection  from '../components/home/QuickActionsSection.jsx';
+import LiveMultiplexSection from '../components/home/LiveMultiplexSection.jsx';
 import ParentConvocationCard from '../components/home/ParentConvocationCard.jsx';
-import UpcomingAgendaSection from '../components/feed/UpcomingAgendaSection.jsx';
+import PlanningTimeline     from '../components/planning/PlanningTimeline.jsx';
 
-const PosterStudio           = lazy(() => import('../components/PosterStudio.jsx'));
+const PosterStudio             = lazy(() => import('../components/PosterStudio.jsx'));
 const EventFormStepConvocation = lazy(() => import('../components/event/EventFormStepConvocation.jsx'));
 
 export default function ActualitesPage({
@@ -27,7 +24,7 @@ export default function ActualitesPage({
   externalConvocations,
   onConvocationRespond,
 }) {
-  const { currentUser, isAdmin, isClubAdmin, follows } = useAuth();
+  const { currentUser, isAdmin, isClubAdmin } = useAuth();
   const { toast } = useToast();
   const { managedClubs, isCoachOrManager, isCommunicant } = useManagedClubs();
   const demo = isDemoMode();
@@ -41,7 +38,6 @@ export default function ActualitesPage({
   const isPresident = isAdmin || isClubAdmin || jobRole === 'president';
 
   // ── Convocations parent ───────────────────────────────────────────────────
-  // Pas de fetch réel en mode démo — useDemoFeed fournit les convocations fictives
   const localConv = useMyConvocations(
     !demo && !externalConvocations ? currentUser?.id : null
   );
@@ -50,21 +46,25 @@ export default function ActualitesPage({
   // ── Demo state ────────────────────────────────────────────────────────────
   const { demoConvocations, setDemoConvocations, demoLiveMatches } = useDemoFeed();
 
-  const allRealConvocs   = externalConvocations ?? localConv.convocations;
+  const allRealConvocs      = externalConvocations ?? localConv.convocations;
   const pendingConvocations = demo
     ? demoConvocations
     : allRealConvocs.filter(c => c.status === 'pending');
 
-  // ── Feed data ─────────────────────────────────────────────────────────────
+  // ── IDs clubs pour le planning ────────────────────────────────────────────
   const managedClubIds = useMemo(() => managedClubs.map(c => String(c.id)), [managedClubs]);
   const feedClubIds    = useMemo(
-    () => [...new Set([...followedClubIds, ...managedClubIds])],
+    () => [...new Set([...followedClubIds.map(String), ...managedClubIds])],
     [followedClubIds, managedClubIds],
   );
 
-  const { items, loading }  = useFeedItems(feedClubIds, follows, managedClubIds);
-  const { items: featured } = useFeaturedEvents({ clubIds: feedClubIds });
-  const { sponsors }        = useClubSponsors(feedClubIds);
+  // Données clubs pour PlanningTimeline (logos, couleurs)
+  const { userClubs } = useClubs();
+  const allKnownClubs = useMemo(() => {
+    const map = {};
+    [...(userClubs ?? []), ...managedClubs].forEach(c => { map[String(c.id)] = c; });
+    return Object.values(map);
+  }, [userClubs, managedClubs]);
 
   // ── Quick Actions (coach / communicant) ───────────────────────────────────
   const quickActions = useQuickActions({
@@ -77,11 +77,9 @@ export default function ActualitesPage({
 
   const effectiveLiveMatches = demo ? demoLiveMatches : quickActions.liveMatches;
 
-  // ── Convocation modale ────────────────────────────────────────────────────
-  const [convocationEvent, setConvocationEvent] = useState(null);
-
   // ── PosterStudio ──────────────────────────────────────────────────────────
   const [studioConfig, setStudioConfig] = useState(null);
+  const [convocationEvent, setConvocationEvent] = useState(null);
 
   const handleOpenPoster = useCallback(async ({ event, score, mode }) => {
     let convPlayers = null;
@@ -132,15 +130,12 @@ export default function ActualitesPage({
   const showCoachComm   = isCoach || isComm || isPresident;
 
   return (
-    <div
-      className="flex flex-col h-full bg-[var(--sl-bg)] overflow-y-auto overscroll-contain"
-    >
+    <div className="flex flex-col h-full bg-[var(--sl-bg)] overflow-hidden">
 
       {/* ══ ZONE 1 — Bandeau Quick Actions ══════════════════════════════════ */}
       {(showParentCards || showCoachComm) && (
-        <section className="px-4 pt-4 pb-2">
+        <section className="px-4 pt-4 pb-2 flex-shrink-0">
 
-          {/* Convocations parent */}
           {showParentCards && (
             <>
               <div className="flex items-center gap-2 mb-3">
@@ -171,7 +166,6 @@ export default function ActualitesPage({
             </>
           )}
 
-          {/* Coach + communicant + président (QuickActionsSection a son propre en-tête) */}
           {showCoachComm && (
             <QuickActionsSection
               quickActions={quickActions}
@@ -185,42 +179,32 @@ export default function ActualitesPage({
               onConvocate={(event) => setConvocationEvent(event)}
             />
           )}
-
-        </section>
-      )}
-
-      {/* ══ ZONE 1.5 — Mon agenda (présences matchs + entraînements) ═════════ */}
-      {currentUser && !isParent && (
-        <section
-          data-demo="agenda-section"
-          style={{ padding: '0 14px 4px' }}
-        >
-          <UpcomingAgendaSection
-            currentUser={currentUser}
-            convocations={externalConvocations ?? []}
-            onConvocationRespond={onConvocationRespond}
-          />
         </section>
       )}
 
       {/* ══ ZONE 2 — Multiplex en direct ════════════════════════════════════ */}
-      <LiveMultiplexSection liveMatches={effectiveLiveMatches} />
+      <div className="flex-shrink-0">
+        <LiveMultiplexSection liveMatches={effectiveLiveMatches} />
+      </div>
 
-      {/* ══ ZONE 3 — Feed chronologique ═════════════════════════════════════ */}
-      <ClubFeed
-        clubId="followed"
-        clubName="Actualités"
-        items={items}
-        featuredItems={featured}
-        sponsorItems={sponsors}
-        loading={loading}
-        currentUser={currentUser}
-        onNavigateClubs={onNavigate ? () => onNavigate('clubs') : undefined}
-        onOpenTrainings={onOpenTrainings}
-        hideHeader={false}
-      />
+      {/* ══ ZONE 3 — Planning de la saison ══════════════════════════════════ */}
+      <div className="flex-1 min-h-0">
+        <PlanningTimeline
+          currentUser={currentUser}
+          managedClubs={managedClubs}
+          isCoachOrManager={isCoach}
+          isCommunicant={isComm}
+          isClubAdmin={isClubAdmin}
+          isAdmin={isAdmin}
+          followedClubIds={feedClubIds}
+          clubs={allKnownClubs}
+          onOpenPoster={handleOpenPoster}
+          onConvocate={(event) => setConvocationEvent(event)}
+          onNavigateRides={() => onNavigate?.('rides')}
+        />
+      </div>
 
-      {/* Modale convocation depuis CoachMatchCard */}
+      {/* Modale convocation */}
       {convocationEvent && (
         <Suspense fallback={null}>
           <EventFormStepConvocation

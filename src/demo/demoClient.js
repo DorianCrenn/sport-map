@@ -252,10 +252,16 @@ class DemoQueryBuilder {
 
   _handleUpsert(tables) {
     const items = Array.isArray(this._payload) ? this._payload : [this._payload];
-    const conflictKey = this._upsertOpts?.onConflict?.split(',')[0] ?? 'id';
+    // Support compound conflict keys: 'session_id,user_id' → ['session_id', 'user_id']
+    const conflictKeys = (this._upsertOpts?.onConflict ?? 'id')
+      .split(',')
+      .map(k => k.trim())
+      .filter(Boolean);
 
     items.forEach(item => {
-      const idx = (tables[this._table] ?? []).findIndex(r => String(r[conflictKey]) === String(item[conflictKey]));
+      const idx = (tables[this._table] ?? []).findIndex(r =>
+        conflictKeys.every(k => String(r[k] ?? '') === String(item[k] ?? ''))
+      );
       if (idx >= 0) {
         tables[this._table][idx] = { ...tables[this._table][idx], ...item };
       } else {

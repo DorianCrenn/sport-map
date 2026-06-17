@@ -83,7 +83,7 @@ export function buildDemoTables() {
   }
 
   // Mutable copies — modifiable during sandbox mode
-  return {
+  const tables = {
     events:                [...demoEvents],
     clubs:                 [{ ...demoClubRow }],
     profiles:              [{ ...DEMO_PROFILE_ROW }],
@@ -97,22 +97,23 @@ export function buildDemoTables() {
     club_trainings:        [...demoTrainings],
 
     // ── Séances d'entraînement — aujourd'hui + 4 semaines ───────────────────
+    // team_id = team_name (identifiant textuel), doit correspondre à club_players.team_id
     training_sessions: [
-      // Aujourd'hui
-      { id: 'demo-ts-001', club_id: DEMO_CLUB_ID, team_id: null, date: TODAY,          time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
-      { id: 'demo-ts-002', club_id: DEMO_CLUB_ID, team_id: null, date: TODAY,          time: '17h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
-      { id: 'demo-ts-003', club_id: DEMO_CLUB_ID, team_id: null, date: TODAY,          time: '19h30', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
+      // Aujourd'hui — 3 équipes
+      { id: 'demo-ts-001', club_id: DEMO_CLUB_ID, team_id: 'Équipe 1', date: TODAY,          time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-002', club_id: DEMO_CLUB_ID, team_id: 'U17',      date: TODAY,          time: '17h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
+      { id: 'demo-ts-003', club_id: DEMO_CLUB_ID, team_id: 'Réserve',  date: TODAY,          time: '19h30', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
       // Semaine 1
-      { id: 'demo-ts-004', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(2),  time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
-      { id: 'demo-ts-005', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(2),  time: '17h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
-      { id: 'demo-ts-006', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(4),  time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
-      { id: 'demo-ts-007', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(4),  time: '19h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
+      { id: 'demo-ts-004', club_id: DEMO_CLUB_ID, team_id: 'Équipe 1', date: futureDate(2),  time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-005', club_id: DEMO_CLUB_ID, team_id: 'U17',      date: futureDate(2),  time: '17h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
+      { id: 'demo-ts-006', club_id: DEMO_CLUB_ID, team_id: 'Équipe 1', date: futureDate(4),  time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-007', club_id: DEMO_CLUB_ID, team_id: 'Équipe F', date: futureDate(4),  time: '19h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
       // Semaine 2
-      { id: 'demo-ts-008', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(9),  time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
-      { id: 'demo-ts-009', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(11), time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-008', club_id: DEMO_CLUB_ID, team_id: 'Équipe 1', date: futureDate(9),  time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-009', club_id: DEMO_CLUB_ID, team_id: 'U17',      date: futureDate(11), time: '17h00', location: 'Terrain annexe – Cavale Blanche',    status: 'active', created_at: NOW },
       // Semaine 3
-      { id: 'demo-ts-010', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(16), time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
-      { id: 'demo-ts-011', club_id: DEMO_CLUB_ID, team_id: null, date: futureDate(18), time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-010', club_id: DEMO_CLUB_ID, team_id: 'Équipe 1', date: futureDate(16), time: '18h30', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
+      { id: 'demo-ts-011', club_id: DEMO_CLUB_ID, team_id: 'Équipe F', date: futureDate(18), time: '19h00', location: 'Complexe de la Cavale Blanche',     status: 'active', created_at: NOW },
     ],
 
     // ── Scores de matchs — état pré-match (J+4) + 4 matchs EN DIRECT ────────
@@ -218,19 +219,110 @@ export function buildDemoTables() {
 
     club_challenges:         [],
 
-    // ── Présences entraînements — demo user déjà confirmé pour les séances d'aujourd'hui
+    // ── Présences entraînements ────────────────────────────────────────────────
+    // Demo user + joueurs fictifs pour alimenter AttendanceListSheet
     training_attendance: [
-      { id: 'demo-ta-001', session_id: 'demo-ts-001', user_id: DEMO_USER_ID, status: 'present',  updated_at: NOW },
-      { id: 'demo-ta-002', session_id: 'demo-ts-002', user_id: DEMO_USER_ID, status: 'absent',   updated_at: NOW },
-      { id: 'demo-ta-003', session_id: 'demo-ts-003', user_id: DEMO_USER_ID, status: 'unsure',   updated_at: NOW },
-      { id: 'demo-ta-004', session_id: 'demo-ts-004', user_id: DEMO_USER_ID, status: 'present',  updated_at: NOW },
+      // demo-ts-001 (Équipe 1, aujourd'hui) — 14 présents, 3 absents, 2 incertains
+      { id: 'demo-ta-001', session_id: 'demo-ts-001', user_id: DEMO_USER_ID,     status: 'present', updated_at: NOW },
+      { id: 'demo-ta-002', session_id: 'demo-ts-001', user_id: 'fake-user-p02',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-003', session_id: 'demo-ts-001', user_id: 'fake-user-p03',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-004', session_id: 'demo-ts-001', user_id: 'fake-user-p04',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-005', session_id: 'demo-ts-001', user_id: 'fake-user-p06',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-006', session_id: 'demo-ts-001', user_id: 'fake-user-p07',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-007', session_id: 'demo-ts-001', user_id: 'fake-user-p08',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-008', session_id: 'demo-ts-001', user_id: 'fake-user-p09',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-009', session_id: 'demo-ts-001', user_id: 'fake-user-p10',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-010', session_id: 'demo-ts-001', user_id: 'fake-user-p11',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-011', session_id: 'demo-ts-001', user_id: 'fake-user-p12',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-012', session_id: 'demo-ts-001', user_id: 'fake-user-p14',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-013', session_id: 'demo-ts-001', user_id: 'fake-user-p15',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-014', session_id: 'demo-ts-001', user_id: 'fake-user-p17',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-015', session_id: 'demo-ts-001', user_id: 'fake-user-p05',  status: 'absent',  updated_at: NOW },
+      { id: 'demo-ta-016', session_id: 'demo-ts-001', user_id: 'fake-user-p13',  status: 'absent',  updated_at: NOW },
+      { id: 'demo-ta-017', session_id: 'demo-ts-001', user_id: 'fake-user-p16',  status: 'absent',  updated_at: NOW },
+      { id: 'demo-ta-018', session_id: 'demo-ts-001', user_id: 'fake-user-p18',  status: 'unsure',  updated_at: NOW },
+      { id: 'demo-ta-019', session_id: 'demo-ts-001', user_id: 'fake-user-p19',  status: 'unsure',  updated_at: NOW },
+      // demo-ts-002 (U17, aujourd'hui) — demo user absent
+      { id: 'demo-ta-020', session_id: 'demo-ts-002', user_id: DEMO_USER_ID,     status: 'absent',  updated_at: NOW },
+      { id: 'demo-ta-021', session_id: 'demo-ts-002', user_id: 'fake-user-u17-01', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-022', session_id: 'demo-ts-002', user_id: 'fake-user-u17-02', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-023', session_id: 'demo-ts-002', user_id: 'fake-user-u17-03', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-024', session_id: 'demo-ts-002', user_id: 'fake-user-u17-04', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-025', session_id: 'demo-ts-002', user_id: 'fake-user-u17-05', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-026', session_id: 'demo-ts-002', user_id: 'fake-user-u17-06', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-027', session_id: 'demo-ts-002', user_id: 'fake-user-u17-07', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-028', session_id: 'demo-ts-002', user_id: 'fake-user-u17-08', status: 'unsure',  updated_at: NOW },
+      // demo-ts-003 (Réserve, aujourd'hui) — demo user incertain
+      { id: 'demo-ta-029', session_id: 'demo-ts-003', user_id: DEMO_USER_ID,     status: 'unsure',  updated_at: NOW },
+      { id: 'demo-ta-030', session_id: 'demo-ts-003', user_id: 'fake-user-res-01', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-031', session_id: 'demo-ts-003', user_id: 'fake-user-res-02', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-032', session_id: 'demo-ts-003', user_id: 'fake-user-res-03', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-033', session_id: 'demo-ts-003', user_id: 'fake-user-res-04', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-034', session_id: 'demo-ts-003', user_id: 'fake-user-res-05', status: 'absent',  updated_at: NOW },
+      // demo-ts-004 (Équipe 1, J+2) — demo user présent
+      { id: 'demo-ta-035', session_id: 'demo-ts-004', user_id: DEMO_USER_ID,     status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-036', session_id: 'demo-ts-004', user_id: 'fake-user-p02',   status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-037', session_id: 'demo-ts-004', user_id: 'fake-user-p03',   status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-038', session_id: 'demo-ts-004', user_id: 'fake-user-p04',   status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-039', session_id: 'demo-ts-004', user_id: 'fake-user-p06',   status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-040', session_id: 'demo-ts-004', user_id: 'fake-user-p07',   status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-041', session_id: 'demo-ts-004', user_id: 'fake-user-p08',   status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-042', session_id: 'demo-ts-004', user_id: 'fake-user-p09',   status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-043', session_id: 'demo-ts-004', user_id: 'fake-user-p10',   status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-044', session_id: 'demo-ts-004', user_id: 'fake-user-p11',   status: 'present',  updated_at: NOW },
+      { id: 'demo-ta-045', session_id: 'demo-ts-004', user_id: 'fake-user-p05',   status: 'absent',   updated_at: NOW },
+      { id: 'demo-ta-046', session_id: 'demo-ts-004', user_id: 'fake-user-p12',   status: 'absent',   updated_at: NOW },
+      { id: 'demo-ta-047', session_id: 'demo-ts-004', user_id: 'fake-user-p13',   status: 'unsure',   updated_at: NOW },
     ],
 
-    // ── Présences matchs — demo user a répondu pour le match principal (J+4)
+    // ── Présences matchs ────────────────────────────────────────────────────────
     match_player_attendance: [
-      { id: 'demo-mpa-001', event_id: 'demo-event-001', user_id: DEMO_USER_ID, status: 'present',  updated_at: NOW },
-      { id: 'demo-mpa-002', event_id: 'demo-event-006', user_id: DEMO_USER_ID, status: 'present',  updated_at: NOW },
-      { id: 'demo-mpa-003', event_id: 'demo-event-007', user_id: DEMO_USER_ID, status: 'unsure',   updated_at: NOW },
+      { id: 'demo-mpa-001', event_id: 'demo-event-001', user_id: DEMO_USER_ID,    status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-002', event_id: 'demo-event-001', user_id: 'fake-user-p02', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-003', event_id: 'demo-event-001', user_id: 'fake-user-p03', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-004', event_id: 'demo-event-001', user_id: 'fake-user-p04', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-005', event_id: 'demo-event-001', user_id: 'fake-user-p06', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-006', event_id: 'demo-event-001', user_id: 'fake-user-p07', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-007', event_id: 'demo-event-001', user_id: 'fake-user-p08', status: 'absent',  updated_at: NOW },
+      { id: 'demo-mpa-008', event_id: 'demo-event-001', user_id: 'fake-user-p09', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-009', event_id: 'demo-event-001', user_id: 'fake-user-p10', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-010', event_id: 'demo-event-001', user_id: 'fake-user-p11', status: 'absent',  updated_at: NOW },
+      { id: 'demo-mpa-011', event_id: 'demo-event-001', user_id: 'fake-user-p12', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-012', event_id: 'demo-event-001', user_id: 'fake-user-p13', status: 'unsure',  updated_at: NOW },
+      { id: 'demo-mpa-013', event_id: 'demo-event-006', user_id: DEMO_USER_ID,    status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-014', event_id: 'demo-event-006', user_id: 'fake-user-u17-01', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-015', event_id: 'demo-event-006', user_id: 'fake-user-u17-02', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-016', event_id: 'demo-event-006', user_id: 'fake-user-u17-03', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-017', event_id: 'demo-event-006', user_id: 'fake-user-u17-04', status: 'absent',  updated_at: NOW },
+      { id: 'demo-mpa-018', event_id: 'demo-event-007', user_id: DEMO_USER_ID,    status: 'unsure',  updated_at: NOW },
+      { id: 'demo-mpa-019', event_id: 'demo-event-007', user_id: 'fake-user-f-01', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-020', event_id: 'demo-event-007', user_id: 'fake-user-f-02', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-021', event_id: 'demo-event-007', user_id: 'fake-user-f-03', status: 'present', updated_at: NOW },
+      { id: 'demo-mpa-022', event_id: 'demo-event-007', user_id: 'fake-user-f-04', status: 'absent',  updated_at: NOW },
     ],
+
+    // ── Vues agrégées simulées (SECURITY DEFINER dans la vraie DB) ────────────
+    // Calculées à partir des tableaux ci-dessus pour rester cohérentes
+    training_attendance_counts: [],
+    match_attendance_counts:    [],
   };
+
+  // Calcul des compteurs agrégés à partir des données brutes
+  const taAgg = {};
+  tables.training_attendance.forEach(a => {
+    if (!taAgg[a.session_id]) taAgg[a.session_id] = { session_id: a.session_id, present_count: 0, absent_count: 0, unsure_count: 0, total_count: 0 };
+    taAgg[a.session_id][a.status + '_count']++;
+    taAgg[a.session_id].total_count++;
+  });
+  tables.training_attendance_counts = Object.values(taAgg);
+
+  const maAgg = {};
+  tables.match_player_attendance.forEach(a => {
+    if (!maAgg[a.event_id]) maAgg[a.event_id] = { event_id: a.event_id, present_count: 0, absent_count: 0, unsure_count: 0, total_count: 0 };
+    maAgg[a.event_id][a.status + '_count']++;
+    maAgg[a.event_id].total_count++;
+  });
+  tables.match_attendance_counts = Object.values(maAgg);
+
+  return tables;
 }

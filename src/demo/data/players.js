@@ -11,6 +11,7 @@ function makePlayer(idx, name, team, position, number, photoUrl, email, userId =
     user_id:    userId,
     name,
     team_name:  team,
+    team_id:    team,   // team_id = team_name (identifiant textuel dans categories)
     position,
     number,
     photo_url:  photoUrl,

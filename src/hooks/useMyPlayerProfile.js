@@ -12,14 +12,19 @@ export function useMyPlayerProfile() {
   useEffect(() => {
     if (!currentUser?.id) { setProfile(null); setLoading(false); return; }
     let cancelled = false;
+    // .select() (not .maybeSingle) — a player can be in multiple teams
     supabase
       .from('club_players')
       .select('id, club_id, team_id, name, number, position')
       .eq('user_id', currentUser.id)
       .eq('is_active', true)
-      .maybeSingle()
       .then(({ data }) => {
-        if (!cancelled) { setProfile(data ?? null); setLoading(false); }
+        if (!cancelled) {
+          const rows = data ?? [];
+          // Keep backward-compat: profile = first entry, profiles = all entries
+          setProfile(rows.length > 0 ? { ...rows[0], allEntries: rows } : null);
+          setLoading(false);
+        }
       })
       .catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
