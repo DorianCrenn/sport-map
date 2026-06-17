@@ -32,9 +32,25 @@ export default function LiveScorePupitre({ event, matchScore, onFinished }) {
     update(next, scoreAway, prev, scoreAway);
   }
 
+  function decrementHome() {
+    if (scoreHome === 0) return;
+    const prev = scoreHome;
+    const next = prev - 1;
+    setScoreHome(next);
+    update(next, scoreAway, prev, scoreAway);
+  }
+
   function incrementAway() {
     const prev = scoreAway;
     const next = prev + 1;
+    setScoreAway(next);
+    update(scoreHome, next, scoreHome, prev);
+  }
+
+  function decrementAway() {
+    if (scoreAway === 0) return;
+    const prev = scoreAway;
+    const next = prev - 1;
     setScoreAway(next);
     update(scoreHome, next, scoreHome, prev);
   }
@@ -83,23 +99,50 @@ export default function LiveScorePupitre({ event, matchScore, onFinished }) {
         </span>
       </div>
 
-      {/* Boutons +1 */}
+      {/* Boutons ± par équipe */}
       <div className="flex gap-3 mb-3">
-        <button
-          onClick={incrementHome}
-          className="flex-1 py-3 rounded-xl bg-[var(--sl-green)] text-black
-                     text-[15px] font-black active:scale-95 transition-transform"
-        >
-          +1 {homeTeam.split(' ')[0]}
-        </button>
-        <button
-          onClick={incrementAway}
-          className="flex-1 py-3 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t1)]
-                     text-[15px] font-black border border-[var(--sl-border)]
-                     active:scale-95 transition-transform"
-        >
-          +1 {awayTeam.split(' ')[0]}
-        </button>
+        {/* Domicile */}
+        <div className="flex-1 flex gap-1.5">
+          <button
+            onClick={incrementHome}
+            className="flex-1 py-3 rounded-xl bg-[var(--sl-green)] text-black
+                       text-[15px] font-black active:scale-95 transition-transform"
+          >
+            +1 {homeTeam.split(' ')[0]}
+          </button>
+          <button
+            onClick={decrementHome}
+            disabled={scoreHome === 0}
+            className="w-11 py-3 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)]
+                       text-[17px] font-black border border-[var(--sl-border)]
+                       active:scale-95 transition-transform disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Enlever 1 but domicile"
+          >
+            −
+          </button>
+        </div>
+
+        {/* Visiteur */}
+        <div className="flex-1 flex gap-1.5">
+          <button
+            onClick={incrementAway}
+            className="flex-1 py-3 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t1)]
+                       text-[15px] font-black border border-[var(--sl-border)]
+                       active:scale-95 transition-transform"
+          >
+            +1 {awayTeam.split(' ')[0]}
+          </button>
+          <button
+            onClick={decrementAway}
+            disabled={scoreAway === 0}
+            className="w-11 py-3 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)]
+                       text-[17px] font-black border border-[var(--sl-border)]
+                       active:scale-95 transition-transform disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Enlever 1 but visiteur"
+          >
+            −
+          </button>
+        </div>
       </div>
 
       {/* Terminer */}
