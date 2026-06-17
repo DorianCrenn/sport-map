@@ -49,8 +49,13 @@ import { useFeedbackNotifications } from './hooks/useFeedbackNotifications.js';
 import { useAnalyticsConsent } from './hooks/useAnalyticsConsent.js';
 import { useAnalytics } from './hooks/useAnalytics.js';
 import ConsentBanner from './components/ConsentBanner.jsx';
-const AdminFeedbackPage  = lazy(() => import('./pages/AdminFeedbackPage.jsx'));
-const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage.jsx'));
+const AdminFeedbackPage    = lazy(() => import('./pages/AdminFeedbackPage.jsx'));
+const AdminAnalyticsPage   = lazy(() => import('./pages/AdminAnalyticsPage.jsx'));
+const AdminPlansPage       = lazy(() => import('./pages/AdminPlansPage.jsx'));
+const AdminLicensesPage    = lazy(() => import('./pages/AdminLicensesPage.jsx'));
+const AdminPermissionsPage = lazy(() => import('./pages/AdminPermissionsPage.jsx'));
+const AdminAuditLogPage    = lazy(() => import('./pages/AdminAuditLogPage.jsx'));
+import SimulatorBanner from './components/SimulatorBanner.jsx';
 
 function ModalLoader() {
   return (
@@ -611,9 +616,17 @@ function AppInner() {
               <ErrorBoundary name="Admin" onReport={handleErrorReport}>
                 <Suspense fallback={<ModalLoader />}>
                   {adminSubView === 'feedback'
-                    ? <AdminFeedbackPage onBack={() => setAdminSubView(null)} />
+                    ? <AdminFeedbackPage    onBack={() => setAdminSubView(null)} />
                     : adminSubView === 'analytics'
-                    ? <AdminAnalyticsPage onBack={() => setAdminSubView(null)} />
+                    ? <AdminAnalyticsPage   onBack={() => setAdminSubView(null)} />
+                    : adminSubView === 'plans'
+                    ? <AdminPlansPage       onBack={() => setAdminSubView(null)} />
+                    : adminSubView === 'licenses'
+                    ? <AdminLicensesPage    onBack={() => setAdminSubView(null)} />
+                    : adminSubView === 'permissions'
+                    ? <AdminPermissionsPage onBack={() => setAdminSubView(null)} />
+                    : adminSubView === 'audit-log'
+                    ? <AdminAuditLogPage    onBack={() => setAdminSubView(null)} />
                     : <AdminPage onNavigate={setAdminSubView} />
                   }
                 </Suspense>
@@ -680,6 +693,9 @@ function AppInner() {
           <ConsentBanner onAccept={acceptAnalytics} onRefuse={refuseAnalytics} />
         )}
       </AnimatePresence>
+
+      {/* Simulateur rôle/plan — visible uniquement pour les admins */}
+      {isAdmin && activeTab === 'admin' && <SimulatorBanner />}
 
       <ErrorBoundary name="BottomNav" onReport={handleErrorReport}>
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} onClubAdminAction={handleClubAdminFabAction} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp} />

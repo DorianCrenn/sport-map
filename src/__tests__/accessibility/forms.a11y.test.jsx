@@ -41,7 +41,12 @@ vi.mock('../../lib/supabase.js', () => ({
 }));
 
 vi.mock('../../contexts/AuthContext.jsx', () => ({
-  useAuth: () => ({ currentUser: { id: 'u1', name: 'Test User' }, isAdmin: false }),
+  useAuth:     () => ({ currentUser: { id: 'u1', name: 'Test User' }, isAdmin: false }),
+  useAuthSafe: () => ({ currentUser: { id: 'u1', name: 'Test User' }, isAdmin: false, isClubAdmin: false }),
+}));
+
+vi.mock('../../hooks/useCanDo.js', () => ({
+  useCanDo: () => ({ can: () => true, role: 'supporter', isSimulating: false }),
 }));
 
 vi.mock('../../contexts/ToastContext.jsx', () => ({

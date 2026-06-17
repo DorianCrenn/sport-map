@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -7,6 +7,7 @@ vi.mock('framer-motion', () => ({
   motion: {
     div:    ({ children, ...p }) => <div {...p}>{children}</div>,
     button: ({ children, onClick, disabled, ...p }) => <button onClick={onClick} disabled={disabled} {...p}>{children}</button>,
+    span:   ({ children, ...p }) => <span {...p}>{children}</span>,
   },
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
@@ -33,17 +34,36 @@ vi.mock('../../hooks/useRides.js', () => ({
   useRides: () => ({ rides: [], loading: false }),
 }));
 
+vi.mock('../../contexts/ToastContext.jsx', () => ({
+  useToast: () => ({ toast: vi.fn() }),
+}));
+
+vi.mock('../../lib/supabase.js', () => {
+  const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+  const eq       = vi.fn(() => ({ maybeSingle }));
+  const select   = vi.fn(() => ({ eq }));
+  const update   = vi.fn().mockResolvedValue({ error: null });
+  const insert   = vi.fn().mockResolvedValue({ error: null });
+  const from     = vi.fn(() => ({ select, update, insert }));
+  return { supabase: { from } };
+});
+
+vi.mock('../../components/home/LiveScorePupitre.jsx', () => ({
+  default: () => <div>LiveScorePupitre</div>,
+}));
+
 import MatchPlanningCard from '../../components/planning/MatchPlanningCard.jsx';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
 const DEMO_CLUB = { id: 'club-1', name: 'FC SportLink Démo', primary_color: '#1d4ed8', logo_url: null };
 
+// Date far in the future ensures cardState = 'pre_match' regardless of when tests run
 function makeItem(overrides = {}) {
   return {
     id:           'ev-1',
     type:         'match',
-    date:         '2026-06-19',
+    date:         '2030-01-15',
     time:         '19:45',
     title:        'FC SportLink Démo vs Lorient FC',
     location:     'Stade Francis-Le Blé',
@@ -112,15 +132,18 @@ describe('MatchPlanningCard — rendu', () => {
 describe('MatchPlanningCard — joueur', () => {
   it('affiche les boutons de présence', () => {
     render(<MatchPlanningCard item={makeItem({ isPlayerClub: true })} club={DEMO_CLUB} userId="u-1" />);
-    expect(screen.getByText('Présent')).toBeInTheDocument();
-    expect(screen.getByText('Absent')).toBeInTheDocument();
-    expect(screen.getByText('Incertain')).toBeInTheDocument();
+    // Scope to "Ma présence" section to avoid ambiguity with the presence summary labels
+    const section = screen.getByText('Ma présence').parentElement;
+    expect(within(section).getByText('Présent')).toBeInTheDocument();
+    expect(within(section).getByText('Absent')).toBeInTheDocument();
+    expect(within(section).getByText('Incertain')).toBeInTheDocument();
   });
 
   it('clic Présent appelle onRespond', () => {
     const onRespond = vi.fn();
     render(<MatchPlanningCard item={makeItem({ isPlayerClub: true, onRespond })} club={DEMO_CLUB} userId="u-1" />);
-    fireEvent.click(screen.getByText('Présent'));
+    const section = screen.getByText('Ma présence').parentElement;
+    fireEvent.click(within(section).getByText('Présent'));
     expect(onRespond).toHaveBeenCalledWith('match', 'ev-1', 'present');
   });
 });
@@ -128,49 +151,53 @@ describe('MatchPlanningCard — joueur', () => {
 // ── Tests — staff ─────────────────────────────────────────────────────────────
 
 describe('MatchPlanningCard — staff', () => {
-  it('affiche le badge "Rôle Staff"', () => {
-    render(<MatchPlanningCard item={makeItem({ isStaffClub: true, isPlayerClub: false })} club={DEMO_CLUB} userId="u-1" />);
-    expect(screen.getByText('Rôle Staff')).toBeInTheDocument();
+  // Staff items have no player link — isPlayerClub: false
+  const staffItem = () => makeItem({ isPlayerClub: false });
+
+  it('affiche le badge "Coach"', () => {
+    render(<MatchPlanningCard item={staffItem()} club={DEMO_CLUB} userId="u-1" isStaff isCoach />);
+    expect(screen.getByText('Coach')).toBeInTheDocument();
   });
 
   it('affiche le bouton "Convoquer l\'équipe" si pas de score', () => {
-    render(<MatchPlanningCard item={makeItem({ isStaffClub: true, isPlayerClub: false })} club={DEMO_CLUB} userId="u-1" />);
+    render(<MatchPlanningCard item={staffItem()} club={DEMO_CLUB} userId="u-1" isStaff isCoach />);
     expect(screen.getByText(/Convoquer l'équipe/i)).toBeInTheDocument();
   });
 
   it('affiche le bouton "Créer l\'affiche" si pas de score', () => {
-    render(<MatchPlanningCard item={makeItem({ isStaffClub: true, isPlayerClub: false })} club={DEMO_CLUB} userId="u-1" />);
+    render(<MatchPlanningCard item={staffItem()} club={DEMO_CLUB} userId="u-1" isStaff isCoach isCommunicant />);
     expect(screen.getByText(/Créer l'affiche/i)).toBeInTheDocument();
   });
 
   it('masque Convoquer si score défini (post-match)', () => {
-    render(<MatchPlanningCard item={makeItem({ isStaffClub: true, isPlayerClub: false, score: { home: 2, away: 1 } })} club={DEMO_CLUB} userId="u-1" />);
+    render(<MatchPlanningCard item={makeItem({ isPlayerClub: false, score: { home: 2, away: 1 } })} club={DEMO_CLUB} userId="u-1" isStaff isCoach />);
     expect(screen.queryByText(/Convoquer l'équipe/i)).not.toBeInTheDocument();
   });
 
-  it('affiche "Créer l\'affiche résultat" après le match', () => {
-    render(<MatchPlanningCard item={makeItem({ isStaffClub: true, isPlayerClub: false, score: { home: 2, away: 1 } })} club={DEMO_CLUB} userId="u-1" />);
-    expect(screen.getByText(/Créer l'affiche résultat/i)).toBeInTheDocument();
+  it('affiche "Générer l\'affiche résultat" après le match', () => {
+    render(<MatchPlanningCard item={makeItem({ isPlayerClub: false, score: { home: 2, away: 1 } })} club={DEMO_CLUB} userId="u-1" isStaff isCoach />);
+    expect(screen.getByText(/Générer l'affiche résultat/i)).toBeInTheDocument();
   });
 
   it('clic Convoquer appelle onConvocate', () => {
     const onConvocate = vi.fn();
-    const item = makeItem({ isStaffClub: true, isPlayerClub: false });
-    render(<MatchPlanningCard item={item} club={DEMO_CLUB} userId="u-1" onConvocate={onConvocate} />);
+    const item = staffItem();
+    render(<MatchPlanningCard item={item} club={DEMO_CLUB} userId="u-1" isStaff isCoach onConvocate={onConvocate} />);
     fireEvent.click(screen.getByText(/Convoquer l'équipe/i));
     expect(onConvocate).toHaveBeenCalledWith(item);
   });
 
   it('clic Créer affiche appelle onOpenPoster', () => {
     const onOpenPoster = vi.fn();
-    render(<MatchPlanningCard item={makeItem({ isStaffClub: true, isPlayerClub: false })} club={DEMO_CLUB} userId="u-1" onOpenPoster={onOpenPoster} />);
+    render(<MatchPlanningCard item={staffItem()} club={DEMO_CLUB} userId="u-1" isStaff isCoach isCommunicant onOpenPoster={onOpenPoster} />);
     fireEvent.click(screen.getByText(/Créer l'affiche/i));
     expect(onOpenPoster).toHaveBeenCalled();
   });
 
   it('n\'affiche pas les boutons de présence pour staff pur', () => {
-    render(<MatchPlanningCard item={makeItem({ isStaffClub: true, isPlayerClub: false })} club={DEMO_CLUB} userId="u-1" />);
-    expect(screen.queryByText('Présent')).not.toBeInTheDocument();
+    render(<MatchPlanningCard item={staffItem()} club={DEMO_CLUB} userId="u-1" isStaff isCoach />);
+    // "Ma présence" section only renders when item.isPlayerClub = true
+    expect(screen.queryByText('Ma présence')).not.toBeInTheDocument();
   });
 });
 
@@ -178,18 +205,18 @@ describe('MatchPlanningCard — staff', () => {
 
 describe('MatchPlanningCard — supporter', () => {
   it('n\'affiche pas les boutons de présence', () => {
-    render(<MatchPlanningCard item={makeItem({ isSupporter: true, isPlayerClub: false, isStaffClub: false })} club={DEMO_CLUB} userId="u-1" />);
-    expect(screen.queryByText('Présent')).not.toBeInTheDocument();
+    render(<MatchPlanningCard item={makeItem({ isSupporter: true, isPlayerClub: false })} club={DEMO_CLUB} userId="u-1" />);
+    expect(screen.queryByText('Ma présence')).not.toBeInTheDocument();
   });
 
   it('affiche "Voir le groupe" si convocs acceptées existent', () => {
-    const item = makeItem({ isSupporter: true, isPlayerClub: false, isStaffClub: false, convocs: { accepted: 18, pending: 2, total: 20 } });
+    const item = makeItem({ isSupporter: true, isPlayerClub: false, convocs: { accepted: 18, pending: 2, total: 20 } });
     render(<MatchPlanningCard item={item} club={DEMO_CLUB} userId="u-1" />);
     expect(screen.getByText(/18 joueur/i)).toBeInTheDocument();
   });
 
   it('n\'affiche pas "Voir le groupe" si convocs.accepted=0', () => {
-    const item = makeItem({ isSupporter: true, isPlayerClub: false, isStaffClub: false, convocs: { accepted: 0, pending: 0, total: 0 } });
+    const item = makeItem({ isSupporter: true, isPlayerClub: false, convocs: { accepted: 0, pending: 0, total: 0 } });
     render(<MatchPlanningCard item={item} club={DEMO_CLUB} userId="u-1" />);
     expect(screen.queryByText(/joueur convoqué/i)).not.toBeInTheDocument();
   });

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useClubPlayers } from '../../hooks/useClubPlayers.js';
 import QuickAddTeamModal from './QuickAddTeamModal.jsx';
+import { useCanDo } from '../../hooks/useCanDo.js';
 
 const POSITIONS = ['Gardien', 'Défenseur', 'Milieu', 'Attaquant'];
 const EMPTY_FORM = { name: '', number: '', position: 'Milieu', photo_url: '', email: '', team_id: '' };
@@ -19,6 +20,8 @@ const XIcon = () => (
 
 export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub }) {
   const { players, loading, claims, addPlayer, removePlayer, approveClaim, rejectClaim } = useClubPlayers(clubId);
+  const { can, isSimulating } = useCanDo();
+  const canManage = isSimulating ? can('teams', 'create') : true;
   const [form, setForm]         = useState(EMPTY_FORM);
   const [adding, setAdding]     = useState(false);
   const [saving, setSaving]     = useState(false);
@@ -185,12 +188,12 @@ export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub
             </button>
           </div>
         </form>
-      ) : (
+      ) : canManage ? (
         <button onClick={() => setAdding(true)}
           className="flex items-center gap-2 w-full py-3 justify-center rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-colors font-semibold">
           + Ajouter un joueur
         </button>
-      )}
+      ) : null}
     </div>
   );
 }

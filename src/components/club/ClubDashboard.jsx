@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
+import { useCanDo } from '../../hooks/useCanDo.js';
 import { useClubDashboard } from '../../hooks/useClubDashboard.js';
 import { useClubBrandKit } from '../../hooks/useClubBrandKit.js';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
@@ -185,8 +186,12 @@ function TrainingsSection({ clubId }) {
 
 function AnnouncementsSection({ club }) {
   const { announcements, loading, sendAnnouncement, deleteAnnouncement } = useClubAnnouncements(club.id);
+  const { can, isSimulating } = useCanDo();
   const [showModal, setShowModal] = useState(false);
   const [success, setSuccess]     = useState(false);
+  // Hors simulation → autoriser (propriétaire du club accède ici) ; en simulation → vérifier matrice
+  const canCreate = isSimulating ? can('announcements', 'create') : true;
+  const canDelete = isSimulating ? can('announcements', 'delete') : true;
 
   const published = announcements.filter(a => !a.scheduledFor || new Date(a.scheduledFor) <= new Date());
 
@@ -209,15 +214,17 @@ function AnnouncementsSection({ club }) {
             {loading ? 'Chargement…' : published.length === 0 ? 'Aucune annonce publiée' : `${published.length} publiée${published.length > 1 ? 's' : ''}`}
           </div>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          style={{
-            padding: '7px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
-            backgroundColor: '#3b82f6', color: 'white', fontSize: 12, fontWeight: 700,
-          }}
-        >
-          + Nouvelle
-        </button>
+        {canCreate && (
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              padding: '7px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              backgroundColor: '#3b82f6', color: 'white', fontSize: 12, fontWeight: 700,
+            }}
+          >
+            + Nouvelle
+          </button>
+        )}
       </div>
 
       {/* List */}
@@ -228,7 +235,7 @@ function AnnouncementsSection({ club }) {
               key={ann.id}
               ann={ann}
               variant="dashboard"
-              onDelete={deleteAnnouncement}
+              onDelete={canDelete ? deleteAnnouncement : undefined}
               isLast={idx === Math.min(published.length, 8) - 1}
             />
           ))}

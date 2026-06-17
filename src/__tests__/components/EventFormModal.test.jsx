@@ -210,7 +210,7 @@ describe('EventFormModal — validation Zod', () => {
     const arg = onSave.mock.calls[0][0];
     expect(arg).toMatchObject({
       sport: 'Football',
-      date: expect.stringContaining('2026-06-15T15:00:00'),
+      date: expect.stringContaining('2030-06-15T15:00:00'),
     });
   });
 

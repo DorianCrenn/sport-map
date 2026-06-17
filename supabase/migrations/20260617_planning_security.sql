@@ -5,13 +5,15 @@
 
 -- ── 1. training_sessions SELECT : exiger auth (était public) ─────────────────
 DROP POLICY IF EXISTS "ts_select_public" ON public.training_sessions;
+DROP POLICY IF EXISTS "ts_select_auth"   ON public.training_sessions;
 CREATE POLICY "ts_select_auth"
   ON public.training_sessions FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
 -- ── 2. training_attendance SELECT : soi-même OU staff du club ────────────────
 -- Avant : USING (true) → n'importe qui lisait TOUTES les présences
-DROP POLICY IF EXISTS "ta_select_public" ON public.training_attendance;
+DROP POLICY IF EXISTS "ta_select_public"   ON public.training_attendance;
+DROP POLICY IF EXISTS "ta_select_involved" ON public.training_attendance;
 CREATE POLICY "ta_select_involved"
   ON public.training_attendance FOR SELECT
   USING (
@@ -36,6 +38,7 @@ CREATE POLICY "ta_select_involved"
 -- ── 3. training_messages SELECT : exiger auth (était public) ─────────────────
 -- Messages internes coaches ne doivent pas être publics
 DROP POLICY IF EXISTS "tm_select_public" ON public.training_messages;
+DROP POLICY IF EXISTS "tm_select_auth"   ON public.training_messages;
 CREATE POLICY "tm_select_auth"
   ON public.training_messages FOR SELECT
   USING (auth.uid() IS NOT NULL);
@@ -60,7 +63,8 @@ GRANT SELECT ON public.training_attendance_counts TO authenticated, anon;
 
 -- ── 5. match_player_attendance SELECT : soi-même OU staff du club ────────────
 -- Avant : auth.uid() IS NOT NULL → tout utilisateur auth voyait toutes les présences
-DROP POLICY IF EXISTS "mpa_select" ON public.match_player_attendance;
+DROP POLICY IF EXISTS "mpa_select"          ON public.match_player_attendance;
+DROP POLICY IF EXISTS "mpa_select_involved" ON public.match_player_attendance;
 CREATE POLICY "mpa_select_involved"
   ON public.match_player_attendance FOR SELECT
   USING (
@@ -100,7 +104,8 @@ GRANT SELECT ON public.match_attendance_counts TO authenticated, anon;
 
 -- ── 7. event_convocations SELECT : joueur/tuteur/staff uniquement ─────────────
 -- Avant : tout utilisateur authentifié voyait toutes les convocations
-DROP POLICY IF EXISTS "ec_select" ON public.event_convocations;
+DROP POLICY IF EXISTS "ec_select"          ON public.event_convocations;
+DROP POLICY IF EXISTS "ec_select_involved" ON public.event_convocations;
 CREATE POLICY "ec_select_involved"
   ON public.event_convocations FOR SELECT TO authenticated
   USING (

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ function makeItem(overrides = {}) {
   return {
     id:           'ts-1',
     type:         'training',
-    date:         '2026-06-17',
+    date:         '2030-01-15',
     time:         '18h30',
     title:        'Entraînement Équipe 1',
     location:     'Complexe de la Cavale Blanche',
@@ -79,7 +79,6 @@ describe('TrainingPlanningCard — rendu', () => {
 
   it('affiche les compteurs de présence', () => {
     const { container } = render(<TrainingPlanningCard item={makeItem()} userId="u-1" />);
-    // CountBadge rend "✓ N" dans un span .text-emerald-400
     const greenBadge = container.querySelector('.text-emerald-400');
     expect(greenBadge).not.toBeNull();
     expect(greenBadge.textContent).toContain('14');
@@ -93,15 +92,18 @@ describe('TrainingPlanningCard — rendu', () => {
 describe('TrainingPlanningCard — joueur (isPlayerClub=true)', () => {
   it('affiche les boutons Présent/Absent/Incertain', () => {
     render(<TrainingPlanningCard item={makeItem({ isPlayerClub: true })} userId="u-1" />);
-    expect(screen.getByText('Présent')).toBeInTheDocument();
-    expect(screen.getByText('Absent')).toBeInTheDocument();
-    expect(screen.getByText('Incertain')).toBeInTheDocument();
+    // Scope to "Joueur" section to avoid ambiguity with the presence summary labels
+    const section = screen.getByText('Joueur').parentElement;
+    expect(within(section).getByText('Présent')).toBeInTheDocument();
+    expect(within(section).getByText('Absent')).toBeInTheDocument();
+    expect(within(section).getByText('Incertain')).toBeInTheDocument();
   });
 
   it('clic Présent déclenche onRespond', () => {
     const onRespond = vi.fn();
     render(<TrainingPlanningCard item={makeItem({ isPlayerClub: true, onRespond })} userId="u-1" />);
-    fireEvent.click(screen.getByText('Présent'));
+    const section = screen.getByText('Joueur').parentElement;
+    fireEvent.click(within(section).getByText('Présent'));
     expect(onRespond).toHaveBeenCalledWith('training', 'ts-1', 'present');
   });
 });
@@ -111,7 +113,8 @@ describe('TrainingPlanningCard — joueur (isPlayerClub=true)', () => {
 describe('TrainingPlanningCard — sans équipe (isPlayerClub=false)', () => {
   it('n\'affiche pas les boutons de présence', () => {
     render(<TrainingPlanningCard item={makeItem({ isPlayerClub: false })} userId="u-1" />);
-    expect(screen.queryByText('Présent')).not.toBeInTheDocument();
+    // Absence of the "Joueur" section label = PresenceButtons not rendered
+    expect(screen.queryByText('Joueur')).not.toBeInTheDocument();
   });
 });
 

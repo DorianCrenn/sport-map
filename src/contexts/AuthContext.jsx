@@ -515,3 +515,9 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
+
+// Version sûre — retourne null au lieu de throw (utile pour les hooks utilisés hors AuthProvider)
+// eslint-disable-next-line react-refresh/only-export-components
+export function useAuthSafe() {
+  return useContext(AuthContext);
+}

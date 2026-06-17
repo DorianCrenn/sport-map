@@ -9,11 +9,16 @@ const { mockUseAuth, mockUseManagedClubs } = vi.hoisted(() => ({
 }));
 
 vi.mock('../../contexts/AuthContext.jsx', () => ({
-  useAuth: mockUseAuth,
+  useAuth:     mockUseAuth,
+  useAuthSafe: mockUseAuth,
 }));
 
 vi.mock('../../hooks/useManagedClubs.js', () => ({
   useManagedClubs: mockUseManagedClubs,
+}));
+
+vi.mock('../../hooks/useCanDo.js', () => ({
+  useCanDo: () => ({ can: () => true, role: 'visitor', isSimulating: false }),
 }));
 
 vi.mock('framer-motion', () => ({

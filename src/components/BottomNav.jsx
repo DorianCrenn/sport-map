@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useManagedClubs } from '../hooks/useManagedClubs.js';
+import { useCanDo } from '../hooks/useCanDo.js';
 
 const HOME_VISITOR = {
   id: 'home', label: 'Accueil',
@@ -45,9 +46,14 @@ const MON_CLUB = {
 export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV, onOpenTrainings, onClubAdminAction, overlayOpen = false }) {
   const { isAdmin, isClubAdmin, currentUser } = useAuth();
   const { managedClubs } = useManagedClubs();
+  const { can, isSimulating } = useCanDo();
+
   const isClubAdminOnly = isClubAdmin && !isAdmin;
   const isCoach = !isAdmin && !isClubAdmin && managedClubs.length > 0;
-  const canFab = isAdmin || isCoach || isClubAdminOnly;
+  // Hors simulation : comportement inchangé ; en simulation : la matrice prime
+  const canFab = isSimulating
+    ? can('matches', 'create')
+    : (isAdmin || isCoach || isClubAdminOnly);
   const HOME = currentUser ? HOME_FEED : HOME_VISITOR;
   const [fabOpen, setFabOpen] = useState(false);
 

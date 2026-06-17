@@ -421,6 +421,65 @@ export default function AdminPage({ onNavigate }) {
                 </button>
               </div>
             </div>
+
+            {/* ── Espaces RBAC ── */}
+            <div style={{ marginTop: 4 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>
+                Gestion des accès & abonnements
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[
+                  { key: 'permissions', label: 'Matrice des permissions', desc: 'Rôles × Ressources × Actions', color: '#8b5cf6', icon: (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                  )},
+                  { key: 'plans', label: 'Matrice des abonnements', desc: 'Feature gates & quotas dynamiques', color: '#f59e0b', icon: (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  )},
+                  { key: 'licenses', label: 'Licences & Grants', desc: 'Essais gratuits, partenaires, à vie', color: '#22c55e', icon: (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                    </svg>
+                  )},
+                  { key: 'audit-log', label: 'Journal d\'audit', desc: 'Historique complet des modifications', color: '#64748b', icon: (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                  )},
+                ].map(item => (
+                  <button key={item.key}
+                    onClick={() => onNavigate?.(item.key)}
+                    style={{
+                      width: '100%', textAlign: 'left',
+                      backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16,
+                      border: `1px solid ${item.color}25`, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 14,
+                      transition: 'border-color 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = item.color; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = `${item.color}25`; }}
+                  >
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                      backgroundColor: `${item.color}14`, color: item.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {item.icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)' }}>{item.label}</p>
+                      <p style={{ margin: 0, fontSize: 12, color: 'var(--sl-t3)' }}>{item.desc}</p>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2.5" strokeLinecap="round">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            </div>
           </motion.div>
         )}
 
