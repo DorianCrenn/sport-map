@@ -88,13 +88,46 @@ export default function ActualitesPage({
 
       {/* Modale convocation (depuis cartes match) */}
       {convocationEvent && (
-        <Suspense fallback={null}>
-          <EventFormStepConvocation
-            event={convocationEvent}
-            onDone={() => setConvocationEvent(null)}
-            onClose={() => setConvocationEvent(null)}
-          />
-        </Suspense>
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9500,
+          backgroundColor: 'rgba(0,0,0,0.55)',
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'flex-end',
+        }}
+          onClick={(e) => { if (e.target === e.currentTarget) setConvocationEvent(null); }}
+        >
+          <div style={{
+            backgroundColor: 'var(--sl-card)',
+            borderRadius: '20px 20px 0 0',
+            display: 'flex', flexDirection: 'column',
+            maxHeight: '90vh',
+            paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+          }}>
+            {/* Poignée drag + bouton fermer */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '10px 16px 0', flexShrink: 0 }}>
+              <button
+                onClick={() => setConvocationEvent(null)}
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: 'none', cursor: 'pointer',
+                  backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+                aria-label="Fermer"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <Suspense fallback={<div style={{ padding: 24, textAlign: 'center', color: 'var(--sl-t3)' }}>Chargement…</div>}>
+              <EventFormStepConvocation
+                event={convocationEvent}
+                onDone={() => setConvocationEvent(null)}
+                onClose={() => setConvocationEvent(null)}
+              />
+            </Suspense>
+          </div>
+        </div>
       )}
 
       {/* PosterStudio (depuis cartes match) */}
