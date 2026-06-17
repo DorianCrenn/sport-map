@@ -1,16 +1,55 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PresenceButtons     from './PresenceButtons.jsx';
-import CarpoolSection      from './CarpoolSection.jsx';
-import AttendanceListSheet from './AttendanceListSheet.jsx';
+import { supabase }          from '../../lib/supabase.js';
+import { useToast }          from '../../contexts/ToastContext.jsx';
+import PresenceButtons       from './PresenceButtons.jsx';
+import CarpoolSection        from './CarpoolSection.jsx';
+import AttendanceListSheet   from './AttendanceListSheet.jsx';
+import LiveScorePupitre      from '../home/LiveScorePupitre.jsx';
 
+// ── Configuration visuelle par type ──────────────────────────────────────────
 const TYPE_CONFIG = {
   championship: { label: 'Championnat', color: '#06b6d4' },
   cup:          { label: 'Coupe',        color: '#f59e0b' },
   tournament:   { label: 'Tournoi',      color: '#a855f7' },
   friendly:     { label: 'Amical',       color: '#64748b' },
+  match:        { label: 'Match',        color: '#06b6d4' },
 };
 
+// ── Dérivation de l'état du match ─────────────────────────────────────────────
+// pre_match   → futur J+2 et au-delà
+// match_day   → J-1 à J (dans les 36h)
+// live        → match_scores.status = 'in_progress'
+// post_pending→ passé, score absent
+// post_done   → score final disponible (match_scores ou events.score)
+function deriveCardState(item, localMatchScore) {
+  const ms = localMatchScore ?? item.matchScore;
+
+  if (ms?.status === 'in_progress') return 'live';
+  if (ms?.status === 'final')       return 'post_done';
+
+  // Fallback : champ events.score (legacy)
+  if (item.score?.home != null || item.score?.away != null) return 'post_done';
+
+  const now       = new Date();
+  const timeStr   = item.time ? `T${item.time}:00` : 'T12:00:00';
+  const matchDate = new Date(item.date + timeStr);
+
+  if (isNaN(matchDate.getTime())) return 'pre_match';
+  if (matchDate < now) return 'post_pending';
+
+  const diffDays = (matchDate - now) / 86_400_000;
+  return diffDays <= 1.5 ? 'match_day' : 'pre_match';
+}
+
+function getEffectiveScore(item, localMatchScore) {
+  const ms = localMatchScore ?? item.matchScore;
+  if (ms?.status === 'final') return { home: ms.score_home, away: ms.score_away };
+  if (item.score?.home != null || item.score?.away != null) return item.score;
+  return null;
+}
+
+// ── Initiales équipe ──────────────────────────────────────────────────────────
 function TeamInitials({ name, size = 40 }) {
   const initials = (name ?? '?').split(' ').slice(0, 2).map(w => w[0] ?? '').join('').toUpperCase() || '?';
   return (
@@ -23,16 +62,144 @@ function TeamInitials({ name, size = 40 }) {
   );
 }
 
+// ── Résumé convocations ───────────────────────────────────────────────────────
+function ConvocationSummary({ counts }) {
+  const accepted    = counts?.accepted    ?? 0;
+  const declined    = counts?.declined    ?? 0;
+  const unavailable = counts?.unavailable ?? 0;
+  const pending     = counts?.pending     ?? 0;
+
+  return (
+    <div className="flex gap-2 flex-wrap">
+      <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-[var(--sl-green-dim)] text-[var(--sl-green)]">
+        ✓ {accepted} Présent{accepted > 1 ? 's' : ''}
+      </span>
+      {declined + unavailable > 0 && (
+        <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-500/10 text-red-400">
+          ✗ {declined + unavailable} Absent{declined + unavailable > 1 ? 's' : ''}
+        </span>
+      )}
+      {pending > 0 && (
+        <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400">
+          ⏳ {pending} Sans réponse
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ── Formulaire de saisie du score final ──────────────────────────────────────
+function ScoreInputInline({ eventId, sport, homeTeam, awayTeam, onSaved }) {
+  const [home,   setHome]   = useState('');
+  const [away,   setAway]   = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error,  setError]  = useState(null);
+  const { toast } = useToast();
+
+  async function handleSave() {
+    if (home === '' || away === '') return;
+    setSaving(true);
+    setError(null);
+    try {
+      const { data: existing } = await supabase
+        .from('match_scores').select('id').eq('event_id', eventId).maybeSingle();
+
+      const payload = {
+        event_id:   eventId,
+        score_home: Number(home),
+        score_away: Number(away),
+        status:     'final',
+        sport:      sport ?? 'Football',
+      };
+
+      const { error: dbErr } = existing
+        ? await supabase.from('match_scores').update(payload).eq('event_id', eventId)
+        : await supabase.from('match_scores').insert(payload);
+
+      if (dbErr) throw dbErr;
+      onSaved?.({ home: Number(home), away: Number(away) });
+    } catch {
+      setError('Erreur lors de la sauvegarde — réessayez');
+      toast({ message: 'Impossible de sauvegarder le score' });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      className="overflow-hidden"
+    >
+      <div className="pt-3 border-t border-[var(--sl-border)] mt-3">
+        <p className="text-[11px] font-bold text-[var(--sl-t3)] uppercase tracking-wider mb-2">
+          Score final
+        </p>
+        <div className="flex items-center gap-3">
+          <div className="flex-1 text-center">
+            <p className="text-[10px] text-[var(--sl-t3)] mb-1 truncate">{homeTeam}</p>
+            <input
+              type="number" min="0" max="99"
+              value={home}
+              onChange={e => setHome(e.target.value)}
+              className="w-full py-2 text-center text-[22px] font-black rounded-xl
+                         bg-[var(--sl-card-hi)] text-[var(--sl-t1)] border border-[var(--sl-border)]
+                         outline-none focus:border-[var(--sl-blue)]"
+            />
+          </div>
+          <span className="text-[20px] font-bold text-[var(--sl-t3)] pb-5">–</span>
+          <div className="flex-1 text-center">
+            <p className="text-[10px] text-[var(--sl-t3)] mb-1 truncate">{awayTeam}</p>
+            <input
+              type="number" min="0" max="99"
+              value={away}
+              onChange={e => setAway(e.target.value)}
+              className="w-full py-2 text-center text-[22px] font-black rounded-xl
+                         bg-[var(--sl-card-hi)] text-[var(--sl-t1)] border border-[var(--sl-border)]
+                         outline-none focus:border-[var(--sl-blue)]"
+            />
+          </div>
+        </div>
+        {error && <p className="text-[11px] text-red-400 mt-2 text-center">{error}</p>}
+        <button
+          onClick={handleSave}
+          disabled={saving || home === '' || away === ''}
+          className="mt-3 w-full py-2.5 rounded-xl bg-[var(--sl-blue)] text-white
+                     text-[13px] font-bold active:scale-95 transition-transform
+                     disabled:opacity-40"
+        >
+          {saving ? 'Enregistrement…' : 'Valider le score'}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Composant principal ───────────────────────────────────────────────────────
 export default function MatchPlanningCard({
   item,
   userId,
   club,
-  isStaff,
+  isStaff,         // = isCoachClub || isCommClub (liste présence, convocs count)
+  isCoach,         // = isCoachClub : peut convoquer, lancer live, saisir score
+  isCommunicant,   // = isCommClub  : peut créer affiches uniquement
   onOpenPoster,
   onConvocate,
   onOpenRides,
+  onScoreSaved,
+  showClubBadge,
 }) {
-  const [showList, setShowList] = useState(false);
+  const [showList,       setShowList]       = useState(false);
+  const [showScoreInput, setShowScoreInput] = useState(false);
+  const [localMatchScore, setLocalMatchScore] = useState(null);
+  const [launching,      setLaunching]      = useState(false);
+  const { toast } = useToast();
+
+  const cardState    = deriveCardState(item, localMatchScore);
+  const effectiveScore = getEffectiveScore(item, localMatchScore);
+  const effectiveMs  = localMatchScore ?? item.matchScore;
 
   const cfg      = TYPE_CONFIG[item.event_type] ?? TYPE_CONFIG.friendly;
   const clubName = club?.name ?? 'FC';
@@ -40,28 +207,97 @@ export default function MatchPlanningCard({
   const homeTeam = item.home_or_away === 'home' ? clubName : oppName;
   const awayTeam = item.home_or_away === 'home' ? oppName  : clubName;
 
-  const hasScore = item.score && (item.score.home != null || item.score.away != null);
+  // Les PresenceButtons ne sont actifs que pour les matchs à venir
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const isPast   = item.date < todayStr;
+
+  // ── Lancer le live ────────────────────────────────────────────────────────
+  const handleStartLive = useCallback(async () => {
+    setLaunching(true);
+    try {
+      const { data: existing } = await supabase
+        .from('match_scores').select('id').eq('event_id', item.id).maybeSingle();
+
+      const payload = {
+        event_id:   item.id,
+        status:     'in_progress',
+        score_home: 0,
+        score_away: 0,
+        sport:      item.sport ?? 'Football',
+      };
+      const { error } = existing
+        ? await supabase.from('match_scores').update({ status: 'in_progress' }).eq('event_id', item.id)
+        : await supabase.from('match_scores').insert(payload);
+
+      if (error) throw error;
+      setLocalMatchScore({ status: 'in_progress', score_home: 0, score_away: 0 });
+    } catch {
+      toast({ message: 'Impossible de démarrer le live' });
+    } finally {
+      setLaunching(false);
+    }
+  }, [item.id, item.sport, toast]);
+
+  // ── Score saisi (post-match) ──────────────────────────────────────────────
+  function handleScoreSaved(score) {
+    const scoreData = { status: 'final', score_home: score.home, score_away: score.away };
+    setLocalMatchScore(scoreData);
+    setShowScoreInput(false);
+    onScoreSaved?.(item.id, scoreData);
+    // Ouvre automatiquement PosterStudio pour l'affiche résultat
+    onOpenPoster?.({ event: item, club, score: { home: score.home, away: score.away }, mode: 'result' });
+  }
+
+  // ── Match live terminé ────────────────────────────────────────────────────
+  function handleLiveDone(score) {
+    const scoreData = { status: 'final', score_home: score.home, score_away: score.away };
+    setLocalMatchScore(scoreData);
+    onScoreSaved?.(item.id, scoreData);
+    // Ouvre automatiquement PosterStudio pour l'affiche résultat
+    onOpenPoster?.({ event: item, club, score: { home: score.home, away: score.away }, mode: 'result' });
+  }
+
+  const isLive = cardState === 'live';
 
   return (
     <>
       <motion.div
         layout
         className="rounded-2xl overflow-hidden bg-[var(--sl-card)] border border-[var(--sl-border)]"
-        style={{ borderLeftWidth: 3, borderLeftColor: cfg.color }}
+        style={{
+          borderLeftWidth:  3,
+          borderLeftColor:  isLive ? 'rgba(239,68,68,0.7)' : cfg.color,
+          ...(isLive ? { borderColor: 'rgba(239,68,68,0.35)' } : {}),
+        }}
       >
         <div className="p-4">
 
-          {/* ── Ligne 1 : badge + heure + rôle ────────────────────── */}
+          {/* ── Ligne 1 : badge + heure + rôle ─────────────────────── */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <span
-                className="text-[9px] font-black tracking-[0.14em] uppercase px-2.5 py-1 rounded-full"
-                style={{ background: `${cfg.color}25`, color: cfg.color }}
-              >
-                {cfg.label}
-              </span>
+              {isLive ? (
+                <motion.span
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+                  className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 tracking-wider"
+                >
+                  🔴 EN COURS
+                </motion.span>
+              ) : (
+                <span
+                  className="text-[9px] font-black tracking-[0.14em] uppercase px-2.5 py-1 rounded-full"
+                  style={{ background: `${cfg.color}25`, color: cfg.color }}
+                >
+                  {cfg.label}
+                </span>
+              )}
               {item.level && (
                 <span className="text-[9px] font-semibold text-[var(--sl-t3)]">{item.level}</span>
+              )}
+              {showClubBadge && club?.name && (
+                <span className="text-[9px] font-semibold text-[var(--sl-t3)] truncate max-w-[80px]">
+                  {club.name}
+                </span>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -70,7 +306,7 @@ export default function MatchPlanningCard({
                   className="text-[9px] font-black tracking-[0.1em] uppercase px-2.5 py-1 rounded-full"
                   style={{ background: '#06b6d420', color: '#06b6d4' }}
                 >
-                  Rôle Staff
+                  {isCoach ? 'Coach' : 'Comm'}
                 </span>
               )}
               {item.time && (
@@ -79,8 +315,8 @@ export default function MatchPlanningCard({
             </div>
           </div>
 
-          {/* ── Équipes ────────────────────────────────────────────── */}
-          <div className="flex items-center gap-3 mb-2">
+          {/* ── Équipes ─────────────────────────────────────────────── */}
+          <div className="flex items-center gap-3 mb-3">
             <TeamInitials name={homeTeam} />
             <div className="flex-1 min-w-0">
               <p className="text-base font-black text-[var(--sl-t1)] leading-tight">
@@ -98,16 +334,16 @@ export default function MatchPlanningCard({
             <TeamInitials name={awayTeam} />
           </div>
 
-          {/* ── Score si passé ─────────────────────────────────────── */}
-          {hasScore && (
+          {/* ── Score post-match ─────────────────────────────────────── */}
+          {cardState === 'post_done' && effectiveScore && (
             <div className="flex justify-center my-3">
-              <span className="text-2xl font-black text-[var(--sl-t1)]">
-                {item.score.home} – {item.score.away}
+              <span className="text-2xl font-black text-[var(--sl-t1)] tabular-nums">
+                {effectiveScore.home} – {effectiveScore.away}
               </span>
             </div>
           )}
 
-          {/* ── PRÉSENCE ──────────────────────────────────────────── */}
+          {/* ── Compteurs présence ───────────────────────────────────── */}
           {(item.isPlayerClub || isStaff) && (item.presentCount > 0 || item.absentCount > 0) && (
             <div className="mb-3">
               <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
@@ -142,7 +378,7 @@ export default function MatchPlanningCard({
             </div>
           )}
 
-          {/* ── Convocations staff ─────────────────────────────────── */}
+          {/* ── Convocations staff (résumé cliquable) ───────────────── */}
           {isStaff && item.convocs && item.convocs.total > 0 && (
             <button
               onClick={() => setShowList(true)}
@@ -158,76 +394,158 @@ export default function MatchPlanningCard({
             </button>
           )}
 
-          {/* ── Vue supporter : groupe convoqué ────────────────────── */}
+          {/* ── Vue supporter : groupe convoqué (lecture seule) ─────── */}
           {item.isSupporter && item.convocs?.accepted > 0 && (
-            <button
-              onClick={() => setShowList(true)}
-              className="w-full text-xs font-semibold text-[var(--sl-t2)] py-2 rounded-xl bg-[var(--sl-surface)] hover:bg-[var(--sl-hover)] transition-colors mb-3"
-            >
+            <div className="w-full text-xs font-semibold text-[var(--sl-t2)] py-2 px-3 rounded-xl bg-[var(--sl-surface)] mb-3">
               👥 {item.convocs.accepted} joueur{item.convocs.accepted > 1 ? 's' : ''} convoqué{item.convocs.accepted > 1 ? 's' : ''}
-            </button>
+            </div>
           )}
 
-          {/* ── JOUEUR — boutons présence ─────────────────────────── */}
+          {/* ── JOUEUR — présence (désactivé pour les matchs passés) ── */}
           {item.isPlayerClub && (
             <div className="mb-3">
               <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
-                Joueur
+                Ma présence
               </p>
               <PresenceButtons
                 myStatus={item.myStatus}
                 onRespond={status => item.onRespond?.('match', item.id, status)}
+                disabled={isPast}
                 size="sm"
               />
             </div>
           )}
 
-          {/* ── ACTIONS STAFF ────────────────────────────────────────── */}
-          {isStaff && !hasScore && (
-            <div>
-              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-2">
-                Actions Staff
-              </p>
-              <div className="flex flex-col gap-2">
+          {/* ════════════════════════════════════════════════════════════
+              ACTIONS PAR ÉTAT — machine d'états du match
+          ════════════════════════════════════════════════════════════ */}
+          <AnimatePresence mode="wait">
+
+            {/* ── EN COURS : score live ─────────────────────────────── */}
+            {cardState === 'live' && (
+              <motion.div key="live" className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {isCoach ? (
+                  /* Coach : pupitre de saisie live */
+                  <LiveScorePupitre
+                    event={item}
+                    matchScore={effectiveMs}
+                    onFinished={handleLiveDone}
+                  />
+                ) : (
+                  /* Communicant / joueur : affichage score temps réel */
+                  <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-red-500/8 border border-red-500/25">
+                    <motion.span
+                      animate={{ opacity: [1, 0.35, 1] }}
+                      transition={{ repeat: Infinity, duration: 1.4 }}
+                      className="text-[12px] font-black text-red-400"
+                    >
+                      🔴 EN COURS
+                    </motion.span>
+                    <span className="text-[22px] font-black text-[var(--sl-t1)] tabular-nums">
+                      {effectiveMs?.score_home ?? 0} – {effectiveMs?.score_away ?? 0}
+                    </span>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* ── JOUR DE MATCH (J-1 / J) : Live + convocations ────── */}
+            {cardState === 'match_day' && isCoach && (
+              <motion.div key="match_day" className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {item.convocs?.total > 0 && <ConvocationSummary counts={item.convocs} />}
+                <button
+                  onClick={handleStartLive}
+                  disabled={launching}
+                  className="w-full py-2.5 rounded-xl bg-red-500 text-white
+                             text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
+                >
+                  {launching ? 'Démarrage…' : '🔴 Lancer le Live'}
+                </button>
                 <button
                   onClick={() => onConvocate?.(item)}
-                  className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-black transition-opacity hover:opacity-90 active:opacity-80"
-                  style={{ background: '#f59e0b' }}
+                  className="w-full py-2 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)]
+                             text-[12px] font-bold border border-[var(--sl-border)]
+                             active:scale-95 transition-transform"
                 >
-                  <span className="flex items-center gap-2">
-                    <span>📣</span>
-                    <span>Convoquer l'équipe</span>
-                  </span>
-                  <span className="text-black/50 text-lg">≡</span>
+                  📣 Gérer les convocations
                 </button>
+              </motion.div>
+            )}
+
+            {/* ── PRÉ-MATCH (J+2 et au-delà) ───────────────────────── */}
+            {cardState === 'pre_match' && (isCoach || isCommunicant) && (
+              <motion.div key="pre_match" className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {isCoach && (
+                  <button
+                    onClick={() => onConvocate?.(item)}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl
+                               font-bold text-sm text-black active:opacity-80 transition-opacity"
+                    style={{ background: '#f59e0b' }}
+                  >
+                    <span className="flex items-center gap-2"><span>📣</span><span>Convoquer l'équipe</span></span>
+                    <span className="text-black/50 text-lg">≡</span>
+                  </button>
+                )}
                 <button
                   onClick={() => onOpenPoster?.({ event: item, club })}
-                  className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-white transition-opacity hover:opacity-90 active:opacity-80"
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl
+                             font-bold text-sm text-white active:opacity-80 transition-opacity"
                   style={{ background: '#f97316' }}
                 >
-                  <span className="flex items-center gap-2">
-                    <span>🎨</span>
-                    <span>Créer l'affiche</span>
-                  </span>
+                  <span className="flex items-center gap-2"><span>🎨</span><span>Créer l'affiche</span></span>
                   <span className="text-white/50 text-lg">↗</span>
                 </button>
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
 
-          {/* Post-match : affiche résultat */}
-          {isStaff && hasScore && (
-            <button
-              onClick={() => onOpenPoster?.({ event: item, club, score: item.score })}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-white hover:opacity-90 transition-opacity"
-              style={{ background: '#f97316' }}
-            >
-              <span className="flex items-center gap-2"><span>🎨</span><span>Créer l'affiche résultat</span></span>
-              <span className="text-white/50">↗</span>
-            </button>
-          )}
+            {/* ── POST-MATCH sans score : saisie ───────────────────── */}
+            {cardState === 'post_pending' && isCoach && (
+              <motion.div key="post_pending" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <button
+                  onClick={() => setShowScoreInput(v => !v)}
+                  className="w-full py-2.5 rounded-xl text-[13px] font-bold active:scale-95 transition-transform text-black"
+                  style={{ background: '#f59e0b' }}
+                >
+                  {showScoreInput ? 'Annuler' : '📊 Saisir le score final'}
+                </button>
+                <AnimatePresence>
+                  {showScoreInput && (
+                    <ScoreInputInline
+                      key="score-form"
+                      eventId={item.id}
+                      sport={item.sport}
+                      homeTeam={homeTeam}
+                      awayTeam={awayTeam}
+                      onSaved={handleScoreSaved}
+                    />
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
 
-          {/* ── Covoiturage ───────────────────────────────────────── */}
+            {/* ── POST-MATCH avec score : affiche résultat ─────────── */}
+            {cardState === 'post_done' && isStaff && (
+              <motion.div key="post_done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <button
+                  onClick={() => onOpenPoster?.({
+                    event: item,
+                    club,
+                    score: { home: effectiveScore?.home, away: effectiveScore?.away },
+                    mode: 'result',
+                  })}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl
+                             font-bold text-sm text-black active:opacity-80 transition-opacity"
+                  style={{ background: '#22d96a' }}
+                >
+                  <span className="flex items-center gap-2"><span>⚡</span><span>Générer l'affiche résultat</span></span>
+                  <span className="text-black/50 text-lg">↗</span>
+                </button>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+
+          {/* ── Covoiturage (joueurs présents) ──────────────────────── */}
           <AnimatePresence>
             {item.myStatus === 'present' && (
               <CarpoolSection

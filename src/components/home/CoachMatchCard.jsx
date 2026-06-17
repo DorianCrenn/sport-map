@@ -12,26 +12,21 @@ import LiveScorePupitre from './LiveScorePupitre.jsx';
 // post_pending → match passé, score absent ou status 'pending'
 // post_done   → score saisi (status 'final')
 function deriveMatchState(event, matchScore, convocationCounts) {
-  const now      = new Date();
+  const now       = new Date();
   const matchDate = new Date(event.date);
   const diffDays  = (matchDate - now) / 86_400_000;
 
   if (matchScore?.status === 'in_progress') return 'live';
   if (matchScore?.status === 'final')       return 'post_done';
 
-  if (matchDate < now) return 'post_pending';  // passé sans score
+  if (matchDate < now) return 'post_pending';
 
   const hasConvocations = convocationCounts && convocationCounts.total > 0;
 
-  if (diffDays <= 1.5) {
-    // Jour J ou J-1
-    if (hasConvocations) return 'pre_filled';
-    return 'match_day';
-  }
-  if (diffDays <= 3) {
-    return hasConvocations ? 'pre_filled' : 'pre_empty';
-  }
-  // J-3 (communicant window) — pour le coach rien d'urgent avant J-2
+  // J-1 à J0 (36h) → toujours match_day pour pouvoir lancer le live,
+  // quelle que soit l'existence de convocations
+  if (diffDays <= 1.5) return 'match_day';
+
   return hasConvocations ? 'pre_filled' : 'pre_empty';
 }
 
@@ -346,6 +341,16 @@ export default function CoachMatchCard({
               >
                 {launching ? 'Démarrage…' : '🔴 Lancer le Live'}
               </button>
+              {convocationCounts?.total > 0 && (
+                <button
+                  onClick={() => onConvocate ? onConvocate(event) : onNavigate?.('mon-club')}
+                  className="w-full py-2 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)]
+                             text-[12px] font-bold border border-[var(--sl-border)]
+                             active:scale-95 transition-transform"
+                >
+                  📣 Gérer les convocations
+                </button>
+              )}
             </motion.div>
           )}
 

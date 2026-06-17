@@ -5,6 +5,7 @@ export function useSeasonPlanning({
   userId,
   allClubIds = [],
   managedClubIds = [],
+  managedClubs = [],
   year,
   month,
   clubFilter = 'all',
@@ -21,8 +22,18 @@ export function useSeasonPlanning({
     return { firstDay: `${y}-${mm}-01`, lastDay: `${y}-${mm}-${dd}` };
   }, [year, month]);
 
-  const clubIdKey    = useMemo(() => [...new Set(allClubIds.map(String).filter(Boolean))].sort().join(','), [allClubIds]);
-  const managedKey   = useMemo(() => [...new Set(managedClubIds.map(String).filter(Boolean))].sort().join(','), [managedClubIds]);
+  const clubIdKey  = useMemo(() => [...new Set(allClubIds.map(String).filter(Boolean))].sort().join(','), [allClubIds]);
+  const managedKey = useMemo(() => [...new Set(managedClubIds.map(String).filter(Boolean))].sort().join(','), [managedClubIds]);
+
+  // Clé stable pour distinguer coach (owner/manager/editor) de communicant
+  const coachKey = useMemo(
+    () => managedClubs.filter(c => c.managerRole !== 'communicant').map(c => String(c.id)).sort().join(','),
+    [managedClubs],
+  );
+  const commKey = useMemo(
+    () => managedClubs.filter(c => c.managerRole === 'communicant').map(c => String(c.id)).sort().join(','),
+    [managedClubs],
+  );
 
   useEffect(() => {
     const baseClubIds = clubIdKey.split(',').filter(Boolean);
@@ -38,17 +49,18 @@ export function useSeasonPlanning({
 
     let cancelled = false;
     const managedSet = new Set(managedKey.split(',').filter(Boolean));
+    const coachSet   = new Set(coachKey.split(',').filter(Boolean));
+    const commSet    = new Set(commKey.split(',').filter(Boolean));
 
     async function load() {
       setLoading(true);
 
-      // 1. Clubs/équipes du joueur (direct)
+      // 1. Joueurs directs + enfants (parents)
       const [{ data: directEntries }, { data: guardianRows }] = await Promise.all([
         supabase.from('club_players').select('club_id, team_id, name').eq('user_id', userId).eq('is_active', true),
         supabase.from('player_guardians').select('player_id').eq('user_id', userId),
       ]);
 
-      // 2. Équipes des enfants (parent)
       let childEntries = [];
       if (guardianRows?.length) {
         const pids = guardianRows.map(g => g.player_id);
@@ -63,10 +75,9 @@ export function useSeasonPlanning({
       const playerClubSet = new Set(allEntries.map(e => String(e.club_id)));
       const playerTeamIds = [...new Set(allEntries.map(e => String(e.team_id)).filter(Boolean))];
 
-      // Clubs avec accès aux entraînements (joueur/parent/staff — pas les supporters purs)
       const trainingClubs = filtered.filter(id => playerClubSet.has(id) || managedSet.has(id));
 
-      // 3. Fetches parallèles : séances + matchs
+      // 2. Séances + events du mois en parallèle
       const [sessionsRes, eventsRes] = await Promise.all([
         trainingClubs.length
           ? supabase
@@ -92,7 +103,6 @@ export function useSeasonPlanning({
 
       if (cancelled) return;
 
-      // Filtrer séances par équipe pour joueurs non-staff
       const sessions = (sessionsRes.data ?? []).filter(s => {
         if (managedSet.has(String(s.club_id))) return true;
         if (!s.team_id) return true;
@@ -103,8 +113,12 @@ export function useSeasonPlanning({
       const sessionIds = sessions.map(s => s.id);
       const eventIds   = events.map(e => e.id);
 
-      // 4. Présence utilisateur + compteurs agrégés (en parallèle)
-      const [trainAttRes, matchAttRes, trainCntRes, matchCntRes, convocRes] = await Promise.all([
+      // 3. Présence, compteurs, convocations et scores en parallèle
+      const [
+        trainAttRes, matchAttRes,
+        trainCntRes, matchCntRes,
+        convocRes,   matchScoresRes,
+      ] = await Promise.all([
         sessionIds.length
           ? supabase.from('training_attendance').select('session_id, status').in('session_id', sessionIds).eq('user_id', userId)
           : { data: [] },
@@ -117,20 +131,23 @@ export function useSeasonPlanning({
         eventIds.length
           ? supabase.from('match_attendance_counts').select('event_id, present_count, absent_count, unsure_count').in('event_id', eventIds)
           : { data: [] },
-        // Convocations uniquement pour le staff
         (managedSet.size > 0 && eventIds.length)
           ? supabase.from('event_convocations').select('event_id, status').in('event_id', eventIds)
+          : { data: [] },
+        // Scores live/final depuis match_scores (source de vérité pour le live)
+        eventIds.length
+          ? supabase.from('match_scores').select('event_id, score_home, score_away, status').in('event_id', eventIds)
           : { data: [] },
       ]);
 
       if (cancelled) return;
 
       const trainStatusMap = Object.fromEntries((trainAttRes.data ?? []).map(a => [a.session_id, a.status]));
-      const matchStatusMap = Object.fromEntries((matchAttRes.data ?? []).map(a => [a.event_id, a.status]));
+      const matchStatusMap = Object.fromEntries((matchAttRes.data ?? []).map(a => [a.event_id,   a.status]));
       const trainCntMap    = Object.fromEntries((trainCntRes.data ?? []).map(r => [r.session_id, r]));
-      const matchCntMap    = Object.fromEntries((matchCntRes.data ?? []).map(r => [r.event_id, r]));
+      const matchCntMap    = Object.fromEntries((matchCntRes.data ?? []).map(r => [r.event_id,   r]));
+      const matchScoreMap  = Object.fromEntries((matchScoresRes.data ?? []).map(r => [r.event_id, r]));
 
-      // Agrégation convocations par event
       const convocMap = {};
       (convocRes.data ?? []).forEach(c => {
         if (!convocMap[c.event_id]) convocMap[c.event_id] = { total: 0, accepted: 0, pending: 0, declined: 0, unavailable: 0 };
@@ -138,7 +155,7 @@ export function useSeasonPlanning({
         convocMap[c.event_id][c.status] = (convocMap[c.event_id][c.status] ?? 0) + 1;
       });
 
-      // 5. Construction des items fusionnés
+      // ── Items entraînement ─────────────────────────────────────────────────
       const trainingItems = sessions.map(s => {
         const cnt   = trainCntMap[s.id] ?? {};
         const entry = allEntries.find(e => String(e.team_id) === String(s.team_id) && String(e.club_id) === String(s.club_id));
@@ -162,9 +179,13 @@ export function useSeasonPlanning({
         };
       });
 
+      // ── Items match ────────────────────────────────────────────────────────
       const matchItems = events.map(ev => {
-        const cnt          = matchCntMap[ev.id] ?? {};
-        const convocs      = convocMap[ev.id] ?? null;
+        const cnt          = matchCntMap[ev.id]  ?? {};
+        const convocs      = convocMap[ev.id]    ?? null;
+        const matchScore   = matchScoreMap[ev.id] ?? null;
+        const isCoachClub  = coachSet.has(String(ev.club_id));
+        const isCommClub   = commSet.has(String(ev.club_id));
         const isStaffClub  = managedSet.has(String(ev.club_id));
         const isPlayerClub = playerClubSet.has(String(ev.club_id));
         const dateStr      = String(ev.date).slice(0, 10);
@@ -178,6 +199,7 @@ export function useSeasonPlanning({
           title:        ev.title,
           location:     ev.venue ?? ev.city ?? '',
           club_id:      ev.club_id,
+          sport:        ev.sport ?? 'Football',
           adversaire:   ev.adversaire ?? '',
           event_type:   ev.event_type,
           category:     ev.category ?? '',
@@ -185,13 +207,16 @@ export function useSeasonPlanning({
           home_or_away: ev.home_or_away,
           level:        ev.level ?? '',
           cup_type:     ev.cup_type ?? '',
-          score:        ev.score,
+          score:        ev.score,       // champ JSON events.score (fallback legacy)
+          matchScore,                   // ligne match_scores (source de vérité live)
           myStatus:     matchStatusMap[ev.id] ?? null,
           presentCount: cnt.present_count ?? 0,
           absentCount:  cnt.absent_count  ?? 0,
           unsureCount:  cnt.unsure_count  ?? 0,
           convocs,
           isStaffClub,
+          isCoachClub,   // owner/manager/editor → peut convoquer + saisir score
+          isCommClub,    // communicant → peut créer affiche uniquement
           isPlayerClub,
           isSupporter:  !isStaffClub && !isPlayerClub,
         };
@@ -212,12 +237,11 @@ export function useSeasonPlanning({
     });
 
     return () => { cancelled = true; };
-  }, [userId, clubIdKey, managedKey, firstDay, lastDay, clubFilter]);
+  }, [userId, clubIdKey, managedKey, coachKey, commKey, firstDay, lastDay, clubFilter]);
 
   const respond = useCallback(async (type, id, status) => {
     if (!userId || !status) return;
 
-    // Optimistic update
     setItems(prev => prev.map(item => item.id === id ? { ...item, myStatus: status } : item));
 
     const table   = type === 'training' ? 'training_attendance' : 'match_player_attendance';
@@ -233,5 +257,12 @@ export function useSeasonPlanning({
     }
   }, [userId]);
 
-  return { items, loading, respond };
+  // Mise à jour locale du score après saisie (évite un reload complet)
+  const updateMatchScore = useCallback((eventId, scoreData) => {
+    setItems(prev => prev.map(item =>
+      item.id === eventId ? { ...item, matchScore: scoreData } : item,
+    ));
+  }, []);
+
+  return { items, loading, respond, updateMatchScore };
 }

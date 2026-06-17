@@ -102,10 +102,11 @@ export default function PlanningTimeline({
 
   const showClubFilter = knownClubs.length > 1;
 
-  const { items, loading, respond } = useSeasonPlanning({
+  const { items, loading, respond, updateMatchScore } = useSeasonPlanning({
     userId:         currentUser?.id,
     allClubIds,
     managedClubIds,
+    managedClubs,
     year,
     month,
     clubFilter,
@@ -250,9 +251,12 @@ export default function PlanningTimeline({
                           userId={currentUser?.id}
                           club={club}
                           isStaff={item.isStaffClub}
+                          isCoach={item.isCoachClub}
+                          isCommunicant={item.isCommClub}
                           onOpenPoster={onOpenPoster}
                           onConvocate={onConvocate}
                           onOpenRides={onNavigateRides}
+                          onScoreSaved={updateMatchScore}
                           showClubBadge={showClubFilter && clubFilter === 'all'}
                         />
                       );
