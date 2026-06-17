@@ -123,7 +123,8 @@ function AppInner() {
     track('page_view', { tab });
   }, [track]);
   const [activeDepartment] = useState('finistere');
-  const [showAuth, setShowAuth] = useState(false);
+  const [showAuth,     setShowAuth]     = useState(false);
+  const [authInitMode, setAuthInitMode] = useState('login'); // 'login' | 'register'
   const [pendingOnboarding, setPendingOnboarding] = useState(false);
   const [showNewEventForm, setShowNewEventForm] = useState(false);
   const [showCSVImport, setShowCSVImport] = useState(false);
@@ -247,6 +248,7 @@ function AppInner() {
       window.history.replaceState(null, '', window.location.pathname);
     }
     if (registerMatch) {
+      setAuthInitMode('register');
       setShowAuth(true);
       window.history.replaceState(null, '', window.location.pathname);
     }
@@ -385,7 +387,7 @@ function AppInner() {
       }
     }
 
-    function onCreateAccount() { setShowAuth(true); }
+    function onCreateAccount() { setAuthInitMode('register'); setShowAuth(true); }
 
     window.addEventListener('sl-demo-navigate',       onDemoNav);
     window.addEventListener('sl-demo-create-account', onCreateAccount);
@@ -472,6 +474,7 @@ function AppInner() {
 
   function handleAuthClose() {
     setShowAuth(false);
+    setAuthInitMode('login');
   }
 
   function handleNeedOnboarding() {
@@ -706,6 +709,7 @@ function AppInner() {
           {showAuth && (
             <AuthPage
               key="auth"
+              initialMode={authInitMode}
               onClose={handleAuthClose}
               onNeedOnboarding={handleNeedOnboarding}
               onShowLegal={(section) => { setShowAuth(false); setLegalSection(section || 'mentions'); }}

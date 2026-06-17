@@ -195,10 +195,10 @@ function ForgotPasswordView({ onBack }) {
 
 // ── Main AuthPage ──────────────────────────────────────────────────────────
 
-export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal }) {
+export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initialMode = 'login' }) {
   const { login, register, loginWithGoogle } = useAuth();
   const { toast } = useToast();
-  const [mode, setMode] = useState('login');   // 'login' | 'register' | 'forgot' | 'confirm-email'
+  const [mode, setMode] = useState(initialMode);   // 'login' | 'register' | 'forgot' | 'confirm-email'
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
