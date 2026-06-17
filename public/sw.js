@@ -1,6 +1,6 @@
-const CACHE_NAME   = 'sportlink-v3';
-const DATA_CACHE   = 'sportlink-data-v3';  // Données Supabase REST
-const IMG_CACHE    = 'sportlink-img-v3';   // Images Supabase Storage + logos
+const CACHE_NAME   = 'sportlink-v4';
+const DATA_CACHE   = 'sportlink-data-v4';  // Données Supabase REST
+const IMG_CACHE    = 'sportlink-img-v4';   // Images Supabase Storage + logos
 const OFFLINE_URL  = '/offline.html';
 
 // NetworkFirst pour Supabase REST : essaie le réseau, fallback cache (pas de limite d'âge en offline)
@@ -94,9 +94,23 @@ self.addEventListener('fetch', e => {
   const isOAuth = url.searchParams.has('code') || url.searchParams.has('error') || url.hash.includes('access_token');
   if (request.mode === 'navigate' && isOAuth) return;
 
-  // Stale-while-revalidate pour les assets compilés (hash stable)
+  // NetworkFirst pour les assets compilés (Vite hache les noms → pas de collision)
+  // Le hash change à chaque build donc le réseau donne toujours la bonne version
   if (url.pathname.startsWith('/assets/')) {
-    e.respondWith(staleWhileRevalidate(request));
+    e.respondWith(
+      fetch(request)
+        .then(res => {
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(request, clone));
+          }
+          return res;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          return cached ?? new Response('', { status: 503 });
+        })
+    );
     return;
   }
 
