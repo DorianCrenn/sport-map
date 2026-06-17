@@ -5,8 +5,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 
 vi.mock('framer-motion', () => ({
   motion: {
-    div:  ({ children, ...p }) => <div {...p}>{children}</div>,
-    span: ({ children, ...p }) => <span {...p}>{children}</span>,
+    div:    ({ children, ...p }) => <div {...p}>{children}</div>,
+    span:   ({ children, ...p }) => <span {...p}>{children}</span>,
+    button: ({ children, onClick, ...p }) => <button onClick={onClick} {...p}>{children}</button>,
   },
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
@@ -16,12 +17,17 @@ vi.mock('../../lib/supabase.js', () => ({
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
       eq:     vi.fn().mockReturnThis(),
+      neq:    vi.fn().mockReturnThis(),
       in:     vi.fn().mockReturnThis(),
+      not:    vi.fn().mockReturnThis(),
+      gte:    vi.fn().mockReturnThis(),
+      lte:    vi.fn().mockReturnThis(),
       order:  vi.fn().mockReturnThis(),
       limit:  vi.fn().mockReturnThis(),
+      upsert: vi.fn().mockResolvedValue({ data: null, error: null }),
       then:   (fn) => Promise.resolve({ data: [], error: null }).then(fn),
     })),
-    channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
+    channel:       vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
     removeChannel: vi.fn(),
   },
   isDemoMode: vi.fn().mockReturnValue(false),
@@ -30,9 +36,8 @@ vi.mock('../../lib/supabase.js', () => ({
 vi.mock('../../contexts/AuthContext.jsx', () => ({
   useAuth: () => ({
     currentUser: { id: 'u1', name: 'User Test', job_role: null },
-    isAdmin: false,
+    isAdmin:     false,
     isClubAdmin: false,
-    follows: [],
   }),
 }));
 
@@ -40,43 +45,26 @@ vi.mock('../../contexts/ToastContext.jsx', () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 
-vi.mock('../../hooks/useManagedClubs.js',   () => ({ useManagedClubs: () => ({ managedClubs: [], isCoachOrManager: false, isCommunicant: false }) }));
+vi.mock('../../hooks/useManagedClubs.js',   () => ({ useManagedClubs:   () => ({ managedClubs: [], isCoachOrManager: false, isCommunicant: false }) }));
 vi.mock('../../hooks/useMyConvocations.js', () => ({ useMyConvocations: () => ({ convocations: [], pendingCount: 0, respond: vi.fn() }) }));
 vi.mock('../../hooks/useParentChildren.js', () => ({ useParentChildren: () => ({ isParent: false, children: [] }) }));
-vi.mock('../../hooks/useQuickActions.js',   () => ({ useQuickActions: () => ({ actions: [], hasActions: false }) }));
-vi.mock('../../hooks/useDemoFeed.js',       () => ({
-  useDemoFeed: () => ({ demoConvocations: [], setDemoConvocations: vi.fn(), demoLiveMatches: [] }),
-}));
-vi.mock('../../hooks/useFeedItems.ts', () => ({
-  useFeedItems: () => ({ items: [], loading: false, error: null }),
-}));
-vi.mock('../../hooks/useFeaturedEvents.ts', () => ({
-  useFeaturedEvents: () => ({ featured: [], loading: false }),
-}));
-vi.mock('../../hooks/useClubSponsors.ts', () => ({
-  useClubSponsors: () => ({ sponsors: [] }),
-}));
-vi.mock('../../hooks/useMatchesForDate.js', () => ({
-  useMatchesForDate: () => ({ matches: [], loading: false }),
-}));
-vi.mock('../../hooks/useMyTeamAgenda.js',  () => ({
-  useMyTeamAgenda: () => ({ agenda: [], loading: false }),
+vi.mock('../../hooks/useQuickActions.js',   () => ({ useQuickActions:   () => ({ actions: [], hasActions: false, liveMatches: [] }) }));
+vi.mock('../../hooks/useDemoFeed.js',       () => ({ useDemoFeed:       () => ({ demoConvocations: [], setDemoConvocations: vi.fn(), demoLiveMatches: [] }) }));
+vi.mock('../../hooks/useClubs.js',          () => ({ useClubs:          () => ({ userClubs: [], loading: false }) }));
+
+// PlanningTimeline remplace ClubFeed en Zone 3
+vi.mock('../../components/planning/PlanningTimeline.jsx', () => ({
+  default: () => <div data-testid="planning-timeline">Planning</div>,
 }));
 
-vi.mock('../../components/feed/ClubFeed.tsx', () => ({
-  default: () => <div data-testid="club-feed">Feed</div>,
-}));
 vi.mock('../../components/home/QuickActionsSection.jsx', () => ({
-  default: ({ actions }) => actions?.length ? <div data-testid="quick-actions" /> : null,
+  default: () => null,
 }));
 vi.mock('../../components/home/LiveMultiplexSection.jsx', () => ({
   default: () => <div data-testid="live-multiplex" />,
 }));
 vi.mock('../../components/home/ParentConvocationCard.jsx', () => ({
   default: () => <div data-testid="parent-card" />,
-}));
-vi.mock('../../components/feed/UpcomingAgendaSection.jsx', () => ({
-  default: () => <div data-testid="upcoming-agenda" />,
 }));
 
 import ActualitesPage from '../../pages/ActualitesPage.jsx';
@@ -94,12 +82,10 @@ describe('ActualitesPage — rendu de base', () => {
         onOpenTrainings={vi.fn()}
       />
     );
-    await waitFor(() => {
-      expect(container.firstChild).not.toBeNull();
-    });
+    await waitFor(() => expect(container.firstChild).not.toBeNull());
   });
 
-  it('affiche le feed principal', async () => {
+  it('affiche PlanningTimeline en Zone 3', async () => {
     render(
       <ActualitesPage
         followedClubIds={['club-1']}
@@ -107,19 +93,33 @@ describe('ActualitesPage — rendu de base', () => {
         onOpenTrainings={vi.fn()}
       />
     );
-    await waitFor(() => {
-      expect(screen.getByTestId('club-feed')).toBeInTheDocument();
-    });
+    await waitFor(() => expect(screen.getByTestId('planning-timeline')).toBeInTheDocument());
   });
 
   it('ne crash pas sans followedClubIds', () => {
     expect(() => render(<ActualitesPage onNavigate={vi.fn()} />)).not.toThrow();
   });
+
+  it('affiche le multiplex en direct (Zone 2)', async () => {
+    render(<ActualitesPage followedClubIds={[]} onNavigate={vi.fn()} />);
+    await waitFor(() => expect(screen.getByTestId('live-multiplex')).toBeInTheDocument());
+  });
 });
 
 describe('ActualitesPage — convocations parent', () => {
-  it('affiche la card parent si convocation en attente', async () => {
-    // Card parent est rendue si pendingConvocations.length > 0 — ici 0 en mock
+  it('monte sans crash avec une convocation en attente', async () => {
+    const { container } = render(
+      <ActualitesPage
+        followedClubIds={[]}
+        onNavigate={vi.fn()}
+        externalConvocations={[{ id: 'c1', status: 'pending' }]}
+        onConvocationRespond={vi.fn()}
+      />
+    );
+    await waitFor(() => expect(container.firstChild).not.toBeNull());
+  });
+
+  it('PlanningTimeline reste visible même avec convocations en attente', async () => {
     render(
       <ActualitesPage
         followedClubIds={[]}
@@ -128,9 +128,7 @@ describe('ActualitesPage — convocations parent', () => {
         onConvocationRespond={vi.fn()}
       />
     );
-    await waitFor(() => {
-      expect(screen.getByTestId('club-feed')).toBeInTheDocument();
-    });
+    await waitFor(() => expect(screen.getByTestId('planning-timeline')).toBeInTheDocument());
   });
 });
 
