@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 
 export function useSeasonPlanning({
@@ -12,6 +12,8 @@ export function useSeasonPlanning({
 }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Set des event IDs actuellement chargés — utilisé par le listener Realtime
+  const matchEventIdsRef = useRef(new Set());
 
   const { firstDay, lastDay } = useMemo(() => {
     const y = year  ?? new Date().getFullYear();
@@ -227,6 +229,9 @@ export function useSeasonPlanning({
         return (a.time ?? '').localeCompare(b.time ?? '');
       });
 
+      // Mémoriser les IDs des matchs pour le listener Realtime
+      matchEventIdsRef.current = new Set(matchItems.map(m => String(m.id)));
+
       setItems(merged);
       setLoading(false);
     }
@@ -238,6 +243,41 @@ export function useSeasonPlanning({
 
     return () => { cancelled = true; };
   }, [userId, clubIdKey, managedKey, coachKey, commKey, firstDay, lastDay, clubFilter]);
+
+  // ── Realtime : mise à jour des scores live ────────────────────────────────
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`season-planning-scores-${userId}`)
+      .on('postgres_changes', {
+        event:  'UPDATE',
+        schema: 'public',
+        table:  'match_scores',
+      }, ({ new: row }) => {
+        if (!matchEventIdsRef.current.has(String(row.event_id))) return;
+        setItems(prev => prev.map(item =>
+          item.id === row.event_id
+            ? { ...item, matchScore: { status: row.status, score_home: row.score_home, score_away: row.score_away } }
+            : item
+        ));
+      })
+      .on('postgres_changes', {
+        event:  'INSERT',
+        schema: 'public',
+        table:  'match_scores',
+      }, ({ new: row }) => {
+        if (!matchEventIdsRef.current.has(String(row.event_id))) return;
+        setItems(prev => prev.map(item =>
+          item.id === row.event_id
+            ? { ...item, matchScore: { status: row.status, score_home: row.score_home, score_away: row.score_away } }
+            : item
+        ));
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [userId]);
 
   const respond = useCallback(async (type, id, status) => {
     if (!userId || !status) return;

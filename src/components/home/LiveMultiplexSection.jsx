@@ -10,13 +10,32 @@ const SPORT_ICON = {
   Hockey:     '🏑',
 };
 
+function ClubBadge({ logo, name, size = 24 }) {
+  const initials = (name ?? '?').split(' ').slice(0, 2).map(w => w[0] ?? '').join('').toUpperCase() || '?';
+  return (
+    <div
+      style={{
+        width: size, height: size, borderRadius: '50%', flexShrink: 0,
+        overflow: 'hidden', backgroundColor: 'var(--sl-surface)',
+        border: '1.5px solid rgba(239,68,68,0.25)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+    >
+      {logo
+        ? <img src={logo} alt={name ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        : <span style={{ fontSize: 8, fontWeight: 900, color: 'var(--sl-t2)', lineHeight: 1 }}>{initials}</span>
+      }
+    </div>
+  );
+}
+
 function LiveMatchPill({ match }) {
-  const { event, matchScore } = match;
-  const icon     = SPORT_ICON[event?.sport] ?? '🏆';
-  const home     = matchScore?.score_home ?? 0;
-  const away     = matchScore?.score_away ?? 0;
-  const teamA    = event?.team_name  || 'Domicile';
-  const teamB    = event?.adversaire || 'Visiteur';
+  const { event, matchScore, clubLogo } = match;
+  const icon  = SPORT_ICON[event?.sport] ?? '🏆';
+  const home  = matchScore?.score_home ?? 0;
+  const away  = matchScore?.score_away ?? 0;
+  const teamA = event?.team_name  || 'Domicile';
+  const teamB = event?.adversaire || 'Visiteur';
 
   return (
     <motion.div
@@ -27,12 +46,15 @@ function LiveMatchPill({ match }) {
       transition={{ type: 'spring', stiffness: 420, damping: 34 }}
       className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl
                  border border-red-500/30 bg-red-500/5"
-      style={{ minWidth: 200 }}
+      style={{ minWidth: 210 }}
     >
-      <span className="text-[15px]">{icon}</span>
+      {clubLogo
+        ? <ClubBadge logo={clubLogo} name={teamA} />
+        : <span className="text-[15px]">{icon}</span>
+      }
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-bold text-[var(--sl-t3)] truncate">
-          {event?.team_name || event?.club_id || 'Mon équipe'}
+          {event?.team_name || event?.title || 'En direct'}
         </p>
         <p className="text-[13px] font-black text-[var(--sl-t1)] tabular-nums">
           {teamA.split(' ')[0]}

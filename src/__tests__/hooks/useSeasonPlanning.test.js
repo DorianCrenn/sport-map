@@ -5,8 +5,9 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 
 const { mockFrom } = vi.hoisted(() => ({ mockFrom: vi.fn() }));
 
+const mockChannel = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() };
 vi.mock('../../lib/supabase.js', () => ({
-  supabase: { from: mockFrom },
+  supabase: { from: mockFrom, channel: vi.fn(() => mockChannel), removeChannel: vi.fn() },
 }));
 
 import { useSeasonPlanning } from '../../hooks/useSeasonPlanning.js';

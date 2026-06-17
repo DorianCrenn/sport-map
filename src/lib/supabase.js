@@ -15,7 +15,6 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
       persistSession:   true,
       autoRefreshToken: true,
     },
-    realtime: { enabled: false },
   });
 }
 

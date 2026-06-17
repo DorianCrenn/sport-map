@@ -160,11 +160,15 @@ export function useQuickActions({
     const liveScoreMap = {};
     for (const s of (liveScoreRows ?? [])) liveScoreMap[s.event_id] = s;
 
+    const clubLogoMap = {};
+    for (const c of managedClubs) clubLogoMap[String(c.id)] = c.logo_url ?? c.logoUrl ?? null;
+
     const builtLive = liveEventRows
       .filter(e => followedSet.has(String(e.club_id)) || allManagedIds.includes(String(e.club_id)))
       .map(e => ({
         event:      e,
         matchScore: liveScoreMap[e.id] ?? null,
+        clubLogo:   clubLogoMap[String(e.club_id)] ?? null,
       }));
 
     setLiveMatches(builtLive);

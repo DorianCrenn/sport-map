@@ -49,15 +49,18 @@ function getEffectiveScore(item, localMatchScore) {
   return null;
 }
 
-// ── Initiales équipe ──────────────────────────────────────────────────────────
-function TeamInitials({ name, size = 40 }) {
+// ── Avatar équipe (logo ou initiales) ────────────────────────────────────────
+function TeamAvatar({ name, logoUrl, size = 40 }) {
   const initials = (name ?? '?').split(' ').slice(0, 2).map(w => w[0] ?? '').join('').toUpperCase() || '?';
   return (
     <div
-      className="rounded-full bg-[var(--sl-surface)] border-2 border-[var(--sl-border)] flex items-center justify-center flex-shrink-0"
+      className="rounded-full bg-[var(--sl-surface)] border-2 border-[var(--sl-border)] flex items-center justify-center flex-shrink-0 overflow-hidden"
       style={{ width: size, height: size }}
     >
-      <span className="text-xs font-black text-[var(--sl-t2)]">{initials}</span>
+      {logoUrl
+        ? <img src={logoUrl} alt={name ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        : <span className="text-xs font-black text-[var(--sl-t2)]">{initials}</span>
+      }
     </div>
   );
 }
@@ -317,7 +320,10 @@ export default function MatchPlanningCard({
 
           {/* ── Équipes ─────────────────────────────────────────────── */}
           <div className="flex items-center gap-3 mb-3">
-            <TeamInitials name={homeTeam} />
+            <TeamAvatar
+              name={homeTeam}
+              logoUrl={item.home_or_away === 'home' ? (club?.logo_url ?? club?.logoUrl) : null}
+            />
             <div className="flex-1 min-w-0">
               <p className="text-base font-black text-[var(--sl-t1)] leading-tight">
                 {homeTeam}{' '}
@@ -331,7 +337,10 @@ export default function MatchPlanningCard({
                 <p className="text-xs text-[var(--sl-t3)]">{item.category}</p>
               )}
             </div>
-            <TeamInitials name={awayTeam} />
+            <TeamAvatar
+              name={awayTeam}
+              logoUrl={item.home_or_away === 'away' ? (club?.logo_url ?? club?.logoUrl) : null}
+            />
           </div>
 
           {/* ── Score post-match ─────────────────────────────────────── */}
