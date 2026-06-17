@@ -137,10 +137,10 @@ export default function PlanningTimeline({
   const showTrainingFilter = isStaff || items.some(i => i.type === 'training');
 
   return (
-    <div className="flex flex-col h-full bg-[var(--sl-bg)]">
+    <div className="flex flex-col bg-[var(--sl-bg)]">
 
-      {/* ── En-tête ──────────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-2 space-y-3 border-b border-[var(--sl-border)]">
+      {/* ── En-tête sticky ───────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-20 px-4 pt-4 pb-2 space-y-3 border-b border-[var(--sl-border)] bg-[var(--sl-bg)]">
 
         {/* Titre + navigation mois */}
         <div className="flex items-center justify-between">
@@ -196,8 +196,8 @@ export default function PlanningTimeline({
         )}
       </div>
 
-      {/* ── Timeline scrollable ───────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4">
+      {/* ── Timeline — scroll géré par ActualitesPage ────────────────────── */}
+      <div className="px-4 py-4">
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => (

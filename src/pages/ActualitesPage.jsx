@@ -129,11 +129,11 @@ export default function ActualitesPage({
   const showCoachComm   = isCoach || isComm || isPresident;
 
   return (
-    <div className="flex flex-col h-full bg-[var(--sl-bg)] overflow-hidden">
+    <div className="flex flex-col h-full bg-[var(--sl-bg)] overflow-y-auto overscroll-contain">
 
       {/* ══ ZONE 1 — Bandeau Quick Actions ══════════════════════════════════ */}
       {(showParentCards || showCoachComm) && (
-        <section className="px-4 pt-4 pb-2 flex-shrink-0">
+        <section className="px-4 pt-4 pb-2">
 
           {showParentCards && (
             <>
@@ -182,13 +182,11 @@ export default function ActualitesPage({
       )}
 
       {/* ══ ZONE 2 — Multiplex en direct ════════════════════════════════════ */}
-      <div className="flex-shrink-0">
-        <LiveMultiplexSection liveMatches={effectiveLiveMatches} />
-      </div>
+      <LiveMultiplexSection liveMatches={effectiveLiveMatches} />
 
       {/* ══ ZONE 3 — Planning de la saison ══════════════════════════════════ */}
-      {/* data-demo="agenda-section" conservé pour la compatibilité DemoGuide (tour Président étape 3) */}
-      <div className="flex-1 min-h-0" data-demo="agenda-section">
+      {/* data-demo="agenda-section" conservé pour la compatibilité DemoGuide */}
+      <div data-demo="agenda-section">
         <PlanningTimeline
           currentUser={currentUser}
           managedClubs={managedClubs}
