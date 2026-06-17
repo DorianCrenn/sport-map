@@ -4,41 +4,22 @@ import PresenceButtons     from './PresenceButtons.jsx';
 import CarpoolSection      from './CarpoolSection.jsx';
 import AttendanceListSheet from './AttendanceListSheet.jsx';
 
-const TYPE_COLORS = {
-  championship: '#06b6d4',
-  cup:          '#f59e0b',
-  tournament:   '#a855f7',
-  friendly:     '#64748b',
+const TYPE_CONFIG = {
+  championship: { label: 'Championnat', color: '#06b6d4' },
+  cup:          { label: 'Coupe',        color: '#f59e0b' },
+  tournament:   { label: 'Tournoi',      color: '#a855f7' },
+  friendly:     { label: 'Amical',       color: '#64748b' },
 };
 
-const TYPE_LABELS = {
-  championship: 'Championnat',
-  cup:          'Coupe',
-  tournament:   'Tournoi',
-  friendly:     'Amical',
-};
-
-function TeamBadge({ name }) {
-  const initials = (name ?? '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+function TeamInitials({ name, size = 40 }) {
+  const initials = (name ?? '?').split(' ').slice(0, 2).map(w => w[0] ?? '').join('').toUpperCase() || '?';
   return (
-    <div className="w-10 h-10 rounded-full bg-[var(--sl-surface)] border-2 border-[var(--sl-border)] flex items-center justify-center flex-shrink-0">
+    <div
+      className="rounded-full bg-[var(--sl-surface)] border-2 border-[var(--sl-border)] flex items-center justify-center flex-shrink-0"
+      style={{ width: size, height: size }}
+    >
       <span className="text-xs font-black text-[var(--sl-t2)]">{initials}</span>
     </div>
-  );
-}
-
-function ConvocBadge({ convocs, onClick }) {
-  if (!convocs) return null;
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--sl-t3)] hover:text-[var(--sl-t2)] transition-colors"
-    >
-      <span className="text-emerald-400">✓ {convocs.accepted}</span>
-      {convocs.pending > 0 && <span className="text-amber-400">⏳ {convocs.pending}</span>}
-      {convocs.declined > 0 && <span className="text-red-400">✕ {convocs.declined}</span>}
-      <span className="opacity-50">›</span>
-    </button>
   );
 }
 
@@ -46,104 +27,138 @@ export default function MatchPlanningCard({
   item,
   userId,
   club,
+  isStaff,
   onOpenPoster,
   onConvocate,
   onOpenRides,
-  showClubBadge = false,
 }) {
   const [showList, setShowList] = useState(false);
 
-  const typeColor = TYPE_COLORS[item.event_type] ?? '#64748b';
-  const typeLabel = TYPE_LABELS[item.event_type] ?? item.event_type;
-  const isStaff   = item.isStaffClub;
-  const isPlayer  = item.isPlayerClub;
+  const cfg      = TYPE_CONFIG[item.event_type] ?? TYPE_CONFIG.friendly;
+  const clubName = club?.name ?? 'FC';
+  const oppName  = item.adversaire || '?';
+  const homeTeam = item.home_or_away === 'home' ? clubName : oppName;
+  const awayTeam = item.home_or_away === 'home' ? oppName  : clubName;
 
-  const clubName  = club?.name ?? 'FC';
-  const oppName   = item.adversaire || '?';
-  const homeLabel = item.home_or_away === 'home' ? clubName : oppName;
-  const awayLabel = item.home_or_away === 'home' ? oppName  : clubName;
-  const timeStr   = item.time
-    ? item.time
-    : null;
+  const hasScore = item.score && (item.score.home != null || item.score.away != null);
 
   return (
     <>
       <motion.div
         layout
-        className="bg-[var(--sl-card)] rounded-2xl overflow-hidden border border-[var(--sl-border)]"
-        style={{ borderLeftWidth: 3, borderLeftColor: typeColor }}
+        className="rounded-2xl overflow-hidden bg-[var(--sl-card)] border border-[var(--sl-border)]"
+        style={{ borderLeftWidth: 3, borderLeftColor: cfg.color }}
       >
-        <div className="p-3.5">
-          {/* Header badges */}
-          <div className="flex items-center gap-2 mb-2.5 flex-wrap">
-            <span
-              className="text-[9px] font-black tracking-[0.15em] uppercase px-2 py-0.5 rounded-full"
-              style={{ background: `${typeColor}22`, color: typeColor }}
-            >
-              {typeLabel}
-            </span>
-            {item.level && (
-              <span className="text-[9px] font-semibold text-[var(--sl-t3)]">{item.level}</span>
-            )}
-            {isStaff && (
-              <span className="text-[9px] font-black tracking-[0.12em] uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 ml-auto">
-                Rôle Staff
-              </span>
-            )}
-            {showClubBadge && club && (
-              <span className="text-[9px] font-semibold text-[var(--sl-t3)] ml-auto truncate max-w-[100px]">
-                {club.name}
-              </span>
-            )}
-          </div>
+        <div className="p-4">
 
-          {/* Équipes */}
-          <div className="flex items-center gap-3 mb-2.5">
-            <TeamBadge name={homeLabel} />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-[var(--sl-t1)] leading-tight">
-                {homeLabel} <span className="font-normal text-[var(--sl-t3)]">vs</span> {awayLabel}
-              </p>
-              {item.location && (
-                <p className="text-xs text-[var(--sl-t3)] truncate mt-0.5">📍 {item.location}</p>
-              )}
-              {timeStr && (
-                <p className="text-xs font-semibold text-[var(--sl-t2)] mt-0.5">{timeStr}</p>
+          {/* ── Ligne 1 : badge + heure + rôle ────────────────────── */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span
+                className="text-[9px] font-black tracking-[0.14em] uppercase px-2.5 py-1 rounded-full"
+                style={{ background: `${cfg.color}25`, color: cfg.color }}
+              >
+                {cfg.label}
+              </span>
+              {item.level && (
+                <span className="text-[9px] font-semibold text-[var(--sl-t3)]">{item.level}</span>
               )}
             </div>
-            <TeamBadge name={awayLabel} />
+            <div className="flex items-center gap-2">
+              {isStaff && (
+                <span
+                  className="text-[9px] font-black tracking-[0.1em] uppercase px-2.5 py-1 rounded-full"
+                  style={{ background: '#06b6d420', color: '#06b6d4' }}
+                >
+                  Rôle Staff
+                </span>
+              )}
+              {item.time && (
+                <span className="text-sm font-black text-[var(--sl-t1)]">{item.time}</span>
+              )}
+            </div>
           </div>
 
-          {/* Score si passé */}
-          {item.score && (
-            <div className="flex justify-center mb-3">
-              <span className="text-lg font-black text-[var(--sl-t1)]">
+          {/* ── Équipes ────────────────────────────────────────────── */}
+          <div className="flex items-center gap-3 mb-2">
+            <TeamInitials name={homeTeam} />
+            <div className="flex-1 min-w-0">
+              <p className="text-base font-black text-[var(--sl-t1)] leading-tight">
+                {homeTeam}{' '}
+                <span className="font-normal text-[var(--sl-t3)] text-sm">vs</span>{' '}
+                {awayTeam}
+              </p>
+              {item.location && (
+                <p className="text-xs text-[var(--sl-t3)] mt-0.5 truncate">{item.location}</p>
+              )}
+              {item.category && (
+                <p className="text-xs text-[var(--sl-t3)]">{item.category}</p>
+              )}
+            </div>
+            <TeamInitials name={awayTeam} />
+          </div>
+
+          {/* ── Score si passé ─────────────────────────────────────── */}
+          {hasScore && (
+            <div className="flex justify-center my-3">
+              <span className="text-2xl font-black text-[var(--sl-t1)]">
                 {item.score.home} – {item.score.away}
               </span>
             </div>
           )}
 
-          {/* Convocations staff */}
-          {isStaff && item.convocs && (
+          {/* ── PRÉSENCE ──────────────────────────────────────────── */}
+          {(item.isPlayerClub || isStaff) && (item.presentCount > 0 || item.absentCount > 0) && (
             <div className="mb-3">
-              <ConvocBadge convocs={item.convocs} onClick={() => setShowList(true)} />
+              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
+                Présence
+              </p>
+              <button
+                onClick={() => setShowList(true)}
+                className="w-full cursor-pointer hover:bg-[var(--sl-hover)] rounded-xl bg-[var(--sl-surface)] px-3 py-2 transition-colors"
+              >
+                <div className="flex gap-4 text-xs items-center">
+                  {item.presentCount > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[var(--sl-t3)]">Présent</span>
+                      <span className="font-black text-emerald-400">{item.presentCount}</span>
+                    </div>
+                  )}
+                  {item.absentCount > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[var(--sl-t3)]">Absent</span>
+                      <span className="font-black text-red-400">{item.absentCount}</span>
+                    </div>
+                  )}
+                  {item.unsureCount > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[var(--sl-t3)]">Incertain</span>
+                      <span className="font-black text-slate-400">{item.unsureCount}</span>
+                    </div>
+                  )}
+                  <span className="ml-auto text-[var(--sl-t3)] text-[10px]">›</span>
+                </div>
+              </button>
             </div>
           )}
 
-          {/* Compteurs présence (pour joueurs) */}
-          {isPlayer && (item.presentCount > 0 || item.absentCount > 0) && (
+          {/* ── Convocations staff ─────────────────────────────────── */}
+          {isStaff && item.convocs && item.convocs.total > 0 && (
             <button
               onClick={() => setShowList(true)}
-              className="flex items-center gap-2 mb-3 text-[10px] font-semibold text-[var(--sl-t3)] hover:text-[var(--sl-t2)] transition-colors"
+              className="w-full text-left mb-3 px-3 py-2 rounded-xl bg-[var(--sl-surface)] hover:bg-[var(--sl-hover)] transition-colors"
             >
-              {item.presentCount > 0 && <span className="text-emerald-400">✓ {item.presentCount}</span>}
-              {item.absentCount  > 0 && <span className="text-red-400">✕ {item.absentCount}</span>}
-              {item.unsureCount  > 0 && <span className="text-slate-400">? {item.unsureCount}</span>}
-              <span className="opacity-50">›</span>
+              <span className="text-xs text-[var(--sl-t3)]">
+                <span className="font-black text-emerald-400">{item.convocs.accepted}</span> confirmés
+                {item.convocs.pending > 0 && (
+                  <> · <span className="font-black text-amber-400">{item.convocs.pending}</span> en attente</>
+                )}
+                <span className="ml-2 text-[var(--sl-t3)]">›</span>
+              </span>
             </button>
           )}
 
-          {/* Vue supporter : groupe convoqué (lecture) */}
+          {/* ── Vue supporter : groupe convoqué ────────────────────── */}
           {item.isSupporter && item.convocs?.accepted > 0 && (
             <button
               onClick={() => setShowList(true)}
@@ -153,44 +168,66 @@ export default function MatchPlanningCard({
             </button>
           )}
 
-          {/* Boutons présence joueur/parent */}
-          {isPlayer && (
-            <PresenceButtons
-              myStatus={item.myStatus}
-              onRespond={(status) => item.onRespond?.('match', item.id, status)}
-              size="sm"
-            />
+          {/* ── JOUEUR — boutons présence ─────────────────────────── */}
+          {item.isPlayerClub && (
+            <div className="mb-3">
+              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
+                Joueur
+              </p>
+              <PresenceButtons
+                myStatus={item.myStatus}
+                onRespond={status => item.onRespond?.('match', item.id, status)}
+                size="sm"
+              />
+            </div>
           )}
 
-          {/* Actions staff */}
-          {isStaff && !item.score && (
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={() => onConvocate?.(item)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold text-black bg-amber-400 dark:bg-amber-500 hover:opacity-90 transition-opacity"
-              >
-                <span>📣</span> Convoquer l'équipe
-              </button>
-              <button
-                onClick={() => onOpenPoster?.({ event: item, club })}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold text-white bg-orange-500 hover:opacity-90 transition-opacity"
-              >
-                <span>🎨</span> Créer l'affiche
-              </button>
+          {/* ── ACTIONS STAFF ────────────────────────────────────────── */}
+          {isStaff && !hasScore && (
+            <div>
+              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-2">
+                Actions Staff
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => onConvocate?.(item)}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-black transition-opacity hover:opacity-90 active:opacity-80"
+                  style={{ background: '#f59e0b' }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span>📣</span>
+                    <span>Convoquer l'équipe</span>
+                  </span>
+                  <span className="text-black/50 text-lg">≡</span>
+                </button>
+                <button
+                  onClick={() => onOpenPoster?.({ event: item, club })}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-white transition-opacity hover:opacity-90 active:opacity-80"
+                  style={{ background: '#f97316' }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span>🎨</span>
+                    <span>Créer l'affiche</span>
+                  </span>
+                  <span className="text-white/50 text-lg">↗</span>
+                </button>
+              </div>
             </div>
           )}
 
           {/* Post-match : affiche résultat */}
-          {isStaff && item.score && (
+          {isStaff && hasScore && (
             <button
               onClick={() => onOpenPoster?.({ event: item, club, score: item.score })}
-              className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold text-white bg-orange-500 hover:opacity-90 transition-opacity"
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-white hover:opacity-90 transition-opacity"
+              style={{ background: '#f97316' }}
             >
-              🎨 Créer l'affiche résultat
+              <span className="flex items-center gap-2"><span>🎨</span><span>Créer l'affiche résultat</span></span>
+              <span className="text-white/50">↗</span>
             </button>
           )}
 
-          {/* Covoiturage inline si présent */}
+          {/* ── Covoiturage ───────────────────────────────────────── */}
           <AnimatePresence>
             {item.myStatus === 'present' && (
               <CarpoolSection
@@ -200,6 +237,7 @@ export default function MatchPlanningCard({
               />
             )}
           </AnimatePresence>
+
         </div>
       </motion.div>
 

@@ -1,88 +1,105 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PresenceButtons    from './PresenceButtons.jsx';
-import CarpoolSection     from './CarpoolSection.jsx';
+import PresenceButtons     from './PresenceButtons.jsx';
+import CarpoolSection      from './CarpoolSection.jsx';
 import AttendanceListSheet from './AttendanceListSheet.jsx';
 
-const TYPE_COLOR = '#8b5cf6'; // violet — entraînement
+const ACCENT = '#8b5cf6'; // violet — entraînement
 
-function CountBadge({ presentCount, absentCount, unsureCount, onClick }) {
-  if (!presentCount && !absentCount && !unsureCount) return null;
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2 text-[10px] font-semibold text-[var(--sl-t3)] hover:text-[var(--sl-t2)] transition-colors select-none"
-    >
-      {presentCount > 0 && <span className="text-emerald-400">✓ {presentCount}</span>}
-      {absentCount  > 0 && <span className="text-red-400">✕ {absentCount}</span>}
-      {unsureCount  > 0 && <span className="text-slate-400">? {unsureCount}</span>}
-      <span className="opacity-50">›</span>
-    </button>
-  );
-}
-
-export default function TrainingPlanningCard({ item, userId, onOpenRides }) {
+export default function TrainingPlanningCard({ item, userId, isStaff, onOpenRides }) {
   const [showList, setShowList] = useState(false);
-  const isStaff = item.isStaffClub;
 
   return (
     <>
       <motion.div
         layout
-        className="bg-[var(--sl-card)] rounded-2xl overflow-hidden border border-[var(--sl-border)]"
-        style={{ borderLeftWidth: 3, borderLeftColor: TYPE_COLOR }}
+        className="rounded-2xl overflow-hidden bg-[var(--sl-card)] border border-[var(--sl-border)]"
+        style={{ borderLeftWidth: 3, borderLeftColor: ACCENT }}
       >
-        <div className="p-3.5">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span
-                  className="text-[9px] font-black tracking-[0.15em] uppercase px-2 py-0.5 rounded-full"
-                  style={{ background: `${TYPE_COLOR}22`, color: TYPE_COLOR }}
-                >
-                  Entraînement
+        <div className="p-4">
+
+          {/* ── Ligne 1 : badge + heure ────────────────────────────── */}
+          <div className="flex items-center justify-between mb-2">
+            <span
+              className="text-[9px] font-black tracking-[0.14em] uppercase px-2.5 py-1 rounded-full"
+              style={{ background: `${ACCENT}25`, color: ACCENT }}
+            >
+              Entraînement
+            </span>
+            <div className="flex items-center gap-2">
+              {item.status === 'rescheduled' && (
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
+                  Reporté
                 </span>
-                {item.status === 'rescheduled' && (
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
-                    Reporté
-                  </span>
-                )}
-              </div>
-              <h3 className="text-sm font-bold text-[var(--sl-t1)] truncate">{item.title}</h3>
+              )}
               {item.time && (
-                <p className="text-xs text-[var(--sl-t3)] mt-0.5">{item.time}</p>
+                <span className="text-sm font-black text-[var(--sl-t1)]">{item.time}</span>
               )}
             </div>
           </div>
 
-          {/* Lieu */}
+          {/* ── Titre ─────────────────────────────────────────────── */}
+          <h3 className="text-base font-black text-[var(--sl-t1)] mb-1 leading-tight uppercase tracking-wide">
+            {item.title}
+          </h3>
+
+          {/* ── Lieu ──────────────────────────────────────────────── */}
           {item.location && (
-            <p className="text-xs text-[var(--sl-t3)] mb-3 truncate">📍 {item.location}</p>
+            <p className="text-xs text-[var(--sl-t3)] mb-3">{item.location}</p>
           )}
 
-          {/* Compteur présences (cliquable pour staff) */}
-          {(isStaff || item.presentCount > 0 || item.absentCount > 0) && (
+          {/* ── PRÉSENCE ─────────────────────────────────────────── */}
+          {(item.presentCount > 0 || item.absentCount > 0 || item.unsureCount > 0) && (
             <div className="mb-3">
-              <CountBadge
-                presentCount={item.presentCount}
-                absentCount={item.absentCount}
-                unsureCount={item.unsureCount}
+              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
+                Présence
+              </p>
+              <button
                 onClick={isStaff ? () => setShowList(true) : undefined}
+                className={`w-full ${isStaff ? 'cursor-pointer hover:bg-[var(--sl-hover)]' : 'cursor-default'} rounded-xl bg-[var(--sl-surface)] px-3 py-2 transition-colors`}
+              >
+                <div className="flex gap-4 text-xs">
+                  {item.presentCount > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[var(--sl-t3)]">Présent</span>
+                      <span className="font-black text-emerald-400">{item.presentCount}</span>
+                    </div>
+                  )}
+                  {item.absentCount > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[var(--sl-t3)]">Absent</span>
+                      <span className="font-black text-red-400">{item.absentCount}</span>
+                    </div>
+                  )}
+                  {item.unsureCount > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[var(--sl-t3)]">Incertain</span>
+                      <span className="font-black text-slate-400">{item.unsureCount}</span>
+                    </div>
+                  )}
+                  {isStaff && (
+                    <span className="ml-auto text-[var(--sl-t3)] text-[10px]">›</span>
+                  )}
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* ── JOUEUR — boutons présence ─────────────────────────── */}
+          {item.isPlayerClub && (
+            <div>
+              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
+                Joueur
+              </p>
+              <PresenceButtons
+                myStatus={item.myStatus}
+                onRespond={status => item.onRespond?.('training', item.id, status)}
+                size="sm"
               />
             </div>
           )}
 
-          {/* Boutons présence (si joueur/parent — pas pur staff sans équipe) */}
-          {item.isPlayerClub && (
-            <PresenceButtons
-              myStatus={item.myStatus}
-              onRespond={(status) => item.onRespond?.('training', item.id, status)}
-              size="sm"
-            />
-          )}
-
-          {/* Covoiturage inline */}
+          {/* ── Covoiturage ───────────────────────────────────────── */}
           <AnimatePresence>
             {item.myStatus === 'present' && (
               <CarpoolSection
@@ -92,6 +109,7 @@ export default function TrainingPlanningCard({ item, userId, onOpenRides }) {
               />
             )}
           </AnimatePresence>
+
         </div>
       </motion.div>
 
