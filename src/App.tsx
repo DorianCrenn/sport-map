@@ -901,8 +901,21 @@ export default function App() {
     return <OAuthPopupCallback />;
   }
 
-  const isDemo = window.location.pathname.startsWith('/demo');
-  if (isDemo && !isDemoMode()) setDemoMode(true);
+  const [isDemo, setIsDemo] = useState(() => {
+    const fromPath = window.location.pathname.startsWith('/demo');
+    if (fromPath && !isDemoMode()) setDemoMode(true);
+    return fromPath;
+  });
+
+  useEffect(() => {
+    function onLaunchDemo() {
+      history.pushState({}, '', '/demo');
+      if (!isDemoMode()) setDemoMode(true);
+      setIsDemo(true);
+    }
+    window.addEventListener('sl-launch-demo', onLaunchDemo);
+    return () => window.removeEventListener('sl-launch-demo', onLaunchDemo);
+  }, []);
 
   return (
     <AuthProvider>

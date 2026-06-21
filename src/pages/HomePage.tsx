@@ -690,12 +690,12 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
                 Les clubs →
               </motion.button>
             </div>
-            <a
-              href="/demo"
-              className="font-semibold font-poppins flex items-center gap-1.5 justify-center"
-              style={{ color:'#a5b4fc', background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:12, fontSize:13, padding:'13px 18px', marginTop:4, width:'100%', maxWidth:300, textDecoration:'none', display:'flex' }}>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('sl-launch-demo'))}
+              className="font-semibold font-poppins flex items-center gap-1.5 justify-center cursor-pointer"
+              style={{ color:'#a5b4fc', background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:12, fontSize:13, padding:'13px 18px', marginTop:4, width:'100%', maxWidth:300 }}>
               🎭 Découvrir la démo interactive
-            </a>
+            </button>
           </motion.div>
 
           {/* Social proof */}
@@ -781,12 +781,12 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
                 style={{ borderColor:'rgba(255,255,255,0.3)', color:'white', borderRadius:16, padding:'14px 28px', fontSize:16, backgroundColor:'rgba(255,255,255,0.08)' }}>
                 Voir la carte
               </motion.button>
-              <a
-                href="/demo"
-                className="font-semibold font-poppins flex items-center gap-2"
-                style={{ color:'#a5b4fc', borderRadius:16, padding:'14px 24px', fontSize:16, backgroundColor:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.3)', textDecoration:'none', display:'flex', alignItems:'center' }}>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('sl-launch-demo'))}
+                className="font-semibold font-poppins flex items-center gap-2 cursor-pointer"
+                style={{ color:'#a5b4fc', borderRadius:16, padding:'14px 24px', fontSize:16, backgroundColor:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.3)' }}>
                 🎭 Démo
-              </a>
+              </button>
             </div>
             <p className="mb-8" style={{ fontSize:13, color:'rgba(255,255,255,0.35)' }}>
               Inscription en 30 secondes · Aucune carte bancaire requise
