@@ -43,6 +43,7 @@ const HelpPage      = lazy(() => import('./pages/HelpPage.jsx'));
 const FeedbackModal = lazy(() => import('./components/FeedbackModal.jsx'));
 import { useRideNotifications } from './hooks/useRideNotifications.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
+import { useManagedClubs } from './hooks/useManagedClubs.js';
 import { useAttendeeCountActions } from './contexts/AttendeeCountContext.jsx';
 import { useMyConvocations } from './hooks/useMyConvocations.js';
 import { useFeedbackNotifications } from './hooks/useFeedbackNotifications.js';
@@ -108,6 +109,7 @@ function UpdateBanner() {
 
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs, followClub, isFollowingClub } = useAuth() as any;
+  const { isCoachOrManager } = useManagedClubs();
   const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent() as any;
   const { track } = useAnalytics(consent) as any;
 
@@ -509,6 +511,9 @@ function AppInner() {
       if (myClub) {
         setSelectedSearchClub(myClub);
         _setActiveTab('mon-club');
+        if (isClubAdmin || isCoachOrManager) {
+          setPendingClubAction('dashboard');
+        }
       } else {
         setActiveTab('clubs');
       }
@@ -631,7 +636,7 @@ function AppInner() {
                     allEvents={allEvents}
                     allClubs={allClubs}
                     activeDepartment={activeDepartment}
-                    canAddEvent={isAdmin || isClubAdmin}
+                    canAddEvent={isAdmin || isClubAdmin || isCoachOrManager}
                     onAddEvent={addEventWithToast}
                     onUpdateEvent={updateEvent}
                     onDeleteEvent={deleteEvent}
@@ -653,7 +658,7 @@ function AppInner() {
             )}
             {activeTab === 'clubs' && (
               <ErrorBoundary name="Clubs" onReport={handleErrorReport}>
-                <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin} onClubOverlayChange={setClubOverlayOpen} onArchiveSeason={archiveSeason} />
+                <ClubsPage allEvents={allEvents} onShowAuth={() => setShowAuth(true)} onAddEvent={addEventWithToast} canAddEvent={isAdmin || isClubAdmin || isCoachOrManager} onClubOverlayChange={setClubOverlayOpen} onArchiveSeason={archiveSeason} />
               </ErrorBoundary>
             )}
             {activeTab === 'profil' && (
@@ -719,7 +724,7 @@ function AppInner() {
                 if (activeTab === 'mon-club') setActiveTab('home');
               }}
               onAddEvent={addEvent}
-              canAddEvent={isAdmin || isClubAdmin}
+              canAddEvent={isAdmin || isClubAdmin || isCoachOrManager}
               onArchiveSeason={archiveSeason}
               onUpdateClub={async (data: Record<string, any>) => {
                 await updateClub(selectedSearchClub.id, data);

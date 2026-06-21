@@ -2,6 +2,20 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase.js';
 
+async function sendReplyConfirmation(token: string, status: string) {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anonKey     = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    await fetch(`${supabaseUrl}/functions/v1/convoc-reply-confirm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: anonKey },
+      body: JSON.stringify({ token, status }),
+    });
+  } catch {
+    // non-blocking — confirmation is best-effort
+  }
+}
+
 interface ConvocToken {
   id: string;
   player_name: string | null;
@@ -75,6 +89,7 @@ export default function ConvocReplyPanel({ token, onClose }: ConvocReplyPanelPro
         window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'convocation_responded', data: { status } } }));
       }
       setDone(status);
+      sendReplyConfirmation(token, status);
     }
     setSaving(null);
   }

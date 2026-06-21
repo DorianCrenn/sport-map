@@ -15,6 +15,7 @@ interface SendEmailsOptions {
   eventDate: string;
   eventTime?: string;
   eventVenue?: string;
+  coachName?: string;
   players: PlayerForEmail[];
 }
 

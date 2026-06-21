@@ -384,7 +384,14 @@ export default function OnboardingPage({ onDone }: OnboardingPageProps) {
             <OnboardingRoleStep
               value={jobRole}
               onChange={setJobRole}
-              onNext={() => setStep(2)}
+              onNext={() => {
+                const clubRoles = ['president', 'coach', 'communicant'];
+                if (jobRole && clubRoles.includes(jobRole)) {
+                  setStep(4);
+                } else {
+                  setStep(2);
+                }
+              }}
             />
           </motion.div>
         )}
@@ -613,7 +620,14 @@ export default function OnboardingPage({ onDone }: OnboardingPageProps) {
               sports={[...selected]}
               selectedCity={selectedCity}
               onFinish={handleFinish}
-              onBack={() => setStep(3)}
+              onBack={() => {
+                const clubRoles = ['president', 'coach', 'communicant'];
+                if (jobRole && clubRoles.includes(jobRole)) {
+                  setStep(1);
+                } else {
+                  setStep(3);
+                }
+              }}
             />
           </motion.div>
         )}

@@ -100,6 +100,7 @@ else
   FUNCTIONS=(
     "analyze-poster-dna"
     "club-admin-reminders"
+    "convoc-reply-confirm"
     "create-checkout-session"
     "generate-announcement"
     "generate-variant-bg"

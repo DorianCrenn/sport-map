@@ -1,10 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 
 interface ConvocationPayload {
   eventId:      string;
@@ -14,11 +9,14 @@ interface ConvocationPayload {
   eventDate:    string;   // ISO
   eventTime?:   string;
   eventVenue?:  string;
+  coachName?:   string;
   players: Array<{ convocationId: string; name: string; email: string }>;
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+Deno.serve(async (req) => {
+  const prelight = handleOptions(req);
+  if (prelight) return prelight;
+  const ch = corsHeaders(req);
 
   const resendKey = Deno.env.get("RESEND_API_KEY");
   const fromEmail = Deno.env.get("FROM_EMAIL") ?? "convocations@sportlink.fr";
@@ -30,17 +28,16 @@ serve(async (req) => {
 
   try {
     const payload: ConvocationPayload = await req.json();
-    const { eventId, clubId, clubName, eventTitle, eventDate, eventTime, eventVenue, players } = payload;
+    const { eventId, clubId, clubName, eventTitle, eventDate, eventTime, eventVenue, coachName, players } = payload;
 
     if (!eventId || !players?.length) {
       return new Response(JSON.stringify({ error: "eventId and players required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
-    // Formater la date en français
-    const dateObj  = new Date(eventDate);
-    const dateFr   = dateObj.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const dateObj   = new Date(eventDate);
+    const dateFr    = dateObj.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
     const dateShort = dateObj.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
 
     const results: Array<{ email: string; sent: boolean; token?: string }> = [];
@@ -48,7 +45,6 @@ serve(async (req) => {
     for (const player of players) {
       if (!player.email?.trim()) { results.push({ email: player.email, sent: false }); continue; }
 
-      // Créer le token de réponse en DB
       const { data: tokenRow, error: tokenErr } = await supabase
         .from("convocation_reply_tokens")
         .insert({
@@ -68,10 +64,16 @@ serve(async (req) => {
       }
 
       const token = tokenRow.token as string;
-      const replyBase = `${appUrl}/#convoc-reply/${token}`;
+      const replyBase       = `${appUrl}/#convoc-reply/${token}`;
       const linkAccepted    = `${replyBase}?s=accepted`;
       const linkDeclined    = `${replyBase}?s=declined`;
       const linkUnavailable = `${replyBase}?s=unavailable`;
+      const expireDate      = new Date(Date.now() + 7 * 24 * 3600 * 1000).toLocaleDateString("fr-FR");
+
+      const coachLine = coachName ? `<br/>👤 Coach : <strong>${coachName}</strong>` : "";
+      const venueLine = eventVenue
+        ? `<br/>📍 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(eventVenue)}" style="color:#2563eb;text-decoration:none;">${eventVenue}</a>`
+        : "";
 
       const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -88,13 +90,12 @@ serve(async (req) => {
     .club-badge { display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: #1d4ed8; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; margin-bottom: 16px; }
     .event-card { background: #f8fafc; border-radius: 12px; padding: 16px; margin: 16px 0; border-left: 4px solid #2563eb; }
     .event-card h2 { margin: 0 0 8px; font-size: 16px; color: #1e293b; }
-    .event-card .meta { font-size: 13px; color: #64748b; line-height: 1.6; }
-    .greeting { font-size: 15px; color: #334155; margin: 0 0 12px; }
+    .event-card .meta { font-size: 13px; color: #64748b; line-height: 1.8; }
     .question { font-size: 15px; font-weight: 700; color: #1e293b; margin: 20px 0 16px; text-align: center; }
     .buttons { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 16px 0; }
     .btn { display: inline-block; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 700; text-align: center; min-width: 120px; }
-    .btn-yes  { background: #22c55e; color: white; }
-    .btn-no   { background: #ef4444; color: white; }
+    .btn-yes   { background: #22c55e; color: white; }
+    .btn-no    { background: #ef4444; color: white; }
     .btn-maybe { background: #f97316; color: white; }
     .footer { padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; line-height: 1.6; }
     .app-link { color: #2563eb; text-decoration: none; font-weight: 600; }
@@ -109,25 +110,25 @@ serve(async (req) => {
     </div>
     <div class="body">
       <div class="club-badge">🏆 ${clubName}</div>
-      <p class="greeting">Bonjour <strong>${player.name}</strong>,</p>
+      <p style="font-size:15px;color:#334155;margin:0 0 12px;">Bonjour <strong>${player.name}</strong>,</p>
       <p style="font-size:14px;color:#475569;margin:0 0 4px;">Vous êtes convoqué(e) pour :</p>
 
       <div class="event-card">
         <h2>${eventTitle}</h2>
         <div class="meta">
-          📅 ${dateFr}${eventTime ? `<br/>🕐 ${eventTime}` : ""}${eventVenue ? `<br/>📍 ${eventVenue}` : ""}
+          📅 ${dateFr}${eventTime ? `<br/>🕐 ${eventTime}` : ""}${venueLine}${coachLine}
         </div>
       </div>
 
       <p class="question">Serez-vous présent(e) ?</p>
 
       <div class="buttons">
-        <a href="${linkAccepted}" class="btn btn-yes">✅ Présent(e)</a>
-        <a href="${linkDeclined}" class="btn btn-no">❌ Absent(e)</a>
+        <a href="${linkAccepted}"    class="btn btn-yes">✅ Présent(e)</a>
+        <a href="${linkDeclined}"    class="btn btn-no">❌ Absent(e)</a>
         <a href="${linkUnavailable}" class="btn btn-maybe">🤔 Peut-être</a>
       </div>
 
-      <p class="expire-note">Ce lien est valable 7 jours (jusqu'au ${new Date(Date.now() + 7*24*3600*1000).toLocaleDateString("fr-FR")}).</p>
+      <p class="expire-note">Ce lien est valable 7 jours (jusqu'au ${expireDate}).</p>
     </div>
     <div class="footer">
       Vous pouvez aussi répondre directement dans l'application<br/>
@@ -138,7 +139,6 @@ serve(async (req) => {
 </html>`;
 
       if (!resendKey) {
-        // Mode dev : log sans envoyer
         console.log(`[send-convoc] DEV — would email ${player.email} with token ${token}`);
         results.push({ email: player.email, sent: false, token });
         continue;
@@ -156,7 +156,6 @@ serve(async (req) => {
       });
 
       if (res.ok) {
-        // Marquer email_sent_at dans event_convocations
         await supabase.from("event_convocations")
           .update({ email_sent_at: new Date().toISOString() })
           .eq("id", player.convocationId);
@@ -169,13 +168,13 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ ok: true, results }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ch, "Content-Type": "application/json" },
     });
 
   } catch (err: any) {
     console.error("[send-convoc] Unhandled error:", err.message);
     return new Response(JSON.stringify({ error: err.message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...ch, "Content-Type": "application/json" },
     });
   }
 });

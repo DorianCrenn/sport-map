@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase.js';
+import { useAuth } from '../../contexts/AuthContext.js';
 import { useEventConvocations } from '../../hooks/useEventConvocations.js';
 import { useConvocationEmail } from '../../hooks/useConvocationEmail.js';
 
@@ -81,6 +82,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
   const [emailSent, setEmailSent]       = useState(false);
   const [emailCount, setEmailCount]     = useState(0);
 
+  const { currentUser } = useAuth() as any;
   const { sendConvocations } = useEventConvocations(event?.id) as any;
   const { sendEmails } = useConvocationEmail();
 
@@ -122,17 +124,37 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
     else setSelected(new Set(players.map(p => p.id)));
   }
 
+  async function triggerPushForPlayers(playerList: Player[]) {
+    const withUserId = playerList.filter(p => p.user_id);
+    if (!withUserId.length) return;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    if (!token) return;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anonKey     = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    const title       = `⚽ Convocation — ${event.title ?? event.homeTeam ?? 'Événement'}`;
+    const body        = `${event.clubName ?? event.club_name ?? 'Votre club'} vous convoque. Répondez maintenant.`;
+    await Promise.allSettled(withUserId.map(p =>
+      fetch(`${supabaseUrl}/functions/v1/send-push`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, apikey: anonKey },
+        body: JSON.stringify({ user_id: p.user_id, title, body, tag: `convoc-${event.id}` }),
+      }).catch(() => {})
+    ));
+  }
+
   async function handleSend() {
     if (!selected.size || !event?.id) return;
     setSending(true);
     const { error } = await sendConvocations([...selected]);
-    setSending(false);
     if (!error) {
-      // Compter combien de joueurs sélectionnés ont un email
+      const selectedPlayers = players.filter(p => selected.has(p.id));
+      triggerPushForPlayers(selectedPlayers);
       const withEmail = players.filter(p => selected.has(p.id) && p.email?.trim());
       setEmailCount(withEmail.length);
       setSent(true);
     }
+    setSending(false);
   }
 
   async function handleSendEmails() {
@@ -164,6 +186,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
       eventDate: event.date,
       eventTime: event.time,
       eventVenue: event.venue,
+      coachName: currentUser?.name ?? undefined,
       players: emailPlayers,
     });
 

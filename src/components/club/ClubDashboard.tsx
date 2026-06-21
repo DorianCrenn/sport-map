@@ -1,6 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Z } from '../../constants/zIndex.js';
+import { supabase } from '../../lib/supabase.js';
 import { useCanDo } from '../../hooks/useCanDo.js';
 import { useClubDashboard } from '../../hooks/useClubDashboard.js';
 import { useClubBrandKit } from '../../hooks/useClubBrandKit.js';
@@ -18,6 +19,30 @@ import SubscriptionExpiryBanner from '../ui/SubscriptionExpiryBanner.jsx';
 import { canUseFeature } from '../../lib/planHelpers.ts';
 import { hasDemoData, deleteDemoData } from '../../lib/demoDataGenerator.js';
 import ClubInvitePanel from './ClubInvitePanel.jsx';
+
+interface ConvocStats { total: number; accepted: number; declined: number; pending: number; }
+
+function useConvocStats(clubId: string | number | null | undefined) {
+  const [stats, setStats] = useState<ConvocStats | null>(null);
+
+  const load = useCallback(async () => {
+    if (!clubId) return;
+    const { data } = await supabase
+      .from('convocation_reply_tokens')
+      .select('reply_status')
+      .eq('club_id', String(clubId))
+      .gte('expires_at', new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString()) as { data: { reply_status: string | null }[] | null };
+    if (!data) return;
+    const total    = data.length;
+    const accepted = data.filter(r => r.reply_status === 'accepted').length;
+    const declined = data.filter(r => r.reply_status === 'declined').length;
+    const pending  = data.filter(r => !r.reply_status).length;
+    setStats({ total, accepted, declined, pending });
+  }, [clubId]);
+
+  useEffect(() => { load(); }, [load]);
+  return stats;
+}
 
 function StatCard({ label, value, sub, color = 'var(--sl-t1)' }: { label: string; value: number; sub?: string; color?: string }) {
   return (
@@ -142,6 +167,15 @@ function AnnouncementsSection({ club }: { club: Record<string, any> }) {
     setShowModal(false);
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);
+    if (!scheduledFor) {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const anonKey     = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+      fetch(`${supabaseUrl}/functions/v1/notify-club-followers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: anonKey },
+        body: JSON.stringify({ clubId: club.id, clubName: club.name, message: message.slice(0, 100) }),
+      }).catch(() => {});
+    }
   }
 
   return (
@@ -426,9 +460,10 @@ interface ClubDashboardProps {
 }
 
 export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, onArchiveSeason }: ClubDashboardProps) {
-  const data = useClubDashboard(String(club.id), clubEventIds as string[]) as any;
-  const isEmpty = !data.loading && data.followers === 0 && data.pageViews.total === 0 && data.attendees.total === 0 && data.posterExports === 0 && data.posterShares === 0;
-  const [hasDemo, setHasDemo]         = useState(false);
+  const data        = useClubDashboard(String(club.id), clubEventIds as string[]) as any;
+  const convocStats = useConvocStats(club.id);
+  const isEmpty     = !data.loading && data.followers === 0 && data.pageViews.total === 0 && data.attendees.total === 0 && data.posterExports === 0 && data.posterShares === 0;
+  const [hasDemo, setHasDemo]           = useState(false);
   const [deletingDemo, setDeletingDemo] = useState(false);
 
   useEffect(() => { hasDemoData(club.id).then(setHasDemo).catch(() => {}); }, [club.id]);
@@ -477,6 +512,37 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
               <StatCard label="Affiches ce mois" value={data.posterExports} sub="exports & partages" color="#a855f7" />
               <StatCard label="Partages sociaux" value={data.posterShares} sub="WhatsApp, Insta, Facebook" color="#06b6d4" />
             </div>
+
+            {convocStats && convocStats.total > 0 && (
+              <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 10 }}>Convocations — 30 derniers jours</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ flex: 1, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#22c55e' }}>{convocStats.accepted}</div>
+                    <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2 }}>Présents</div>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#ef4444' }}>{convocStats.declined}</div>
+                    <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2 }}>Absents</div>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#f59e0b' }}>{convocStats.pending}</div>
+                    <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2 }}>Sans réponse</div>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--sl-t1)' }}>{convocStats.total}</div>
+                    <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2 }}>Total envoyés</div>
+                  </div>
+                </div>
+                {convocStats.total > 0 && (
+                  <div style={{ marginTop: 10, height: 6, borderRadius: 999, background: 'var(--sl-border)', overflow: 'hidden', display: 'flex' }}>
+                    <div style={{ width: `${(convocStats.accepted / convocStats.total) * 100}%`, background: '#22c55e', borderRadius: '999px 0 0 999px', transition: 'width 0.4s' }} />
+                    <div style={{ width: `${(convocStats.declined / convocStats.total) * 100}%`, background: '#ef4444' }} />
+                    <div style={{ flex: 1, background: 'var(--sl-border-s)' }} />
+                  </div>
+                )}
+              </div>
+            )}
 
             <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
