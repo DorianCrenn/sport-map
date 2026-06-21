@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS stripe_webhook_events (
 );
 
 ALTER TABLE stripe_webhook_events ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS stripe_events_admin ON stripe_webhook_events;
 CREATE POLICY stripe_events_admin ON stripe_webhook_events
   FOR ALL TO authenticated
   USING (sl_is_admin());

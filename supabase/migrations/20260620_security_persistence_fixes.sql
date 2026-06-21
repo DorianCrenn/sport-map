@@ -18,6 +18,7 @@ CREATE POLICY profiles_select_own ON profiles
   USING (auth.uid() = id);
 
 -- Les admins peuvent tout lire
+DROP POLICY IF EXISTS profiles_select_admin ON profiles;
 CREATE POLICY profiles_select_admin ON profiles
   FOR SELECT TO authenticated
   USING (sl_is_admin());
