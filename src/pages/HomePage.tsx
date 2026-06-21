@@ -1,0 +1,965 @@
+import React, { useMemo, useState, useCallback, lazy, Suspense } from 'react';
+import { APP_VERSION, APP_NAME } from '../lib/appInfo.js';
+import { motion } from 'framer-motion';
+import { useSports } from '../hooks/useSports.js';
+import { SPORT_ICONS } from '../components/sportIcons.js';
+import SportLinkLogo from '../components/SportLinkLogo.jsx';
+import WeekendPosters from '../components/dashboard/WeekendPosters.tsx';
+import PlansSection from '../components/home/PlansSection.jsx';
+
+const PosterStudio = lazy(() => import('../components/PosterStudio.jsx'));
+
+// ── Social proof strip ────────────────────────────────────────────────────────
+function SocialProofStrip({ clubs = [], thisWeek = 0 }) {
+  const { allSports } = useSports();
+  const visible = clubs.slice(0, 7);
+  const extra   = clubs.length - visible.length;
+
+  if (clubs.length === 0) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}
+    >
+      {/* Overlapping avatars */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {visible.map((club, i) => {
+          const color = allSports[club.sport]?.color ?? '#64748b';
+          const init  = club.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+          return (
+            <div
+              key={club.id}
+              title={club.name}
+              style={{
+                width: 28, height: 28, borderRadius: '50%',
+                backgroundColor: color,
+                border: '2px solid rgba(255,255,255,0.18)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 9, fontWeight: 800, color: '#fff',
+                marginLeft: i === 0 ? 0 : -8,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+                zIndex: visible.length - i,
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              {club.logo
+                ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
+                : init}
+            </div>
+          );
+        })}
+        {extra > 0 && (
+          <div style={{
+            width: 28, height: 28, borderRadius: '50%', marginLeft: -8,
+            backgroundColor: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.18)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.85)',
+          }}>
+            +{extra}
+          </div>
+        )}
+      </div>
+
+      {/* Text */}
+      <div style={{ lineHeight: 1.35 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.9)', display: 'block' }}>
+          {clubs.length} club{clubs.length > 1 ? 's' : ''} actifs
+        </span>
+        {thisWeek > 0 && (
+          <span style={{ fontSize: 11, color: '#22d96a', fontWeight: 600 }}>
+            {thisWeek} événement{thisWeek > 1 ? 's' : ''} cette semaine
+          </span>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// Grille 4×3 couvrant tout le hero — bords + centre
+const FLOAT_SLOTS = [
+  // Colonne gauche
+  { x: '2%',  y: '6%',  size: 42, opacity: 0.42, dur: 7,   delay: 0,   dy: 16 },
+  { x: '4%',  y: '38%', size: 34, opacity: 0.38, dur: 9,   delay: 1.2, dy: 20 },
+  { x: '3%',  y: '70%', size: 30, opacity: 0.36, dur: 8,   delay: 3,   dy: 16 },
+  // Colonne centre-gauche
+  { x: '28%', y: '4%',  size: 26, opacity: 0.33, dur: 11,  delay: 2,   dy: 12 },
+  { x: '30%', y: '45%', size: 32, opacity: 0.35, dur: 10,  delay: 4.5, dy: 18 },
+  { x: '25%', y: '75%', size: 22, opacity: 0.30, dur: 12,  delay: 1,   dy: 12 },
+  // Colonne centre-droite
+  { x: '58%', y: '7%',  size: 28, opacity: 0.33, dur: 9.5, delay: 3.5, dy: 14 },
+  { x: '55%', y: '42%', size: 36, opacity: 0.38, dur: 8,   delay: 0.5, dy: 18 },
+  { x: '60%', y: '72%', size: 24, opacity: 0.30, dur: 13,  delay: 5,   dy: 12 },
+  // Colonne droite
+  { x: '86%', y: '5%',  size: 38, opacity: 0.40, dur: 8,   delay: 1.5, dy: 18 },
+  { x: '88%', y: '40%', size: 30, opacity: 0.36, dur: 10,  delay: 2.5, dy: 16 },
+  { x: '84%', y: '72%', size: 26, opacity: 0.33, dur: 11,  delay: 4,   dy: 14 },
+];
+
+function FloatingLogos() {
+  const { allSports } = useSports();
+
+  const sports = Object.entries(allSports)
+    .filter(([, s]) => !s.isArchived)
+    .slice(0, FLOAT_SLOTS.length);
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+      {sports.map(([name, sportData], i) => {
+        const slot = FLOAT_SLOTS[i];
+        const iconHtml = SPORT_ICONS[name] ?? SPORT_ICONS[sportData.iconId];
+        if (!iconHtml) return null;
+        const color = sportData.color ?? '#22d96a';
+        return (
+          <div
+            key={name}
+            style={{
+              position: 'absolute',
+              left: slot.x,
+              top: slot.y,
+              opacity: slot.opacity,
+              '--fdy': `-${slot.dy}px`,
+              animation: `sportFloat ${slot.dur}s ${slot.delay}s ease-in-out infinite`,
+            } as React.CSSProperties}
+          >
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                position: 'absolute',
+                inset: -slot.size * 0.5,
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${color}38 0%, transparent 70%)`,
+                pointerEvents: 'none',
+              }} />
+              <svg width={slot.size} height={slot.size} viewBox="0 0 24 24" aria-hidden="true"
+                style={{ display: 'block', color }}>
+                <g dangerouslySetInnerHTML={{ __html: iconHtml }} />
+              </svg>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Scroll-aware animation wrapper ────────────────────────────────────────────
+function FadeUp({ children, delay = 0, y = 18, className = '', style = {} }: { children: any; delay?: number; y?: number; className?: string; style?: React.CSSProperties }) {
+  return (
+    <motion.div
+      className={className}
+      style={style}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.45, delay, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ── Phone mockup ──────────────────────────────────────────────────────────────
+function PhoneMockup() {
+  const markers = [
+    { x: 100, y: 108, color: '#22d96a', r: 13 },
+    { x: 155, y: 82,  color: '#f97316', r: 13 },
+    { x: 65,  y: 148, color: '#8b5cf6', r: 13 },
+    { x: 185, y: 140, color: '#22d96a', r: 13 },
+    { x: 130, y: 178, color: '#3B82F6', r: 11 },
+  ];
+  const clusters = [
+    { x: 68,  y: 75,  n: 7 },
+    { x: 198, y: 108, n: 4 },
+    { x: 50,  y: 185, n: 3 },
+    { x: 170, y: 195, n: 7 },
+  ];
+
+  return (
+    <div style={{
+      borderRadius: 40,
+      border: '3.5px solid #111827',
+      backgroundColor: '#111827',
+      overflow: 'hidden',
+      boxShadow: '0 40px 100px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.15)',
+      width: '100%',
+    }}>
+      {/* Status bar */}
+      <div style={{ backgroundColor: '#111827', padding: '10px 16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+        <span style={{ color: 'white', fontSize: 10, fontWeight: 700, fontFamily: 'Poppins,sans-serif' }}>9:41</span>
+        <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', width: 80, height: 22, backgroundColor: '#000', borderRadius: 14 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <div style={{ display: 'flex', gap: '1.5px', alignItems: 'flex-end' }}>
+            {[3,5,7,9].map((h,i) => <div key={i} style={{ width: 2.5, height: h, backgroundColor: 'white', borderRadius: 1 }} />)}
+          </div>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><rect x="1" y="6" width="15" height="12" rx="2"/><path d="M23 13V11a2 2 0 0 0-2-2h-1"/></svg>
+        </div>
+      </div>
+
+      <div style={{ backgroundColor: 'white' }}>
+        {/* App header */}
+        <div style={{ padding: '10px 14px 7px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', fontFamily: 'Poppins,sans-serif' }}>Carte</span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+        </div>
+
+        {/* Filter pills */}
+        <div style={{ display: 'flex', gap: 5, padding: '0 12px 8px' }}>
+          {['Tous','Football','Handball'].map((t, i) => (
+            <span key={t} style={{
+              fontSize: 9, borderRadius: 20, padding: '3px 10px', fontWeight: 700, whiteSpace: 'nowrap',
+              backgroundColor: i === 0 ? '#22d96a' : 'var(--sl-surface)',
+              color: i === 0 ? 'white' : '#64748b',
+            }}>{t}</span>
+          ))}
+        </div>
+
+        {/* Map */}
+        <div style={{ position: 'relative', overflow: 'hidden', aspectRatio: '1 / 0.95' }}>
+          <svg width="100%" height="100%" viewBox="0 0 240 228" preserveAspectRatio="xMidYMid slice">
+            <rect width="240" height="228" fill="#e8efe8"/>
+            <path d="M0 0 Q60 20 120 10 Q180 0 240 15 L240 80 Q200 70 160 75 Q100 80 60 70 Q30 65 0 75Z" fill="#d4e8c2" opacity="0.7"/>
+            <ellipse cx="170" cy="55" rx="40" ry="22" fill="#c8e0b0" opacity="0.8"/>
+            <ellipse cx="40"  cy="40" rx="30" ry="18" fill="#d0e8b8" opacity="0.6"/>
+            <path d="M0 155 Q40 138 85 148 Q130 158 175 138 Q205 128 240 136 L240 228 L0 228Z" fill="#a8cfe8" opacity="0.85"/>
+            <path d="M0 178 Q55 162 110 172 Q155 180 240 162 L240 228 L0 228Z" fill="#90b8d8" opacity="0.6"/>
+            <path d="M30 0 Q75 55 110 110 Q140 160 170 210" stroke="white" strokeWidth="6" fill="none" strokeLinecap="round"/>
+            <path d="M0 88 Q65 98 130 88 Q180 80 240 95" stroke="white" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
+            <path d="M50 0 L60 228" stroke="white" strokeWidth="3" fill="none" opacity="0.55"/>
+            <path d="M0 130 Q100 122 240 135" stroke="white" strokeWidth="3" fill="none" opacity="0.5"/>
+            {clusters.map((c,i) => (
+              <g key={i}>
+                <circle cx={c.x} cy={c.y} r="14" fill="white" stroke="#d1d5db" strokeWidth="1.5"/>
+                <text x={c.x} y={c.y+4} textAnchor="middle" fontSize="11" fontWeight="800" fill="#0F1E3A" fontFamily="Poppins,sans-serif">{c.n}</text>
+              </g>
+            ))}
+            <circle cx="118" cy="112" r="10" fill="#3B82F6" opacity="0.2"/>
+            <circle cx="118" cy="112" r="6" fill="#3B82F6"/>
+            <circle cx="118" cy="112" r="3" fill="white"/>
+            {markers.map((m,i) => (
+              <g key={i}>
+                <ellipse cx={m.x} cy={m.y+m.r+3} rx={m.r*0.45} ry="3" fill="rgba(0,0,0,0.2)"/>
+                <path d={`M${m.x} ${m.y-m.r-2} C${m.x-m.r-2} ${m.y-m.r-2} ${m.x-m.r-2} ${m.y+m.r} ${m.x} ${m.y+m.r+8} C${m.x+m.r+2} ${m.y+m.r} ${m.x+m.r+2} ${m.y-m.r-2} ${m.x} ${m.y-m.r-2}Z`} fill={m.color}/>
+                <circle cx={m.x} cy={m.y} r={m.r*0.55} fill="white" opacity="0.9"/>
+              </g>
+            ))}
+          </svg>
+          <div style={{ position:'absolute', bottom:10, right:10, backgroundColor:'#111827', borderRadius:14, padding:'6px 14px', display:'flex', alignItems:'center', gap:5, boxShadow:'0 4px 16px rgba(0,0,0,0.35)' }}>
+            <span style={{ color:'white', fontSize:12, fontWeight:700, fontFamily:'Poppins,sans-serif' }}>+ Ajouter</span>
+          </div>
+        </div>
+
+        {/* Bottom nav */}
+        <div style={{ display:'flex', borderTop:'1px solid var(--sl-border)', padding:'9px 0 8px', backgroundColor:'var(--sl-hero-section-bg)' }}>
+          {[
+            { label:'Accueil', icon:<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>, active: false },
+            { label:'Carte',   icon:<><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></>, active: true },
+            { label:'Actus',   icon:<><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2z"/><path d="M18 14h-8"/></>, active: false },
+            { label:'Clubs',   icon:<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></>, active: false },
+            { label:'Profil',  icon:<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>, active: false },
+          ].map(({ label, icon, active }) => (
+            <div key={label} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={active ? '#22d96a' : '#94a3b8'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
+              <span style={{ fontSize:7.5, color: active ? '#22d96a' : '#94a3b8', fontWeight: active ? 700 : 500, fontFamily:'Poppins,sans-serif' }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── How It Works ──────────────────────────────────────────────────────────────
+function HowItWorks() {
+  const steps = [
+    {
+      n: '1', color: '#22d96a', bg: '#F0FDF4',
+      title: 'Crée ton compte & choisis tes sports',
+      desc: 'Inscris-toi en 30 secondes et sélectionne tes disciplines favorites. La carte et les clubs se filtrent automatiquement.',
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+    },
+    {
+      n: '2', color: '#3B82F6', bg: '#EFF6FF',
+      title: 'Explore la carte interactive',
+      desc: 'Visualise tous les événements — matchs, trails, tournois — sur une carte en temps réel. Active la géolocalisation pour voir ce qui se passe près de toi.',
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+    },
+    {
+      n: '3', color: '#a855f7', bg: '#FDF4FF',
+      title: 'Rejoins un club, suis ses matchs',
+      desc: 'Consulte les pages des clubs, leur calendrier de matchs par équipe, leurs résultats et contacte-les directement.',
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    },
+  ];
+
+  return (
+    <div className="mt-8 pt-8" style={{ borderTop: '1px solid var(--sl-border)' }}>
+      <h3 className="font-bold font-poppins text-center mb-5" style={{ fontSize: 15, color: '#0F1E3A' }}>
+        Comment ça marche ?
+      </h3>
+      <div className="space-y-4">
+        {steps.map(({ n, color, title, desc }, i) => (
+          <FadeUp key={n} delay={i * 0.1}>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold font-poppins text-white text-sm"
+                style={{ backgroundColor: color, marginTop: 1 }}>
+                {n}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold font-poppins text-sm" style={{ color: '#0F1E3A' }}>{title}</div>
+                <div className="text-xs mt-0.5" style={{ color: '#64748b', lineHeight: 1.55 }}>{desc}</div>
+              </div>
+            </div>
+          </FadeUp>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ClubBanner({ onNavigate }) {
+  return (
+    <FadeUp>
+      <div className="mt-8 rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: '#0c1a10' }}>
+        <div style={{ position: 'absolute', top: '-30%', right: '-10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,217,106,0.15) 0%, transparent 65%)', pointerEvents: 'none' }} />
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(34,217,106,0.2)' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <path d="M3 9h18M9 21V9"/>
+            </svg>
+          </div>
+          <div className="font-bold font-poppins text-white" style={{ fontSize: 14 }}>Tu gères un club ?</div>
+        </div>
+        <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.60)', lineHeight: 1.55 }}>
+          Crée la page de ton club, publie ton calendrier par équipe, affiche tes matchs à domicile sur la carte et gère tes résultats.
+        </p>
+        <button onClick={() => onNavigate('clubs')}
+          className="flex items-center gap-1.5 font-semibold font-poppins text-white"
+          style={{ backgroundColor: '#22d96a', borderRadius: 12, padding: '12px 16px', fontSize: 13 }}>
+          Voir les clubs
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </FadeUp>
+  );
+}
+
+// ── Recent results + next matches feed ───────────────────────────────────────
+const EVENT_TYPE_COLOR = { championship: '#3b82f6', cup: '#f97316', friendly: '#22d96a' };
+const EVENT_TYPE_LABEL = { championship: 'Championnat', cup: 'Coupe', friendly: 'Amical' };
+
+function ResultCard({ event, sports }) {
+  const sport = sports[event.sport];
+  const sportColor = sport?.color ?? '#64748b';
+  const isPast = new Date(event.date) < new Date();
+  const hasScore = event.score != null;
+  const typeColor = EVENT_TYPE_COLOR[event.eventType] ?? '#64748b';
+  const typeLabel = EVENT_TYPE_LABEL[event.eventType] ?? event.eventType ?? '';
+  const dateStr = new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+  const timeStr = new Date(event.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <div style={{
+      borderRadius: 14, padding: '12px 14px',
+      backgroundColor: 'var(--sl-card)',
+      border: '1px solid var(--sl-border)',
+      display: 'flex', alignItems: 'center', gap: 12,
+      minWidth: 0,
+    }}>
+      {/* Sport dot */}
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+        backgroundColor: `${sportColor}18`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {SPORT_ICONS[event.sport]
+          ? <svg width="18" height="18" viewBox="0 0 24 24" style={{ color: sportColor }}>
+              <g dangerouslySetInnerHTML={{ __html: SPORT_ICONS[event.sport] }} />
+            </svg>
+          : <span style={{ fontSize: 10, fontWeight: 800, color: sportColor }}>
+              {event.sport?.slice(0, 2).toUpperCase()}
+            </span>
+        }
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
+          <span style={{
+            fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5,
+            backgroundColor: `${typeColor}18`, color: typeColor,
+          }}>
+            {typeLabel}
+          </span>
+          {event.teamName && (
+            <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)' }}>
+              {event.teamName}
+            </span>
+          )}
+        </div>
+        <div style={{
+          fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
+          {event.title}
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>
+          {dateStr}{isPast ? '' : ` · ${timeStr}`}
+          {event.city && ` · ${event.city}`}
+        </div>
+      </div>
+
+      {/* Score or time */}
+      {hasScore ? (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+          padding: '6px 10px', borderRadius: 10,
+          backgroundColor: 'var(--sl-surface)',
+        }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>
+            {event.score.home}
+          </span>
+          <span style={{ fontSize: 12, color: 'var(--sl-t3)', fontWeight: 600 }}>–</span>
+          <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>
+            {event.score.away}
+          </span>
+        </div>
+      ) : !isPast ? (
+        <div style={{
+          fontSize: 11, fontWeight: 700, color: sportColor, flexShrink: 0,
+          padding: '4px 8px', borderRadius: 8, backgroundColor: `${sportColor}12`,
+        }}>
+          {timeStr}
+        </div>
+      ) : (
+        <div style={{
+          fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', flexShrink: 0,
+          padding: '3px 7px', borderRadius: 8, backgroundColor: 'var(--sl-surface)',
+        }}>
+          Terminé
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RecentResultsFeed({ allEvents, onNavigate }) {
+  const { allSports } = useSports();
+
+  const { recent, upcoming } = useMemo(() => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now); sevenDaysAgo.setDate(now.getDate() - 7);
+    const sevenDaysAhead = new Date(now); sevenDaysAhead.setDate(now.getDate() + 7);
+
+    const recent = allEvents
+      .filter(e => {
+        const d = new Date(e.date);
+        return d >= sevenDaysAgo && d < now && (e.score != null || d >= new Date(+now - 3 * 86400000));
+      })
+      .sort((a, b) => +new Date(b.date) - +new Date(a.date))
+      .slice(0, 5);
+
+    const upcoming = allEvents
+      .filter(e => {
+        const d = new Date(e.date);
+        return d >= now && d < sevenDaysAhead;
+      })
+      .sort((a, b) => +new Date(a.date) - +new Date(b.date))
+      .slice(0, 5);
+
+    return { recent, upcoming };
+  }, [allEvents]);
+
+  if (recent.length === 0 && upcoming.length === 0) return null;
+
+  return (
+    <FadeUp>
+      <div style={{ marginTop: 28 }}>
+        {recent.length > 0 && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.01em', margin: 0 }}>
+                Résultats récents
+              </h3>
+              <button
+                onClick={() => onNavigate('map')}
+                style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 4px', minHeight: 44 }}
+              >
+                Voir tout →
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: upcoming.length > 0 ? 20 : 0 }}>
+              {recent.map(e => <ResultCard key={e.id} event={e} sports={allSports} />)}
+            </div>
+          </>
+        )}
+
+        {upcoming.length > 0 && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.01em', margin: 0 }}>
+                Prochains matchs
+              </h3>
+              <button
+                onClick={() => onNavigate('map')}
+                style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-blue)', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 4px', minHeight: 44 }}
+              >
+                Sur la carte →
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {upcoming.map(e => <ResultCard key={e.id} event={e} sports={allSports} />)}
+            </div>
+          </>
+        )}
+      </div>
+    </FadeUp>
+  );
+}
+
+// ── Stats + Features ──────────────────────────────────────────────────────────
+function FeaturesSection({ stats = {} as { clubs?: number; events?: number; sports?: number; thisWeek?: number }, onNavigate, onShowLegal }) {
+  const { clubs = 0, events = 0, sports = 0, thisWeek = 0 } = stats;
+  return (
+    <div className="px-5 pt-6 pb-6 md:px-12 md:pt-10 md:pb-10">
+      {/* How it works + plans + club banner — mobile */}
+      <div className="md:hidden">
+        <HowItWorks />
+        <PlansSection onCta={() => onNavigate('profil')} />
+        <div style={{ marginTop: 40 }}>
+          <ClubBanner onNavigate={onNavigate} />
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 mb-6 mt-8 md:mt-0 md:gap-5 md:mb-8 md:grid-cols-4">
+        {[
+          { bg:'rgba(34,217,106,0.10)', color:'#22d96a', label:'Clubs', value: clubs, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+          { bg:'rgba(61,165,255,0.10)', color:'#3B82F6', label:'Événements', value: events, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+          { bg:'rgba(245,158,11,0.10)', color:'#f59e0b', label:'Cette semaine', value: thisWeek, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+          { bg:'rgba(168,85,247,0.10)', color:'#a855f7', label:'Sports', value: sports, icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+        ].map(({ bg, color, label, value, icon }, i) => (
+          <FadeUp key={label} delay={i * 0.1}
+            className="rounded-2xl flex flex-col items-center gap-1.5 py-4 md:py-5"
+            style={{ backgroundColor: bg }}>
+            {icon}
+            <div className="font-extrabold font-poppins md:text-3xl" style={{ fontSize:20, color, lineHeight:1 }}>{value}</div>
+            <div className="font-medium text-center" style={{ fontSize:11, color:'var(--sl-t2)' }}>{label}</div>
+          </FadeUp>
+        ))}
+      </div>
+
+      {/* Feature cards */}
+      <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-3 md:gap-5">
+        {[
+          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'rgba(34,217,106,0.10)', title:'Trouve un club', desc:'Parcours les clubs sportifs près de chez toi par sport ou par ville.' },
+          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'rgba(61,165,255,0.10)', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois — tous les événements sur la carte.' },
+          { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'rgba(168,85,247,0.10)', title:'Vis ta passion', desc:'Rejoins une communauté de passionnés de sport local.' },
+        ].map(({ icon, bg, title, desc }, i) => (
+          <FadeUp key={title} delay={i * 0.1}
+            className="flex items-start gap-3 md:flex-col md:gap-3 md:bg-white md:rounded-2xl md:p-5 md:border md:border-gray-100 md:shadow-sm">
+            <div className="rounded-xl flex items-center justify-center flex-shrink-0 md:w-12 md:h-12" style={{ width:38, height:38, backgroundColor:bg }}>
+              {icon}
+            </div>
+            <div>
+              <div className="font-bold font-poppins md:text-base" style={{ fontSize:14, color:'var(--sl-t1)' }}>{title}</div>
+              <div style={{ fontSize:12, color:'var(--sl-t2)', marginTop:2, lineHeight:1.5 }}>{desc}</div>
+            </div>
+          </FadeUp>
+        ))}
+      </div>
+
+      <div className="mt-8 rounded-2xl p-4" style={{ border: '1px dashed var(--sl-border-s)', backgroundColor: 'var(--sl-surface)' }}>
+        <div className="flex items-center gap-2 mb-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--sl-t3)' }}>Couverture territoriale</span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1 rounded-full font-bold" style={{ fontSize: 11, padding: '3px 10px', backgroundColor: 'rgba(34,217,106,0.15)', color: '#22d96a' }}>
+            ✓ Toute la France
+          </span>
+        </div>
+      </div>
+      <div className="text-center mt-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {[['mentions', 'Mentions légales'], ['privacy', 'Confidentialité'], ['cgu', 'CGU']].map(([section, label]) => (
+            <button
+              key={section}
+              onClick={() => onShowLegal?.(section)}
+              style={{ fontSize: 11, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 6px', minHeight: 44, textDecoration: 'underline', textDecorationColor: 'var(--sl-border)', textUnderlineOffset: 3 }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>{APP_NAME} · v{APP_VERSION}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+export default function HomePage({ onNavigate, stats, clubs = [], allEvents = [], onShowLegal }) {
+  // ── PosterStudio depuis les affiches du week-end ───────────────────────────
+  const [studioEvent, setStudioEvent] = useState(null);
+  const [studioClub,  setStudioClub]  = useState(null);
+
+  const handleOpenInStudio = useCallback((match) => {
+    // Construit les objets event et club attendus par PosterStudio
+    setStudioEvent({
+      id:          match.id,
+      title:       `${match.homeTeam.name} vs ${match.awayTeam.name}`,
+      date:        match.posterData.event.date,
+      sport:       match.sport,
+      venue:       match.venue ?? '',
+      city:        match.posterData.event.city ?? '',
+      homeOrAway:  'home',
+    });
+    setStudioClub({
+      id:       match.clubId,
+      name:     match.homeTeam.name,
+      logo_url: match.homeTeam.logo ?? '',
+      sport:    match.sport,
+    });
+  }, []);
+
+  return (
+    <>
+    <div className="h-full overflow-y-auto" style={{ background: 'var(--sl-hero-bg)' }}>
+
+      {/* ── MOBILE layout (< md) ── */}
+      <div className="md:hidden flex flex-col">
+
+        {/* Hero texte centré */}
+        <div className="flex-shrink-0 px-6 pt-10 pb-6 text-white text-center relative overflow-hidden">
+          {/* Floating logos */}
+          <FloatingLogos />
+
+          <div style={{ position:'absolute', top:'-40%', left:'50%', transform:'translateX(-50%)', width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,217,106,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
+
+          <motion.div className="flex items-center justify-center gap-2 mb-6 relative"
+            initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.3 }}>
+            <SportLinkLogo size={32} onDark />
+            <span className="font-extrabold font-poppins text-white" style={{ fontSize:21, letterSpacing:'-0.3px' }}>SportLink</span>
+          </motion.div>
+
+          <motion.div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-5 relative"
+            style={{ backgroundColor:'rgba(34,217,106,0.15)', border:'1px solid rgba(34,217,106,0.3)' }}
+            initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.09 }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span className="font-semibold font-poppins" style={{ fontSize:12, color:'#22d96a' }}>Sport partout en France</span>
+          </motion.div>
+
+          <motion.h1 className="font-extrabold font-poppins text-white mb-4 relative"
+            style={{ fontSize:40, lineHeight:1.08, letterSpacing:'-1px' }}
+            initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15 }}>
+            Le sport<br />près de <span style={{ color:'#22d96a' }}>toi</span>
+          </motion.h1>
+
+          <motion.p className="font-poppins mb-7 mx-auto relative"
+            style={{ fontSize:15, color:'rgba(255,255,255,0.65)', maxWidth:300, lineHeight:1.6 }}
+            initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.23 }}>
+            Rejoignez votre club sportif local. Suivez les matchs, résultats et annonces — gratuit.
+          </motion.p>
+
+          {/* CTA principal : inscription */}
+          <motion.div className="flex flex-col items-center gap-3 relative"
+            initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.29 }}>
+            <motion.button
+              whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }}
+              onClick={() => onNavigate('profil')}
+              className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer w-full justify-center"
+              style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'14px 22px', fontSize:15, maxWidth:300, boxShadow:'0 6px 24px rgba(34,217,106,0.4)' }}>
+              S'inscrire gratuitement
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </motion.button>
+            <div className="flex gap-3">
+              <motion.button whileTap={{ scale:0.95 }} onClick={() => onNavigate('map')}
+                className="font-semibold font-poppins cursor-pointer"
+                style={{ color:'rgba(255,255,255,0.6)', background:'none', border:'none', fontSize:13, padding:'10px 8px', minHeight:44 }}>
+                Voir la carte →
+              </motion.button>
+              <span style={{ color:'rgba(255,255,255,0.25)', fontSize:13, alignSelf:'center' }}>·</span>
+              <motion.button whileTap={{ scale:0.95 }} onClick={() => onNavigate('clubs')}
+                className="font-semibold font-poppins cursor-pointer"
+                style={{ color:'rgba(255,255,255,0.6)', background:'none', border:'none', fontSize:13, padding:'10px 8px', minHeight:44 }}>
+                Les clubs →
+              </motion.button>
+            </div>
+            <a
+              href="/demo"
+              className="font-semibold font-poppins flex items-center gap-1.5 justify-center"
+              style={{ color:'#a5b4fc', background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:12, fontSize:13, padding:'13px 18px', marginTop:4, width:'100%', maxWidth:300, textDecoration:'none', display:'flex' }}>
+              🎭 Découvrir la démo interactive
+            </a>
+          </motion.div>
+
+          {/* Social proof */}
+          <div className="relative mt-6">
+            <SocialProofStrip clubs={clubs} thisWeek={stats?.thisWeek ?? 0} />
+          </div>
+        </div>
+
+        {/* Phone */}
+        <motion.div className="px-8 pb-2 relative"
+          initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3, type:'spring', stiffness:180, damping:22 }}>
+          <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:'80%', height:60, background:'radial-gradient(ellipse, rgba(34,217,106,0.25) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none' }} />
+          <PhoneMockup />
+        </motion.div>
+
+        {/* Themed section */}
+        <div style={{ backgroundColor:'var(--sl-hero-section-bg)', borderRadius:'24px 24px 0 0', marginTop:'-8px', position:'relative', zIndex:1 }}>
+          <div className="pt-5">
+            <WeekendPosters
+              onOpenInStudio={handleOpenInStudio}
+            />
+          </div>
+          <div className="px-5 pt-5">
+            <RecentResultsFeed allEvents={allEvents} onNavigate={onNavigate} />
+          </div>
+          <FeaturesSection stats={stats} onNavigate={onNavigate} onShowLegal={onShowLegal} />
+        </div>
+      </div>
+
+      {/* ── DESKTOP layout (≥ md) ── */}
+      <div className="hidden md:flex md:flex-col md:min-h-full">
+
+        {/* Hero — deux colonnes */}
+        <div className="flex flex-1 items-center px-16 xl:px-24 py-16 gap-12 xl:gap-20 relative overflow-hidden" style={{ minHeight: '100vh' }}>
+
+          {/* Floating logos — desktop */}
+          <FloatingLogos />
+
+          {/* Orbes déco */}
+          <div style={{ position:'absolute', top:'10%', right:'35%', width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,217,106,0.08) 0%, transparent 65%)', pointerEvents:'none' }} />
+          <div style={{ position:'absolute', bottom:'5%', left:'5%', width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 65%)', pointerEvents:'none' }} />
+
+          {/* Colonne gauche — texte */}
+          <motion.div className="flex-1 text-white relative"
+            initial={{ opacity:0, x:-24 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.35 }}>
+
+            {/* Logo */}
+            <div className="flex items-center gap-3 mb-8">
+              <SportLinkLogo size={40} onDark />
+              <span className="font-extrabold font-poppins text-white" style={{ fontSize:26, letterSpacing:'-0.5px' }}>SportLink</span>
+            </div>
+
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
+              style={{ backgroundColor:'rgba(34,217,106,0.15)', border:'1px solid rgba(34,217,106,0.3)' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span className="font-semibold font-poppins" style={{ fontSize:13, color:'#22d96a' }}>La plateforme sportive locale</span>
+            </div>
+
+            {/* Titre */}
+            <h1 className="font-extrabold font-poppins text-white mb-5"
+              style={{ fontSize:64, lineHeight:1.04, letterSpacing:'-2px' }}>
+              Le sport<br />
+              près de <span style={{ color:'#22d96a' }}>toi</span>
+            </h1>
+
+            {/* Sous-titre */}
+            <p className="font-poppins mb-8"
+              style={{ fontSize:18, color:'rgba(255,255,255,0.65)', maxWidth:440, lineHeight:1.65 }}>
+              Rejoignez votre club sportif local. Suivez les matchs, résultats et annonces — le tout gratuitement.
+            </p>
+
+            {/* Boutons — inscription en priorité */}
+            <div className="flex gap-4 mb-4">
+              <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('profil')}
+                className="font-bold font-poppins text-white flex items-center gap-2.5 cursor-pointer"
+                style={{ backgroundColor:'#22d96a', borderRadius:16, padding:'14px 28px', fontSize:16, boxShadow:'0 8px 28px rgba(34,217,106,0.45)' }}>
+                S'inscrire gratuitement
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </motion.button>
+              <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('map')}
+                className="font-semibold font-poppins border-2 cursor-pointer"
+                style={{ borderColor:'rgba(255,255,255,0.3)', color:'white', borderRadius:16, padding:'14px 28px', fontSize:16, backgroundColor:'rgba(255,255,255,0.08)' }}>
+                Voir la carte
+              </motion.button>
+              <a
+                href="/demo"
+                className="font-semibold font-poppins flex items-center gap-2"
+                style={{ color:'#a5b4fc', borderRadius:16, padding:'14px 24px', fontSize:16, backgroundColor:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.3)', textDecoration:'none', display:'flex', alignItems:'center' }}>
+                🎭 Démo
+              </a>
+            </div>
+            <p className="mb-8" style={{ fontSize:13, color:'rgba(255,255,255,0.35)' }}>
+              Inscription en 30 secondes · Aucune carte bancaire requise
+            </p>
+
+            {/* Stats mini */}
+            <div className="flex gap-8 mb-10">
+              {[
+                { value: stats?.clubs ?? 0,    label:'Clubs', color:'#22d96a' },
+                { value: stats?.events ?? 0,   label:'Événements', color:'#3B82F6' },
+                { value: stats?.thisWeek ?? 0, label:'Cette semaine', color:'#f59e0b' },
+                { value: stats?.sports ?? 0,   label:'Sports', color:'#a855f7' },
+              ].map(({ value, label, color }) => (
+                <div key={label}>
+                  <div className="font-extrabold font-poppins" style={{ fontSize:32, color, lineHeight:1 }}>{value}</div>
+                  <div style={{ fontSize:13, color:'rgba(255,255,255,0.5)', marginTop:2 }}>{label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Social proof */}
+            <SocialProofStrip clubs={clubs} thisWeek={stats?.thisWeek ?? 0} />
+          </motion.div>
+
+          {/* Colonne droite — phone */}
+          <motion.div className="flex-shrink-0 relative"
+            style={{ width: 320 }}
+            initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15, type:'spring', stiffness:160, damping:22 }}>
+            <div style={{ position:'absolute', bottom:'-5%', left:'50%', transform:'translateX(-50%)', width:'120%', height:80, background:'radial-gradient(ellipse, rgba(34,217,106,0.3) 0%, transparent 70%)', borderRadius:'50%', pointerEvents:'none', zIndex:0 }} />
+            <div style={{ position:'relative', zIndex:1 }}>
+              <PhoneMockup />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Features + extra sections — themed */}
+        <div style={{ backgroundColor:'var(--sl-hero-section-bg)', position:'relative', zIndex:1 }}>
+          <div className="max-w-5xl mx-auto">
+
+            {/* Affiches du week-end — desktop */}
+            <div className="pt-8">
+              <WeekendPosters
+                onOpenInStudio={handleOpenInStudio}
+              />
+            </div>
+
+            {/* Recent results + upcoming — desktop */}
+            <div className="px-12 pt-10">
+              <RecentResultsFeed allEvents={allEvents} onNavigate={onNavigate} />
+            </div>
+
+            {/* How it works — desktop */}
+            <div className="px-12 pt-10 pb-10">
+              <FadeUp>
+                <h2 className="font-bold font-poppins text-center mb-8" style={{ fontSize:28, color:'var(--sl-t1)' }}>
+                  Comment ça marche ?
+                </h2>
+              </FadeUp>
+              <div className="grid grid-cols-3 gap-6">
+                {[
+                  { n:'1', color:'#22d96a', bg:'rgba(34,217,106,0.10)', title:'Crée ton compte & choisis tes sports', desc:"Inscris-toi en 30 secondes et sélectionne tes disciplines favorites. La carte et les clubs se filtrent automatiquement selon tes préférences." },
+                  { n:'2', color:'#3B82F6', bg:'rgba(61,165,255,0.10)', title:'Explore la carte interactive', desc:"Visualise tous les événements — matchs, trails, tournois — sur une carte en temps réel. Active la géolocalisation pour voir ce qui se passe près de toi." },
+                  { n:'3', color:'#a855f7', bg:'rgba(168,85,247,0.10)', title:'Rejoins un club, suis ses matchs', desc:"Consulte les pages des clubs, leur calendrier par équipe, leurs résultats et contacte-les directement depuis l'app." },
+                ].map(({ n, color, title, desc }, i) => (
+                  <motion.div key={n}
+                    initial={{ opacity:0, y:18 }}
+                    whileInView={{ opacity:1, y:0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    whileHover={{ y:-4, boxShadow:'0 12px 32px rgba(0,0,0,0.08)' }}
+                    transition={{ delay: i * 0.1, duration:0.4, ease:'easeOut' }}
+                    className="rounded-2xl p-6 border border-gray-100"
+                    style={{ backgroundColor:'var(--sl-card)' }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold font-poppins text-white text-base mb-4"
+                      style={{ backgroundColor: color }}>
+                      {n}
+                    </div>
+                    <div className="font-bold font-poppins mb-2" style={{ fontSize:15, color:'var(--sl-t1)' }}>{title}</div>
+                    <div style={{ fontSize:13, color:'var(--sl-t2)', lineHeight:1.6 }}>{desc}</div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Plans d'abonnement — desktop */}
+            <div style={{ borderTop: '1px solid var(--sl-border)', paddingBottom: 48 }}>
+              <PlansSection onCta={() => onNavigate('profil')} />
+            </div>
+
+            {/* Club banner — desktop */}
+            <div className="px-12 pb-12" style={{ borderTop: '1px solid var(--sl-border)' }}>
+              <motion.div
+                initial={{ opacity:0, y:18 }}
+                whileInView={{ opacity:1, y:0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration:0.45, ease:'easeOut' }}
+                className="rounded-2xl p-8 mt-10 relative overflow-hidden flex items-center gap-8" style={{ backgroundColor:'#0c1a10' }}>
+                <div style={{ position:'absolute', top:'-20%', right:'5%', width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(34,217,106,0.12) 0%, transparent 65%)', pointerEvents:'none' }} />
+                <div className="flex-1">
+                  <div className="font-bold font-poppins text-white mb-2" style={{ fontSize:20 }}>Tu gères un club ?</div>
+                  <p style={{ fontSize:14, color:'rgba(255,255,255,0.60)', lineHeight:1.6 }}>
+                    Crée la page de ton club, publie ton calendrier par équipe, affiche tes matchs à domicile sur la carte et gère tes résultats en temps réel.
+                  </p>
+                </div>
+                <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.04, y:-1 }}
+                  onClick={() => onNavigate('clubs')}
+                  className="flex-shrink-0 flex items-center gap-2 font-bold font-poppins text-white cursor-pointer"
+                  style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'12px 24px', fontSize:15 }}>
+                  Voir les clubs
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </motion.button>
+              </motion.div>
+            </div>
+
+            {/* Tout ce dont tu as besoin */}
+            <div className="px-12 pb-4" style={{ borderTop: '1px solid var(--sl-border)' }}>
+              <FadeUp>
+                <h2 className="font-bold font-poppins text-center mb-8 pt-10" style={{ fontSize:24, color:'var(--sl-t1)' }}>
+                  Tout ce dont tu as besoin
+                </h2>
+              </FadeUp>
+            </div>
+            <div className="grid grid-cols-3 gap-6 px-12 pb-12">
+              {[
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d96a" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, bg:'rgba(34,217,106,0.10)', color:'#22d96a', title:'Trouve un club', desc:'Parcours tous les clubs sportifs près de chez toi, filtre par sport ou par ville et contacte-les directement.' },
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, bg:'rgba(61,165,255,0.10)', color:'#3B82F6', title:'Ne rate aucun événement', desc:'Matchs, trails, tournois, cyclosportives — tous les événements locaux visibles sur la carte.' },
+                { icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, bg:'rgba(168,85,247,0.10)', color:'#a855f7', title:'Vis ta passion', desc:"Rejoins une communauté de passionnés, suis l'actualité sportive et reste connecté à ton sport." },
+              ].map(({ icon, bg, title, desc }, i) => (
+                <motion.div key={title}
+                  initial={{ opacity:0, y:18 }}
+                  whileInView={{ opacity:1, y:0 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  whileHover={{ y:-4, boxShadow:'0 16px 40px rgba(0,0,0,0.1)' }}
+                  transition={{ delay: i * 0.1, duration:0.4, ease:'easeOut' }}
+                  className="rounded-2xl p-6 border border-gray-100 shadow-sm"
+                  style={{ backgroundColor:'var(--sl-card)' }}>
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor:bg }}>
+                    {icon}
+                  </div>
+                  <div className="font-bold font-poppins mb-2" style={{ fontSize:17, color:'var(--sl-t1)' }}>{title}</div>
+                  <div style={{ fontSize:13, color:'var(--sl-t2)', lineHeight:1.6 }}>{desc}</div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="text-center pb-8" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {[['mentions', 'Mentions légales'], ['privacy', 'Confidentialité'], ['cgu', 'CGU']].map(([section, label]) => (
+                  <button
+                    key={section}
+                    onClick={() => onShowLegal?.(section)}
+                    style={{ fontSize: 12, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 6px', minHeight: 44, textDecoration: 'underline', textDecorationColor: 'var(--sl-border)', textUnderlineOffset: 3 }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0 }}>{APP_NAME} v{APP_VERSION} — Bretagne</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* PosterStudio — ouvert depuis "Modifier" dans WeekendPosters */}
+    {studioEvent && (
+      <Suspense fallback={null}>
+        <PosterStudio
+          event={studioEvent}
+          club={studioClub}
+          onClose={() => { setStudioEvent(null); setStudioClub(null); }}
+        />
+      </Suspense>
+    )}
+    </>
+  );
+}

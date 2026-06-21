@@ -44,62 +44,61 @@ describe('UX — Safe-area-inset-bottom (iPhone home bar)', () => {
     it('FavorisPage — 3 onglets défilables ont safe-area', () => {
       // FavorisPage délègue le scroll à ses 3 onglets enfants
       const errs = [
-        assertSafeArea('pages/favoris/MatchsTab.jsx', 1),
-        assertSafeArea('pages/favoris/ClubsTab.jsx', 1),
-        assertSafeArea('pages/favoris/CalendarTab.jsx', 1),
+        assertSafeArea('pages/favoris/MatchsTab.tsx', 1),
+        assertSafeArea('pages/favoris/ClubsTab.tsx', 1),
+        assertSafeArea('pages/favoris/CalendarTab.tsx', 1),
       ].filter(Boolean);
       expect(errs, errs.join('\n')).toHaveLength(0);
     });
 
     it('ClubsPage — liste clubs a safe-area', () => {
-      const err = assertSafeArea('pages/ClubsPage.jsx', 1);
+      const err = assertSafeArea('pages/ClubsPage.tsx', 1);
       expect(err).toBeNull();
     });
 
-    it('NewsPage — feed a safe-area', () => {
-      // NewsPage délègue le rendu scrollable à ClubFeed
-      const err = assertSafeArea('components/feed/ClubFeed.tsx', 1);
+    it('ActualitesPage — page a safe-area', () => {
+      const err = assertSafeArea('pages/ActualitesPage.tsx', 1);
       expect(err).toBeNull();
     });
 
     it('ProfilPage — contenu profil a safe-area', () => {
       // Branche auth + branche non-auth = 2 occurences minimum
-      const err = assertSafeArea('pages/ProfilPage.jsx', 2);
+      const err = assertSafeArea('pages/ProfilPage.tsx', 2);
       expect(err).toBeNull();
     });
   });
 
   describe('Composants mobiles overlay / sheet', () => {
     it('MobileEventSheet — zone scrollable a safe-area', () => {
-      const err = assertSafeArea('components/MobileEventSheet.jsx', 1);
+      const err = assertSafeArea('components/MobileEventSheet.tsx', 1);
       expect(err).toBeNull();
     });
 
     it('AnnouncementsCenter — zone scrollable a safe-area', () => {
-      const err = assertSafeArea('components/AnnouncementsCenter.jsx', 1);
+      const err = assertSafeArea('components/AnnouncementsCenter.tsx', 1);
       expect(err).toBeNull();
     });
 
     it('PosterStudio — barre de navigation bas a safe-area', () => {
-      const err = assertSafeArea('components/PosterStudio.jsx', 1);
+      const err = assertSafeArea('components/PosterStudio.tsx', 1);
       expect(err).toBeNull();
     });
   });
 
   describe('Modales avec footer fixe', () => {
     it('EventFormModal — footer boutons a safe-area', () => {
-      const err = assertSafeArea('components/EventFormModal.jsx', 1);
+      const err = assertSafeArea('components/EventFormModal.tsx', 1);
       expect(err).toBeNull();
     });
 
     it('FollowModal — padding bottom safe-area', () => {
       // Le sheet a `padding: '0 0 env(safe-area-inset-bottom, 20px)'`
-      const err = assertSafeArea('components/FollowModal.jsx', 1);
+      const err = assertSafeArea('components/FollowModal.tsx', 1);
       expect(err).toBeNull();
     });
 
     it('ModalFrame — sheet variant a safe-area (utilisé par ConfirmDialog et autres modales)', () => {
-      const err = assertSafeArea('components/ModalFrame.jsx', 1);
+      const err = assertSafeArea('components/ModalFrame.tsx', 1);
       expect(err).toBeNull();
     });
   });
@@ -112,16 +111,16 @@ describe('UX — Safe-area-inset-bottom (iPhone home bar)', () => {
      */
     it('les occurrences utilisent le fallback (env(..., 0px))', () => {
       const FILES = [
-        'pages/favoris/MatchsTab.jsx',
-        'pages/favoris/ClubsTab.jsx',
-        'pages/favoris/CalendarTab.jsx',
-        'pages/ClubsPage.jsx',
-        'components/feed/ClubFeed.tsx',
-        'pages/ProfilPage.jsx',
-        'components/MobileEventSheet.jsx',
-        'components/AnnouncementsCenter.jsx',
-        'components/EventFormModal.jsx',
-        'components/ConfirmDialog.jsx',
+        'pages/favoris/MatchsTab.tsx',
+        'pages/favoris/ClubsTab.tsx',
+        'pages/favoris/CalendarTab.tsx',
+        'pages/ClubsPage.tsx',
+        'pages/ActualitesPage.tsx',
+        'pages/ProfilPage.tsx',
+        'components/MobileEventSheet.tsx',
+        'components/AnnouncementsCenter.tsx',
+        'components/EventFormModal.tsx',
+        'components/ConfirmDialog.tsx',
       ];
 
       const noFallback = [];

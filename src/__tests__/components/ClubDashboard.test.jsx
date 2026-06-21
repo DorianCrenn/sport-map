@@ -100,7 +100,8 @@ describe('ClubDashboard — rendu', () => {
 
   it('affiche le nom du club dans le titre', () => {
     render(<ClubDashboard club={CLUB} clubEventIds={[]} allEvents={[]} onClose={vi.fn()} onArchiveSeason={vi.fn()} />);
-    expect(screen.getByText('FC Brest')).toBeInTheDocument();
+    // Le nom peut apparaître plusieurs fois (titre + ClubInvitePanel)
+    expect(screen.getAllByText('FC Brest').length).toBeGreaterThan(0);
   });
 
   it('appelle onClose au clic sur le bouton fermer', () => {

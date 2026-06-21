@@ -139,7 +139,7 @@ export function useFeedItems(
   follows: { clubId: string; teams: 'all' | string[] }[] = [],
   managedClubIds: string[] = [],
 ) {
-  const { announcements, results, upcoming, rides, loading } = useNewsFeed({ followedClubIds, follows, managedClubIds });
+  const { announcements, results, upcoming, rides, loading } = useNewsFeed({ followedClubIds, follows: follows as any, managedClubIds });
 
   const items = useMemo<FeedItem[]>(() => {
     // Lookup event → city/venue pour les destinations de covoiturage
@@ -147,7 +147,7 @@ export function useFeedItems(
 
     const all: FeedItem[] = [
       ...upcoming.map(mapUpcoming),
-      ...announcements.map(mapAnnouncement),
+      ...((announcements as any[]).map(mapAnnouncement)),
       ...results.map(mapResult),
       ...rides.map((r: any) => mapRide(r, eventMap)),
     ];

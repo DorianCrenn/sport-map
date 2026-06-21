@@ -27,36 +27,36 @@ const MIN_PX_44 = 44;   // seuil strict pour les boutons primaires
  * Fichiers à scanner pour les cibles tactiles.
  *
  * On exclut volontairement :
- * - PosterStudio.jsx et components/poster/* → outil de design (contrôles denses
+ * - PosterStudio.tsx et components/poster/* → outil de design (contrôles denses
  *   intentionnellement petits : pipettes, sélecteurs de couleur, swatches…)
- * - AdminPage.jsx → interface back-office, pas exposée aux utilisateurs mobiles
+ * - AdminPage.tsx → interface back-office, pas exposée aux utilisateurs mobiles
  * - components/club/ClubBrandKitEditor.jsx, blocks/* → outils d'édition admin
  * - components/club/ClubDashboard.jsx → tableau de bord admin
  */
 const SCAN_FILES = [
   // Pages principales
-  'pages/FavorisPage.jsx',
-  'pages/ClubsPage.jsx',
-  'pages/NewsPage.jsx',
-  'pages/ProfilPage.jsx',
-  'pages/MapPage.jsx',
-  'pages/HomePage.jsx',
+  'pages/FavorisPage.tsx',
+  'pages/ClubsPage.tsx',
+  'pages/ActualitesPage.tsx',
+  'pages/ProfilPage.tsx',
+  'pages/MapPage.tsx',
+  'pages/HomePage.tsx',
   // Composants mobiles critiques
-  'components/Header.jsx',
-  'components/BottomNav.jsx',
-  'components/MobileEventSheet.jsx',
-  'components/EventCard.jsx',
-  'components/PosterShareBtn.jsx',
-  'components/AnnouncementsCenter.jsx',
+  'components/Header.tsx',
+  'components/BottomNav.tsx',
+  'components/MobileEventSheet.tsx',
+  'components/EventCard.tsx',
+  'components/PosterShareBtn.tsx',
+  'components/AnnouncementsCenter.tsx',
   // Modales
-  'components/FollowModal.jsx',
-  'components/ConfirmDialog.jsx',
-  'components/EventFormModal.jsx',
-  'components/BadgeUnlockModal.jsx',
-  'components/club/ClubFormModal.jsx',
-  'components/club/SendAnnouncementModal.jsx',
+  'components/FollowModal.tsx',
+  'components/ConfirmDialog.tsx',
+  'components/EventFormModal.tsx',
+  'components/BadgeUnlockModal.tsx',
+  'components/club/ClubFormModal.tsx',
+  'components/club/SendAnnouncementModal.tsx',
   // Covoiturage
-  'components/rides/RideCard.jsx',
+  'components/rides/RideCard.tsx',
 ];
 
 /**
@@ -69,16 +69,16 @@ const SCAN_FILES = [
  */
 const PRIMARY_BUTTONS_44 = [
   // PosterStudio — fermeture
-  { file: 'components/PosterStudio.jsx',       hint: 'onClick={onClose}' },
+  { file: 'components/PosterStudio.tsx',       hint: 'onClick={onClose}' },
   // FollowModal — fermeture
-  { file: 'components/FollowModal.jsx',        hint: 'aria-label="Fermer"' },
+  { file: 'components/FollowModal.tsx',        hint: 'aria-label="Fermer"' },
   // EventFormModal — fermeture
-  { file: 'components/EventFormModal.jsx',     hint: 'aria-label="Fermer"' },
+  { file: 'components/EventFormModal.tsx',     hint: 'aria-label="Fermer"' },
   // MobileEventSheet — fermeture
-  { file: 'components/MobileEventSheet.jsx',  hint: 'aria-label="Fermer"' },
+  { file: 'components/MobileEventSheet.tsx',  hint: 'aria-label="Fermer"' },
   // FavorisPage — navigation mois (prev/next) dans l'onglet CalendarTab
-  { file: 'pages/favoris/CalendarTab.jsx',     hint: 'onClick={prevMonth}' },
-  { file: 'pages/favoris/CalendarTab.jsx',     hint: 'onClick={nextMonth}' },
+  { file: 'pages/favoris/CalendarTab.tsx',     hint: 'onClick={prevMonth}' },
+  { file: 'pages/favoris/CalendarTab.tsx',     hint: 'onClick={nextMonth}' },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────

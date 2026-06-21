@@ -99,9 +99,10 @@ describe('AdminPage — onglet Clubs', () => {
     mockFrom.mockReset();
     // Stats queries (3 count queries)
     mockFrom
-      .mockReturnValueOnce(makeChain({ count: 1, error: null }))
-      .mockReturnValueOnce(makeChain({ count: 5, error: null }))
-      .mockReturnValueOnce(makeChain({ count: 0, error: null }));
+      .mockReturnValueOnce(makeChain({ count: 1, error: null }))   // clubs pending
+      .mockReturnValueOnce(makeChain({ count: 5, error: null }))   // clubs verified
+      .mockReturnValueOnce(makeChain({ count: 0, error: null }))   // clubs rejected
+      .mockReturnValueOnce(makeChain({ count: 12, error: null })); // profiles users
   });
 
   it('affiche onglet Clubs dans la navigation', () => {

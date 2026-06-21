@@ -55,17 +55,17 @@ describe('Responsive — Viewport meta (index.html)', () => {
 describe('Responsive — Séparation mobile / desktop (MapPage)', () => {
 
   it('la sidebar desktop est masquée sur mobile : "hidden md:contents"', () => {
-    const src = readSrc('pages/MapPage.jsx');
+    const src = readSrc('pages/MapPage.tsx');
     expect(src).toContain('hidden md:contents');
   });
 
   it('les éléments flottants mobiles sont masqués sur desktop : "md:hidden"', () => {
-    const src = readSrc('pages/MapPage.jsx');
+    const src = readSrc('pages/MapPage.tsx');
     expect(src).toContain('md:hidden');
   });
 
   it('les deux classes sont dans la même page (cohérence layout)', () => {
-    const src = readSrc('pages/MapPage.jsx');
+    const src = readSrc('pages/MapPage.tsx');
     expect(src).toContain('hidden md:contents');
     expect(src).toContain('md:hidden');
   });
@@ -77,12 +77,12 @@ describe('Responsive — Séparation mobile / desktop (MapPage)', () => {
 describe('Responsive — Navigation mobile (App.jsx)', () => {
 
   it('BottomNav est monté dans App.jsx', () => {
-    const src = readFileSync(resolve(SRC_DIR, 'App.jsx'), 'utf8');
+    const src = readFileSync(resolve(SRC_DIR, 'App.tsx'), 'utf8');
     expect(src).toMatch(/<BottomNav\b/);
   });
 
   it('BottomNav reçoit activeTab et onTabChange', () => {
-    const src = readFileSync(resolve(SRC_DIR, 'App.jsx'), 'utf8');
+    const src = readFileSync(resolve(SRC_DIR, 'App.tsx'), 'utf8');
     const idx = src.indexOf('<BottomNav');
     expect(idx).toBeGreaterThan(-1);
     const snippet = src.slice(idx, idx + 300);
@@ -108,11 +108,11 @@ describe('Responsive — Pas de largeur fixe cassant mobile dans les pages', () 
    */
 
   const PAGE_FILES = [
-    'pages/HomePage.jsx',
-    'pages/FavorisPage.jsx',
-    'pages/NewsPage.jsx',
-    'pages/ClubsPage.jsx',
-    'pages/ProfilPage.jsx',
+    'pages/HomePage.tsx',
+    'pages/FavorisPage.tsx',
+    'pages/ActualitesPage.tsx',
+    'pages/ClubsPage.tsx',
+    'pages/ProfilPage.tsx',
   ];
 
   const MOBILE_WIDTH = 375;
@@ -160,8 +160,8 @@ describe('Responsive — Cohérence Tailwind (pas de mélange inline + classes m
    * exclusivement Tailwind pour le responsive, sans inline display:none.
    */
 
-  it('les conteneurs responsive de MapPage n’utilisent pas display:none en inline style', () => {
-    const src = readSrc('pages/MapPage.jsx');
+  it("les conteneurs responsive de MapPage n'utilisent pas display:none en inline style", () => {
+    const src = readSrc('pages/MapPage.tsx');
 
     // Trouver les lignes avec hidden md:contents ou md:hidden
     const lines = src.split('\n');

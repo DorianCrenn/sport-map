@@ -23,7 +23,7 @@ const MAX_VISIBLE = 3;
 const ROTATION_MS = 5 * 60_000; // 5 minutes
 
 /** Rang numérique des plans pour le tri descendant */
-const PLAN_RANK: Record<FeaturedPlan, number> = { elite: 3, pro: 2, starter: 1 };
+const PLAN_RANK: Record<string, number> = { elite: 3, pro: 2, starter: 1 };
 
 // ── Types internes ────────────────────────────────────────────────────────────
 

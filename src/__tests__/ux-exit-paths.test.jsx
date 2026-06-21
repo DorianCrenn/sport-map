@@ -143,7 +143,7 @@ describe('ConfirmDialog', () => {
 
 describe('Patterns exit-path dans le code source', () => {
   it('MobileEventSheet a un bouton close avec aria-label=Fermer', async () => {
-    const src = await import('../components/MobileEventSheet.jsx?raw').then(
+    const src = await import('../components/MobileEventSheet.tsx?raw').then(
       m => m.default ?? m
     ).catch(() => null);
     // Fallback si le module ?raw n'est pas supporté dans vitest

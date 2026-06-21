@@ -259,7 +259,7 @@ test.describe('AUDIT-04 · Clubs', () => {
 // ─── AUDIT 5 : ACTUALITÉS / FEED ────────────────────────────────────────────
 
 test.describe('AUDIT-05 · Actualités / Feed', () => {
-  test('A05-01 · NewsPage mobile', async ({ page }) => {
+  test('A05-01 · ActualitesPage mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('http://localhost:5173/');
     await page.waitForLoadState('networkidle');
@@ -270,7 +270,7 @@ test.describe('AUDIT-05 · Actualités / Feed', () => {
     expect(crashed).toBe(false);
   });
 
-  test('A05-02 · NewsPage desktop', async ({ page }) => {
+  test('A05-02 · ActualitesPage desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('http://localhost:5173/');
     await page.waitForLoadState('networkidle');

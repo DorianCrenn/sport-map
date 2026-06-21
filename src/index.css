@@ -405,6 +405,11 @@ a:focus:not(:focus-visible) {
   animation: img-shimmer 1.4s ease-in-out infinite;
 }
 
+/* Spinner partagé admin */
+@keyframes sl-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ═══════════════════════════════════════════════════════════
    SAFE AREA — iOS Dynamic Island / notch
    ═══════════════════════════════════════════════════════════ */

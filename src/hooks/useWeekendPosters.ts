@@ -5,7 +5,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect } from 'react';
-// @ts-expect-error — JS non typé, migration progressive
 import { useManagedClubs } from './useManagedClubs.js';
 import { supabase } from '../lib/supabase.js';
 import type { WeekendMatch, PosterData } from '../types/sportlink.js';
@@ -107,7 +106,6 @@ function getWeekendRange(): { start: Date; end: Date } {
  * Source : table Supabase `events` (filtrée par club_id + date + home_or_away)
  */
 export function useWeekendPosters(): WeekendMatch[] {
-  // @ts-expect-error — useManagedClubs retourne un objet JS non typé
   const { managedClubs } = useManagedClubs() as { managedClubs: { id: string; name: string; sport?: string; city?: string; logo_url?: string; logoUrl?: string }[] };
   const [matches, setMatches] = useState<WeekendMatch[]>([]);
 
@@ -177,8 +175,9 @@ export function useWeekendPosters(): WeekendMatch[] {
         });
 
         setMatches(result);
-      })
-      .catch(() => { /* silently fail — matches stays [] */ });
+      },
+        () => { /* silently fail */ }
+      );
 
     return () => { cancelled = true; };
   }, [managedClubs]);

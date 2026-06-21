@@ -7,11 +7,11 @@ import { useFilteredEvents } from '../../hooks/useFilteredEvents.js';
 const today = new Date();
 const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
 
-// +10 jours — toujours après nextSaturday (≤7 jours)
+// +10 jours — toujours en dehors de la fenêtre week (7j)
 const inTenDays = new Date(today);
 inTenDays.setDate(today.getDate() + 10);
 
-// Prochain samedi
+// Prochain samedi (peut coïncider avec tomorrow si aujourd'hui = vendredi)
 function nextSaturday() {
   const d = new Date();
   const diff = (6 - d.getDay() + 7) % 7 || 7;
@@ -22,11 +22,15 @@ function nextSaturday() {
 
 function iso(date) { return date.toISOString(); }
 
+// Si aujourd'hui est vendredi, nextSaturday() === tomorrow → id '2' et '3' ont la même date.
+// Les tests qui en dépendent gèrent ce cas explicitement.
+const NEXT_SAT = nextSaturday();
+
 const EVENTS = [
-  { id: '1', sport: 'Football', city: 'Brest',   date: iso(today),         lat: 48.39, lng: -4.49 },
-  { id: '2', sport: 'Rugby',    city: 'Quimper',  date: iso(tomorrow),      lat: 47.99, lng: -4.10 },
-  { id: '3', sport: 'Basket',   city: 'Morlaix',  date: iso(nextSaturday()), lat: 48.58, lng: -3.83 },
-  { id: '4', sport: 'Football', city: 'Brest',   date: iso(inTenDays),     lat: 48.39, lng: -4.49 },
+  { id: '1', sport: 'Football', city: 'Brest',   date: iso(today),      lat: 48.39, lng: -4.49 },
+  { id: '2', sport: 'Rugby',    city: 'Quimper',  date: iso(tomorrow),   lat: 47.99, lng: -4.10 },
+  { id: '3', sport: 'Basket',   city: 'Morlaix',  date: iso(NEXT_SAT),   lat: 48.58, lng: -3.83 },
+  { id: '4', sport: 'Football', city: 'Brest',   date: iso(inTenDays),  lat: 48.39, lng: -4.49 },
 ];
 
 // ── Helper ────────────────────────────────────────────────────────────────────
@@ -44,10 +48,12 @@ describe('useFilteredEvents — sans filtre', () => {
     const result = filter(EVENTS);
     expect(result).toHaveLength(4);
     expect(result[0].id).toBe('1'); // today (le plus tôt)
-    expect(result[1].id).toBe('2'); // tomorrow
-    // id '3' (nextSaturday ≤7j) avant id '4' (+10j) — tri chronologique stable
-    expect(result[2].id).toBe('3');
-    expect(result[3].id).toBe('4');
+    // Sur vendredi : id '2' (demain) et id '3' (prochain samedi) ont la même date
+    // mais id '3' est à 10h00 fixe, id '2' garde l'heure courante → ordre peut varier
+    const middleIds = new Set([result[1].id, result[2].id]);
+    expect(middleIds.has('2')).toBe(true);
+    expect(middleIds.has('3')).toBe(true);
+    expect(result[3].id).toBe('4'); // +10j toujours dernier
   });
 
   it('retourne un tableau vide si aucun événement', () => {
@@ -110,21 +116,34 @@ describe('useFilteredEvents — filtre par date', () => {
 
   it('"weekend" retourne le samedi prochain', () => {
     const result = filter(EVENTS, { dateRange: 'weekend' });
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('3'); // id '3' est maintenant le nextSaturday
+    // Tous les résultats doivent être samedi (6) ou dimanche (0)
+    result.forEach(e => {
+      const day = new Date(e.date).getDay();
+      expect([0, 6]).toContain(day);
+    });
+    // id '4' (+10 jours) ne doit jamais être dans le week-end prochain
+    expect(result.some(e => e.id === '4')).toBe(false);
+    // Au moins un résultat (le week-end prochain contient toujours ≥1 événement samedi)
+    expect(result.length).toBeGreaterThanOrEqual(1);
   });
 
   it('"week" retourne les 7 prochains jours', () => {
     const result = filter(EVENTS, { dateRange: 'week' });
-    // today + tomorrow + inTwoDays sont dans la semaine
-    expect(result.length).toBeGreaterThanOrEqual(3);
+    // Au moins today + tomorrow (id '1' et '2'), id '4' (+10j) exclu
+    expect(result.length).toBeGreaterThanOrEqual(2);
+    expect(result.some(e => e.id === '1')).toBe(true);
+    expect(result.some(e => e.id === '2')).toBe(true);
+    expect(result.some(e => e.id === '4')).toBe(false);
   });
 
   it('date précise (YYYY-MM-DD) filtre le bon jour', () => {
     const dateStr = tomorrow.toISOString().slice(0, 10);
     const result = filter(EVENTS, { dateRange: dateStr });
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('2');
+    // Vendredi : id '2' et id '3' ont la même date (demain = samedi = nextSaturday)
+    // → 1 ou 2 résultats selon le jour de la semaine
+    expect(result.length).toBeGreaterThanOrEqual(1);
+    expect(result.some(e => e.id === '2')).toBe(true);
+    expect(result.every(e => e.date.slice(0, 10) === dateStr)).toBe(true);
   });
 
   it('date sans match retourne tableau vide', () => {

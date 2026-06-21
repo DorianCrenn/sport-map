@@ -47,7 +47,6 @@ vi.mock('../../contexts/ToastContext.jsx', () => ({
 
 vi.mock('../../hooks/useManagedClubs.js',   () => ({ useManagedClubs:   () => ({ managedClubs: [], isCoachOrManager: false, isCommunicant: false }) }));
 vi.mock('../../hooks/useMyConvocations.js', () => ({ useMyConvocations: () => ({ convocations: [], pendingCount: 0, respond: vi.fn() }) }));
-vi.mock('../../hooks/useParentChildren.js', () => ({ useParentChildren: () => ({ isParent: false, children: [] }) }));
 vi.mock('../../hooks/useQuickActions.js',   () => ({ useQuickActions:   () => ({ actions: [], hasActions: false, liveMatches: [] }) }));
 vi.mock('../../hooks/useDemoFeed.js',       () => ({ useDemoFeed:       () => ({ demoConvocations: [], setDemoConvocations: vi.fn(), demoLiveMatches: [] }) }));
 vi.mock('../../hooks/useClubs.js',          () => ({ useClubs:          () => ({ userClubs: [], loading: false }) }));

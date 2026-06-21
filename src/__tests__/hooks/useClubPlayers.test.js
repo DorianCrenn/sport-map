@@ -105,9 +105,8 @@ describe('useClubPlayers — addPlayer', () => {
     const insertQuery = { ...makeQuery({ data: newPlayer, error: null }), select: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: newPlayer, error: null }) };
 
     mockFrom
-      .mockReturnValueOnce(selectQuery) // initial load players
-      .mockReturnValueOnce(selectQuery) // initial load claims (player ids)
-      .mockReturnValueOnce(selectQuery) // claims query
+      .mockReturnValueOnce(selectQuery) // initial load players (returns [])
+      .mockReturnValueOnce(selectQuery) // loadClaims: get player ids (returns [] → stops early, no 3rd query)
       .mockReturnValue(insertQuery);     // addPlayer
 
     const { result } = renderPlayers();

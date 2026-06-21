@@ -22,6 +22,7 @@ const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, c
   if (currentUser) {
     return (
       <ActualitesPage
+        {...({} as any)}
         followedClubIds={followedClubIds}
         onNavigate={onNavigate}
         onOpenTrainings={onOpenTrainings}

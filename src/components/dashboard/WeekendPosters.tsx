@@ -9,11 +9,8 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
-// @ts-expect-error — JS non typé
 import PosterRenderer from '../poster/PosterRenderer.jsx';
-// @ts-expect-error — JS non typé
 import { generateCustomBackground } from '../../lib/posterVariants.js';
-// @ts-expect-error — JS non typé
 import { normalizeSport, getBgCache, setBgCache, SPORT_BG_PROMPTS } from '../../lib/sportBgCache.js';
 import { useWeekendPosters } from '../../hooks/useWeekendPosters.js';
 import type { WeekendMatch, ExportAction } from '../../types/sportlink.js';
