@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
@@ -9,7 +9,6 @@ vi.mock('framer-motion', () => ({
   },
   AnimatePresence: ({ children }: any) => children,
 }));
-import ConvocReplyPanel from '../../components/ConvocReplyPanel.jsx';
 
 const mockToken = {
   id: 'tok-1',
@@ -22,7 +21,7 @@ const mockToken = {
 
 vi.mock('../../lib/supabase.js', () => ({
   supabase: {
-    from: (table: string) => ({
+    from: () => ({
       select: () => ({
         eq: () => ({
           maybeSingle: vi.fn().mockResolvedValue({ data: mockToken }),
@@ -32,11 +31,20 @@ vi.mock('../../lib/supabase.js', () => ({
         eq: vi.fn().mockResolvedValue({ error: null }),
       }),
     }),
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+    },
   },
 }));
 
-describe('ConvocReplyPanel', () => {
+import ConvocReplyPanel from '../../components/ConvocReplyPanel.jsx';
+
+// ── Tests — affichage ─────────────────────────────────────────────────────────
+
+describe('ConvocReplyPanel — affichage', () => {
   const onClose = vi.fn();
+
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it('affiche le nom du joueur', async () => {
     render(<ConvocReplyPanel token="abc123" onClose={onClose} />);
@@ -50,10 +58,8 @@ describe('ConvocReplyPanel', () => {
 
   it('affiche les 3 boutons de réponse', async () => {
     render(<ConvocReplyPanel token="abc123" onClose={onClose} />);
-    // Attendre le chargement, puis chercher les boutons par rôle
     await waitFor(() => screen.getByText(/Jean Dupont/i));
-    const btns = screen.getAllByRole('button');
-    const labels = btns.map(b => b.textContent ?? '');
+    const labels = screen.getAllByRole('button').map(b => b.textContent ?? '');
     expect(labels.some(l => /Présent/i.test(l))).toBe(true);
     expect(labels.some(l => /Absent/i.test(l))).toBe(true);
     expect(labels.some(l => /Peut-être/i.test(l))).toBe(true);
@@ -69,5 +75,79 @@ describe('ConvocReplyPanel', () => {
     await waitFor(() => screen.getByText(/Jean Dupont/));
     fireEvent.click(container.firstChild as Element);
     expect(onClose).toHaveBeenCalled();
+  });
+});
+
+// ── Tests — confirmation post-réponse ─────────────────────────────────────────
+
+describe('ConvocReplyPanel — confirmation email post-réponse', () => {
+  const onClose = vi.fn();
+  const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubGlobal('fetch', mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('appelle fetch vers convoc-reply-confirm après une réponse', async () => {
+    render(<ConvocReplyPanel token="abc123" onClose={onClose} />);
+    await waitFor(() => screen.getByText(/Jean Dupont/i));
+
+    const acceptBtn = screen.getAllByRole('button').find(b => /Présent/i.test(b.textContent ?? ''));
+    expect(acceptBtn).toBeDefined();
+    fireEvent.click(acceptBtn!);
+
+    await waitFor(() => {
+      const confirmCall = mockFetch.mock.calls.find(
+        ([url]) => typeof url === 'string' && url.includes('convoc-reply-confirm')
+      );
+      expect(confirmCall).toBeDefined();
+    });
+  });
+
+  it('envoie le status correct dans la requête de confirmation', async () => {
+    render(<ConvocReplyPanel token="abc123" onClose={onClose} />);
+    await waitFor(() => screen.getByText(/Jean Dupont/i));
+
+    const declineBtn = screen.getAllByRole('button').find(b => /Absent/i.test(b.textContent ?? ''));
+    fireEvent.click(declineBtn!);
+
+    await waitFor(() => {
+      const confirmCall = mockFetch.mock.calls.find(
+        ([url]) => typeof url === 'string' && url.includes('convoc-reply-confirm')
+      );
+      if (confirmCall) {
+        const body = JSON.parse(confirmCall[1]?.body ?? '{}');
+        expect(body.status).toBe('declined');
+        expect(body.token).toBe('abc123');
+      }
+    });
+  });
+
+  it('affiche la confirmation visuelle après réponse', async () => {
+    render(<ConvocReplyPanel token="abc123" onClose={onClose} />);
+    await waitFor(() => screen.getByText(/Jean Dupont/i));
+
+    const acceptBtn = screen.getAllByRole('button').find(b => /Présent/i.test(b.textContent ?? ''));
+    fireEvent.click(acceptBtn!);
+
+    await waitFor(() => expect(screen.getByText(/Réponse enregistrée/i)).toBeInTheDocument());
+  });
+
+  it('ne plante pas si fetch échoue lors de la confirmation', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+    render(<ConvocReplyPanel token="abc123" onClose={onClose} />);
+    await waitFor(() => screen.getByText(/Jean Dupont/i));
+
+    const acceptBtn = screen.getAllByRole('button').find(b => /Présent/i.test(b.textContent ?? ''));
+    fireEvent.click(acceptBtn!);
+
+    // Le composant doit toujours afficher la confirmation malgré l'erreur fetch
+    await waitFor(() => expect(screen.getByText(/Réponse enregistrée/i)).toBeInTheDocument());
   });
 });

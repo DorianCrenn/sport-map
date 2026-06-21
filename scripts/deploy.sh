@@ -63,7 +63,7 @@ if [ "$SKIP_TESTS" = "true" ]; then
 else
   info "npm run test..."
   npm run test -- --reporter=dot || fail "Tests unitaires en échec — déploiement annulé"
-  ok "1628 tests passés"
+  ok "1674 tests passés"
 fi
 
 # =============================================================================

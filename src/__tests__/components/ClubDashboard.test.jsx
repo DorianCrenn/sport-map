@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -11,7 +11,45 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
-const { mockUseClubDashboard } = vi.hoisted(() => ({ mockUseClubDashboard: vi.fn() }));
+const { mockUseClubDashboard, convocDataRef } = vi.hoisted(() => ({
+  mockUseClubDashboard: vi.fn(),
+  convocDataRef: { current: [] },
+}));
+
+// Mock supabase — chainable + thenable pour couvrir tous les patterns d'accès
+vi.mock('../../lib/supabase.js', () => {
+  function makeChain(resolveWith) {
+    const chain = {
+      select:      () => chain,
+      eq:          () => chain,
+      neq:         () => chain,
+      gte:         () => chain,
+      lte:         () => chain,
+      in:          () => chain,
+      order:       () => chain,
+      limit:       () => chain,
+      single:      () => Promise.resolve({ data: null, error: null }),
+      maybeSingle: () => Promise.resolve({ data: null, error: null }),
+      // thenable : permet "await supabase.from(...).select(...)"
+      then:        (resolve) => Promise.resolve(resolveWith()).then(resolve),
+    };
+    // surcharge gte pour les convocations
+    chain.gte = () => Promise.resolve(resolveWith());
+    return chain;
+  }
+
+  return {
+    supabase: {
+      from: (table) => makeChain(() => ({
+        data: table === 'convocation_reply_tokens' ? convocDataRef.current : [],
+        error: null,
+      })),
+      auth: {
+        getSession: () => Promise.resolve({ data: { session: null } }),
+      },
+    },
+  };
+});
 
 vi.mock('../../hooks/useClubDashboard.js',    () => ({ useClubDashboard: mockUseClubDashboard }));
 vi.mock('../../hooks/useClubBrandKit.js',     () => ({ useClubBrandKit: () => ({ brandKit: null }) }));
@@ -154,5 +192,63 @@ describe('ClubDashboard — annonces planifiées', () => {
     }));
     const { container } = render(<ClubDashboard club={CLUB} clubEventIds={[]} allEvents={[]} onClose={vi.fn()} onArchiveSeason={vi.fn()} />);
     expect(container.children.length).toBeGreaterThan(0);
+  });
+});
+
+// ── Tests — stats convocations ────────────────────────────────────────────────
+
+describe('ClubDashboard — widget convocations', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseClubDashboard.mockReturnValue(emptyData());
+    convocDataRef.current = [];
+  });
+
+  it('n\'affiche pas le widget si aucune convocation (total=0)', async () => {
+    convocDataRef.current = [];
+    render(<ClubDashboard club={CLUB} clubEventIds={[]} allEvents={[]} onClose={vi.fn()} onArchiveSeason={vi.fn()} />);
+    await waitFor(() => {}, { timeout: 100 });
+    expect(screen.queryByText(/Convocations/i)).not.toBeInTheDocument();
+  });
+
+  it('affiche le widget quand des convocations existent', async () => {
+    convocDataRef.current = [
+      { reply_status: 'accepted' },
+      { reply_status: 'declined' },
+      { reply_status: null },
+    ];
+    render(<ClubDashboard club={CLUB} clubEventIds={[]} allEvents={[]} onClose={vi.fn()} onArchiveSeason={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText(/Convocations/i)).toBeInTheDocument());
+  });
+
+  it('affiche le bon décompte de présents', async () => {
+    convocDataRef.current = [
+      { reply_status: 'accepted' },
+      { reply_status: 'accepted' },
+      { reply_status: 'declined' },
+    ];
+    render(<ClubDashboard club={CLUB} clubEventIds={[]} allEvents={[]} onClose={vi.fn()} onArchiveSeason={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText(/Présents/i)).toBeInTheDocument());
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('affiche le total correct', async () => {
+    convocDataRef.current = [
+      { reply_status: 'accepted' },
+      { reply_status: null },
+      { reply_status: null },
+    ];
+    render(<ClubDashboard club={CLUB} clubEventIds={[]} allEvents={[]} onClose={vi.fn()} onArchiveSeason={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText('3')).toBeInTheDocument());
+  });
+
+  it('affiche le décompte "Sans réponse"', async () => {
+    convocDataRef.current = [
+      { reply_status: 'accepted' },
+      { reply_status: null },
+      { reply_status: null },
+    ];
+    render(<ClubDashboard club={CLUB} clubEventIds={[]} allEvents={[]} onClose={vi.fn()} onArchiveSeason={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText(/Sans réponse/i)).toBeInTheDocument());
   });
 });

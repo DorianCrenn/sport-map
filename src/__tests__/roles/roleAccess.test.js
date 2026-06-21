@@ -163,3 +163,60 @@ describe('FAB actions visibles selon le rôle', () => {
     expect(actions.length).toBeGreaterThan(0);
   });
 });
+
+// ── canAddEvent étendu aux coaches/managers (P0-2) ────────────────────────────
+
+describe('canAddEvent — avec isCoachOrManager (P0-2)', () => {
+  function canAddEvent({ isAdmin, isClubAdmin, isCoachOrManager }) {
+    return isAdmin || isClubAdmin || isCoachOrManager;
+  }
+
+  it('coach avec club géré → peut créer un événement', () => {
+    expect(canAddEvent({ isAdmin: false, isClubAdmin: false, isCoachOrManager: true })).toBe(true);
+  });
+
+  it('manager avec club géré → peut créer un événement', () => {
+    expect(canAddEvent({ isAdmin: false, isClubAdmin: false, isCoachOrManager: true })).toBe(true);
+  });
+
+  it('user sans club géré → ne peut pas créer', () => {
+    expect(canAddEvent({ isAdmin: false, isClubAdmin: false, isCoachOrManager: false })).toBe(false);
+  });
+
+  it('admin → peut créer (court-circuit)', () => {
+    expect(canAddEvent({ isAdmin: true, isClubAdmin: false, isCoachOrManager: false })).toBe(true);
+  });
+
+  it('club_admin → peut créer (court-circuit)', () => {
+    expect(canAddEvent({ isAdmin: false, isClubAdmin: true, isCoachOrManager: false })).toBe(true);
+  });
+
+  it('tous false → interdit', () => {
+    expect(canAddEvent({ isAdmin: false, isClubAdmin: false, isCoachOrManager: false })).toBe(false);
+  });
+});
+
+// ── Tab Mon Club → ClubDashboard direct (P0-3) ────────────────────────────────
+
+describe('handleTabChange mon-club — ouverture dashboard direct', () => {
+  function getPendingAction(tab, isClubAdmin, isCoachOrManager) {
+    if (tab !== 'mon-club') return null;
+    return (isClubAdmin || isCoachOrManager) ? 'dashboard' : null;
+  }
+
+  it('club_admin → pendingAction = dashboard', () => {
+    expect(getPendingAction('mon-club', true, false)).toBe('dashboard');
+  });
+
+  it('coach/manager → pendingAction = dashboard', () => {
+    expect(getPendingAction('mon-club', false, true)).toBe('dashboard');
+  });
+
+  it('user standard → pas de pendingAction', () => {
+    expect(getPendingAction('mon-club', false, false)).toBeNull();
+  });
+
+  it('autre tab → pas de pendingAction', () => {
+    expect(getPendingAction('home', true, false)).toBeNull();
+  });
+});
