@@ -1,19 +1,15 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+Deno.serve(async (req) => {
+  const prelight = handleOptions(req); if (prelight) return prelight;
+  const ch = corsHeaders(req);
 
   try {
     const { email, clubId, clubName, role, inviterName } = await req.json();
     if (!email || !clubId) {
       return new Response(JSON.stringify({ error: "email and clubId are required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
@@ -24,7 +20,7 @@ serve(async (req) => {
     if (!resendKey) {
       console.warn("[invite-manager] RESEND_API_KEY not set — skipping email");
       return new Response(JSON.stringify({ sent: false, reason: "RESEND_API_KEY missing" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
@@ -94,18 +90,18 @@ serve(async (req) => {
       const err = await res.text();
       console.error("[invite-manager] Resend error:", err);
       return new Response(JSON.stringify({ sent: false, error: err }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
     return new Response(JSON.stringify({ sent: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ch, "Content-Type": "application/json" },
     });
 
   } catch (err) {
     console.error("[invite-manager] Unexpected error:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...ch, "Content-Type": "application/json" },
     });
   }
 });

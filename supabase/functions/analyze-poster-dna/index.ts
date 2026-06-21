@@ -13,6 +13,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkClubAIPlan } from '../_shared/checkClubAIPlan.ts';
+import { corsHeaders, handleOptions } from '../_shared/cors.ts';
 
 async function checkRateLimit(
   client: SupabaseClient,
@@ -33,11 +34,6 @@ async function checkRateLimit(
   await client.from('api_rate_limits').insert({ key, endpoint });
   return false;
 }
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 const DNA_PROMPT = `Analyse cette affiche sportive et retourne UNIQUEMENT un objet JSON (sans markdown, sans texte avant ou après) avec cette structure exacte:
 {
@@ -67,7 +63,8 @@ Règles strictes:
 - confidence: entre 0.70 et 0.97`;
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const prelight = handleOptions(req); if (prelight) return prelight;
+  const ch = corsHeaders(req);
 
   try {
     // ── Auth check — requis (coût Claude Vision ~$0.003/image) ───────────────
@@ -75,7 +72,7 @@ Deno.serve(async (req: Request) => {
     if (!token) {
       return new Response(
         JSON.stringify({ error: 'Authentication required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
     const serviceClient = createClient(
@@ -90,7 +87,7 @@ Deno.serve(async (req: Request) => {
     if (authErr || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 401, headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
@@ -99,7 +96,7 @@ Deno.serve(async (req: Request) => {
     if (limited) {
       return new Response(
         JSON.stringify({ error: 'Trop d\'analyses. Réessayez dans une heure. (max 5/h)' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 429, headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
@@ -110,7 +107,7 @@ Deno.serve(async (req: Request) => {
     if (!planCheck.allowed) {
       return new Response(
         JSON.stringify({ error: planCheck.reason, plan: planCheck.plan }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 403, headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
@@ -119,7 +116,7 @@ Deno.serve(async (req: Request) => {
     if (!ANTHROPIC_KEY) {
       return new Response(
         JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured', mockFallback: true }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 503, headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
@@ -137,7 +134,7 @@ Deno.serve(async (req: Request) => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1024,
         messages: [{
           role: 'user',
@@ -153,7 +150,7 @@ Deno.serve(async (req: Request) => {
       const errText = await anthropicRes.text();
       return new Response(
         JSON.stringify({ error: `Anthropic API: ${errText}` }),
-        { status: anthropicRes.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: anthropicRes.status, headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
@@ -179,14 +176,14 @@ Deno.serve(async (req: Request) => {
     };
 
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...ch, 'Content-Type': 'application/json' },
     });
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return new Response(
       JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 500, headers: { ...ch, 'Content-Type': 'application/json' } },
     );
   }
 });

@@ -13,6 +13,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkClubAIPlan } from '../_shared/checkClubAIPlan.ts';
+import { corsHeaders, handleOptions } from '../_shared/cors.ts';
 
 async function checkRateLimit(
   client: SupabaseClient,
@@ -33,11 +34,6 @@ async function checkRateLimit(
   await client.from('api_rate_limits').insert({ key, endpoint });
   return false;
 }
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 const STYLE_PROMPTS: Record<string, string> = {
   premium:    'luxury sports stadium, gold bokeh lighting, elegant dark atmosphere, cinematic depth of field, professional sports photography, award ceremony ambiance',
@@ -61,7 +57,8 @@ const SPORT_CONTEXT: Record<string, string> = {
 };
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const prelight = handleOptions(req); if (prelight) return prelight;
+  const ch = corsHeaders(req);
 
   try {
     // ── Auth + rate limiting ──────────────────────────────────────────────────
@@ -82,7 +79,7 @@ Deno.serve(async (req: Request) => {
     const limited = await checkRateLimit(serviceClient, userId, 'generate-variant-bg', 10, 3600);
     if (limited) {
       return new Response(JSON.stringify({ error: 'Trop de générations. Réessayez dans une heure.' }), {
-        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 429, headers: { ...ch, 'Content-Type': 'application/json' },
       });
     }
 
@@ -95,7 +92,7 @@ Deno.serve(async (req: Request) => {
     if (!planCheck.allowed) {
       return new Response(
         JSON.stringify({ error: planCheck.reason, plan: planCheck.plan }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 403, headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
@@ -122,7 +119,7 @@ Deno.serve(async (req: Request) => {
         const errorText = await response.text();
         return new Response(
           JSON.stringify({ error: `Fal.ai: ${errorText}` }),
-          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+          { status: response.status, headers: { ...ch, 'Content-Type': 'application/json' } },
         );
       }
 
@@ -144,7 +141,7 @@ Deno.serve(async (req: Request) => {
       const imageUrl = result.images?.[0]?.url ?? null;
       return new Response(
         JSON.stringify({ imageUrl, prompt, provider: 'fal', monthlyUsage: monthlyCount ?? 0, monthlyLimit: FAL_MONTHLY_LIMIT }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
@@ -154,13 +151,13 @@ Deno.serve(async (req: Request) => {
 
     return new Response(
       JSON.stringify({ imageUrl, prompt, provider: 'pollinations' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { headers: { ...ch, 'Content-Type': 'application/json' } },
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 500, headers: { ...ch, 'Content-Type': 'application/json' } },
     );
   }
 });

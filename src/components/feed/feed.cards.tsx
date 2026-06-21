@@ -279,7 +279,7 @@ export function CarpoolCard({ item, onBook }: CarpoolCardProps) {
             </p>
             <div className="flex items-center gap-2">
               {item.driver_avatar ? (
-                <img src={item.driver_avatar} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />
+                <img src={item.driver_avatar} alt={item.driver_name ?? ''} className="w-7 h-7 rounded-full object-cover shrink-0" />
               ) : (
                 <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0" aria-hidden="true">
                   <span className="text-[10px] font-bold text-emerald-400">{item.driver_name[0]}</span>

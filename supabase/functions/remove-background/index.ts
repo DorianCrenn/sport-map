@@ -13,10 +13,7 @@
  *          { error: string, mockFallback: true } — if all APIs unavailable
  */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, handleOptions } from '../_shared/cors.ts';
 
 // ── Fal.ai BRIA RMBG fallback ─────────────────────────────────────────────────
 
@@ -66,7 +63,8 @@ async function removeViaFalAI(base64Data: string): Promise<string | null> {
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const prelight = handleOptions(req); if (prelight) return prelight;
+  const ch = corsHeaders(req);
 
   try {
     const { imageBase64 } = await req.json();
@@ -93,7 +91,7 @@ Deno.serve(async (req: Request) => {
         const resultBase64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
         return new Response(
           JSON.stringify({ resultBase64: `data:image/png;base64,${resultBase64}` }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+          { headers: { ...ch, 'Content-Type': 'application/json' } },
         );
       }
       // Non-OK (quota exceeded, etc.) → fall through to Fal.ai
@@ -104,20 +102,20 @@ Deno.serve(async (req: Request) => {
     if (falResult) {
       return new Response(
         JSON.stringify({ resultBase64: falResult }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
     // ── 3. Both unavailable — client falls back to canvas mock ────────────────
     return new Response(
       JSON.stringify({ error: 'No background removal API configured', mockFallback: true }),
-      { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 503, headers: { ...ch, 'Content-Type': 'application/json' } },
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 500, headers: { ...ch, 'Content-Type': 'application/json' } },
     );
   }
 });

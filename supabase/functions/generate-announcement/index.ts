@@ -11,11 +11,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, handleOptions } from '../_shared/cors.ts';
 
 const TYPE_LABELS: Record<string, string> = {
   urgent: 'annonce urgente (annulation, changement)',
@@ -25,14 +21,15 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const prelight = handleOptions(req); if (prelight) return prelight;
+  const ch = corsHeaders(req);
 
   try {
     // ── Auth guard : doit être un utilisateur authentifié avec rôle club_admin ou admin ──
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Authentification requise' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...ch, 'Content-Type': 'application/json' },
       });
     }
 
@@ -44,7 +41,7 @@ Deno.serve(async (req: Request) => {
     const { data: { user }, error: authErr } = await caller.auth.getUser();
     if (authErr || !user) {
       return new Response(JSON.stringify({ error: 'Token invalide' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...ch, 'Content-Type': 'application/json' },
       });
     }
 
@@ -58,7 +55,7 @@ Deno.serve(async (req: Request) => {
 
     if (!profile || !['club_admin', 'admin', 'superadmin'].includes(profile.role)) {
       return new Response(JSON.stringify({ error: 'Accès réservé aux gestionnaires de club' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403, headers: { ...ch, 'Content-Type': 'application/json' },
       });
     }
 
@@ -84,7 +81,7 @@ Deno.serve(async (req: Request) => {
     if (!ANTHROPIC_KEY) {
       return new Response(
         JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured' }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 503, headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
@@ -118,7 +115,7 @@ Retourne UNIQUEMENT un tableau JSON de 3 strings, sans markdown ni texte autour.
       const errText = await res.text();
       return new Response(
         JSON.stringify({ error: `Anthropic API error: ${errText}` }),
-        { status: res.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: res.status, headers: { ...ch, 'Content-Type': 'application/json' } },
       );
     }
 
@@ -137,13 +134,13 @@ Retourne UNIQUEMENT un tableau JSON de 3 strings, sans markdown ni texte autour.
 
     return new Response(
       JSON.stringify({ suggestions }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { headers: { ...ch, 'Content-Type': 'application/json' } },
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return new Response(
       JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 500, headers: { ...ch, 'Content-Type': 'application/json' } },
     );
   }
 });
