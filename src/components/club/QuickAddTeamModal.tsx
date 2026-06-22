@@ -37,7 +37,7 @@ export default function QuickAddTeamModal({ club, onSave, onClose }: QuickAddTea
     const newTeam = { id: teamUid(), name: teamName.trim(), level: 'D4' };
     let updated: any[];
     if (existingCat) {
-      updated = cats.map(c => c.id === existingCat.id ? { ...c, teams: [...c.teams, newTeam] } : c);
+      updated = cats.map(c => (c.id ?? c.name) === (existingCat.id ?? existingCat.name) ? { ...c, teams: [...c.teams, newTeam] } : c);
     } else {
       updated = [...cats, { id: catUid(), name: catName.trim(), teams: [newTeam] }];
     }

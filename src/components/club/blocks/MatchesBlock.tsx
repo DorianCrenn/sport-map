@@ -300,7 +300,9 @@ interface MatchesBlockProps {
 }
 
 export default function MatchesBlock({ data, onUpdate, isEditing, club, filterTeamId, allEvents }: MatchesBlockProps) {
-  const allTeams: Team[] = (club?.categories ?? []).flatMap((c: any) => c.teams ?? []);
+  const allTeams: Team[] = (club?.categories ?? []).flatMap((c: any) =>
+    (c.teams ?? []).map((t: any) => ({ ...t, id: t.id ?? t.name }))
+  );
   const filterTeam = filterTeamId ? allTeams.find(t => t.id === filterTeamId) : null;
 
   const manualMatches: Match[] = data?.matches ?? [];

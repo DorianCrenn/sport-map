@@ -260,7 +260,7 @@ export default function ClubPageView({
   }
 
   function handleAddEventForTeam(team: Record<string, any>) {
-    const cat = (club.categories ?? []).find((c: any) => c.teams?.some((t: any) => t.id === team.id));
+    const cat = (club.categories ?? []).find((c: any) => c.teams?.some((t: any) => (t.id ?? t.name) === (team.id ?? team.name)));
     setTeamEventModal({
       _isNew: true, defaultTeam: team.name,
       defaultCategory: cat?.name ?? '', defaultLevel: team.level ?? '',

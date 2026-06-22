@@ -14,9 +14,9 @@ export const demoClubRow = {
   phone:             '06 12 34 56 78',
   email:             'contact@fc-sportlink-demo.fr',
   categories: [
-    { name: 'Seniors',   teams: [{ id: 'Équipe 1', name: 'Équipe 1', level: 'R2' }, { id: 'Réserve', name: 'Réserve', level: 'D1' }] },
-    { name: 'Jeunes',    teams: [{ id: 'U17', name: 'U17', level: 'R2 U17' }, { id: 'U15', name: 'U15', level: 'D1 U15' }, { id: 'U13', name: 'U13', level: 'D1 U13' }, { id: 'U11', name: 'U11', level: 'D2 U11' }] },
-    { name: 'Féminines', teams: [{ id: 'Équipe F', name: 'Équipe F', level: 'R1 F' }, { id: 'U15 F', name: 'U15 F', level: 'D1 U15 F' }] },
+    { id: 'cat_seniors',   name: 'Seniors',   teams: [{ id: 'Équipe 1', name: 'Équipe 1', level: 'R2' }, { id: 'Réserve', name: 'Réserve', level: 'D1' }] },
+    { id: 'cat_jeunes',    name: 'Jeunes',    teams: [{ id: 'U17', name: 'U17', level: 'R2 U17' }, { id: 'U15', name: 'U15', level: 'D1 U15' }, { id: 'U13', name: 'U13', level: 'D1 U13' }, { id: 'U11', name: 'U11', level: 'D2 U11' }] },
+    { id: 'cat_feminines', name: 'Féminines', teams: [{ id: 'Équipe F', name: 'Équipe F', level: 'R1 F' }, { id: 'U15 F', name: 'U15 F', level: 'D1 U15 F' }] },
   ],
   status:            'active',
   verification_note: null,
