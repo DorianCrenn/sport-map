@@ -72,6 +72,14 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
   useAndroidBack(true, onClose);
 
   useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  useEffect(() => {
     if (tab === 'ideas') {
       setIdeasLoading(true);
       Promise.all([

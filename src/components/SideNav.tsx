@@ -49,6 +49,7 @@ function NavBtn({ item, active, badge, onClick }: { item: NavItem; active: boole
   return (
     <motion.button
       onClick={onClick}
+      data-demo={`tab-${item.id}`}
       whileHover={{ backgroundColor: active ? undefined : 'var(--sl-hover)' }}
       whileTap={{ scale: 0.97 }}
       style={{

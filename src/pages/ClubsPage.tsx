@@ -46,7 +46,12 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
   const favoriteSports: string[] = currentUser?.favoriteSports || [];
   const inFavoritesMode = favoriteSports.length > 0 && !showAllSports;
 
+  const myClub = isClubAdmin && currentUser?.clubId
+    ? userClubs.find((c: Record<string, any>) => c.id === currentUser.clubId)
+    : null;
+
   const filtered = allClubs.filter((c: Record<string, any>) => {
+    if (myClub && c.id === myClub.id) return false;
     const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.city.toLowerCase().includes(search.toLowerCase());
     const matchSport = sportFilter ? c.sport === sportFilter
@@ -58,10 +63,6 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
     const bF = isFollowingClub(b.id) ? 0 : 1;
     return aF - bF;
   });
-
-  const myClub = isClubAdmin && currentUser?.clubId
-    ? userClubs.find((c: Record<string, any>) => c.id === currentUser.clubId)
-    : null;
 
   async function handleSave(data: Record<string, any>) {
     if (formClub && formClub !== true) {
@@ -369,7 +370,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
         )}
 
         <div style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          {filtered.length} club{filtered.length !== 1 ? 's' : ''}
+          {(() => { const n = filtered.length + (myClub ? 1 : 0); return `${n} club${n !== 1 ? 's' : ''}`; })()}
         </div>
 
         {myClub && (

@@ -88,8 +88,33 @@ async function tab(page, id, ms=1300) {
   }
   await page.waitForTimeout(ms);
 }
-async function scroll(page, px=450) { await page.evaluate(y=>window.scrollBy(0,y),px); await page.waitForTimeout(350); }
-async function scrollTop(page)      { await page.evaluate(()=>window.scrollTo(0,0)); }
+async function scroll(page, px=450) {
+  await page.evaluate(y => {
+    window.scrollBy(0, y);
+    // Also scroll the largest non-fixed scrollable child (app content containers)
+    const divs = [...document.querySelectorAll('div')].filter(d => {
+      const s = getComputedStyle(d);
+      return d.scrollHeight > d.clientHeight + 100 && d.clientHeight > 100
+        && s.overflowY !== 'visible' && s.overflowY !== 'hidden'
+        && s.position !== 'fixed';
+    });
+    if (divs.length) {
+      const biggest = divs.reduce((a, b) => a.scrollHeight > b.scrollHeight ? a : b);
+      biggest.scrollTop += y;
+    }
+  }, px);
+  await page.waitForTimeout(350);
+}
+async function scrollTop(page) {
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+    document.querySelectorAll('div').forEach(d => {
+      const s = getComputedStyle(d);
+      if (d.scrollTop > 0 && s.overflowY !== 'visible' && s.overflowY !== 'hidden' && s.position !== 'fixed')
+        d.scrollTop = 0;
+    });
+  });
+}
 async function esc(page)            { await page.keyboard.press('Escape'); await page.waitForTimeout(500); }
 
 /* Cliquer sur un ElementHandle via dispatchEvent — bypasse le guide (zIndex 10001)
@@ -618,7 +643,14 @@ async function run() {
       const notifTabBtn = await p.waitForSelector('button:has-text("Notifications")', {timeout:5000}).catch(()=>null);
       if (notifTabBtn) { await clickEl(notifTabBtn); await p.waitForTimeout(800); await shot(p, '81-help-notifs'); }
       else skip('81-help-notifs','aucune notification en démo');
-      await esc(p);
+      // Fermer la HelpPage via le bouton ← ou ESC
+      const closeHelp = await p.$('[aria-label="Fermer l\'aide"]');
+      if (closeHelp) {
+        await clickEl(closeHelp);
+        // Attendre que le dialog soit retiré du DOM (animation exit framer-motion)
+        await p.waitForSelector('[aria-label="Centre d\'aide"][role="dialog"]', {state:'detached', timeout:3000}).catch(()=>null);
+        await p.waitForTimeout(400);
+      } else await esc(p);
     } else skip('78-help-faq','HelpPage non ouverte');
 
     // Club page publique — depuis liste clubs
@@ -678,9 +710,12 @@ async function run() {
     await p.waitForTimeout(1500); await shot(p, '95-desktop-map', 1280);
     await tab(p, 'clubs', 1200); await shot(p, '96-desktop-clubs', 1280);
 
-    const connBtn = await p.$('button:has-text("Connexion"), button:has-text("Se connecter")');
+    const connBtn = await p.waitForSelector(
+      'button:has-text("Connexion"), button:has-text("Se connecter"), a:has-text("Connexion"), button:has-text("S\'inscrire")',
+      {timeout: 4000}
+    ).catch(() => null);
     if (connBtn) {
-      await clickEl(connBtn); await p.waitForTimeout(1000);
+      await clickEl(connBtn); await p.waitForTimeout(1200);
       await shot(p, '97-desktop-auth-modal', 1280); await esc(p);
     } else skip('97-desktop-auth-modal','bouton connexion non trouvé');
 
@@ -701,7 +736,7 @@ async function run() {
     await tab(p, 'map', 2500); // dispatchEvent
     await p.waitForSelector('.leaflet-container', {timeout:8000}).catch(()=>null);
     await p.waitForTimeout(1500); await shot(p, '99-desktop-coach-map', 1280);
-    await tab(p, 'clubs', 1200); await shot(p, '100-desktop-coach-clubs', 1280);
+    await tab(p, 'clubs', 1500); await shot(p, '100-desktop-coach-clubs', 1280);
     await tab(p, 'mon-club', 2000); await shot(p, '101-desktop-mon-club', 1280);
 
     // Admin desktop — Coach + Super

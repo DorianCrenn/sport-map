@@ -144,20 +144,20 @@ export default function StylePanelTab({ ps }) {
         )}
 
         {daProfile && !analyzing && (
-          <div style={{ borderRadius: 14, background: 'var(--sl-surface)', border: `1.5px solid ${daProfile.colors.accent}40`, overflow: 'hidden' }}>
+          <div style={{ borderRadius: 14, background: 'var(--sl-surface)', border: `1.5px solid ${daProfile.colors?.accent ?? '#8b5cf6'}40`, overflow: 'hidden' }}>
             <div style={{ display: 'flex', height: 10 }}>
-              {daProfile.palette.map((hex, i) => <div key={i} style={{ flex: 1, background: hex }} />)}
+              {(daProfile.palette ?? []).map((hex, i) => <div key={i} style={{ flex: 1, background: hex }} />)}
             </div>
             <div style={{ padding: '12px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 9, background: `${daProfile.colors.accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 9, background: `${daProfile.colors?.accent ?? '#8b5cf6'}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
                   {STYLE_ICONS[daProfile.style] || '🎨'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 2 }}>{daProfile.styleLabel}</div>
                   <div style={{ display: 'flex', gap: 4 }}>
-                    {daProfile.mood.slice(0, 3).map(m => (
-                      <span key={m} style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: `${daProfile.colors.accent}18`, color: daProfile.colors.accent, textTransform: 'capitalize' }}>{m}</span>
+                    {(daProfile.mood ?? []).slice(0, 3).map(m => (
+                      <span key={m} style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: `${daProfile.colors?.accent ?? '#8b5cf6'}18`, color: daProfile.colors?.accent ?? '#8b5cf6', textTransform: 'capitalize' }}>{m}</span>
                     ))}
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function StylePanelTab({ ps }) {
               <div style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', marginBottom: 6 }}>Palette extraite</div>
                 <div style={{ display: 'flex', gap: 5 }}>
-                  {daProfile.palette.map((hex, i) => (
+                  {(daProfile.palette ?? []).map((hex, i) => (
                     <button key={i} onClick={() => set('accentColor', hex)} title={hex}
                       style={{ flex: 1, height: 28, borderRadius: 7, background: hex, border: accentColor === hex ? '2px solid white' : '2px solid transparent', cursor: 'pointer', transition: 'transform 0.12s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
                   ))}
@@ -182,8 +182,8 @@ export default function StylePanelTab({ ps }) {
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', marginBottom: 6 }}>Templates recommandés</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                    {daProfile.templateAffinities.map(tpl => (
-                      <span key={tpl} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: `${daProfile.colors.accent}14`, color: daProfile.colors.accent, border: `1px solid ${daProfile.colors.accent}30`, textTransform: 'capitalize' }}>{tpl}</span>
+                    {(daProfile.templateAffinities ?? []).map(tpl => (
+                      <span key={tpl} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: `${daProfile.colors?.accent ?? '#8b5cf6'}14`, color: daProfile.colors?.accent ?? '#8b5cf6', border: `1px solid ${daProfile.colors?.accent ?? '#8b5cf6'}30`, textTransform: 'capitalize' }}>{tpl}</span>
                     ))}
                   </div>
                 </div>
