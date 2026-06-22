@@ -19,6 +19,7 @@ import SubscriptionExpiryBanner from '../ui/SubscriptionExpiryBanner.jsx';
 import { canUseFeature } from '../../lib/planHelpers.ts';
 import { hasDemoData, deleteDemoData } from '../../lib/demoDataGenerator.js';
 import ClubInvitePanel from './ClubInvitePanel.jsx';
+import { IconRun, IconBall, IconTrophy, IconTarget, IconBarChart, IconRocket, IconZap, IconMegaphone } from '../icons.js';
 
 interface ConvocStats { total: number; accepted: number; declined: number; pending: number; }
 
@@ -130,7 +131,7 @@ function TrainingsSection({ clubId }: { clubId: string | number }) {
     <div style={{ borderRadius: 14, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}>🏃 Entraînements</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}><IconRun size={12} strokeWidth={2} /> Entraînements</div>
           <div style={{ fontSize: 12, color: 'var(--sl-t2)', marginTop: 2 }}>{allSessions.length} séance{allSessions.length > 1 ? 's' : ''} par semaine</div>
         </div>
       </div>
@@ -182,7 +183,7 @@ function AnnouncementsSection({ club }: { club: Record<string, any> }) {
     <div style={{ borderRadius: 14, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}>📢 Annonces envoyées</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}><IconMegaphone size={12} strokeWidth={2} /> Annonces envoyées</div>
           <div style={{ fontSize: 12, color: 'var(--sl-t2)', marginTop: 2 }}>{loading ? 'Chargement…' : published.length === 0 ? 'Aucune annonce publiée' : `${published.length} publiée${published.length > 1 ? 's' : ''}`}</div>
         </div>
         {canCreate && <button onClick={() => setShowModal(true)} style={{ padding: '7px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: '#3b82f6', color: 'white', fontSize: 12, fontWeight: 700 }}>+ Nouvelle</button>}
@@ -348,9 +349,9 @@ function NotifPrefsSection({ clubId }: { clubId: string | number }) {
 }
 
 const CHALLENGE_TYPE_OPTS = [
-  { key: 'match',      label: 'Match amical',   icon: '⚽' },
-  { key: 'tournament', label: 'Tournoi',         icon: '🏆' },
-  { key: 'training',   label: 'Entraînement',   icon: '🏃' },
+  { key: 'match',      label: 'Match amical',   Icon: IconBall },
+  { key: 'tournament', label: 'Tournoi',         Icon: IconTrophy },
+  { key: 'training',   label: 'Entraînement',   Icon: IconRun },
 ];
 const STATUS_META: Record<string, { label: string; color: string }> = {
   pending:   { label: 'En attente',  color: '#f59e0b' },
@@ -394,7 +395,7 @@ function ChallengesSection({ club }: { club: Record<string, any> }) {
       <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)' }}>
-            ⚔️ Défis inter-clubs
+            <IconTarget size={14} style={{ marginRight: 5, verticalAlign: 'middle' }} /> Défis inter-clubs
             {pendingReceived.length > 0 && <span style={{ marginLeft: 6, backgroundColor: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, borderRadius: 20, padding: '1px 6px' }}>{pendingReceived.length}</span>}
           </div>
           <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>Lancez ou répondez à un défi sportif</div>
@@ -413,13 +414,13 @@ function ChallengesSection({ club }: { club: Record<string, any> }) {
               <div style={{ display: 'flex', gap: 6 }}>
                 {CHALLENGE_TYPE_OPTS.map(opt => (
                   <button key={opt.key} onClick={() => setChalType(opt.key)} style={{ flex: 1, padding: '8px 4px', borderRadius: 10, border: `1.5px solid ${chalType === opt.key ? '#3b82f6' : 'var(--sl-border)'}`, backgroundColor: chalType === opt.key ? 'rgba(59,130,246,0.1)' : 'var(--sl-surface)', color: chalType === opt.key ? '#3b82f6' : 'var(--sl-t2)', fontSize: 11, fontWeight: 700, cursor: 'pointer', textAlign: 'center' }}>
-                    <div>{opt.icon}</div><div style={{ fontSize: 9, marginTop: 2 }}>{opt.label}</div>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}><opt.Icon size={14} color={chalType === opt.key ? '#3b82f6' : 'var(--sl-t2)'} /></div><div style={{ fontSize: 9, marginTop: 2 }}>{opt.label}</div>
                   </button>
                 ))}
               </div>
               <input value={chalMsg} onChange={e => setChalMsg(e.target.value)} placeholder="Message optionnel (ex : match retour, terrain neutre…)" style={{ width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 10, fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif' }} />
               <button onClick={handleSend} disabled={!targetClubId || sending} style={{ padding: '11px', borderRadius: 10, border: 'none', backgroundColor: !targetClubId || sending ? 'var(--sl-surface)' : '#3b82f6', color: !targetClubId || sending ? 'var(--sl-t3)' : '#fff', fontSize: 12, fontWeight: 700, cursor: !targetClubId || sending ? 'default' : 'pointer' }}>
-                {sending ? 'Envoi…' : '⚔️ Lancer le défi'}
+                {sending ? 'Envoi…' : <><IconTarget size={14} /> Lancer le défi</>}
               </button>
             </div>
           </motion.div>
@@ -446,7 +447,7 @@ function ChallengesSection({ club }: { club: Record<string, any> }) {
           return (
             <div key={ch.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 2 }}>{typeOpt?.icon} {opponent?.name ?? '—'}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 5 }}>{typeOpt && <typeOpt.Icon size={12} />}{opponent?.name ?? '—'}</div>
                 <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{typeOpt?.label} · {new Date(ch.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
                 {ch.message && <div style={{ fontSize: 10, color: 'var(--sl-t2)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.message}</div>}
               </div>
@@ -507,7 +508,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
 
             {isEmpty && (
               <div style={{ borderRadius: 16, padding: '16px', marginBottom: 4, backgroundColor: 'rgba(34,217,106,0.08)', border: '1px solid rgba(34,217,106,0.2)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-green)', margin: 0 }}>🚀 Votre club vient d'être créé !</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-green)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}><IconRocket size={15} /> Votre club vient d'être créé !</p>
                 <p style={{ fontSize: 12, color: 'var(--sl-t2)', margin: 0, lineHeight: 1.5 }}>Partagez la page de votre club, ajoutez des événements et invitez vos membres à s'abonner pour voir vos premières statistiques apparaître ici.</p>
               </div>
             )}
@@ -600,7 +601,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
 
             {isEmpty && (
               <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--sl-t3)', fontSize: 13, lineHeight: 1.7 }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>📊</div>
+                <IconBarChart size={36} color="var(--sl-t3)" style={{ marginBottom: 12 }} />
                 Aucune donnée pour l'instant.<br />
                 Les statistiques s'alimenteront dès que des utilisateurs visiteront la page, suivront le club ou cliqueront sur "J'y serai".
               </div>

@@ -1,15 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-poppins: 'Poppins', sans-serif;
-  --font-oswald:  'Oswald', sans-serif;
-  --font-anton:   'Anton', sans-serif;
-  --font-inter:   'Inter', sans-serif;
+  --font-barlow:  'Barlow Condensed', sans-serif;
+  --font-inter:   'Inter', system-ui, sans-serif;
+  --font-poppins: 'Barlow Condensed', sans-serif; /* alias — garde la compat existante */
+  --font-oswald:  'Barlow Condensed', sans-serif; /* alias — garde la compat existante */
+  --font-anton:   'Barlow Condensed', sans-serif; /* alias — garde la compat existante */
 
-  --color-brand:       #0a0f0d;
-  --color-brand-green: #22d96a;
-  --color-brand-blue:  #3da5ff;
+  --color-brand:        #0a0f0d;
+  --color-brand-green:  #22d96a;
+  --color-brand-blue:   #3da5ff;
+  --color-brand-orange: #FF6B2B;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -43,6 +44,9 @@
   --sl-green-glow: 0 0 24px rgba(34,217,106,0.32);
   --sl-blue:       #4da6ff;
   --sl-blue-dim:   rgba(77,166,255,0.12);
+  --sl-orange:     #FF6B2B;
+  --sl-orange-dim: rgba(255,107,43,0.12);
+  --sl-orange-glow: 0 0 20px rgba(255,107,43,0.28);
 
   /* Sport colors */
   --sl-sport-football:   #22d96a;
@@ -121,6 +125,9 @@
   --sl-green-glow: 0 4px 16px rgba(22,163,74,0.22);
   --sl-blue:       #2563EB;
   --sl-blue-dim:   rgba(37,99,235,0.10);
+  --sl-orange:     #E85520;
+  --sl-orange-dim: rgba(232,85,32,0.10);
+  --sl-orange-glow: 0 4px 16px rgba(232,85,32,0.20);
 
   --sl-nav-bg:       #FFFFFF;
   --sl-nav-border:   #E8EEF6;
@@ -396,13 +403,20 @@ a:focus:not(:focus-visible) {
 
 /* Lazy image skeleton shimmer — applies to the wrapper container, not the img */
 @keyframes img-shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
 }
 .img-skeleton {
-  background: linear-gradient(90deg, var(--sl-border) 25%, var(--sl-surface) 50%, var(--sl-border) 75%);
-  background-size: 800px 100%;
-  animation: img-shimmer 1.4s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--sl-surface)      0%,
+    var(--sl-border)      30%,
+    rgba(34,217,106,0.06) 50%,
+    var(--sl-border)      70%,
+    var(--sl-surface)    100%
+  );
+  background-size: 1200px 100%;
+  animation: img-shimmer 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Spinner partagé admin */
@@ -422,14 +436,60 @@ a:focus:not(:focus-visible) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   BRAND PATTERN — texture diagonale très subtile
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --sl-brand-pattern: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 28px,
+    rgba(34,217,106,0.025) 28px,
+    rgba(34,217,106,0.025) 29px
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TYPOGRAPHIE — système global Barlow Condensed + Inter
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --sl-font-brand: 'Barlow Condensed', sans-serif;
+  --sl-font-ui:    'Inter', system-ui, sans-serif;
+
+  /* Tailles sémantiques */
+  --sl-text-xs:   11px;
+  --sl-text-sm:   13px;
+  --sl-text-base: 14px;
+  --sl-text-lg:   16px;
+  --sl-text-xl:   20px;
+  --sl-text-2xl:  26px;
+  --sl-text-3xl:  34px;
+
+  /* Line-heights */
+  --sl-leading-tight:  1.2;
+  --sl-leading-normal: 1.5;
+  --sl-leading-relaxed: 1.65;
+}
+
+/* Titres — Barlow Condensed par défaut */
+h1, h2, h3, h4, .sl-brand-text {
+  font-family: var(--sl-font-brand);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: var(--sl-leading-tight);
+}
+
+/* ═══════════════════════════════════════════════════════════
    BASE
    ═══════════════════════════════════════════════════════════ */
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--sl-font-ui);
+  font-size: var(--sl-text-base);
+  line-height: var(--sl-leading-normal);
   background-color: var(--sl-bg);
   color: var(--sl-t1);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   /* iOS momentum scrolling */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
@@ -437,6 +497,48 @@ body {
 
 button, [role="button"] {
   cursor: pointer;
+  font-family: inherit;
+}
+
+/* Utilitaires brand */
+.sl-title {
+  font-family: var(--sl-font-brand);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Badge LIVE / urgent avec orange sport */
+.sl-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: var(--sl-font-brand);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--sl-orange);
+  box-shadow: var(--sl-orange-glow);
+  animation: sl-live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sl-live-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.82; }
+}
+
+/* Hover lift pour cards sur desktop */
+@media (hover: hover) {
+  .sl-card-hover {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .sl-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.18);
+  }
 }
 
 #root {
@@ -542,6 +644,43 @@ a[aria-label] > svg {
 }
 .sl-skip-nav:focus {
   top: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FOCUS RINGS — accessibilité clavier (WCAG 2.4.7)
+   ═══════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--sl-green);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SÉLECTION DE TEXTE
+   ═══════════════════════════════════════════════════════════ */
+::selection {
+  background-color: rgba(34, 217, 106, 0.22);
+  color: var(--sl-t1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBAR STYLISÉE
+   ═══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: var(--sl-border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sl-t3); }
+
+/* ═══════════════════════════════════════════════════════════
+   REDUCED MOTION — respecte prefers-reduced-motion
+   ═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .img-skeleton   { animation: none !important; }
+  .sl-live-pulse  { animation: none !important; }
+  * { transition-duration: 0.01ms !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════

@@ -31,6 +31,7 @@ import ClubNewsTab from './tabs/ClubNewsTab.jsx';
 import ClubMatchesTab from './tabs/ClubMatchesTab.jsx';
 import ClubRosterTab from './tabs/ClubRosterTab.jsx';
 import ClubInfoTab from './tabs/ClubInfoTab.jsx';
+import { IconCopy, IconShare, IconPalette, IconCalendar, IconMail, IconEdit, IconZap, IconCheckCircle, IconStadium } from '../icons.js';
 
 const EventFormModal = lazy(() => import('../EventFormModal.jsx'));
 const PosterStudio   = lazy(() => import('../PosterStudio.jsx'));
@@ -290,7 +291,7 @@ export default function ClubPageView({
   if (!club?.id) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 14, color: 'var(--sl-t2)', backgroundColor: 'var(--sl-bg)' }}>
-        <span style={{ fontSize: 36 }}>🏟️</span>
+        <IconStadium size={36} color="var(--sl-t3)" />
         <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', margin: 0 }}>Club introuvable</p>
         <p style={{ fontSize: 13, margin: 0 }}>Ce club n'existe pas ou a été supprimé.</p>
         <button onClick={onBack} style={{ marginTop: 4, padding: '10px 22px', borderRadius: 12, background: 'var(--sl-surface)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t1)', fontSize: 14, fontWeight: 600 }}>Retour</button>
@@ -461,14 +462,14 @@ export default function ClubPageView({
             style={{ pointerEvents: 'auto', backgroundColor: '#d97706', padding: '10px 14px', paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))' as any, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, boxShadow: '0 -4px 20px rgba(0,0,0,0.2)' }}
           >
             <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', opacity: 0.9, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              ✏️ {simpleMode ? 'Mode rapide' : 'Mode avancé'}
+              <IconEdit size={12} color="#fff" style={{ marginRight: 4, opacity: 0.9 }} />{simpleMode ? 'Mode rapide' : 'Mode avancé'}
             </span>
             <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
               <button onClick={() => setSimpleMode((v: boolean) => !v)} style={{ fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', whiteSpace: 'nowrap' }}>
-                {simpleMode ? '⚡ Avancé' : '○ Rapide'}
+                {simpleMode ? <><IconZap size={11} color="#fff" /> Avancé</> : 'Rapide'}
               </button>
               <button onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }} style={{ fontSize: 12, fontWeight: 800, padding: '6px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255,255,255,0.95)', color: '#d97706', whiteSpace: 'nowrap' }}>
-                ✓ Terminé
+                <IconCheckCircle size={12} color="#d97706" style={{ marginRight: 4 }} />Terminé
               </button>
             </div>
           </motion.div>
@@ -479,14 +480,14 @@ export default function ClubPageView({
         open={heroMenuOpen}
         onClose={() => setHeroMenuOpen(false)}
         items={[
-          { icon: '🔗', label: linkCopied ? 'Lien copié !' : 'Copier le lien', action: handleCopyLink },
-          { icon: '📤', label: 'Partager', action: handleShare },
-          { icon: '🎨', label: "Créer l'affiche", action: () => setModal('poster') },
-          { icon: '📅', label: 'Exporter le calendrier', action: () => {
+          { Icon: IconCopy, label: linkCopied ? 'Lien copié !' : 'Copier le lien', action: handleCopyLink },
+          { Icon: IconShare, label: 'Partager', action: handleShare },
+          { Icon: IconPalette, label: "Créer l'affiche", action: () => setModal('poster') },
+          { Icon: IconCalendar, label: 'Exporter le calendrier', action: () => {
             const upcoming = effectiveEvents.filter((e: any) => e.clubId === club.id && new Date(e.date) >= new Date());
             downloadClubICS(upcoming, club.name);
           }},
-          ...(club.email ? [{ icon: '✉️', label: `Contacter ${club.name}`, action: () => window.open(`mailto:${club.email}`) }] : []),
+          ...(club.email ? [{ Icon: IconMail, label: `Contacter ${club.name}`, action: () => window.open(`mailto:${club.email}`) }] : []),
         ]}
       />
 

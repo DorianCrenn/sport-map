@@ -5,6 +5,7 @@ import { HELP_CONTENT, HELP_CATEGORIES } from '../data/helpContent.js';
 import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import { useFeedback } from '../hooks/useFeedback.js';
 import EmptyState from '../components/ui/EmptyState.jsx';
+import { IconChat, IconHelpCircle, IconBulb, IconBell } from '../components/icons.js';
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   new:       { label: 'Nouveau',     color: '#6b7280' },
@@ -162,7 +163,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
               display: 'flex', alignItems: 'center', gap: 5,
             }}
           >
-            <span aria-hidden="true">💬</span> Avis
+            <IconChat size={13} /> Avis
           </button>
         )}
       </div>
@@ -175,9 +176,9 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
         padding: '0 16px',
       }}>
         {[
-          { id: 'faq',    label: 'FAQ',   emoji: '❓' },
-          { id: 'ideas',  label: 'Idées', emoji: '💡' },
-          ...(notifications.length > 0 ? [{ id: 'notifs', label: 'Notifications', emoji: '🔔', badge: unreadCount }] : []),
+          { id: 'faq',    label: 'FAQ',            Icon: IconHelpCircle },
+          { id: 'ideas',  label: 'Idées',           Icon: IconBulb },
+          ...(notifications.length > 0 ? [{ id: 'notifs', label: 'Notifications', Icon: IconBell, badge: unreadCount }] : []),
         ].map(t => (
           <button
             key={t.id}
@@ -191,7 +192,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
               display: 'flex', alignItems: 'center', gap: 5, position: 'relative',
             }}
           >
-            {t.emoji} {t.label}
+            <t.Icon size={13} color={tab === t.id ? '#6366f1' : 'var(--sl-t3)'} /> {t.label}
             {(t as any).badge > 0 && (
               <span aria-hidden="true" style={{
                 minWidth: 16, height: 16, borderRadius: 8, padding: '0 4px',
@@ -368,7 +369,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                           display: 'inline-flex', alignItems: 'center', gap: 6,
                         }}
                       >
-                        💬 Poser une question ou signaler un bug
+                        <IconChat size={14} /> Poser une question ou signaler un bug
                       </button>
                     </div>
                   )}

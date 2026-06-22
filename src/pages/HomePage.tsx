@@ -1,9 +1,10 @@
-import React, { useMemo, useState, useCallback, lazy, Suspense } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { APP_VERSION, APP_NAME } from '../lib/appInfo.js';
 import { motion } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
+import { IconRocket } from '../components/icons.js';
 import WeekendPosters from '../components/dashboard/WeekendPosters.tsx';
 import PlansSection from '../components/home/PlansSection.jsx';
 
@@ -519,6 +520,25 @@ function RecentResultsFeed({ allEvents, onNavigate }) {
   );
 }
 
+// ── CountUp animé ─────────────────────────────────────────────────────────────
+function CountUp({ value = 0, duration = 1.1 }) {
+  const [display, setDisplay] = useState(0);
+  const rafRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!value) { setDisplay(0); return; }
+    const start = performance.now();
+    const run = (now: number) => {
+      const t = Math.min((now - start) / (duration * 1000), 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(eased * value));
+      if (t < 1) rafRef.current = requestAnimationFrame(run);
+    };
+    rafRef.current = requestAnimationFrame(run);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [value, duration]);
+  return <>{display.toLocaleString('fr-FR')}</>;
+}
+
 // ── Stats + Features ──────────────────────────────────────────────────────────
 function FeaturesSection({ stats = {} as { clubs?: number; events?: number; sports?: number; thisWeek?: number }, onNavigate, onShowLegal }) {
   const { clubs = 0, events = 0, sports = 0, thisWeek = 0 } = stats;
@@ -545,7 +565,7 @@ function FeaturesSection({ stats = {} as { clubs?: number; events?: number; spor
             className="rounded-2xl flex flex-col items-center gap-1.5 py-4 md:py-5"
             style={{ backgroundColor: bg }}>
             {icon}
-            <div className="font-extrabold font-poppins md:text-3xl" style={{ fontSize:20, color, lineHeight:1 }}>{value}</div>
+            <div className="font-extrabold md:text-3xl" style={{ fontSize:20, color, lineHeight:1, fontFamily:"'Barlow Condensed', sans-serif", fontWeight:900 }}><CountUp value={value} /></div>
             <div className="font-medium text-center" style={{ fontSize:11, color:'var(--sl-t2)' }}>{label}</div>
           </FadeUp>
         ))}
@@ -654,8 +674,8 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             <span className="font-semibold font-poppins" style={{ fontSize:12, color:'#22d96a' }}>Sport partout en France</span>
           </motion.div>
 
-          <motion.h1 className="font-extrabold font-poppins text-white mb-4 relative"
-            style={{ fontSize:40, lineHeight:1.08, letterSpacing:'-1px' }}
+          <motion.h1 className="font-extrabold text-white mb-4 relative"
+            style={{ fontSize:52, lineHeight:1.02, letterSpacing:'-0.5px', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:900 }}
             initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15 }}>
             Le sport<br />près de <span style={{ color:'#22d96a' }}>toi</span>
           </motion.h1>
@@ -694,7 +714,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
               onClick={() => window.dispatchEvent(new CustomEvent('sl-launch-demo'))}
               className="font-semibold font-poppins flex items-center gap-1.5 justify-center cursor-pointer"
               style={{ color:'#a5b4fc', background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:12, fontSize:13, padding:'13px 18px', marginTop:4, width:'100%', maxWidth:300 }}>
-              🎭 Découvrir la démo interactive
+              <IconRocket size={14} color="#a5b4fc" /> Découvrir la démo interactive
             </button>
           </motion.div>
 
@@ -756,8 +776,8 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             </div>
 
             {/* Titre */}
-            <h1 className="font-extrabold font-poppins text-white mb-5"
-              style={{ fontSize:64, lineHeight:1.04, letterSpacing:'-2px' }}>
+            <h1 className="font-extrabold text-white mb-5"
+              style={{ fontSize:72, lineHeight:0.98, letterSpacing:'-1px', fontFamily:"'Barlow Condensed', sans-serif", fontWeight:900 }}>
               Le sport<br />
               près de <span style={{ color:'#22d96a' }}>toi</span>
             </h1>
@@ -785,7 +805,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
                 onClick={() => window.dispatchEvent(new CustomEvent('sl-launch-demo'))}
                 className="font-semibold font-poppins flex items-center gap-2 cursor-pointer"
                 style={{ color:'#a5b4fc', borderRadius:16, padding:'14px 24px', fontSize:16, backgroundColor:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.3)' }}>
-                🎭 Démo
+                <IconRocket size={16} color="#a5b4fc" /> Démo
               </button>
             </div>
             <p className="mb-8" style={{ fontSize:13, color:'rgba(255,255,255,0.35)' }}>
@@ -801,7 +821,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
                 { value: stats?.sports ?? 0,   label:'Sports', color:'#a855f7' },
               ].map(({ value, label, color }) => (
                 <div key={label}>
-                  <div className="font-extrabold font-poppins" style={{ fontSize:32, color, lineHeight:1 }}>{value}</div>
+                  <div className="font-extrabold" style={{ fontSize:32, color, lineHeight:1, fontFamily:"'Barlow Condensed', sans-serif", fontWeight:900 }}><CountUp value={value} /></div>
                   <div style={{ fontSize:13, color:'rgba(255,255,255,0.5)', marginTop:2 }}>{label}</div>
                 </div>
               ))}

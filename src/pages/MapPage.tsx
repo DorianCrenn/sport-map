@@ -13,6 +13,7 @@ import SportIcon from '../components/SportIcon.jsx';
 import { useSports } from '../hooks/useSports.js';
 import EmptyMapGuide from '../components/EmptyMapGuide.jsx';
 import { formatDate, formatTime } from '../lib/dateUtils.js';
+import { IconMap } from '../components/icons.js';
 import { useDynamicMeta } from '../hooks/useDynamicMeta.js';
 import { generateEventUrl } from '../lib/eventShare.js';
 
@@ -370,7 +371,7 @@ export default function MapPage({
             >
               {displayEvents.length === 0 && !eventsLoading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', textAlign: 'center' }}>
-                  <span style={{ fontSize: 36, marginBottom: 12 }}>🗺️</span>
+                  <IconMap size={36} color="var(--sl-t3)" style={{ marginBottom: 12 }} />
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--sl-t2)' }}>Aucun événement avec ces filtres</p>
                 </div>
               ) : (

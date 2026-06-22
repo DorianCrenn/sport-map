@@ -10,15 +10,24 @@
  *   VITE_BASE_URL  (optional, defaults to https://sportlink.vercel.app)
  */
 
-import { writeFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { writeFileSync, existsSync, readFileSync } from 'fs';
+import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Load .env.local for local dev (Vercel injects vars automatically in CI)
+const envLocal = resolve(__dirname, '../.env.local');
+if (existsSync(envLocal)) {
+  readFileSync(envLocal, 'utf8').split('\n').forEach(line => {
+    const m = line.match(/^([^#=\s][^=\s]*)=(.*)$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
+  });
+}
+
 const SUPABASE_URL     = process.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON    = process.env.VITE_SUPABASE_ANON_KEY;
-const BASE_URL         = (process.env.VITE_BASE_URL || 'https://sportlink.vercel.app').replace(/\/$/, '');
+const BASE_URL         = (process.env.VITE_APP_URL || process.env.VITE_BASE_URL || 'https://sportlink.fr').replace(/\/$/, '');
 
 async function fetchClubs() {
   if (!SUPABASE_URL || !SUPABASE_ANON) {

@@ -73,8 +73,8 @@ export default function FavorisPage({ allEvents, allClubs = [], onNavigate }: Fa
       {/* Header */}
       <div style={{ padding: '14px 16px 0', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
-          <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
-            Sauvegardés
+          <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--sl-t1)', letterSpacing: '-0.01em', fontFamily: "'Barlow Condensed', sans-serif" }}>
+            Favoris
           </span>
           <span style={{ fontSize: 13, color: 'var(--sl-t3)', fontWeight: 500 }}>
             {favoriteEvents.length > 0 && `${favoriteEvents.length} match${favoriteEvents.length > 1 ? 's' : ''}`}

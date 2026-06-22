@@ -126,18 +126,17 @@ export default function Header({
   return (
     <header style={{
       flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10,
-      padding: '0 14px', minHeight: 56,
+      padding: '0 16px', minHeight: 62,
       background: 'var(--sl-header-bg)',
       boxShadow: 'var(--sl-header-shadow)',
       position: 'relative', zIndex: 1000,
       backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
     }}>
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <SportLinkLogo size={24} onDark />
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#deeeff', letterSpacing: '-0.02em', lineHeight: 1 }}>SportLink</div>
-          <div style={{ fontSize: 9, fontWeight: 600, color: '#22d96a', marginTop: 2, letterSpacing: '0.04em' }}>FINISTÈRE</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0 }}>
+        <SportLinkLogo size={32} onDark />
+        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, fontWeight: 900, color: '#deeeff', letterSpacing: '-0.01em', lineHeight: 1, userSelect: 'none' }}>
+          SportLink
         </div>
       </div>
 
@@ -310,7 +309,7 @@ export default function Header({
 
       {/* Bell / announcements */}
       {onShowAnnouncements && (
-        <motion.button whileTap={{ scale: 0.92 }} onClick={onShowAnnouncements} aria-label="Annonces clubs" aria-haspopup="dialog" style={{ flexShrink: 0, position: 'relative', width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: announcementsUnreadCount > 0 ? 'rgba(34,217,106,0.15)' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: announcementsUnreadCount > 0 ? '#22d96a' : 'rgba(222,238,255,0.55)' }}>
+        <motion.button whileTap={{ scale: 0.92 }} whileHover={{ scale: 1.08, backgroundColor: announcementsUnreadCount > 0 ? 'rgba(34,217,106,0.22)' : 'rgba(255,255,255,0.13)' }} onClick={onShowAnnouncements} aria-label="Annonces clubs" aria-haspopup="dialog" style={{ flexShrink: 0, position: 'relative', width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: announcementsUnreadCount > 0 ? 'rgba(34,217,106,0.15)' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: announcementsUnreadCount > 0 ? '#22d96a' : 'rgba(222,238,255,0.55)', transition: 'background-color 0.15s' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           {announcementsUnreadCount > 0 && (
             <span style={{ position: 'absolute', top: -2, right: -2, minWidth: 15, height: 15, borderRadius: 8, padding: '0 3px', backgroundColor: '#22d96a', color: '#0a1628', fontSize: 8, fontWeight: 800, lineHeight: '15px', textAlign: 'center', border: '1.5px solid var(--sl-bg)', pointerEvents: 'none' }}>
@@ -323,7 +322,7 @@ export default function Header({
       {/* Profile button */}
       <div ref={profileRef} style={{ position: 'relative', flexShrink: 0 }}>
         {currentUser ? (
-          <motion.button whileTap={{ scale: 0.92 }} onClick={() => setProfileOpen((o: boolean) => !o)} aria-label={`Menu profil — ${currentUser.name}`} aria-expanded={profileOpen} style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontWeight: 800, fontSize: 13, fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: profileOpen ? '0 0 0 2px var(--sl-green), 0 0 0 4px rgba(34,217,106,0.2)' : 'none', transition: 'box-shadow 0.15s', position: 'relative' }}>
+          <motion.button whileTap={{ scale: 0.92 }} whileHover={{ scale: 1.06 }} onClick={() => setProfileOpen((o: boolean) => !o)} aria-label={`Menu profil — ${currentUser.name}`} aria-expanded={profileOpen} style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontWeight: 800, fontSize: 13, fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: profileOpen ? '0 0 0 2px var(--sl-green), 0 0 0 4px rgba(34,217,106,0.2)' : 'none', transition: 'box-shadow 0.15s', position: 'relative' }}>
             {initials}
             {totalBadge > 0 && (
               <span style={{ position: 'absolute', top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, padding: '0 4px', backgroundColor: rideNotifCount > 0 && clubNotifUnread === 0 ? 'var(--sl-green)' : '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, lineHeight: '16px', textAlign: 'center', border: '2px solid var(--sl-bg)', pointerEvents: 'none' }}>
@@ -332,7 +331,7 @@ export default function Header({
             )}
           </motion.button>
         ) : (
-          <motion.button whileTap={{ scale: 0.94 }} onClick={() => onShowAuth?.()} style={{ padding: '6px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: 'Inter, sans-serif' }}>
+          <motion.button whileTap={{ scale: 0.94 }} whileHover={{ scale: 1.04, boxShadow: '0 4px 16px rgba(34,217,106,0.35)' }} onClick={() => onShowAuth?.()} style={{ padding: '7px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.03em' }}>
             Connexion
           </motion.button>
         )}

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { timeAgo } from '../lib/dateUtils.js';
+import { IconAlertCircle, IconInfo, IconBall, IconTicket, type IconProps } from './icons.js';
 
-const TYPE_META: Record<string, { label: string; color: string; bg: string; icon: string }> = {
-  urgent: { label: 'URGENT',    color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   icon: '🚨' },
-  info:   { label: 'INFO',      color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  icon: 'ℹ️' },
-  result: { label: 'RÉSULTAT',  color: '#22c55e', bg: 'rgba(34,197,94,0.12)',   icon: '⚽' },
-  event:  { label: 'ÉVÉNEMENT', color: '#a855f7', bg: 'rgba(168,85,247,0.12)',  icon: '🎉' },
+type IconComp = (p: IconProps) => React.ReactElement;
+const TYPE_META: Record<string, { label: string; color: string; bg: string; Icon: IconComp }> = {
+  urgent: { label: 'URGENT',    color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   Icon: IconAlertCircle },
+  info:   { label: 'INFO',      color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  Icon: IconInfo },
+  result: { label: 'RÉSULTAT',  color: '#22c55e', bg: 'rgba(34,197,94,0.12)',   Icon: IconBall },
+  event:  { label: 'ÉVÉNEMENT', color: '#a855f7', bg: 'rgba(168,85,247,0.12)',  Icon: IconTicket },
 };
 
 interface Ann { id: string | number; type: string; title?: string; message: string; createdAt: string; clubName?: string; targetTeams?: string[]; }
@@ -25,7 +27,7 @@ export default function AnnouncementCard({ ann, variant = 'full', isRead = false
         <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: meta.color, flexShrink: 0, marginTop: 5, boxShadow: `0 0 5px ${meta.color}80` }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-            <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 8, backgroundColor: `${meta.color}18`, color: meta.color }}>{meta.icon} {meta.label}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 8, backgroundColor: `${meta.color}18`, color: meta.color }}><meta.Icon size={10} color={meta.color} strokeWidth={2.2} />{meta.label}</span>
             <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>{timeAgo(ann.createdAt)}</span>
           </div>
           <div style={{ fontSize: 12, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.title || ann.message}</div>
@@ -51,7 +53,7 @@ export default function AnnouncementCard({ ann, variant = 'full', isRead = false
             <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t2)' }}>{ann.clubName}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, backgroundColor: meta.bg, color: meta.color }}>{meta.icon} {meta.label}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, backgroundColor: meta.bg, color: meta.color }}><meta.Icon size={10} color={meta.color} strokeWidth={2} />{' '}{meta.label}</span>
             {!isRead && <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: meta.color, flexShrink: 0 }} />}
           </div>
         </div>
@@ -71,7 +73,7 @@ export default function AnnouncementCard({ ann, variant = 'full', isRead = false
       <div style={{ height: 4, backgroundColor: meta.color }} />
       <div style={{ padding: '12px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', padding: '3px 7px', borderRadius: 6, backgroundColor: meta.bg, color: meta.color }}>{meta.icon} {meta.label}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', padding: '3px 8px', borderRadius: 6, backgroundColor: meta.bg, color: meta.color }}><meta.Icon size={10} color={meta.color} strokeWidth={2.2} />{meta.label}</span>
           <span style={{ flex: 1 }} />
           <span style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 500 }}>{timeAgo(ann.createdAt)}</span>
         </div>

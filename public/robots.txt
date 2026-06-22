@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api/
 
-Sitemap: https://sportlink.vercel.app/sitemap.xml
+Sitemap: https://sportlink.fr/sitemap.xml

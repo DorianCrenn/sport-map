@@ -26,40 +26,60 @@ const ToastCtx = createContext<ToastContextValue>({ toast: () => {} });
 export const useToast = () => useContext(ToastCtx);
 
 function ToastItemComponent({ message, type, onReport }: { message: string; type: ToastType; onReport?: () => void }) {
-  const accent =
-    type === 'error' ? '#ef4444' :
-    type === 'info'  ? 'var(--sl-blue)' :
-                       'var(--sl-green)';
+  const isError   = type === 'error';
+  const isInfo    = type === 'info';
+  const isSuccess = !isError && !isInfo;
 
-  const path =
-    type === 'error'
-      ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
-      : <polyline points="20 6 9 17 4 12"/>;
+  const accent    = isError ? '#ef4444' : isInfo ? 'var(--sl-blue)' : 'var(--sl-green)';
+  const accentBg  = isError ? 'rgba(239,68,68,0.14)' : isInfo ? 'rgba(77,166,255,0.14)' : 'rgba(34,217,106,0.14)';
+  const borderCol = isError ? 'rgba(239,68,68,0.3)'  : isInfo ? 'rgba(77,166,255,0.28)' : 'rgba(34,217,106,0.28)';
+
+  const iconPath = isError
+    ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
+    : isInfo
+    ? <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>
+    : <polyline points="20 6 9 17 4 12"/>;
 
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
-      padding: '10px 14px', borderRadius: 99,
+      padding: '10px 16px 10px 12px', borderRadius: 14,
       backgroundColor: 'var(--sl-card)',
-      border: '1px solid var(--sl-border-s)',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.2)',
+      border: `1px solid ${borderCol}`,
+      boxShadow: `0 8px 36px rgba(0,0,0,0.42), 0 2px 8px rgba(0,0,0,0.18), inset 0 0 0 1px ${accentBg}`,
       fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)',
-      whiteSpace: 'nowrap', maxWidth: 'min(360px, 92vw)',
+      whiteSpace: 'nowrap', maxWidth: 'min(380px, 92vw)',
       userSelect: 'none',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
       pointerEvents: onReport ? 'auto' : 'none',
     }}>
-      <span style={{ color: accent, display: 'flex', flexShrink: 0 }}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          {path}
+      {/* Colored left strip */}
+      <div style={{ width: 3, alignSelf: 'stretch', borderRadius: 999, backgroundColor: accent, flexShrink: 0, marginRight: 2 }} />
+      {/* Icon in tinted pill */}
+      <div style={{
+        width: 30, height: 30, borderRadius: 9, flexShrink: 0,
+        backgroundColor: accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accent,
+      }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          {iconPath}
         </svg>
+      </div>
+      <span style={{
+        flex: 1,
+        fontFamily: "'Inter', sans-serif",
+        letterSpacing: '-0.01em',
+      }}>
+        {message}
       </span>
-      <span style={{ flex: 1, paddingRight: onReport ? 4 : 4 }}>{message}</span>
       {onReport && (
         <button
           onClick={onReport}
           style={{
-            background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px',
-            fontSize: 12, fontWeight: 700, color: '#818cf8',
+            background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px',
+            fontSize: 11, fontWeight: 700, color: '#818cf8',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            letterSpacing: '0.04em', textTransform: 'uppercase',
             textDecoration: 'underline', textUnderlineOffset: 2, flexShrink: 0,
           }}
         >

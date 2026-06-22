@@ -289,18 +289,32 @@ export default function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleF
       )}
       <AnimatePresence mode="popLayout">
         {!hasAny ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', marginTop: 72 }}>
-            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round" style={{ marginBottom: 14 }}>
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-            <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--sl-t2)' }}>Aucun favori pour l'instant</p>
-            <p style={{ fontSize: 13, marginTop: 6, color: 'var(--sl-t3)' }}>Appuie sur le cœur d'un événement pour l'ajouter ici</p>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            style={{ textAlign: 'center', marginTop: 60, padding: '0 32px' }}
+          >
+            <motion.div
+              animate={{ scale: [1, 1.12, 1], rotate: [0, -6, 6, 0] }}
+              transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 1 }}
+              style={{ display: 'inline-flex', marginBottom: 20, padding: 20, borderRadius: 24, backgroundColor: 'rgba(34,217,106,0.08)' }}
+            >
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </motion.div>
+            <p style={{ fontWeight: 900, fontSize: 18, color: 'var(--sl-t1)', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '-0.01em', marginBottom: 8 }}>
+              Rien de sauvegardé
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--sl-t3)', lineHeight: 1.6, maxWidth: 260, margin: '0 auto' }}>
+              Appuie sur ❤ sur un match pour le retrouver ici — même hors connexion.
+            </p>
             {onGoToMap && (
               <button
                 onClick={onGoToMap}
-                style={{ marginTop: 18, padding: '10px 22px', borderRadius: 14, backgroundColor: 'var(--sl-green)', color: '#000', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}
+                style={{ marginTop: 22, padding: '11px 24px', borderRadius: 14, backgroundColor: 'var(--sl-green)', color: '#000', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 800, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}
               >
-                Voir les événements
+                Explorer les événements
               </button>
             )}
           </motion.div>

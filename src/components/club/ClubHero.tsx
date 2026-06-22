@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase.js';
 import SportIcon from '../SportIcon.jsx';
+import { IconMap, IconCar, IconMapPin } from '../icons.js';
 
 function ClubLogoInitials({ club, accentColor, size = 72 }: { club: Record<string, any>; accentColor?: string; size?: number }) {
   const [imgError, setImgError] = useState(false);
@@ -24,8 +25,10 @@ function ClubLogoInitials({ club, accentColor, size = 72 }: { club: Record<strin
   );
 }
 
+type IconComp = (p: { size?: number; color?: string }) => React.ReactElement;
 interface OverflowMenuItem {
-  icon: string;
+  icon?: string;
+  Icon?: IconComp;
   label: string;
   action: () => void;
   danger?: boolean;
@@ -52,7 +55,9 @@ export function OverflowMenu({ items, open, onClose }: { items: (OverflowMenuIte
                   <div key={i} style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
                 ) : (
                   <button key={i} onClick={() => { item.action(); onClose(); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderRadius: 13, border: 'none', background: 'none', cursor: 'pointer', color: item.danger ? '#ef4444' : 'var(--sl-t1)', fontSize: 14, fontWeight: 600, textAlign: 'left' }}>
-                    <span style={{ fontSize: 18, lineHeight: 1, width: 24, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: item.danger ? 'rgba(239,68,68,0.1)' : 'var(--sl-surface)', border: `1px solid ${item.danger ? 'rgba(239,68,68,0.2)' : 'var(--sl-border-s)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {item.Icon ? <item.Icon size={17} color={item.danger ? '#ef4444' : 'var(--sl-t1)'} /> : <span style={{ fontSize: 16, lineHeight: 1 }}>{item.icon}</span>}
+                    </div>
                     {item.label}
                   </button>
                 )
@@ -118,9 +123,10 @@ export default function ClubHero({ club, accentColor, heroBackground, isFollowin
   const appleMapsUrl  = `https://maps.apple.com/?q=${mapsQuery}`;
   const wazeUrl       = `https://waze.com/ul?q=${mapsQuery}&navigate=yes`;
 
-  const mapsOptions = isApple
-    ? [{ icon: '🗺️', label: 'Plans', sub: 'Apple Maps', href: appleMapsUrl }, { icon: '🚗', label: 'Waze', sub: 'Waze', href: wazeUrl }, { icon: '📍', label: 'Google Maps', sub: 'Google Maps', href: googleMapsUrl }]
-    : [{ icon: '🗺️', label: 'Google Maps', sub: 'Google Maps', href: googleMapsUrl }, { icon: '🚗', label: 'Waze', sub: 'Waze', href: wazeUrl }, { icon: '🍎', label: 'Plans', sub: 'Apple Maps', href: appleMapsUrl }];
+  type MapOpt = { Icon: (p: { size?: number; color?: string }) => React.ReactElement; label: string; sub: string; href: string };
+  const mapsOptions: MapOpt[] = isApple
+    ? [{ Icon: IconMap, label: 'Plans', sub: 'Apple Maps', href: appleMapsUrl }, { Icon: IconCar, label: 'Waze', sub: 'Waze', href: wazeUrl }, { Icon: IconMapPin, label: 'Google Maps', sub: 'Google Maps', href: googleMapsUrl }]
+    : [{ Icon: IconMap, label: 'Google Maps', sub: 'Google Maps', href: googleMapsUrl }, { Icon: IconCar, label: 'Waze', sub: 'Waze', href: wazeUrl }, { Icon: IconMap, label: 'Plans', sub: 'Apple Maps', href: appleMapsUrl }];
 
   return (
     <div role="banner">
@@ -144,7 +150,7 @@ export default function ClubHero({ club, accentColor, heroBackground, isFollowin
               <div style={{ padding: '8px 12px 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {mapsOptions.map(opt => (
                   <a key={opt.href} href={opt.href} target="_blank" rel="noopener noreferrer" onClick={() => setMapsOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderRadius: 13, backgroundColor: 'var(--sl-surface)', textDecoration: 'none', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }}>
-                    <span style={{ fontSize: 20, lineHeight: 1 }}>{opt.icon}</span>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><opt.Icon size={18} color="var(--sl-green)" /></div>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 700 }}>{opt.label}</div>
                       <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Ouvrir dans {opt.sub}</div>
@@ -153,7 +159,7 @@ export default function ClubHero({ club, accentColor, heroBackground, isFollowin
                 ))}
                 {onViewOnMap && (
                   <button onClick={() => { setMapsOpen(false); onViewOnMap(); }} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderRadius: 13, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', cursor: 'pointer', color: 'var(--sl-t1)' }}>
-                    <span style={{ fontSize: 20, lineHeight: 1 }}>📍</span>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconMapPin size={18} color="var(--sl-green)" /></div>
                     <div style={{ textAlign: 'left' }}>
                       <div style={{ fontSize: 14, fontWeight: 700 }}>Voir sur la carte</div>
                       <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>Carte SportLink</div>
@@ -218,7 +224,7 @@ export default function ClubHero({ club, accentColor, heroBackground, isFollowin
             <svg width="14" height="14" viewBox="0 0 24 24" fill={isFollowing ? accentColor : 'none'} stroke={isFollowing ? accentColor : '#fff'} strokeWidth="2" strokeLinecap="round">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
-            {isFollowing ? 'Suivi ✓' : 'Suivre le club'}
+            {isFollowing ? 'Suivi' : 'Suivre le club'}
           </button>
           {clubEmail && (
             <a href={`mailto:${clubEmail}`} aria-label={`Envoyer un email à ${club.name}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 12px', borderRadius: 12, border: '1.5px solid var(--sl-border)', minHeight: 40, cursor: 'pointer', fontWeight: 700, fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', textDecoration: 'none', transition: 'background 0.12s' }}>

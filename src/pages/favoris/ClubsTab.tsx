@@ -48,16 +48,28 @@ export default function ClubsTab({ allEvents, allClubs, follows, onUnfollowClub,
 
   if (follows.length === 0) {
     return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-        <div style={{ width: 64, height: 64, borderRadius: 18, backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="1.5" strokeLinecap="round">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}
+      >
+        <motion.div
+          animate={{ y: [0, -5, 0] }}
+          transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+          style={{ width: 72, height: 72, borderRadius: 22, background: 'rgba(34,217,106,0.08)', border: '1px solid rgba(34,217,106,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}
+        >
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="1.5" strokeLinecap="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
-        </div>
-        <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--sl-t2)', marginBottom: 6 }}>Aucun club suivi</p>
-        <p style={{ fontSize: 13, color: 'var(--sl-t3)', textAlign: 'center' }}>Visite la page d'un club et appuie sur "Suivre" pour le retrouver ici</p>
-      </div>
+        </motion.div>
+        <p style={{ fontWeight: 900, fontSize: 18, color: 'var(--sl-t1)', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '-0.01em', marginBottom: 8 }}>
+          Aucun club suivi
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--sl-t3)', lineHeight: 1.6, maxWidth: 240, marginBottom: 0 }}>
+          Retrouve tes clubs ici — visite la page d'un club et appuie sur "Suivre".
+        </p>
+      </motion.div>
     );
   }
 

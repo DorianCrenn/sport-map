@@ -76,6 +76,8 @@ export default defineConfig({
     swVersionPlugin(),
   ],
   build: {
+    // 800kB to accommodate the map chunk (Leaflet + layers = ~168kB gzip, loads lazily)
+    chunkSizeWarningLimit: 800,
     rollupOptions: {
       input: {
         main:  './index.html',

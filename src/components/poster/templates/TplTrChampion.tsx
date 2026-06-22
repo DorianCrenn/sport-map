@@ -32,7 +32,7 @@ export default function TplTrChampion({
   return (
     <div
       className="relative overflow-hidden"
-      style={{ width: 360, height: h, background: '#070710', boxSizing: 'border-box', fontFamily: "'Oswald', sans-serif" }}
+      style={{ width: 360, height: h, background: '#070710', boxSizing: 'border-box', fontFamily: "'Barlow Condensed', sans-serif" }}
     >
       {/* ── User photo ── */}
       {bgImage && (
@@ -196,7 +196,7 @@ export default function TplTrChampion({
               key={i}
               className="block uppercase leading-[0.92]"
               style={{
-                fontFamily: "'Anton', 'Oswald', sans-serif",
+                fontFamily: "'Barlow Condensed', sans-serif",
                 fontSize: Math.max(isStory ? 36 : 28, Math.min(isStory ? 78 : 58, Math.floor((isStory ? 310 : 240) / Math.max(word.length, 3)))),
                 letterSpacing: word.length > 8 ? '-0.02em' : '-0.01em',
                 background: i === 0
@@ -251,7 +251,7 @@ export default function TplTrChampion({
                   fontSize: isStory ? 17 : 13,
                   color: mc, letterSpacing: '-0.01em',
                   textShadow: `0 0 16px ${mc}65`,
-                  fontFamily: "'Oswald', sans-serif",
+                  fontFamily: "'Barlow Condensed', sans-serif",
                 }}
               >
                 {dt.weekday} {dt.day} {dt.month}

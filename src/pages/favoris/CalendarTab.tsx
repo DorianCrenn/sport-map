@@ -138,7 +138,10 @@ export default function CalendarTab({ allEvents, favorites }: CalendarTabProps) 
               {selectedDay} {MONTHS_FR[viewMonth.getMonth()]}
             </div>
             {dayEvents.length === 0 ? (
-              <p style={{ fontSize: 12, color: 'var(--sl-t3)', fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>Aucun favori ce jour</p>
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--sl-t2)', fontFamily: "'Barlow Condensed', sans-serif", marginBottom: 4 }}>Rien ce jour-là</p>
+                <p style={{ fontSize: 12, color: 'var(--sl-t3)' }}>Aucun favori pour cette date</p>
+              </div>
             ) : (
               dayEvents.map((ev: any) => {
                 const sportColor = SPORTS[ev.sport]?.color ?? '#22d96a';
@@ -166,9 +169,19 @@ export default function CalendarTab({ allEvents, favorites }: CalendarTabProps) 
       </AnimatePresence>
 
       {calEvents.length === 0 && (
-        <div style={{ textAlign: 'center', paddingTop: 24 }}>
-          <p style={{ fontSize: 12, color: 'var(--sl-t3)', fontStyle: 'italic' }}>Aucun favori ce mois-ci</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          style={{ textAlign: 'center', padding: '32px 24px' }}
+        >
+          <div style={{ fontSize: 28, marginBottom: 12 }}>📅</div>
+          <p style={{ fontSize: 16, fontWeight: 900, color: 'var(--sl-t1)', fontFamily: "'Barlow Condensed', sans-serif", marginBottom: 6 }}>
+            Mois vierge
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--sl-t3)', lineHeight: 1.5 }}>
+            Aucun favori ce mois-ci — explore la carte pour en ajouter.
+          </p>
+        </motion.div>
       )}
     </div>
   );

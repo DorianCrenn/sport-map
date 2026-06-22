@@ -23,6 +23,7 @@
     "test:visual:update": "playwright test e2e/visual/visual.spec.js --project='Desktop Chrome 1440' --update-snapshots",
     "test:all": "npm run lint && npm run test:coverage && npm run test:e2e",
     "pwa:screenshots": "node scripts/generate-pwa-screenshots.js",
+    "og:generate": "node scripts/generate-og.js",
     "audit:visual": "node scripts/visual-audit.js",
     "qa:scan": "node scripts/qa-scan.js",
     "qa:report": "npm run test:coverage && npm run test:e2e && npm run qa:scan",

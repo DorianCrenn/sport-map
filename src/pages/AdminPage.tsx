@@ -6,6 +6,7 @@ import { useSports } from '../hooks/useSports.js';
 import { supabase } from '../lib/supabase.js';
 import SportIcon from '../components/SportIcon.jsx';
 import { SPORT_ICON_OPTIONS, SPORT_ICONS } from '../components/sportIcons.js';
+import { IconStadium, IconMapPin, IconUsers, IconCheckCircle, IconX } from '../components/icons.js';
 
 const PRESET_COLORS: string[] = [
   '#16a34a','#f97316','#eab308','#dc2626','#2563eb',
@@ -337,7 +338,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>Administration</h1>
+          <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.01em', fontFamily: "'Barlow Condensed', sans-serif" }}>Administration</h1>
         </div>
         <div role="tablist" aria-label="Sections administration" style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none' as CSSProperties['scrollbarWidth'] }}>
           {TABS.map(t => (
@@ -565,7 +566,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
 
             {!clubsLoading && filteredClubs.length === 0 && (
               <div style={{ textAlign: 'center', paddingTop: 48 }}>
-                <div style={{ fontSize: 36, marginBottom: 10 }}>🏟️</div>
+                <IconStadium size={36} color="var(--sl-t3)" style={{ marginBottom: 10 }} />
                 <p style={{ fontSize: 13, color: 'var(--sl-t3)' }}>Aucun club dans cette catégorie</p>
               </div>
             )}
@@ -603,8 +604,8 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                               <SportIcon sport={sport.id} size={9} color="#fff" /> {sport.label}
                             </span>
                           )}
-                          {club.city && <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>📍 {club.city}</span>}
-                          {club.manager_name && <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>👤 {club.manager_name}</span>}
+                          {club.city && <span style={{ fontSize: 11, color: 'var(--sl-t3)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><IconMapPin size={11} /> {club.city}</span>}
+                          {club.manager_name && <span style={{ fontSize: 11, color: 'var(--sl-t3)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><IconUsers size={11} /> {club.manager_name}</span>}
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
@@ -652,11 +653,11 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                         </button>
                         <button onClick={() => handleClubAction(club, 'reject')} disabled={actionLoading} data-testid="club-action-reject"
                           style={{ flex: 1, padding: '9px 8px', borderRadius: 12, border: 'none', fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444', cursor: 'pointer', minWidth: 60 }}>
-                          ✕ Refuser
+                          <IconX size={11} /> Refuser
                         </button>
                         <button onClick={() => handleClubAction(club, 'verify')} disabled={actionLoading} data-testid="club-action-verify"
-                          style={{ flex: 2, padding: '9px 8px', borderRadius: 12, border: 'none', fontSize: 11, fontWeight: 700, color: 'white', backgroundColor: '#22C55E', cursor: 'pointer', minWidth: 80 }}>
-                          {actionLoading ? '…' : '✓ Vérifier'}
+                          style={{ flex: 2, padding: '9px 8px', borderRadius: 12, border: 'none', fontSize: 11, fontWeight: 700, color: 'white', backgroundColor: '#22C55E', cursor: 'pointer', minWidth: 80, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                          {actionLoading ? '…' : <><IconCheckCircle size={11} color="white" /> Vérifier</>}
                         </button>
                       </div>
                     </div>

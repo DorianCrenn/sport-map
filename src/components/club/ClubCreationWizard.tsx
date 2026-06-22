@@ -9,6 +9,7 @@ import SportIcon from '../SportIcon.jsx';
 import { supabase } from '../../lib/supabase.js';
 import { Z } from '../../constants/zIndex.js';
 import { sanitizeText } from '../../lib/sanitize.js';
+import { IconStadium, IconCheckCircle } from '../icons.js';
 
 function catUid()  { return `cat_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`; }
 function teamUid() { return `tm_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`; }
@@ -344,7 +345,7 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
           <div style={{ width: 36, height: 3.5, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 18px 12px', flexShrink: 0 }}>
-          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.02em' }}>🏟️ Créer un club</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 8 }}><IconStadium size={18} color="var(--sl-green)" /> Créer un club</span>
           <button onClick={onClose} aria-label="Fermer" style={{ width: 36, height: 36, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -367,7 +368,7 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
             <button onClick={skip} style={{ padding: '13px 16px', borderRadius: 14, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>Passer</button>
           )}
           <button onClick={isLastStep ? handleSubmit : goNext} disabled={submitting} style={{ flex: 2, padding: '13px', borderRadius: 14, border: 'none', backgroundColor: submitting ? 'var(--sl-surface)' : accentColor, color: submitting ? 'var(--sl-t3)' : '#fff', fontSize: 14, fontWeight: 800, cursor: submitting ? 'default' : 'pointer', boxShadow: submitting ? 'none' : `0 4px 14px ${accentColor}50`, transition: 'all 0.15s' }}>
-            {submitting ? 'Création…' : isLastStep ? '🏟️ Créer le club' : 'Suivant →'}
+            {submitting ? 'Création…' : isLastStep ? <><IconCheckCircle size={16} color="#fff" style={{ marginRight: 6 }} />Créer le club</> : 'Suivant →'}
           </button>
         </div>
       </motion.div>

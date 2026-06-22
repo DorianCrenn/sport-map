@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { supabase, setDemoMode, isDemoMode } from './lib/supabase.js';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import SportLinkLogo from './components/SportLinkLogo.jsx';
 const DemoApp = lazy(() => import('./demo/DemoApp.jsx'));
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { useToast } from './contexts/ToastContext.jsx';
@@ -37,6 +38,7 @@ const AnnouncementsCenter = lazy(() => import('./components/AnnouncementsCenter.
 const PosterStudio        = lazy(() => import('./components/PosterStudio.jsx'));
 const LegalPage           = lazy(() => import('./pages/LegalPage.jsx'));
 import OfflineBanner from './components/OfflineBanner.jsx';
+import SideNav from './components/SideNav.js';
 import { useErrorBus } from './lib/errorBus.js';
 import HelpFab from './components/HelpFab.jsx';
 const HelpPage      = lazy(() => import('./pages/HelpPage.jsx'));
@@ -174,6 +176,9 @@ function AppInner() {
   const [publicUserId, setPublicUserId] = useState<string | null>(null);
   const [pendingClubAction, setPendingClubAction] = useState<string | null>(null);
   const [convocReplyToken, setConvocReplyToken] = useState<string | null>(null);
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768);
+  const [pwaPrompt, setPwaPrompt]     = useState<any>(null);
+  const [showPwaBanner, setShowPwaBanner] = useState(false);
 
   const allClubsRef = useRef<Record<string, any>[]>([]);
   const demoNavRef  = useRef<Record<string, any>>({});
@@ -464,6 +469,19 @@ function AppInner() {
     }
   }, [convocationsPending]);
 
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => { e.preventDefault(); setPwaPrompt(e); setShowPwaBanner(true); };
+    window.addEventListener('beforeinstallprompt', handler as EventListener);
+    return () => window.removeEventListener('beforeinstallprompt', handler as EventListener);
+  }, []);
+
   demoNavRef.current = { handleTabChange, handleOpenPoster, userEvents, handleClubAdminFabAction };
 
   useEffect(() => {
@@ -605,20 +623,43 @@ function AppInner() {
   }
 
   if (loading) return (
-    <div style={{
-      display: 'flex', height: '100dvh',
-      alignItems: 'center', justifyContent: 'center',
-      backgroundColor: 'var(--sl-bg)',
-    }}>
-      <div className="w-11 h-11 rounded-full border-[3px] border-indigo-500 border-t-transparent animate-spin" />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-bg)', gap: 24 }}>
+      <motion.div animate={{ scale: [1, 1.07, 1] }} transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}>
+        <SportLinkLogo size={56} />
+      </motion.div>
+      <div style={{ width: 160, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-surface)', overflow: 'hidden' }}>
+        <motion.div
+          style={{ height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, var(--sl-green), #3da5ff)' }}
+          animate={{ x: ['-100%', '160px'] }}
+          transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
+        />
+      </div>
+      <span style={{ fontSize: 12, color: 'var(--sl-t3)', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.08em', fontWeight: 600 }}>CHARGEMENT…</span>
     </div>
   );
 
   return (
+    <MotionConfig reducedMotion="user">
     <ErrorBoundary name="AppShell" onReport={handleErrorReport}>
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden', paddingTop: isDemoMode() ? 'calc(40px + env(safe-area-inset-top, 0px))' : 0 }}>
       <OfflineBanner />
       <UpdateBanner />
+
+      {/* ── Desktop/Mobile layout wrapper ───────────────────────────────── */}
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: isDesktop ? 'row' : 'column', overflow: 'hidden' }}>
+        {isDesktop && (
+          <SideNav
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            badgeCounts={navBadges}
+            onAddEvent={() => setShowNewEventForm(true)}
+            onImportCSV={() => setShowCSVImport(true)}
+            onOpenTrainings={() => setShowTrainings(true)}
+            onClubAdminAction={handleClubAdminFabAction}
+          />
+        )}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
       {activeTab !== 'home' && (
         <Header
           cities={communes}
@@ -647,13 +688,13 @@ function AppInner() {
       )}
 
       <main id="main-content" style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', zIndex: 1 }}>
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={false} mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.14 }}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             style={{ position: 'absolute', inset: 0 }}
           >
             {activeTab === 'home' && (
@@ -807,9 +848,13 @@ function AppInner() {
         </div>
       )}
 
-      <ErrorBoundary name="BottomNav" onReport={handleErrorReport}>
-        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} onClubAdminAction={handleClubAdminFabAction} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp} />
-      </ErrorBoundary>
+      {!isDesktop && (
+        <ErrorBoundary name="BottomNav" onReport={handleErrorReport}>
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badgeCounts={navBadges} onAddEvent={() => setShowNewEventForm(true)} onImportCSV={() => setShowCSVImport(true)} onOpenTrainings={() => setShowTrainings(true)} onClubAdminAction={handleClubAdminFabAction} overlayOpen={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp} />
+        </ErrorBoundary>
+      )}
+        </div>{/* /content-col */}
+      </div>{/* /layout-row */}
 
       <Suspense fallback={<ModalLoader />}>
         <AnimatePresence>
@@ -915,6 +960,33 @@ function AppInner() {
         </Suspense>
       )}
 
+      <AnimatePresence>
+        {showPwaBanner && !currentUser && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+            style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)', left: 12, right: 12, zIndex: 1200, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border-s)', borderRadius: 18, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: 'var(--sl-shadow-xl)' }}
+          >
+            <SportLinkLogo size={36} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '-0.01em' }}>Installer SportLink</div>
+              <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Accès rapide depuis ton écran d'accueil</div>
+            </div>
+            <button
+              onClick={async () => { if (pwaPrompt) { pwaPrompt.prompt(); const r = await pwaPrompt.userChoice; if (r.outcome === 'accepted') setShowPwaBanner(false); } }}
+              style={{ padding: '7px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#000', fontSize: 12, fontWeight: 800, fontFamily: "'Barlow Condensed', sans-serif", whiteSpace: 'nowrap' }}
+            >
+              Installer
+            </button>
+            <button onClick={() => setShowPwaBanner(false)} style={{ padding: 6, borderRadius: 8, border: 'none', cursor: 'pointer', backgroundColor: 'transparent', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <HelpFab
         onClick={() => setShowHelp(true)}
         hidden={showAuth || showNewEventForm || showCSVImport || showAnnouncements || showTrainings || showMyRides || showHelp || showFeedback || !!studioEvent || !!legalSection}
@@ -948,6 +1020,7 @@ function AppInner() {
       </AnimatePresence>
     </div>
     </ErrorBoundary>
+    </MotionConfig>
   );
 }
 

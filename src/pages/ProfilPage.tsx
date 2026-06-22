@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
 import { APP_VERSION, APP_NAME } from '../lib/appInfo.js';
+import { IconCrown, IconShirt, IconMegaphone, IconUsers, IconBall, IconSiren, IconStadium, IconCar, IconClipboard, IconAlertTriangle, IconZap, IconLock } from '../components/icons.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../hooks/useSports.js';
 import { useClubs } from '../hooks/useClubs.js';
@@ -95,19 +96,20 @@ function ThemeToggle() {
   );
 }
 
+type IconComp = (p: { size?: number; color?: string; strokeWidth?: number }) => React.ReactElement;
 interface RoleOption {
   id: string;
   label: string;
-  emoji: string;
+  Icon: IconComp;
 }
 
 const ROLE_OPTIONS: RoleOption[] = [
-  { id: 'president',   label: 'Président / Responsable', emoji: '🏛️' },
-  { id: 'coach',       label: 'Coach / Éducateur',        emoji: '🎽' },
-  { id: 'communicant', label: 'Communication',            emoji: '📸' },
-  { id: 'parent',      label: 'Parent',                   emoji: '👨‍👩‍👦' },
-  { id: 'joueur',      label: 'Joueur / Joueuse',         emoji: '⚽' },
-  { id: 'supporter',   label: 'Supporter',                emoji: '📣' },
+  { id: 'president',   label: 'Président / Responsable', Icon: IconCrown },
+  { id: 'coach',       label: 'Coach / Éducateur',        Icon: IconShirt },
+  { id: 'communicant', label: 'Communication',            Icon: IconMegaphone },
+  { id: 'parent',      label: 'Parent',                   Icon: IconUsers },
+  { id: 'joueur',      label: 'Joueur / Joueuse',         Icon: IconBall },
+  { id: 'supporter',   label: 'Supporter',                Icon: IconSiren },
 ];
 
 interface RoleSectionProps {
@@ -132,7 +134,7 @@ function RoleSection({ jobRole, onSave }: RoleSectionProps) {
       </div>
       {!editing ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 20 }}>{current?.emoji ?? '🙋'}</span>
+          {current ? <current.Icon size={20} color="var(--sl-green)" /> : <IconUsers size={20} color="var(--sl-t3)" />}
           <span className="text-sm" style={{ color: 'var(--sl-t2)' }}>
             {current?.label ?? 'Non défini'}
           </span>
@@ -152,7 +154,7 @@ function RoleSection({ jobRole, onSave }: RoleSectionProps) {
                 color: jobRole === role.id ? 'var(--sl-green)' : 'var(--sl-t2)',
               }}
             >
-              <span style={{ fontSize: 16 }}>{role.emoji}</span>
+              <role.Icon size={16} color={jobRole === role.id ? 'var(--sl-green)' : 'var(--sl-t3)'} />
               {role.label}
             </button>
           ))}
@@ -235,7 +237,7 @@ export default function ProfilPage({
               </svg>
             </div>
             <div>
-              <h2 style={{ fontSize: 15, fontWeight: 700, fontFamily: 'Poppins, sans-serif', lineHeight: 1.3, margin: 0 }}>Mon profil</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 900, fontFamily: "'Barlow Condensed', sans-serif", lineHeight: 1.2, margin: 0, letterSpacing: '-0.01em' }}>Mon profil</h2>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: '2px 0 0' }}>Connectez-vous pour accéder à votre espace</p>
             </div>
           </div>
@@ -248,7 +250,7 @@ export default function ProfilPage({
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
             </div>
-            <h3 style={{ fontWeight: 700, fontSize: 15, fontFamily: 'Poppins, sans-serif', marginBottom: 8, color: 'var(--sl-t1)' }}>Rejoignez SportLink</h3>
+            <h3 style={{ fontWeight: 900, fontSize: 22, fontFamily: "'Barlow Condensed', sans-serif", marginBottom: 8, color: 'var(--sl-t1)', letterSpacing: '-0.01em' }}>Rejoignez SportLink</h3>
             <p style={{ fontSize: 12, marginBottom: 20, lineHeight: 1.5, color: 'var(--sl-t2)' }}>
               Suivez vos clubs favoris, sauvegardez des événements et gérez votre page club.
             </p>
@@ -256,7 +258,7 @@ export default function ProfilPage({
               onClick={onShowAuth}
               style={{
                 width: '100%', padding: '14px', borderRadius: 16, border: 'none', cursor: 'pointer',
-                fontWeight: 700, fontFamily: 'Poppins, sans-serif', fontSize: 14,
+                fontWeight: 800, fontFamily: "'Barlow Condensed', sans-serif", fontSize: 16, letterSpacing: '0.03em',
                 color: '#fff', backgroundColor: 'var(--sl-green)', boxShadow: 'var(--sl-green-glow)',
               }}
             >
@@ -372,7 +374,7 @@ export default function ProfilPage({
                         position: 'relative',
                       }}
                     >
-                      {isEarned ? def.icon : '🔒'}
+                      {isEarned ? def.icon : <IconLock size={10} color="rgba(255,255,255,0.3)" />}
                     </span>
                   );
                 })}
@@ -445,7 +447,7 @@ export default function ProfilPage({
             backgroundColor: 'var(--sl-card)', border: '1px dashed var(--sl-border)',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center',
           }}>
-            <span style={{ fontSize: 28 }}>🏟️</span>
+            <IconStadium size={28} color="var(--sl-t3)" />
             <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', margin: 0 }}>Aucun événement ajouté</p>
             <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: 0, lineHeight: 1.4 }}>Créez votre premier événement sur la carte pour débloquer vos badges.</p>
             <button
@@ -466,7 +468,7 @@ export default function ProfilPage({
         <div style={{ borderRadius: 16, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(139,92,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>⚡</div>
+              <div style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(139,92,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconZap size={16} color="#a855f7" /></div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Niveau {levelInfo.level} — {levelInfo.name}</div>
                 <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{xpTotal} XP{levelInfo.nextLevel ? ` · ${levelInfo.nextLevel.minXp - xpTotal} XP jusqu'au niv. ${levelInfo.level + 1}` : ' · Niveau max !'}</div>
@@ -596,7 +598,7 @@ export default function ProfilPage({
             style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)' }}
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(34,217,106,0.12)', position: 'relative' }}>
-              <span style={{ fontSize: 20 }}>🚗</span>
+              <IconCar size={20} color="var(--sl-green)" />
               {rideNotifCount > 0 && (
                 <span style={{
                   position: 'absolute', top: -4, right: -4,
@@ -624,7 +626,7 @@ export default function ProfilPage({
             style={{ backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow)' }}
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(99,102,241,0.12)', position: 'relative' }}>
-              <span style={{ fontSize: 20 }}>📋</span>
+              <IconClipboard size={20} color="#6366f1" />
               {convocationsPendingCount > 0 && (
                 <span style={{
                   position: 'absolute', top: -4, right: -4,
@@ -942,7 +944,7 @@ export default function ProfilPage({
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <div style={{ fontSize: 40, marginBottom: 8 }}>⚠️</div>
+                <IconAlertTriangle size={40} color="#ef4444" style={{ marginBottom: 8 }} />
                 <h2 style={{ fontSize: 18, fontWeight: 800, color: '#ef4444', margin: '0 0 8px' }}>Supprimer mon compte</h2>
                 <p style={{ fontSize: 13, color: 'var(--sl-t2)', lineHeight: 1.6, margin: 0 }}>
                   Cette action est <strong>irréversible</strong>. Toutes vos données seront supprimées : profil, favoris, événements, covoiturages.

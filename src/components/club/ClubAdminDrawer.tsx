@@ -2,18 +2,24 @@ import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 import { useAndroidBack } from '../../hooks/useAndroidBack.js';
+import {
+  IconBarChart, IconEdit, IconCalendar, IconMegaphone,
+  IconClipboard, IconShirt, IconShield, IconUsers, IconBriefcase,
+  type IconProps,
+} from '../icons.js';
 
-const ITEMS: { id: string; icon?: string; label?: string; desc?: string }[] = [
-  { id: 'dashboard',  icon: '📊', label: 'Tableau de bord',     desc: 'Stats, vues, conversions' },
-  { id: 'edit-page',  icon: '✏️', label: 'Modifier la page',    desc: 'Blocs, design, typographie' },
-  { id: 'event',      icon: '📅', label: 'Créer un événement',  desc: 'Match, tournoi, entraînement' },
-  { id: 'announce',   icon: '📢', label: 'Envoyer une annonce', desc: 'Tous les abonnés ou une équipe' },
+type IconComponent = (props: IconProps) => React.ReactElement;
+const ITEMS: { id: string; Icon?: IconComponent; color?: string; label?: string; desc?: string }[] = [
+  { id: 'dashboard',  Icon: IconBarChart,   color: 'var(--sl-green)', label: 'Tableau de bord',     desc: 'Stats, vues, conversions' },
+  { id: 'edit-page',  Icon: IconEdit,       color: '#3da5ff',         label: 'Modifier la page',    desc: 'Blocs, design, typographie' },
+  { id: 'event',      Icon: IconCalendar,   color: '#a855f7',         label: 'Créer un événement',  desc: 'Match, tournoi, entraînement' },
+  { id: 'announce',   Icon: IconMegaphone,  color: '#f97316',         label: 'Envoyer une annonce', desc: 'Tous les abonnés ou une équipe' },
   { id: 'divider' },
-  { id: 'edit-info',  icon: '📋', label: 'Infos du club',       desc: 'Nom, sport, ville, équipes' },
-  { id: 'add-team',   icon: '👕', label: 'Créer une équipe',    desc: 'Ajouter une catégorie ou une équipe' },
-  { id: 'managers',   icon: '⚙️', label: 'Administrateurs',    desc: 'Gérer les accès au club' },
-  { id: 'roster',     icon: '👥', label: 'Membres',             desc: 'Effectif et rôles' },
-  { id: 'sponsors',   icon: '🤝', label: 'Partenaires',         desc: 'Logos et liens sponsors' },
+  { id: 'edit-info',  Icon: IconClipboard,  color: 'var(--sl-t2)',    label: 'Infos du club',       desc: 'Nom, sport, ville, équipes' },
+  { id: 'add-team',   Icon: IconShirt,      color: 'var(--sl-t2)',    label: 'Créer une équipe',    desc: 'Ajouter une catégorie ou une équipe' },
+  { id: 'managers',   Icon: IconShield,     color: 'var(--sl-t2)',    label: 'Administrateurs',     desc: 'Gérer les accès au club' },
+  { id: 'roster',     Icon: IconUsers,      color: 'var(--sl-t2)',    label: 'Membres',             desc: 'Effectif et rôles' },
+  { id: 'sponsors',   Icon: IconBriefcase,  color: 'var(--sl-t2)',    label: 'Partenaires',         desc: 'Logos et liens sponsors' },
 ];
 
 interface ClubAdminDrawerProps {
@@ -99,8 +105,8 @@ export default function ClubAdminDrawer({ open, onClose, onAction, isEditing }: 
                     onMouseEnter={e => !isActive && (e.currentTarget.style.background = 'var(--sl-hover)')}
                     onMouseLeave={e => { e.currentTarget.style.background = isActive ? 'rgba(34,217,106,0.07)' : 'transparent'; }}
                   >
-                    <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, backgroundColor: isActive ? 'rgba(34,217,106,0.12)' : 'var(--sl-surface)', border: `1px solid ${isActive ? 'rgba(34,217,106,0.3)' : 'var(--sl-border)'}` }}>
-                      {item.icon}
+                    <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: isActive ? 'rgba(34,217,106,0.12)' : `${(item.color ?? '#fff')}14`, border: `1px solid ${isActive ? 'rgba(34,217,106,0.3)' : `${(item.color ?? '#fff')}28`}` }}>
+                      {item.Icon && <item.Icon size={18} color={isActive ? 'var(--sl-green)' : item.color} strokeWidth={1.75} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: isActive ? 'var(--sl-green)' : 'var(--sl-t1)' }}>

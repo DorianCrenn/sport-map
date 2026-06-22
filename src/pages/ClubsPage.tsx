@@ -185,7 +185,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
         borderBottom: '1px solid var(--sl-border)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
+          <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--sl-t1)', letterSpacing: '-0.01em', fontFamily: "'Barlow Condensed', sans-serif" }}>
             Clubs
           </span>
           {currentUser && !isClubAdmin && (
@@ -439,12 +439,14 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
           return (
             <motion.div
               key={club.id}
-              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.025, duration: 0.15 }}
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04, duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -2, boxShadow: '0 6px 24px rgba(0,0,0,0.18)' }}
               style={{
                 borderRadius: 14, overflow: 'hidden',
                 backgroundColor: 'var(--sl-card)',
                 border: `1px solid ${own ? 'rgba(34,217,106,0.35)' : 'var(--sl-border)'}`,
+                cursor: 'pointer',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px 10px' }}>

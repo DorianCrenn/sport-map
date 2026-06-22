@@ -18,6 +18,9 @@ import { useAttendanceContext } from '../contexts/AttendanceContext.js';
 import { downloadICS } from '../utils/exportICS.js';
 import { generateEventDescription, openWhatsAppShare, openFacebookShare, openInstagramShare } from '../lib/eventShare.js';
 import SportIcon from './SportIcon.jsx';
+import { getSportPattern } from '../lib/sportTextures.js';
+import { hapticSuccess, hapticLight } from '../lib/haptic.js';
+import { IconMegaphone, IconTrophy, IconZap } from './icons.js';
 const PosterStudio = lazy(() => import('./PosterStudio.jsx'));
 import PosterShareBtn from './PosterShareBtn.jsx';
 
@@ -138,11 +141,16 @@ function AttendBtn({ event }: { event: Record<string, any> }) {
   function handleClick(e: React.MouseEvent) {
     e.stopPropagation();
     toggle(event.id);
-    (toast as (opts: any) => void)({ message: attending ? 'Inscription retirée' : "Tu y seras !" });
+    if (!attending) hapticSuccess(); else hapticLight();
+    (toast as (opts: any) => void)({ message: attending ? 'Inscription retirée' : "Tu y seras ! 🎉" });
   }
   return (
-    <motion.button whileTap={{ scale: 0.9 }} onClick={handleClick}
-      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 9, cursor: 'pointer', minHeight: 36, color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: attending ? 'var(--sl-green-dim)' : 'transparent', transition: 'all 0.15s' }}>
+    <motion.button
+      whileTap={attending ? { scale: 0.88 } : { scale: [1, 1.18, 0.94, 1.06, 1] }}
+      transition={{ duration: attending ? 0.1 : 0.38 }}
+      whileHover={{ scale: 1.04 }}
+      onClick={handleClick}
+      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 9, cursor: 'pointer', minHeight: 36, color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: attending ? 'var(--sl-green-dim)' : 'transparent', transition: 'color 0.15s, border-color 0.15s, background-color 0.15s', fontWeight: attending ? 700 : 500 }}>
       <svg width="11" height="11" viewBox="0 0 24 24" fill={attending ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       {attending ? "J'y serai ✓" : "J'y serai"}
     </motion.button>
@@ -260,7 +268,7 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
           <motion.button initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
             onClick={handleAnnounce} disabled={announcing}
             style={{ width: '100%', marginTop: 6, padding: '9px 0', borderRadius: 9, border: 'none', cursor: announcing ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: 'white', fontSize: 12, fontWeight: 800, opacity: announcing ? 0.7 : 1 }}>
-            {announcing ? 'Envoi…' : '📢 Notifier les abonnés'}
+            {announcing ? 'Envoi…' : <><IconMegaphone size={13} color="white" /> Notifier les abonnés</>}
           </motion.button>
         )}
         {announced && (
@@ -374,7 +382,7 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
         {attendeeCount > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: TOURNAMENT_COLOR }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            {attendeeCount} participant{attendeeCount > 1 ? 's' : ''}
+            {attendeeCount} participant{attendeeCount > 1 ? 's' : ''} inscrit{attendeeCount > 1 ? 's' : ''}
           </div>
         )}
       </div>
@@ -390,7 +398,7 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
             )}
             {event.prize && (
               <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, backgroundColor: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                <span style={{ fontSize: 13 }}>🏆</span>
+                <IconTrophy size={13} color="#C9A84C" />
                 <span style={{ fontSize: 11, fontWeight: 600, color: '#C9A84C' }}>{event.prize}</span>
               </div>
             )}
@@ -468,8 +476,9 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -6 }}
         transition={{ duration: 0.16 }}
+        whileHover={isSelected ? {} : { y: -2, boxShadow: `0 6px 24px rgba(0,0,0,0.22), 0 0 0 1px ${accentColor}20` }}
         aria-label={cardTitle}
-        style={{ position: 'relative', backgroundColor: 'var(--sl-card)', borderRadius: 14, marginBottom: 8, border: `1.5px solid ${isSelected ? accentColor : isTournament ? `${TOURNAMENT_COLOR}30` : 'var(--sl-border)'}`, boxShadow: isSelected ? `0 0 0 1px ${accentColor}25, 0 4px 16px ${accentColor}15` : 'none', overflow: 'hidden' }}
+        style={{ position: 'relative', backgroundColor: 'var(--sl-card)', borderRadius: 14, marginBottom: 8, border: `1.5px solid ${isSelected ? accentColor : isTournament ? `${TOURNAMENT_COLOR}30` : 'var(--sl-border)'}`, boxShadow: isSelected ? `0 0 0 1px ${accentColor}25, 0 4px 16px ${accentColor}15` : 'none', overflow: 'hidden', cursor: 'pointer' }}
       >
         <button
           className="event-card-select-btn"
@@ -480,6 +489,8 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
           aria-label={isSelected ? `Sélectionné — ${cardTitle}` : cardTitle}
           style={{ position: 'absolute', inset: 0, zIndex: 0, background: 'transparent', border: 'none', cursor: 'pointer' }}
         />
+        {/* Sport texture overlay */}
+        {(() => { const p = getSportPattern(event.sport); return p ? <div aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', backgroundImage: p.backgroundImage, backgroundSize: p.backgroundSize, opacity: 0.4 }} /> : null; })()}
 
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'stretch', gap: 0, padding: '12px 12px 12px 0' }}>
           <div style={{ width: 3, minHeight: 40, flexShrink: 0, backgroundColor: accentColor, borderRadius: '0 3px 3px 0', marginRight: 10, alignSelf: 'stretch' }} />
@@ -553,12 +564,12 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
                 {attendeeCount > 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: 'var(--sl-green)' }}>
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    {attendeeCount} J'y serai
+                    {attendeeCount} participant{attendeeCount > 1 ? 's' : ''}
                   </div>
                 )}
                 {predictionCount > 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#f59e0b' }}>
-                    <span>⚡</span>{predictionCount} pronostic{predictionCount > 1 ? 's' : ''}
+                    <IconZap size={10} color="#f59e0b" />{predictionCount} pronostic{predictionCount > 1 ? 's' : ''}
                   </div>
                 )}
               </div>

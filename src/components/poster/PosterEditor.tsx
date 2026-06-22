@@ -4,14 +4,14 @@ import PosterRenderer, { BASE_DIMS } from './PosterRenderer.jsx';
 const BLOCK_IDS = ['title', 'champ', 'home-team', 'away-team', 'teams', 'info', 'meta', 'tagline'];
 const FONT_FAMILIES = [
   { label: 'Par défaut', value: '' },
+  { label: 'Barlow Condensed', value: '"Barlow Condensed", sans-serif' },
   { label: 'Inter', value: '"Inter", sans-serif' },
   { label: 'Oswald', value: '"Oswald", sans-serif' },
   { label: 'Bebas Neue', value: '"Bebas Neue", sans-serif' },
+  { label: 'Anton', value: '"Anton", sans-serif' },
   { label: 'Montserrat', value: '"Montserrat", sans-serif' },
   { label: 'Roboto Condensed', value: '"Roboto Condensed", sans-serif' },
   { label: 'Playfair Display', value: '"Playfair Display", serif' },
-  { label: 'Anton', value: '"Anton", sans-serif' },
-  { label: 'Barlow Condensed', value: '"Barlow Condensed", sans-serif' },
 ];
 const BLOCK_LABELS = {
   title: 'Titre',

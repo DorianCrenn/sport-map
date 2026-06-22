@@ -4,12 +4,13 @@ import { useSubscriptionManagement, StripeInvoice } from '../hooks/useSubscripti
 import { getPlanMeta } from '../lib/planHelpers.js';
 import { PLAN_META } from '../lib/subscriptionFeatures.js';
 import PlansMiniModal from '../components/ui/PlansMiniModal.jsx';
+import { IconAlertTriangle, IconRocket, IconCreditCard, IconClipboard, IconCheckCircle, IconX, IconCrown } from '../components/icons.js';
 
-const PLAN_LABELS: Record<string, { color: string; badge: string; name: string; price: string }> = {
-  free:    { color: '#6b7280', badge: '⚪', name: 'Gratuit',  price: '0 €/mois' },
-  starter: { color: '#3b82f6', badge: '🔵', name: 'Starter',  price: '9 €/mois' },
-  pro:     { color: '#8b5cf6', badge: '🟣', name: 'Club Pro', price: '29 €/mois' },
-  elite:   { color: '#f59e0b', badge: '👑', name: 'Elite',    price: '59 €/mois' },
+const PLAN_LABELS: Record<string, { color: string; name: string; price: string }> = {
+  free:    { color: '#6b7280', name: 'Gratuit',  price: '0 €/mois' },
+  starter: { color: '#3b82f6', name: 'Starter',  price: '9 €/mois' },
+  pro:     { color: '#8b5cf6', name: 'Club Pro', price: '29 €/mois' },
+  elite:   { color: '#f59e0b', name: 'Elite',    price: '59 €/mois' },
 };
 
 function formatDate(iso: string | null | undefined): string {
@@ -172,7 +173,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
       {/* Alerte past_due */}
       {isPastDue && (
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-          <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
+          <IconAlertTriangle size={18} color="#dc2626" style={{ flexShrink: 0, marginTop: 1 }} />
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#dc2626' }}>Paiement en attente</div>
             <div style={{ fontSize: 12, color: '#dc2626', marginTop: 2 }}>Votre paiement a échoué. Mettez à jour votre moyen de paiement pour maintenir l'accès.</div>
@@ -190,7 +191,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
           <div>
             <div style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Plan actuel</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 24 }}>{planCfg.badge}</span>
+              <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: `${planCfg.color}18`, border: `1px solid ${planCfg.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconCrown size={20} color={planCfg.color} /></div>
               <span style={{ fontSize: 22, fontWeight: 800, color: planCfg.color }}>{planCfg.name}</span>
             </div>
             <div style={{ fontSize: 13, color: 'var(--sl-t3)', marginTop: 4 }}>{planCfg.price}</div>
@@ -232,7 +233,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
             onClick={() => setShowPlans(true)}
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: 'pointer', textAlign: 'left' }}
           >
-            <span style={{ fontSize: 20 }}>🚀</span>
+            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconRocket size={18} color="#6366f1" /></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Changer de plan</div>
               <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Voir les fonctionnalités disponibles</div>
@@ -248,7 +249,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
             disabled={actionLoading}
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: actionLoading ? 'wait' : 'pointer', textAlign: 'left', opacity: actionLoading ? 0.7 : 1 }}
           >
-            <span style={{ fontSize: 20 }}>💳</span>
+            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconCreditCard size={18} color="#3b82f6" /></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Gérer le paiement</div>
               <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Moyen de paiement, adresse de facturation (Stripe)</div>
@@ -263,7 +264,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
             onClick={() => setShowInvoices(v => !v)}
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: 'pointer', textAlign: 'left' }}
           >
-            <span style={{ fontSize: 20 }}>🧾</span>
+            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(107,114,128,0.1)', border: '1px solid rgba(107,114,128,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconClipboard size={18} color="var(--sl-t2)" /></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Factures</div>
               <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Historique de paiements</div>
@@ -301,7 +302,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
               disabled={actionLoading}
               style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.05)', cursor: actionLoading ? 'wait' : 'pointer', textAlign: 'left', opacity: actionLoading ? 0.7 : 1 }}
             >
-              <span style={{ fontSize: 20 }}>✅</span>
+              <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconCheckCircle size={18} color="#16a34a" /></div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#16a34a' }}>Réactiver l'abonnement</div>
                 <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>L'accès sera maintenu après le {formatDate(periodEnd)}</div>
@@ -314,7 +315,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
                   onClick={() => setConfirmCancel(true)}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: 'pointer', textAlign: 'left' }}
                 >
-                  <span style={{ fontSize: 20 }}>🚫</span>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconX size={18} color="var(--sl-t3)" /></div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t2)' }}>Annuler l'abonnement</div>
                     <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Accès maintenu jusqu'au {formatDate(periodEnd)}</div>
