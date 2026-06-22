@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Edge Function : generate-variant-bg  (PS-VAR-004)
  * Generates a sports poster background image using Fal.ai Flux-schnell.
  *
@@ -13,7 +13,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkClubAIPlan } from '../_shared/checkClubAIPlan.ts';
-import { corsHeaders, handleOptions } from '../_shared/cors.ts';
+import { corsHeaders, handleOptions, checkCsrfOrigin } from '../_shared/cors.ts';
 
 async function checkRateLimit(
   client: SupabaseClient,

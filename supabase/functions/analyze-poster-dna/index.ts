@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Edge Function : analyze-poster-dna  (PS-DNA-001→005)
  * Analyzes a sports poster using Claude Vision to extract the club's visual identity.
  * Uses Anthropic API directly via fetch (no SDK dependency).
@@ -13,7 +13,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkClubAIPlan } from '../_shared/checkClubAIPlan.ts';
-import { corsHeaders, handleOptions } from '../_shared/cors.ts';
+import { corsHeaders, handleOptions, checkCsrfOrigin } from '../_shared/cors.ts';
 
 async function checkRateLimit(
   client: SupabaseClient,

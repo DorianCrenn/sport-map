@@ -6,6 +6,10 @@ import { getPlanMeta } from '../../lib/planHelpers.js';
 import { PLAN_ORDER } from '../../lib/subscriptionFeatures.js';
 import { useStripeCheckout } from '../../hooks/useStripeCheckout.js';
 
+type CheckoutPlan = 'starter' | 'pro' | 'elite';
+
+const CHECKOUT_PLANS = new Set<string>(['starter', 'pro', 'elite']);
+
 interface PlansMiniModalProps {
   open:             boolean;
   onClose:          () => void;
@@ -49,7 +53,8 @@ export default function PlansMiniModal({ open, onClose, currentPlanId, nextPlanI
 
               <PlansSection onCta={(planId?: string) => {
                 if (!planId || planId === 'free' || planId === currentPlanId) { onClose(); return; }
-                startCheckout(planId as 'premium' | 'elite', selectedInterval, clubId ?? undefined);
+                if (!CHECKOUT_PLANS.has(planId)) return;
+                startCheckout(planId as CheckoutPlan, selectedInterval, clubId ?? undefined);
               }} />
 
               {checkoutError && (

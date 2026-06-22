@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAndroidBack } from '../hooks/useAndroidBack.js';
+import { useFocusTrap } from '../hooks/useFocusTrap.js';
 
 const VARIANTS = {
   sheet: {
@@ -42,6 +43,7 @@ export default function ModalFrame({ open, onClose, variant = 'sheet', zIndex = 
   const firstFocusRef = useRef<HTMLDivElement>(null);
   const [sheetDy, setSheetDy] = useState(0);
   useAndroidBack(open, onClose);
+  useFocusTrap(firstFocusRef, open);
 
   useEffect(() => {
     if (!open) return;
@@ -49,12 +51,6 @@ export default function ModalFrame({ open, onClose, variant = 'sheet', zIndex = 
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
-
-  useEffect(() => {
-    if (!open || !firstFocusRef.current) return;
-    const el = firstFocusRef.current.querySelector<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    el?.focus();
-  }, [open]);
 
   useEffect(() => { if (!open) setSheetDy(0); }, [open]);
 

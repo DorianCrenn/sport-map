@@ -212,6 +212,10 @@ function SubscriptionSection({ clubId }: { clubId: string | number }) {
   if (features.loading) return null;
 
   const { planMeta, planId, nextPlanId, nextPlanMeta, isUpgradeable, periodEnd } = features;
+
+  function openSubscriptionPage() {
+    window.location.hash = `#subscription/${clubId}`;
+  }
   const DASHBOARD_ROWS = [
     { key: 'POSTER_EXPERT',           label: 'Mode Expert PosterStudio' },
     { key: 'POSTER_WATERMARK_REMOVE', label: 'Sans filigrane'           },
@@ -233,7 +237,18 @@ function SubscriptionSection({ clubId }: { clubId: string | number }) {
               <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>{planMeta.price === 0 ? 'Gratuit' : `${planMeta.price} €/mois`}{periodEnd && ` · Renouvellement ${new Date(periodEnd).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}`}</div>
             </div>
           </div>
-          <button onClick={() => setShowPlans(true)} style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-blue)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 8, backgroundColor: 'rgba(77,166,255,0.08)' }}>Voir les plans</button>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {planId !== 'free' && (
+              <button
+                onClick={openSubscriptionPage}
+                data-testid="btn-manage-subscription"
+                style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t2)', background: 'none', border: '1px solid var(--sl-border)', cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}
+              >
+                Mon abonnement
+              </button>
+            )}
+            <button onClick={() => setShowPlans(true)} style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-blue)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 8, backgroundColor: 'rgba(77,166,255,0.08)' }}>Voir les plans</button>
+          </div>
         </div>
         <div style={{ padding: '10px 16px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
           {DASHBOARD_ROWS.map(({ key, label }) => {

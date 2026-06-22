@@ -62,23 +62,27 @@ npx web-push generate-vapid-keys
 | `FAL_API_KEY` | fal.ai/dashboard/keys | P2 *(fallback Pollinations)* |
 | `STRIPE_SECRET_KEY` | dashboard.stripe.com | **P0** |
 | `STRIPE_WEBHOOK_SECRET` | étape 5 | **P0** |
-| `STRIPE_PRICE_PREMIUM_MONTHLY` | étape 5 | **P0** |
-| `STRIPE_PRICE_PREMIUM_YEARLY` | étape 5 | **P0** |
+| `STRIPE_PRICE_STARTER_MONTHLY` | étape 5 | **P0** |
+| `STRIPE_PRICE_STARTER_YEARLY` | étape 5 | **P0** |
+| `STRIPE_PRICE_PRO_MONTHLY` | étape 5 | **P0** |
+| `STRIPE_PRICE_PRO_YEARLY` | étape 5 | **P0** |
 | `STRIPE_PRICE_ELITE_MONTHLY` | étape 5 | **P0** |
 | `STRIPE_PRICE_ELITE_YEARLY` | étape 5 | **P0** |
 
 ### 5. Stripe
 
-1. Dashboard → Products → Créer 4 produits :
+1. Dashboard → Products → Créer 6 produits (3 plans × 2 intervalles) :
 
-| Produit | Intervalle | Prix suggéré |
-|---------|-----------|--------------|
-| SportLink Premium | Mensuel | 9,99 € |
-| SportLink Premium | Annuel | 99 € |
-| SportLink Elite | Mensuel | 24,99 € |
-| SportLink Elite | Annuel | 249 € |
+| Produit | Intervalle | Prix | Secret cible |
+|---------|-----------|------|--------------|
+| SportLink Starter | Mensuel | 9 € | `STRIPE_PRICE_STARTER_MONTHLY` |
+| SportLink Starter | Annuel | 86 € (−20%) | `STRIPE_PRICE_STARTER_YEARLY` |
+| SportLink Pro | Mensuel | 29 € | `STRIPE_PRICE_PRO_MONTHLY` |
+| SportLink Pro | Annuel | 278 € (−20%) | `STRIPE_PRICE_PRO_YEARLY` |
+| SportLink Elite | Mensuel | 59 € | `STRIPE_PRICE_ELITE_MONTHLY` |
+| SportLink Elite | Annuel | 566 € (−20%) | `STRIPE_PRICE_ELITE_YEARLY` |
 
-2. Copier les 4 `price_xxx` IDs dans les Supabase Secrets.
+2. Copier les 6 `price_xxx` IDs dans les Supabase Secrets.
 
 3. Webhook → **Ajouter un endpoint** :
    ```

@@ -26,6 +26,7 @@ interface UseFormDraftOptions {
 interface UseFormDraftResult<T> {
   hasDraft: boolean;
   saveDraft: (value: T) => void;
+  saveImmediate: (value: T) => void;
   loadDraft: () => T | null;
   clearDraft: () => void;
 }
@@ -53,6 +54,14 @@ export function useFormDraft<T>(
     }, debounceMs);
   }, [storageKey, debounceMs]);
 
+  const saveImmediate = useCallback((value: T) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ data: value, ts: Date.now() }));
+      setHasDraft(true);
+    } catch { /* quota plein */ }
+  }, [storageKey]);
+
   const loadDraft = useCallback((): T | null => {
     return readRaw<T>(storageKey, ttlMs)?.data ?? null;
   }, [storageKey, ttlMs]);
@@ -63,5 +72,5 @@ export function useFormDraft<T>(
     setHasDraft(false);
   }, [storageKey]);
 
-  return { hasDraft, saveDraft, loadDraft, clearDraft };
+  return { hasDraft, saveDraft, saveImmediate, loadDraft, clearDraft };
 }

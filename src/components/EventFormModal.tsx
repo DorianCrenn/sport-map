@@ -121,6 +121,8 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const [createdEvent, setCreatedEvent] = useState<Record<string, any> | null>(null);
 
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sauvegarde debounced (1.5s)
   useEffect(() => {
     if (isEdit) return;
     if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
@@ -128,6 +130,25 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
       try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ data: form, ts: Date.now() })); } catch { /* ignore */ }
     }, 1500);
     return () => { if (draftTimerRef.current) clearTimeout(draftTimerRef.current); };
+  }, [form, isEdit]);
+
+  // Session recovery : sauvegarder immédiatement en cas de fermeture brutale
+  useEffect(() => {
+    if (isEdit) return;
+    function saveImmediate() {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ data: form, ts: Date.now() })); } catch { /* ignore */ }
+    }
+    // Fermeture onglet / navigateur
+    window.addEventListener('beforeunload', saveImmediate);
+    // Passage en arrière-plan (mobile : app mise en veille)
+    function onVisibilityChange() { if (document.visibilityState === 'hidden') saveImmediate(); }
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', saveImmediate);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  // form en dep : capture la valeur courante dans le closure
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, isEdit]);
 
   const useSteps = !isEdit;

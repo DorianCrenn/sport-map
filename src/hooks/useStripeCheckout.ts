@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-type Plan = 'premium' | 'elite';
+type Plan     = 'starter' | 'pro' | 'elite';
 type Interval = 'monthly' | 'yearly';
 
 interface UseStripeCheckoutReturn {

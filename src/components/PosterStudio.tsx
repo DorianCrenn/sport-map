@@ -617,6 +617,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             <button
               onClick={() => { setActiveTab(null); setExportOpen(prev => !prev); }}
               title="Partager / Exporter"
+              aria-label="Partager ou exporter l'affiche"
               style={{ display: 'flex', alignItems: 'center', gap: 5, padding: isDesktop ? '10px 12px' : '10px', borderRadius: 10, border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}12`, cursor: 'pointer', color: accentColor, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
@@ -654,6 +655,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               Partager
             </button>
             <button onClick={() => setQuickBannerDismissed(true)}
+              aria-label="Fermer la bannière"
               style={{ width: 22, height: 22, borderRadius: 6, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
@@ -832,6 +834,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                     backgroundColor: 'rgba(0,0,0,0.38)', border: 'none', cursor: 'pointer', zIndex: 6,
                   }}
                   title={club?.id ? `Voir la page ${club.name}` : 'Créé avec SportLink'}
+                  aria-label={club?.id ? `Voir la page club ${club.name} sur SportLink` : 'Créé avec SportLink'}
                 >
                   <span style={{ fontSize: Math.round(8 * previewH / h), fontWeight: 700, letterSpacing: '0.09em', color: 'rgba(255,255,255,0.72)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                     {club?.name ? `${club.name} · SportLink` : 'Créé avec SportLink'}
@@ -856,19 +859,19 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
 
             {/* Floating action buttons — absolus à droite du poster, ne débordent pas du flex */}
             <div style={{ position: 'absolute', left: PREVIEW_W + 8, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button onClick={() => setPreviewFull(true)} title="Aperçu plein écran"
+              <button onClick={() => setPreviewFull(true)} title="Aperçu plein écran" aria-label="Aperçu plein écran"
                 style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t2)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                 </svg>
               </button>
-              <button onClick={() => setPlatformPreview('ig-story')} title="Aperçu plateformes"
+              <button onClick={() => setPlatformPreview('ig-story')} title="Aperçu plateformes" aria-label="Aperçu sur les plateformes (Instagram, Facebook…)"
                 style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t2)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
                 </svg>
               </button>
-              <button onClick={() => setEditorOpen(true)} title="Éditeur visuel"
+              <button onClick={() => setEditorOpen(true)} title="Éditeur visuel" aria-label="Ouvrir l'éditeur visuel"
                 style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: `${accentColor}16`, border: `1px solid ${accentColor}50`, cursor: 'pointer', color: accentColor, boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>

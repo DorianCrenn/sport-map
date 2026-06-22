@@ -1,15 +1,69 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, handleOptions } from "../_shared/cors.ts";
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, handleOptions, checkCsrfOrigin } from "../_shared/cors.ts";
+import { checkRateLimit } from "../_shared/rateLimit.ts";
 
 Deno.serve(async (req) => {
   const prelight = handleOptions(req); if (prelight) return prelight;
   const ch = corsHeaders(req);
+
+  const supaUrl = Deno.env.get("SUPABASE_URL")!;
+  const supaKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const serviceClient = createClient(supaUrl, supaKey);
+
+  // ── Auth : JWT obligatoire ─────────────────────────────────────────────────
+  const authHeader = req.headers.get("authorization") ?? "";
+  const anonClient = createClient(supaUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: { user }, error: authErr } = await anonClient.auth.getUser();
+  if (authErr || !user) {
+    return new Response(JSON.stringify({ error: "Authentification requise" }), {
+      status: 401, headers: { ...ch, "Content-Type": "application/json" },
+    });
+  }
+
+  // Vérifier que l'inviteur est bien admin ou manager du club
+  const { data: profile } = await serviceClient
+    .from("profiles")
+    .select("role, club_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const isAdmin = ["admin", "superadmin"].includes(profile?.role ?? "");
 
   try {
     const { email, clubId, clubName, role, inviterName } = await req.json();
     if (!email || !clubId) {
       return new Response(JSON.stringify({ error: "email and clubId are required" }), {
         status: 400, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!isAdmin) {
+      const isClubAdmin = profile?.role === "club_admin" && profile?.club_id === clubId;
+      if (!isClubAdmin) {
+        const { data: managerRow } = await serviceClient
+          .from("club_managers")
+          .select("id")
+          .eq("club_id", clubId)
+          .eq("email", user.email)
+          .eq("status", "active")
+          .in("role", ["owner", "manager"])
+          .maybeSingle();
+
+        if (!managerRow) {
+          return new Response(JSON.stringify({ error: "Vous n'êtes pas autorisé à inviter des gestionnaires pour ce club" }), {
+            status: 403, headers: { ...ch, "Content-Type": "application/json" },
+          });
+        }
+      }
+    }
+
+    // Rate limit : 10 invitations/heure par utilisateur
+    const limited = await checkRateLimit(serviceClient, user.id, "invite-club-manager", 10, 3600);
+    if (limited) {
+      return new Response(JSON.stringify({ error: "Limite atteinte — 10 invitations par heure maximum." }), {
+        status: 429, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 

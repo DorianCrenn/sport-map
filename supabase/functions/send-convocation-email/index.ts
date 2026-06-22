@@ -1,5 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, handleOptions } from "../_shared/cors.ts";
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, handleOptions, checkCsrfOrigin } from "../_shared/cors.ts";
+import { checkRateLimit } from "../_shared/rateLimit.ts";
 
 interface ConvocationPayload {
   eventId:      string;
@@ -16,6 +17,8 @@ interface ConvocationPayload {
 Deno.serve(async (req) => {
   const prelight = handleOptions(req);
   if (prelight) return prelight;
+  const csrfErr = checkCsrfOrigin(req);
+  if (csrfErr) return csrfErr;
   const ch = corsHeaders(req);
 
   const resendKey = Deno.env.get("RESEND_API_KEY");
@@ -25,6 +28,50 @@ Deno.serve(async (req) => {
   const supaKey   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
   const supabase  = createClient(supaUrl, supaKey);
+
+  // ── Auth : JWT obligatoire — seuls les managers/admins envoient des convocations
+  const authHeader = req.headers.get("authorization") ?? "";
+  const anonClient = createClient(supaUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: { user }, error: authErr } = await anonClient.auth.getUser();
+  if (authErr || !user) {
+    return new Response(JSON.stringify({ error: "Authentification requise" }), {
+      status: 401, headers: { ...ch, "Content-Type": "application/json" },
+    });
+  }
+
+  // Vérifier le rôle autorisé
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!profile || !["club_admin", "admin", "superadmin"].includes(profile.role)) {
+    // Accepter aussi les managers (club_managers)
+    const { data: managerRow } = await supabase
+      .from("club_managers")
+      .select("id")
+      .eq("email", user.email)
+      .eq("status", "active")
+      .in("role", ["owner", "manager", "editor"])
+      .maybeSingle();
+
+    if (!managerRow) {
+      return new Response(JSON.stringify({ error: "Accès réservé aux gestionnaires de club" }), {
+        status: 403, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+  }
+
+  // Rate limit : 100 emails/heure par expéditeur (environ 3 convocations × 30 joueurs)
+  const limited = await checkRateLimit(supabase, user.id, "send-convocation-email", 100, 3600);
+  if (limited) {
+    return new Response(JSON.stringify({ error: "Limite atteinte — 100 emails par heure maximum." }), {
+      status: 429, headers: { ...ch, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const payload: ConvocationPayload = await req.json();

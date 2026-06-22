@@ -47,10 +47,10 @@ describe('OfflineBanner', () => {
     expect(screen.getByText(/Pas de connexion/)).toBeDefined();
   });
 
-  it('la bannière contient un message sur les fonctionnalités indisponibles', () => {
+  it('la bannière contient un message sur la synchronisation', () => {
     setOnline(false);
     render(<OfflineBanner />);
-    expect(screen.getByText(/certaines fonctionnalités/i)).toBeDefined();
+    expect(screen.getByText(/synchronisées à la reconnexion/i)).toBeDefined();
   });
 
   it('le bouton fermer masque la bannière', () => {

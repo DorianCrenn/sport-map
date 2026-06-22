@@ -38,24 +38,24 @@
   "screenshots": [
     {
       "src": "/screenshots/map-mobile.png",
-      "sizes": "390x844",
+      "sizes": "780x1688",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Carte des événements sportifs"
     },
     {
       "src": "/screenshots/feed-mobile.png",
-      "sizes": "390x844",
+      "sizes": "780x1688",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Fil d'actualités des clubs"
     },
     {
       "src": "/screenshots/poster-mobile.png",
-      "sizes": "390x844",
+      "sizes": "780x1688",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Créateur d'affiches sportives"
+      "label": "Clubs sportifs"
     }
   ],
   "shortcuts": [

@@ -217,6 +217,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
         </div>
         <button
           onClick={onClose}
+          aria-label="Fermer l'éditeur visuel"
           style={{
             width: 44, height: 44, borderRadius: 12,
             backgroundColor: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
@@ -437,6 +438,7 @@ export default function PosterEditor({ templateId, data, format, transforms, onC
                     key={dir}
                     onClick={() => alignBlock(dir)}
                     title={title}
+                    aria-label={title}
                     style={{
                       width: 40, height: 40, borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'none', border: '1px solid rgba(255,255,255,0.13)', color: 'rgba(255,255,255,0.5)',

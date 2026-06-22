@@ -18,7 +18,7 @@ const MON_CLUB: TabDef = { id: 'mon-club', label: 'Mon Club', icon: (a) => (<svg
 
 export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, onAddEvent, onImportCSV, onOpenTrainings, onClubAdminAction, overlayOpen = false }: BottomNavProps) {
   const { isAdmin, isClubAdmin, currentUser } = useAuth();
-  const { managedClubs } = useManagedClubs();
+  const { managedClubs = [] } = useManagedClubs();
   const { can, isSimulating } = useCanDo();
 
   const isClubAdminOnly = isClubAdmin && !isAdmin;
@@ -30,7 +30,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
   useEffect(() => { if (overlayOpen) setFabOpen(false); }, [overlayOpen]);
 
   const tabs: (TabDef | null)[] = isClubAdminOnly
-    ? [HOME, MAP, null, CLUBS, MON_CLUB]
+    ? [HOME, MAP, null, CLUBS, FAVORIS]
     : canFab
     ? [HOME, MAP, null, CLUBS, PROFIL]
     : [HOME, MAP, FAVORIS, CLUBS, PROFIL];
@@ -65,6 +65,9 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                     <FabAction icon="⚙️" label="Administrateurs"    desc="Gérer les accès au club"              color="#8b5cf6" onClick={() => handleClubAdminFabAction('managers')} />
                     <FabAction icon="👥" label="Membres"            desc="Effectif et rôles"                    color="#22d96a" onClick={() => handleClubAdminFabAction('roster')} />
                     <FabAction icon="🤝" label="Partenaires"        desc="Logos et liens sponsors"              color="#f59e0b" onClick={() => handleClubAdminFabAction('sponsors')} />
+                    <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 6px' }} />
+                    <FabAction icon="🏠" label="Ma page club"       desc="Voir la page publique du club"         color="#22d96a" onClick={() => { setFabOpen(false); onTabChange?.('mon-club'); }} />
+                    <FabAction icon="💳" label="Mon abonnement"     desc="Plan, factures, annulation"            color="#8b5cf6" onClick={() => handleClubAdminFabAction('subscription')} />
                   </>
                 ) : (
                   <>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Edge Function : generate-announcement
  * Génère 3 suggestions de message d'annonce via Claude Haiku.
  *
@@ -11,7 +11,8 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders, handleOptions } from '../_shared/cors.ts';
+import { corsHeaders, handleOptions, checkCsrfOrigin } from '../_shared/cors.ts';
+import { checkRateLimit } from '../_shared/rateLimit.ts';
 
 const TYPE_LABELS: Record<string, string> = {
   urgent: 'annonce urgente (annulation, changement)',
@@ -56,6 +57,14 @@ Deno.serve(async (req: Request) => {
     if (!profile || !['club_admin', 'admin', 'superadmin'].includes(profile.role)) {
       return new Response(JSON.stringify({ error: 'Accès réservé aux gestionnaires de club' }), {
         status: 403, headers: { ...ch, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Rate limit : 20 suggestions/heure (coût Claude API ~$0.04 max/h/user)
+    const limited = await checkRateLimit(serviceClient, user.id, 'generate-announcement', 20, 3600);
+    if (limited) {
+      return new Response(JSON.stringify({ error: 'Limite atteinte — 20 suggestions par heure maximum.' }), {
+        status: 429, headers: { ...ch, 'Content-Type': 'application/json' },
       });
     }
 

@@ -185,6 +185,28 @@ self.addEventListener('message', e => {
   }
 });
 
+// ── Background Sync (rejouer la file offline via message) ────────────────────
+self.addEventListener('sync', e => {
+  if (e.tag === 'sl-offline-queue') {
+    e.waitUntil(
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+        clients.forEach(c => c.postMessage({ type: 'PROCESS_OFFLINE_QUEUE' }));
+      })
+    );
+  }
+});
+
+// ── Periodic Background Sync (refresh données critiques toutes les 3h) ───────
+self.addEventListener('periodicsync', e => {
+  if (e.tag === 'sl-data-refresh') {
+    e.waitUntil(
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+        clients.forEach(c => c.postMessage({ type: 'PERIODIC_REFRESH' }));
+      })
+    );
+  }
+});
+
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(

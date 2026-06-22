@@ -39,3 +39,7 @@ supabase/.temp/
 
 # Coverage
 /coverage/
+
+# Audit screenshots (générés, non versionnés)
+/scripts/audit-full/
+/scripts/audit-screenshots/

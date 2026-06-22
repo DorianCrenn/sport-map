@@ -76,11 +76,27 @@ export default function CreateRideModal({ event, onSave, onClose }: CreateRideMo
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState('');
 
-  const { hasDraft, saveDraft, loadDraft, clearDraft } = useFormDraft('sl-ride-draft') as any;
+  const { hasDraft, saveDraft, saveImmediate, loadDraft, clearDraft } = useFormDraft('sl-ride-draft') as any;
+  const formRef = useRef(form);
+  useEffect(() => { formRef.current = form; }, [form]);
 
   useEffect(() => {
     if (form.departureLocation || form.notes) saveDraft({ departureLocation: form.departureLocation, notes: form.notes });
   }, [form.departureLocation, form.notes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    function saveNow() {
+      const f = formRef.current;
+      if (f.departureLocation || f.notes) saveImmediate({ departureLocation: f.departureLocation, notes: f.notes });
+    }
+    function onVisibility() { if (document.visibilityState === 'hidden') saveNow(); }
+    window.addEventListener('beforeunload', saveNow);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('beforeunload', saveNow);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose?.(); }

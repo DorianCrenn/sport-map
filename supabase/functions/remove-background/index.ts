@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Edge Function : remove-background  (PS-API-001/002)
  * Removes the background from a player photo.
  *
@@ -13,7 +13,7 @@
  *          { error: string, mockFallback: true } — if all APIs unavailable
  */
 
-import { corsHeaders, handleOptions } from '../_shared/cors.ts';
+import { corsHeaders, handleOptions, checkCsrfOrigin } from '../_shared/cors.ts';
 
 // ── Fal.ai BRIA RMBG fallback ─────────────────────────────────────────────────
 

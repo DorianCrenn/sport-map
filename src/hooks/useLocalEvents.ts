@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.js';
 import { sanitizeText } from '../lib/sanitize.js';
 import { dispatchError } from '../lib/errorBus.js';
+import { enqueue } from '../lib/offlineQueue.js';
 import type { EventType, EventSource, EventScore } from '../types/sportlink.js';
 import type { SportLinkEvent } from '../types/sportlink.js';
 
@@ -179,6 +180,11 @@ export function useLocalEvents(): UseLocalEventsResult {
 
     setEvents(prev => [...prev, tempEvent].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
 
+    if (!navigator.onLine) {
+      await enqueue({ table: 'events', method: 'INSERT', payload: mapToDB(data, userId) });
+      return tempEvent;
+    }
+
     try {
       const { data: saved, error } = await supabase
         .from('events')
@@ -208,6 +214,13 @@ export function useLocalEvents(): UseLocalEventsResult {
       data.score != null &&
       snapshot?.score == null &&
       snapshot?.clubId;
+
+    if (!navigator.onLine) {
+      const merged = snapshot ? { ...snapshot, ...data } : data;
+      await enqueue({ table: 'events', method: 'UPDATE', payload: mapToDB(merged, snapshot?.userId ?? currentUser?.id), filter: { id } });
+      return;
+    }
+
     try {
       const merged = snapshot ? { ...snapshot, ...data } : data;
       const { error } = await supabase
@@ -234,6 +247,12 @@ export function useLocalEvents(): UseLocalEventsResult {
   const deleteEvent = useCallback(async (id: string) => {
     const snapshot = eventsRef.current.find(e => e.id === id);
     setEvents(evs => evs.filter(e => e.id !== id));
+
+    if (!navigator.onLine) {
+      await enqueue({ table: 'events', method: 'DELETE', payload: {}, filter: { id } });
+      return;
+    }
+
     try {
       const { error } = await supabase.from('events').delete().eq('id', id) as { error: { message: string } | null };
       if (error) throw new Error(error.message);

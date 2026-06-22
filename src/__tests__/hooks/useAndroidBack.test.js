@@ -4,11 +4,10 @@ import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 
 describe('useAndroidBack', () => {
   let pushStateSpy;
-  let goSpy;
 
   beforeEach(() => {
     pushStateSpy = vi.spyOn(history, 'pushState').mockImplementation(() => {});
-    goSpy = vi.spyOn(history, 'go').mockImplementation(() => {});
+    vi.spyOn(history, 'go').mockImplementation(() => {});
     vi.clearAllMocks();
   });
 
@@ -29,11 +28,13 @@ describe('useAndroidBack', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('nettoie le listener au démontage et appelle history.go(-1)', () => {
+  it('nettoie le listener au démontage et appelle history.replaceState', () => {
+    const replaceStateSpy = vi.spyOn(history, 'replaceState').mockImplementation(() => {});
     const { unmount } = renderHook(() => useAndroidBack(true, vi.fn()));
     unmount();
-    // L'entrée fictive doit être dépilée au démontage
-    expect(goSpy).toHaveBeenCalledWith(-1);
+    // replaceState utilisé à la place de go(-1) pour ne pas déclencher popstate (StrictMode)
+    expect(replaceStateSpy).toHaveBeenCalled();
+    replaceStateSpy.mockRestore();
   });
 
   it('ne déclenche pas onClose si overlay non ouvert (isOpen=false)', () => {

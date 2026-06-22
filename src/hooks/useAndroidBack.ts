@@ -22,7 +22,10 @@ export function useAndroidBack(isOpen: boolean, onClose: () => void): void {
       window.removeEventListener('popstate', handlePopState);
       if (pushed.current) {
         pushed.current = false;
-        history.go(-1);
+        // replaceState instead of go(-1) to avoid firing a popstate event
+        // that React StrictMode's cleanup+remount cycle would catch and
+        // incorrectly trigger onClose.
+        history.replaceState(null, '', location.href);
       }
     };
   }, [isOpen]);

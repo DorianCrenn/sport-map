@@ -209,6 +209,29 @@ export function buildDemoTables() {
     event_predictions:     [],
     app_feedback:          [],
     app_feedback_votes:    [],
+    feedback_notifications: [
+      {
+        id: 'demo-fn-001', user_id: DEMO_USER_ID,
+        feedback_id: 'demo-fb-001', feedback_type: 'idea',
+        feedback_title: 'Ajouter un calendrier partagé pour toute l\'équipe',
+        old_status: 'new', new_status: 'planned',
+        read: false, created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 'demo-fn-002', user_id: DEMO_USER_ID,
+        feedback_id: 'demo-fb-002', feedback_type: 'bug',
+        feedback_title: 'Les photos de l\'événement ne s\'affichent pas sur iOS',
+        old_status: 'analyzing', new_status: 'resolved',
+        read: true, created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 'demo-fn-003', user_id: DEMO_USER_ID,
+        feedback_id: 'demo-fb-003', feedback_type: 'idea',
+        feedback_title: 'Intégrer les classements régionaux en temps réel',
+        old_status: 'planned', new_status: 'in_dev',
+        read: false, created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    ],
     event_convocations:    [...demoConvocations],
 
     // ── Tuteurs légaux — lie le demo user à 2 joueurs (profil Parent) ─────────

@@ -611,3 +611,56 @@ a[aria-label] > svg {
   /* Modales — pleine largeur sans marge latérale */
   .sl-modal-frame { border-radius: 16px 16px 0 0 !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ZOOM TEXTE 150–200% (accessibilité / préférences navigateur)
+   Garantit que les mises en page ne cassent pas avec une
+   taille de police augmentée par l'utilisateur.
+   ═══════════════════════════════════════════════════════════ */
+@media (min-resolution: 1dppx) {
+  /* Permettre le wrapping des boutons si le texte est agrandi */
+  button, [role="button"] {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+/* Zoom 150%+ : conteneurs flex passent en colonne si trop étroits */
+@media (max-width: 280px) {
+  .sl-flex-row-auto {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  /* Inputs et selects — pleine largeur forcée */
+  input, select, textarea {
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRÉFÉRENCE RÉDUCTION MOUVEMENT (a11y)
+   ═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  /* Désactiver les animations Framer Motion et CSS */
+  *, *::before, *::after {
+    animation-duration:   0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration:  0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTRASTE ÉLEVÉ (Windows High Contrast / forced-colors)
+   ═══════════════════════════════════════════════════════════ */
+@media (forced-colors: active) {
+  /* S'assurer que les boutons ont une bordure visible */
+  button:not([disabled]) {
+    border: 1px solid ButtonText !important;
+  }
+  /* Les badges et indicateurs de statut doivent rester lisibles */
+  [role="status"], [role="alert"] {
+    border: 1px solid ButtonText;
+  }
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, premium: 1, pro: 2, elite: 3 };
+const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, elite: 3 };
 
 interface ClubPlanSubscription {
   plan?: string;

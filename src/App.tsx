@@ -58,6 +58,8 @@ const AdminLicensesPage    = lazy(() => import('./pages/AdminLicensesPage.jsx'))
 const AdminPermissionsPage = lazy(() => import('./pages/AdminPermissionsPage.jsx'));
 const AdminAuditLogPage    = lazy(() => import('./pages/AdminAuditLogPage.jsx'));
 import SimulatorBanner from './components/SimulatorBanner.jsx';
+const StripeSuccessModal = lazy(() => import('./components/StripeSuccessModal.jsx'));
+const SubscriptionPage   = lazy(() => import('./pages/SubscriptionPage.jsx'));
 
 function ModalLoader() {
   return (
@@ -98,6 +100,7 @@ function UpdateBanner() {
     }}>
       <span style={{ fontWeight: 600 }}>Nouvelle version disponible !</span>
       <button
+        type="button"
         onClick={() => { if ('serviceWorker' in navigator && navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' }); else window.location.reload(); }}
         style={{ padding: '5px 14px', borderRadius: 8, backgroundColor: '#22d96a', color: '#000', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, flexShrink: 0 }}
       >
@@ -163,6 +166,9 @@ function AppInner() {
   const [showTrainings, setShowTrainings] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [legalSection, setLegalSection] = useState<string | null>(null);
+  const [stripeSuccessPlan, setStripeSuccessPlan] = useState<string | null>(null);
+  const [subscriptionClubId, setSubscriptionClubId] = useState<string | null>(null);
+  const [showSubscription, setShowSubscription] = useState(false);
   const [, setClubOverlayOpen] = useState(false);
   const [clubOverlayLoading, setClubOverlayLoading] = useState(false);
   const [publicUserId, setPublicUserId] = useState<string | null>(null);
@@ -172,6 +178,7 @@ function AppInner() {
   const allClubsRef = useRef<Record<string, any>[]>([]);
   const demoNavRef  = useRef<Record<string, any>>({});
   const pendingDemoTabRef = useRef<string | null>(null);
+  const pendingMonClubActionRef = useRef<string | null>(null);
 
   const handleOpenPoster = useCallback((eventData: Record<string, any>, opts: Record<string, any> = {}) => {
     setShowNewEventForm(false);
@@ -239,8 +246,9 @@ function AppInner() {
   useEffect(() => {
     const qp = new URLSearchParams(window.location.search);
     const stripeResult = qp.get('stripe');
+    const stripePlan   = qp.get('plan') ?? 'starter';
     if (stripeResult === 'success') {
-      toast({ message: '🎉 Abonnement activé ! Bienvenue dans le plan supérieur.' });
+      setStripeSuccessPlan(stripePlan);
       window.history.replaceState(null, '', window.location.pathname + window.location.hash);
     } else if (stripeResult === 'cancel') {
       toast({ message: 'Paiement annulé. Votre plan n\'a pas changé.', type: 'error' });
@@ -250,17 +258,23 @@ function AppInner() {
   }, []);
 
   useEffect(() => {
-    const clubMatch     = window.location.hash.match(/^#club\/(.+)$/);
-    const joinMatch     = window.location.hash.match(/^#join\/(.+)$/);
-    const convocMatch   = window.location.hash.match(/^#convoc-reply\/([a-f0-9]+)/);
-    const eventMatch    = window.location.hash.match(/^#event\/(.+)$/);
-    const userMatch     = window.location.hash.match(/^#user\/(.+)$/);
-    const legalMatch    = window.location.hash.match(/^#legal(?:\/(\w+))?$/);
-    const registerMatch = window.location.hash === '#register';
+    const clubMatch         = window.location.hash.match(/^#club\/(.+)$/);
+    const joinMatch         = window.location.hash.match(/^#join\/(.+)$/);
+    const convocMatch       = window.location.hash.match(/^#convoc-reply\/([a-f0-9]+)/);
+    const eventMatch        = window.location.hash.match(/^#event\/(.+)$/);
+    const userMatch         = window.location.hash.match(/^#user\/(.+)$/);
+    const legalMatch        = window.location.hash.match(/^#legal(?:\/(\w+))?$/);
+    const subscriptionMatch = window.location.hash.match(/^#subscription\/(.+)$/);
+    const registerMatch     = window.location.hash === '#register';
     if (eventMatch) pendingEventDeepLink.current = eventMatch[1];
     if (userMatch) setPublicUserId(userMatch[1]);
     if (legalMatch) {
       setLegalSection(legalMatch[1] || 'mentions');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    if (subscriptionMatch) {
+      setSubscriptionClubId(subscriptionMatch[1]);
+      setShowSubscription(true);
       window.history.replaceState(null, '', window.location.pathname);
     }
     if (registerMatch) {
@@ -350,6 +364,20 @@ function AppInner() {
     const club = allClubs.find((c: any) => String(c.id) === pendingDeepLink.current);
     if (club) { setSelectedSearchClub(club); pendingDeepLink.current = null; }
   }, [allClubs]);
+
+  // Résoudre l'intent "Mon Club" dès que userClubs est hydraté
+  useEffect(() => {
+    if (pendingMonClubActionRef.current === null || userClubs.length === 0) return;
+    const myClub = userClubs.find((c: any) =>
+      c.userId === currentUser?.id ||
+      String(c.id) === String(currentUser?.clubId)
+    ) ?? userClubs[0] ?? null;
+    if (myClub) {
+      setSelectedSearchClub(myClub);
+      if (pendingMonClubActionRef.current) setPendingClubAction(pendingMonClubActionRef.current);
+    }
+    pendingMonClubActionRef.current = null;
+  }, [userClubs]);
 
   useEffect(() => {
     if (!pendingEventDeepLink.current || allEvents.length === 0) return;
@@ -514,6 +542,10 @@ function AppInner() {
         if (isClubAdmin || isCoachOrManager) {
           setPendingClubAction('dashboard');
         }
+      } else if (eventsLoading || userClubs.length === 0) {
+        // Clubs pas encore chargés — stocker l'intent, résolu dans l'effet ci-dessous
+        pendingMonClubActionRef.current = isClubAdmin || isCoachOrManager ? 'dashboard' : null;
+        _setActiveTab('mon-club');
       } else {
         setActiveTab('clubs');
       }
@@ -528,6 +560,16 @@ function AppInner() {
       c.userId === currentUser?.id ||
       String(c.id) === String(currentUser?.clubId)
     ) ?? userClubs[0] ?? null;
+
+    if (actionId === 'subscription') {
+      if (myClub) {
+        setSubscriptionClubId(String(myClub.id));
+        setShowSubscription(true);
+        return true;
+      }
+      return false;
+    }
+
     if (myClub) {
       setSelectedSearchClub(myClub);
       _setActiveTab('mon-club');
@@ -723,7 +765,7 @@ function AppInner() {
                 setSelectedSearchClub(null);
                 if (activeTab === 'mon-club') setActiveTab('home');
               }}
-              onAddEvent={addEvent}
+              onAddEvent={addEventWithToast}
               canAddEvent={isAdmin || isClubAdmin || isCoachOrManager}
               onArchiveSeason={archiveSeason}
               onUpdateClub={async (data: Record<string, any>) => {
@@ -840,8 +882,38 @@ function AppInner() {
               }}
             />
           )}
+          {showSubscription && (
+            <SubscriptionPage
+              key="subscription"
+              clubId={subscriptionClubId}
+              onClose={() => { setShowSubscription(false); setSubscriptionClubId(null); }}
+            />
+          )}
         </AnimatePresence>
       </Suspense>
+
+      {stripeSuccessPlan && (
+        <Suspense fallback={<ModalLoader />}>
+          <StripeSuccessModal
+            plan={stripeSuccessPlan}
+            onClose={() => setStripeSuccessPlan(null)}
+            onViewSub={() => {
+              const clubId: string | null =
+                subscriptionClubId ||
+                (currentUser?.clubId ? String(currentUser.clubId) : null) ||
+                (userClubs?.[0]?.id ? String((userClubs[0] as any).id) : null);
+              if (clubId) {
+                setStripeSuccessPlan(null);
+                setSubscriptionClubId(clubId);
+                setShowSubscription(true);
+              } else {
+                toast({ message: 'Accédez à votre abonnement depuis votre tableau de bord.', type: 'info' });
+                setStripeSuccessPlan(null);
+              }
+            }}
+          />
+        </Suspense>
+      )}
 
       <HelpFab
         onClick={() => setShowHelp(true)}

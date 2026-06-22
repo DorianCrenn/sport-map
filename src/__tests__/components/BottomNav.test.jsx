@@ -79,15 +79,15 @@ describe('BottomNav — club_admin', () => {
     mockUseManagedClubs.mockReturnValue({ managedClubs: [{ id: 'c1' }] });
   });
 
-  it('affiche l\'onglet Mon Club pour un club_admin', () => {
+  it('affiche l\'onglet Sauvegardés pour un club_admin', () => {
     renderNav();
-    expect(screen.getByText('Mon Club')).toBeDefined();
+    // Le club_admin a [HOME, MAP, FAB, CLUBS, FAVORIS] — "Mon Club" est dans le FAB
+    expect(screen.getByText('Sauvegardés')).toBeDefined();
   });
 
-  it('n\'affiche pas l\'onglet Sauvegardés pour un club_admin (remplacé par FAB)', () => {
+  it('n\'affiche pas l\'onglet Mon Club dans la nav pour un club_admin (déplacé dans le FAB)', () => {
     renderNav();
-    // Le club_admin a [HOME, MAP, FAB, CLUBS, MON_CLUB]
-    expect(screen.queryByText('Sauvegardés')).toBeNull();
+    expect(screen.queryByText('Mon Club')).toBeNull();
   });
 });
 

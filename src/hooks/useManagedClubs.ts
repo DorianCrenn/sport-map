@@ -12,9 +12,16 @@ export interface ManagedClub extends SportLinkClub {
 
 interface ManagerRow { club_id: string; role: string; }
 
+// Profils démo "visiteur" qui ne doivent pas hériter des clubs managés par l'email démo
+const NON_ADMIN_DEMO_PROFILES = ['parent', 'player', 'supporter'];
+
 export function useManagedClubs() {
   const { currentUser, isAdmin, isClubAdmin } = useAuth();
   const { userClubs, loading: clubsLoading } = useClubs();
+
+  // En mode démo, les profils non-admin n'ont aucun club managé
+  const demoProfile = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sl-demo-profile') : null;
+  const isDemoNonAdmin = !!demoProfile && NON_ADMIN_DEMO_PROFILES.includes(demoProfile);
   const [managerRows,      setManagerRows]      = useState<ManagerRow[]>([]);
   const [managersLoading,  setManagersLoading]  = useState(false);
 
@@ -44,6 +51,7 @@ export function useManagedClubs() {
   }, [managerRows]);
 
   const managedClubs = useMemo<ManagedClub[]>(() => {
+    if (isDemoNonAdmin) return [];
     const ids = new Set(Object.keys(roleByClubId));
     if (currentUser?.clubId) ids.add(String(currentUser.clubId));
     if (currentUser?.id) {
@@ -58,7 +66,7 @@ export function useManagedClubs() {
         const managerRole: ManagerRole = isOwner ? 'owner' : ((roleByClubId[cid] as ManagerRole) ?? 'manager');
         return { ...c, managerRole };
       });
-  }, [userClubs, roleByClubId, currentUser?.clubId, currentUser?.id, isAdmin, isClubAdmin]);
+  }, [isDemoNonAdmin, userClubs, roleByClubId, currentUser?.clubId, currentUser?.id, isAdmin, isClubAdmin]);
 
   const isCoachOrManager = useMemo(() => managedClubs.some(c => c.managerRole !== 'communicant'), [managedClubs]);
   const isCommunicant    = useMemo(() => managedClubs.some(c => c.managerRole === 'communicant'), [managedClubs]);

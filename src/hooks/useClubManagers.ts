@@ -3,10 +3,13 @@ import { supabase } from '../lib/supabase.js';
 import { dispatchError } from '../lib/errorBus.js';
 
 export interface ManagerEntry {
-  email:    string;
-  name:     string;
-  role:     string;
-  addedAt:  string;
+  email:            string;
+  name:             string;
+  role:             string;
+  addedAt:          string;
+  status:           string;
+  user_id:          string | null;
+  hasLinkedAccount: boolean;
 }
 
 type ValidRole = 'manager' | 'editor' | 'communicant' | 'coach';
@@ -16,16 +19,33 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function useClubManagers(clubId: string | null | undefined) {
   const [managers, setManagers] = useState<ManagerEntry[]>([]);
 
+  const mapRow = (r: {
+    email: string;
+    name?: string;
+    role?: string;
+    added_at?: string;
+    status?: string;
+    user_id?: string | null;
+  }): ManagerEntry => ({
+    email:            r.email,
+    name:             r.name ?? '',
+    role:             r.role ?? 'manager',
+    addedAt:          r.added_at ?? '',
+    status:           r.status ?? 'active',
+    user_id:          r.user_id ?? null,
+    hasLinkedAccount: !!r.user_id,
+  });
+
   useEffect(() => {
     if (!clubId) return;
     let cancelled = false;
 
     supabase
       .from('club_managers')
-      .select('email, name, role, added_at')
+      .select('email, name, role, added_at, status, user_id')
       .eq('club_id', String(clubId))
       .order('added_at', { ascending: true })
-      .then(({ data, error }: { data: { email: string; name?: string; role?: string; added_at?: string }[] | null; error: { message: string } | null }) => {
+      .then(({ data, error }: { data: any[] | null; error: { message: string } | null }) => {
         if (cancelled) return;
         if (error) {
           console.error('[Managers] fetch failed, using localStorage:', error.message);
@@ -37,14 +57,14 @@ export function useClubManagers(clubId: string | null | undefined) {
           return;
         }
         if (data && data.length > 0) {
-          setManagers(data.map(r => ({ email: r.email, name: r.name ?? '', role: r.role ?? 'manager', addedAt: r.added_at ?? '' })));
+          setManagers(data.map(mapRow));
         } else if (data && data.length === 0) {
           try {
             const raw = localStorage.getItem(`club-managers-${clubId}`);
             if (raw) {
               const local = JSON.parse(raw) as ManagerEntry[];
               if (local.length > 0) {
-                setManagers(local.map(m => ({ ...m, role: m.role ?? 'manager' })));
+                setManagers(local.map(m => ({ ...mapRow(m), status: 'active', user_id: null, hasLinkedAccount: false })));
                 const inserts = local.map(m => ({ club_id: String(clubId), email: m.email, name: m.name, role: m.role ?? 'manager' }));
                 supabase.from('club_managers').insert(inserts)
                   .then(({ error: e }: { error: { message: string } | null }) => { if (e) console.error('[Managers] migration insert failed:', e.message); });
@@ -66,7 +86,15 @@ export function useClubManagers(clubId: string | null | undefined) {
       .split('@')[0]
       .replace(/[._-]/g, ' ')
       .replace(/\b\w/g, c => c.toUpperCase());
-    const newEntry: ManagerEntry = { email: normalized, name, role: validRole, addedAt: new Date().toISOString() };
+    const newEntry: ManagerEntry = {
+      email:            normalized,
+      name,
+      role:             validRole,
+      addedAt:          new Date().toISOString(),
+      status:           'active',
+      user_id:          null,
+      hasLinkedAccount: false,
+    };
     setManagers(prev => [...prev, newEntry]);
 
     const { error } = await supabase
@@ -114,5 +142,31 @@ export function useClubManagers(clubId: string | null | undefined) {
     return managers.some(m => m.email === userEmail.toLowerCase());
   }, [managers]);
 
-  return { managers, addManager, removeManager, updateManagerRole, isManager };
+  // Tente de lier manuellement un manager à son compte par email (utile si le trigger auto n'a pas fonctionné)
+  const relinkByEmail = useCallback(async (email: string): Promise<boolean> => {
+    const normalized = email.trim().toLowerCase();
+    const { data: authUsers, error } = await supabase.rpc('get_user_id_by_email', { p_email: normalized }) as any;
+    if (error || !authUsers) return false;
+
+    const userId = Array.isArray(authUsers) ? authUsers[0]?.id : authUsers?.id;
+    if (!userId) return false;
+
+    const { error: updateErr } = await supabase
+      .from('club_managers')
+      .update({ user_id: userId })
+      .eq('club_id', String(clubId))
+      .eq('email', normalized) as { error: { message: string } | null };
+
+    if (updateErr) {
+      console.error('[Managers] relink failed:', updateErr.message);
+      return false;
+    }
+
+    setManagers(prev => prev.map(m =>
+      m.email === normalized ? { ...m, user_id: userId, hasLinkedAccount: true } : m,
+    ));
+    return true;
+  }, [clubId]);
+
+  return { managers, addManager, removeManager, updateManagerRole, isManager, relinkByEmail };
 }

@@ -179,14 +179,31 @@ export default function ClubFormModal({ club, onSave, onClose }: ClubFormModalPr
   useScrollInputIntoView(panelRef);
 
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const formRef = useRef(form);
+  useEffect(() => { formRef.current = form; }, [form]);
+
   useEffect(() => {
     if (isEdit) return;
     if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
     draftTimerRef.current = setTimeout(() => {
-      try { localStorage.setItem(CLUB_DRAFT_KEY, JSON.stringify({ data: form, ts: Date.now() })); } catch { /* ignore */ }
+      try { localStorage.setItem(CLUB_DRAFT_KEY, JSON.stringify({ data: formRef.current, ts: Date.now() })); } catch { /* ignore */ }
     }, 1500);
     return () => { if (draftTimerRef.current) clearTimeout(draftTimerRef.current); };
   }, [form, isEdit]);
+
+  useEffect(() => {
+    if (isEdit) return;
+    function saveNow() {
+      try { localStorage.setItem(CLUB_DRAFT_KEY, JSON.stringify({ data: formRef.current, ts: Date.now() })); } catch { /* ignore */ }
+    }
+    function onVisibility() { if (document.visibilityState === 'hidden') saveNow(); }
+    window.addEventListener('beforeunload', saveNow);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('beforeunload', saveNow);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [isEdit]);
 
   const [errors,    setErrors]    = useState<Record<string, string>>({});
   const [cityValid, setCityValid] = useState(!!club?.city);

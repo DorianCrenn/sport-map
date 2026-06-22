@@ -277,17 +277,17 @@ export default function Header({
         </AnimatePresence>
       </div>
 
-      {/* Dev role switcher */}
+      {/* Dev role switcher — flex-shrink + no-wrap pour ne pas pousser les boutons header hors écran */}
       {setDevRole && currentUser && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0, padding: '3px 6px', borderRadius: 12, backgroundColor: 'rgba(234,179,8,0.12)', border: '1px solid rgba(234,179,8,0.35)' }}>
-          <div style={{ display: 'flex', gap: 3 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 1, minWidth: 0, padding: '3px 6px', borderRadius: 12, backgroundColor: 'rgba(234,179,8,0.12)', border: '1px solid rgba(234,179,8,0.35)' }}>
+          <div style={{ display: 'flex', gap: 3, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {([
               { role: null, label: '👤 Réel' }, { role: 'user', label: 'User' },
               { role: 'club_admin', label: 'Club' }, { role: 'admin', label: 'Admin' }, { role: 'superadmin', label: 'Super' },
             ] as { role: string | null; label: string }[]).map(({ role, label }) => {
               const active = devRole === role;
               return (
-                <button key={String(role)} onClick={() => { setDevRole(role); if (role !== 'club_admin') setDevClubId(null); }} style={{ padding: '2px 7px', borderRadius: 10, fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none', transition: 'all 0.1s', backgroundColor: active ? '#eab308' : 'transparent', color: active ? '#000' : 'rgba(234,179,8,0.8)' }}>
+                <button key={String(role)} onClick={() => { setDevRole(role); if (role !== 'club_admin') setDevClubId(null); }} style={{ padding: '2px 7px', borderRadius: 10, fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none', transition: 'all 0.1s', backgroundColor: active ? '#eab308' : 'transparent', color: active ? '#000' : 'rgba(234,179,8,0.8)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {label}
                 </button>
               );

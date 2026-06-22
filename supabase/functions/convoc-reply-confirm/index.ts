@@ -1,5 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, handleOptions } from "../_shared/cors.ts";
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, handleOptions, checkCsrfOrigin } from "../_shared/cors.ts";
 
 const STATUS_FR: Record<string, string> = {
   accepted:    "✅ Présent(e)",
@@ -10,6 +10,8 @@ const STATUS_FR: Record<string, string> = {
 Deno.serve(async (req) => {
   const prelight = handleOptions(req);
   if (prelight) return prelight;
+  const csrfErr = checkCsrfOrigin(req);
+  if (csrfErr) return csrfErr;
   const ch = corsHeaders(req);
 
   const resendKey = Deno.env.get("RESEND_API_KEY");

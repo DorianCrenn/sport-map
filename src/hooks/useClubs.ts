@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.js';
 import { dispatchError } from '../lib/errorBus.js';
+import { enqueue } from '../lib/offlineQueue.js';
 import type { SportLinkClub } from '../types/sportlink.js';
 
 type DBRow = Record<string, unknown>;
@@ -179,6 +180,13 @@ export function useClubs(): UseClubsResult {
   const updateClub = useCallback(async (id: string, patch: Partial<SportLinkClub>) => {
     const snapshot = userClubsRef.current.find(c => c.id === id);
     setUserClubs(clubs => clubs.map(c => c.id === id ? { ...c, ...patch } : c));
+
+    if (!navigator.onLine) {
+      const merged = snapshot ? { ...snapshot, ...patch } : patch;
+      await enqueue({ table: 'clubs', method: 'UPDATE', payload: mapToDB(merged, currentUser?.id), filter: { id } });
+      return;
+    }
+
     try {
       const merged = snapshot ? { ...snapshot, ...patch } : patch;
       const { error } = await supabase
@@ -197,6 +205,12 @@ export function useClubs(): UseClubsResult {
     const snapshot    = userClubsRef.current.find(c => c.id === id);
     const snapshotIdx = userClubsRef.current.findIndex(c => c.id === id);
     setUserClubs(clubs => clubs.filter(c => c.id !== id));
+
+    if (!navigator.onLine) {
+      await enqueue({ table: 'clubs', method: 'DELETE', payload: {}, filter: { id } });
+      return;
+    }
+
     try {
       const { error } = await supabase.from('clubs').delete().eq('id', id) as { error: { message: string } | null };
       if (error) throw new Error(error.message);

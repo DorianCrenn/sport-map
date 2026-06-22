@@ -545,6 +545,29 @@ export default function ProfilPage({
           </button>
         )}
 
+        {/* Abonnement shortcut — club_admin uniquement */}
+        {isClubAdmin && currentUser?.clubId && (
+          <button
+            type="button"
+            onClick={() => { window.location.hash = `#subscription/${currentUser.clubId}`; }}
+            className="w-full rounded-2xl p-4 flex items-center gap-3 text-left transition-colors cursor-pointer"
+            style={{ backgroundColor: 'var(--sl-card)', border: '1px solid rgba(139,92,246,0.25)', boxShadow: 'var(--sl-shadow)' }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(139,92,246,0.12)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-semibold font-poppins" style={{ color: 'var(--sl-t1)' }}>Mon abonnement</div>
+              <div className="text-xs" style={{ color: 'var(--sl-t2)' }}>
+                {planId !== 'free' ? `Plan ${planInfo?.name ?? planId} actif` : 'Passer à un plan payant'}
+              </div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        )}
+
         {/* Favoris shortcut */}
         {favCount > 0 && (
           <button
