@@ -6,6 +6,7 @@ import { demoSponsors } from './sponsors.js';
 import { demoPlayers } from './players.js';
 import { demoStats, demoPageViews, demoPosterExports, demoClubFollows } from './stats.js';
 import { demoConvocations } from './convocations.js';
+import { extraClubs, extraPlayers, extraEvents, extraAnnouncements } from './extra-clubs.js';
 
 export {
   DEMO_CLUB_ID, DEMO_USER_ID,
@@ -84,10 +85,10 @@ export function buildDemoTables() {
 
   // Mutable copies — modifiable during sandbox mode
   const tables = {
-    events:                [...demoEvents],
-    clubs:                 [{ ...demoClubRow }],
+    events:                [...demoEvents, ...extraEvents],
+    clubs:                 [{ ...demoClubRow }, ...extraClubs],
     profiles:              [{ ...DEMO_PROFILE_ROW }],
-    club_announcements:    [...demoAnnouncements],
+    club_announcements:    [...demoAnnouncements, ...extraAnnouncements],
     rides:                 [...demoRides],
     ride_requests:         [...demoRideRequests],
     ride_notifications:    [],
@@ -201,7 +202,7 @@ export function buildDemoTables() {
     posters:               [],
     club_ai_usage:         [{ club_id: DEMO_CLUB_ID, month: '2026-06-01', generate_count: 6 }],
     club_page_views:       [...demoPageViews],
-    club_players:          [...demoPlayers],
+    club_players:          [...demoPlayers, ...extraPlayers],
     push_subscriptions:    [],
     event_attendee_counts: [...demoAttendeesCounts],
     event_reaction_counts: [],

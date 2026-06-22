@@ -6,6 +6,7 @@ export const SPORTS = {
   Running:    { id: 'Running',    label: 'Running',    color: '#2563eb', emoji: '🏃' },
   Trail:      { id: 'Trail',      label: 'Trail',      color: '#06b6d4', emoji: '🚵' },
   Cyclisme:   { id: 'Cyclisme',   label: 'Cyclisme',   color: '#7c3aed', emoji: '🚴' },
+  Volleyball: { id: 'Volleyball', label: 'Volleyball', color: '#6d28d9', emoji: '🏐' },
 };
 
 export const DEPARTMENTS = {
