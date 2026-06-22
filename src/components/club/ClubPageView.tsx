@@ -169,7 +169,9 @@ export default function ClubPageView({
   );
 
   const allTeams = useMemo(
-    () => (club.categories ?? []).flatMap((c: any) => c.teams ?? []),
+    () => (club.categories ?? []).flatMap((c: any) =>
+      (c.teams ?? []).map((t: any) => ({ ...t, id: t.id ?? t.name }))
+    ),
     [club.categories]
   );
 
