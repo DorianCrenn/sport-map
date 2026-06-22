@@ -259,17 +259,15 @@ export default function DemoGuide({
         }}
       >
         {/* Gauche : emoji + compteur d'étapes */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18, lineHeight: 1 }}>{step.emoji}</span>
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', letterSpacing: 0.5 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 0', minWidth: 0 }}>
+          <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{step.emoji}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', letterSpacing: 0.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             Étape {stepIndex + 1} / {totalSteps}
           </span>
-          <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>·</span>
-          <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{totalSteps - stepIndex - 1} restante{totalSteps - stepIndex - 1 > 1 ? 's' : ''}</span>
         </div>
 
         {/* Droite : poignée + réduire + quitter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <span title="Glisser pour déplacer" style={{ fontSize: 11, color: 'var(--sl-t3)', letterSpacing: 3, lineHeight: 1 }}>⠿⠿</span>
 
           {/* Réduire en bulle */}
@@ -304,7 +302,7 @@ export default function DemoGuide({
               padding:      '3px 9px', fontSize: 10, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
             }}
           >
-            {confirmExit ? 'Confirmer ?' : '× Quitter'}
+            {confirmExit ? '✓ OK ?' : '× Quitter'}
           </button>
         </div>
       </div>

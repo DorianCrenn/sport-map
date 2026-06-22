@@ -182,6 +182,8 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
         backgroundColor: 'var(--sl-card)',
         borderBottom: '1px solid var(--sl-border)',
         padding: '0 16px',
+        overflowX: 'auto',
+        scrollbarWidth: 'none',
       }}>
         {[
           { id: 'faq',    label: 'FAQ',            Icon: IconHelpCircle },
@@ -192,12 +194,13 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
             key={t.id}
             onClick={() => setTab(t.id)}
             style={{
-              padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer',
+              padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
               color: tab === t.id ? '#6366f1' : 'var(--sl-t3)',
               borderBottom: `2px solid ${tab === t.id ? '#6366f1' : 'transparent'}`,
               marginBottom: -1, transition: 'all 0.12s',
               display: 'flex', alignItems: 'center', gap: 5, position: 'relative',
+              whiteSpace: 'nowrap', flexShrink: 0,
             }}
           >
             <t.Icon size={13} color={tab === t.id ? '#6366f1' : 'var(--sl-t3)'} /> {t.label}

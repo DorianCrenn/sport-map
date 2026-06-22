@@ -62,11 +62,11 @@ export default function DemoBanner({ onCreateAccount }) {
             whiteSpace:  'nowrap',
             overflow:    'hidden',
             textOverflow: 'ellipsis',
+            minWidth:    0,
+            flex:        '1 1 0',
           }}>
             <span style={{ color: '#a5b4fc' }}>Démonstration SportLink</span>
-            <span style={{ color: 'rgba(255,255,255,0.65)', marginLeft: 6 }}>
-              — Aucune donnée enregistrée
-            </span>
+            <span style={{ color: 'rgba(255,255,255,0.65)', marginLeft: 6 }}>— Aucune donnée enregistrée</span>
           </span>
         </div>
 
