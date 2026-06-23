@@ -76,6 +76,11 @@ vi.mock('../../components/SportIcon.jsx', () => ({
   default: ({ sport }: any) => <span data-testid={`icon-${sport}`}>{sport}</span>,
 }));
 
+vi.mock('../../contexts/ThemeContext.jsx', () => ({
+  useTheme: () => ({ theme: 'dark', setTheme: vi.fn(), toggleTheme: vi.fn() }),
+  ThemeProvider: ({ children }: any) => <>{children}</>,
+}));
+
 // Navigation mock (utilisé dans OnboardingFirstSteps)
 Object.defineProperty(window, 'sessionStorage', { value: { getItem: vi.fn(), setItem: vi.fn() }, writable: true });
 Object.defineProperty(window, 'localStorage',   { value: { getItem: vi.fn(), setItem: vi.fn() }, writable: true });
