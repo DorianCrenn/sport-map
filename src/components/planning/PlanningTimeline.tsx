@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSeasonPlanning }  from '../../hooks/useSeasonPlanning.js';
 import TrainingPlanningCard   from './TrainingPlanningCard.jsx';
@@ -73,6 +73,8 @@ export default function PlanningTimeline({
   const [filter,     setFilter]     = useState('all');
   const [clubFilter, setClubFilter] = useState('all');
   const [compPoster, setCompPoster] = useState<{ event: Record<string, any>; club: Record<string, any> | null } | null>(null);
+  const autoScrolledRef  = useRef(false);
+  const autoAdvancedRef  = useRef(0); // nb de mois auto-avancés
 
   const isStaff = isCoachOrManager || isCommunicant || isClubAdmin || isAdmin;
 
@@ -99,6 +101,27 @@ export default function PlanningTimeline({
     userId: currentUser?.id, allClubIds, managedClubIds, managedClubs: managedClubs as any[], year, month, clubFilter,
   }) as any;
 
+  // ── Auto-avance au prochain mois si le mois courant est vide (max 3 mois) ──
+  useEffect(() => {
+    if (loading) return;
+    if (items.length > 0) return;
+    if (autoAdvancedRef.current >= 3) return;
+    autoAdvancedRef.current += 1;
+    setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  }, [loading, items.length]);
+
+  // ── Reset auto-avance quand l'utilisateur navigue manuellement ────────────
+  const prevMonth = useCallback(() => {
+    autoAdvancedRef.current = 0;
+    autoScrolledRef.current = false;
+    setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  }, []);
+  const nextMonth = useCallback(() => {
+    autoAdvancedRef.current = 0;
+    autoScrolledRef.current = false;
+    setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  }, []);
+
   const filteredItems: Record<string, any>[] = useMemo(() => {
     if (filter === 'match')    return items.filter((i: any) => i.type === 'match');
     if (filter === 'training') return items.filter((i: any) => i.type === 'training');
@@ -115,8 +138,21 @@ export default function PlanningTimeline({
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [filteredItems]);
 
-  const prevMonth  = useCallback(() => setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1)), []);
-  const nextMonth  = useCallback(() => setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1)), []);
+  // ── Auto-scroll vers le premier événement ≥ aujourd'hui ───────────────────
+  useEffect(() => {
+    if (loading || groups.length === 0 || autoScrolledRef.current) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const target = groups.find(([date]) => date >= today) ?? groups[groups.length - 1];
+    if (!target) return;
+    autoScrolledRef.current = true;
+    // Petit délai pour que le DOM soit rendu
+    const tid = setTimeout(() => {
+      const el = document.getElementById(`planning-date-${target[0]}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+    return () => clearTimeout(tid);
+  }, [loading, groups]);
+
   const getClub    = useCallback((clubId: string | number) => knownClubs.find(c => String(c.id) === String(clubId)) ?? null, [knownClubs]);
   const withRespond = useCallback((item: Record<string, any>) => ({ ...item, onRespond: respond }), [respond]);
 
@@ -172,7 +208,7 @@ export default function PlanningTimeline({
             <div className="absolute top-0 bottom-0 w-px pointer-events-none" style={{ left: 27, background: 'linear-gradient(to bottom, #22d96a44, #22d96a, #22d96a44)' }} />
             <AnimatePresence mode="popLayout">
               {groups.map(([date, groupItems]) => (
-                <motion.div key={date} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="mb-6">
+                <motion.div key={date} id={`planning-date-${date}`} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="mb-6">
                   <DateBubble dateStr={date} />
                   <div className="space-y-3 pl-[68px]">
                     {groupItems.map(item => {
