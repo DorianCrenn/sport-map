@@ -19,6 +19,67 @@ import UserLeaderboard from '../components/UserLeaderboard.jsx';
 
 const BadgeUnlockModal = lazy(() => import('../components/BadgeUnlockModal.jsx'));
 
+// ── Simple mode toggle ─────────────────────────────────────────────────────────
+function SimpleModeToggle() {
+  const [simple, setSimple] = useState(() => document.documentElement.hasAttribute('data-simple-mode'));
+
+  function toggle() {
+    const next = !simple;
+    setSimple(next);
+    if (next) {
+      document.documentElement.setAttribute('data-simple-mode', 'true');
+      localStorage.setItem('sl-simple-mode', 'true');
+    } else {
+      document.documentElement.removeAttribute('data-simple-mode');
+      localStorage.removeItem('sl-simple-mode');
+    }
+  }
+
+  return (
+    <motion.button
+      onClick={toggle}
+      className="flex items-center justify-between w-full rounded-2xl p-4 cursor-pointer"
+      style={{
+        backgroundColor: 'var(--sl-card)',
+        border: simple ? '1px solid rgba(34,217,106,0.35)' : '1px solid var(--sl-border)',
+        boxShadow: 'var(--sl-shadow)',
+      }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: simple ? 'rgba(34,217,106,0.12)' : 'rgba(255,255,255,0.05)' }}
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={simple ? 'var(--sl-green)' : 'var(--sl-t2)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div>
+          <div className="font-semibold text-sm" style={{ color: 'var(--sl-t1)' }}>Vue simplifiée</div>
+          <div className="text-xs mt-0.5" style={{ color: 'var(--sl-t2)' }}>
+            {simple ? 'Texte grand, animations réduites' : 'Activer pour une meilleure lisibilité'}
+          </div>
+        </div>
+      </div>
+      {/* Toggle pill */}
+      <div style={{
+        width: 44, height: 24, borderRadius: 12, position: 'relative', flexShrink: 0,
+        backgroundColor: simple ? 'var(--sl-green)' : 'rgba(255,255,255,0.12)',
+        transition: 'background-color 0.2s',
+      }}>
+        <motion.div
+          animate={{ x: simple ? 22 : 2 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          style={{ position: 'absolute', top: 2, width: 20, height: 20, borderRadius: '50%', backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }}
+        />
+      </div>
+    </motion.button>
+  );
+}
+
 // ── Theme toggle switch ────────────────────────────────────────────────────────
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme() as any;
@@ -267,6 +328,7 @@ export default function ProfilPage({
           </div>
 
           <ThemeToggle />
+          <SimpleModeToggle />
 
           <div style={{ borderRadius: 20, padding: 16, backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
@@ -505,6 +567,9 @@ export default function ProfilPage({
 
         {/* Theme toggle */}
         <ThemeToggle />
+
+        {/* Simple mode toggle */}
+        <SimpleModeToggle />
 
         {/* Admin shortcut */}
         {isAdmin && (

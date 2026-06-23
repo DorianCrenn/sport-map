@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase.js';
 import RideCard from '../components/rides/RideCard.jsx';
 import { timeAgo } from '../lib/dateUtils.js';
 import EmptyState from '../components/ui/EmptyState.jsx';
+import ConfirmDialog from '../components/ConfirmDialog.jsx';
 
 const TABS = [
   { key: 'driving',   label: 'Mes trajets',   icon: '🚗' },
@@ -32,6 +33,8 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
   const { notifications, unreadCount, markAllRead, markRead } = useRideNotifications() as any;
   const [activeTab, setActiveTab] = useState('driving');
   const [processingIds, setProcessingIds] = useState(new Set<string>());
+  const [cancelRideConfirm, setCancelRideConfirm] = useState<string | null>(null);
+  const [cancelRequestConfirm, setCancelRequestConfirm] = useState<string | null>(null);
 
   useAndroidBack(true, onBack);
 
@@ -87,7 +90,7 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
     }
   }
 
-  async function handleCancelRide(rideId: string) {
+  async function doConfirmedCancelRide(rideId: string) {
     const ride = myDriving.find((r: any) => r.id === rideId);
     await supabase.from('rides').update({ status: 'cancelled' }).eq('id', rideId);
     const accepted = ride?.requests.filter((r: any) => r.status === 'accepted') ?? [];
@@ -102,9 +105,17 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
     refetch();
   }
 
-  async function handleCancelRequest(requestId: string) {
+  function handleCancelRide(rideId: string) {
+    setCancelRideConfirm(rideId);
+  }
+
+  async function doConfirmedCancelRequest(requestId: string) {
     await supabase.from('ride_requests').update({ status: 'cancelled' }).eq('id', requestId);
     refetch();
+  }
+
+  function handleCancelRequest(requestId: string) {
+    setCancelRequestConfirm(requestId);
   }
 
   const activeDriving   = myDriving.filter((r: any) => r.status !== 'cancelled' && r.status !== 'completed');
@@ -360,6 +371,27 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
           </AnimatePresence>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!cancelRideConfirm}
+        title="Annuler ce trajet ?"
+        message="Les passagers déjà acceptés seront prévenus par notification."
+        confirmLabel="Annuler le trajet"
+        cancelLabel="Garder"
+        confirmColor="#ef4444"
+        onConfirm={() => { if (cancelRideConfirm) { doConfirmedCancelRide(cancelRideConfirm); setCancelRideConfirm(null); } }}
+        onCancel={() => setCancelRideConfirm(null)}
+      />
+      <ConfirmDialog
+        open={!!cancelRequestConfirm}
+        title="Se désister ?"
+        message="Votre demande de covoiturage sera annulée."
+        confirmLabel="Se désister"
+        cancelLabel="Garder"
+        confirmColor="#f59e0b"
+        onConfirm={() => { if (cancelRequestConfirm) { doConfirmedCancelRequest(cancelRequestConfirm); setCancelRequestConfirm(null); } }}
+        onCancel={() => setCancelRequestConfirm(null)}
+      />
     </motion.div>
   );
 }

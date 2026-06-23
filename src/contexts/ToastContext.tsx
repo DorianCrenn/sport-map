@@ -47,7 +47,7 @@ function ToastItemComponent({ message, type, onReport }: { message: string; type
       backgroundColor: 'var(--sl-card)',
       border: `1px solid ${borderCol}`,
       boxShadow: `0 8px 36px rgba(0,0,0,0.42), 0 2px 8px rgba(0,0,0,0.18), inset 0 0 0 1px ${accentBg}`,
-      fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)',
+      fontSize: 15, fontWeight: 600, color: 'var(--sl-t1)',
       whiteSpace: 'nowrap', maxWidth: 'min(380px, 92vw)',
       userSelect: 'none',
       backdropFilter: 'blur(16px)',
@@ -93,7 +93,7 @@ function ToastItemComponent({ message, type, onReport }: { message: string; type
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const toast = useCallback(({ message, type = 'success', duration = 2800, onReport }: ToastOptions) => {
+  const toast = useCallback(({ message, type = 'success', duration = 5000, onReport }: ToastOptions) => {
     const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
     setToasts(prev => [...prev.slice(-3), { id, message, type, onReport }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);

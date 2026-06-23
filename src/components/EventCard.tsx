@@ -32,11 +32,11 @@ const EVENT_TYPE_META: Record<string, { label: string; color: string }> = {
 };
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
-  upcoming:  { label: 'À venir',     color: '#4da6ff', bg: 'rgba(77,166,255,0.12)' },
-  live:      { label: '● En direct', color: '#ef4444', bg: 'rgba(239,68,68,0.12)'  },
-  done:      { label: 'Terminé',     color: '#64748b', bg: 'rgba(100,116,139,0.10)' },
-  postponed: { label: 'Reporté',     color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-  cancelled: { label: 'Annulé',      color: '#ef4444', bg: 'rgba(239,68,68,0.08)'  },
+  upcoming:  { label: 'À venir',     color: '#4da6ff',  bg: 'rgba(77,166,255,0.12)'  },
+  live:      { label: '● En direct', color: '#ef4444',  bg: 'rgba(239,68,68,0.12)'   },
+  done:      { label: 'Terminé',     color: '#94a3b8',  bg: 'rgba(148,163,184,0.12)' },
+  postponed: { label: 'Reporté',     color: '#f59e0b',  bg: 'rgba(245,158,11,0.12)'  },
+  cancelled: { label: 'Annulé',      color: '#ef4444',  bg: 'rgba(239,68,68,0.08)'   },
 };
 
 const TOURNAMENT_COLOR = '#8b5cf6';
@@ -296,19 +296,39 @@ function ICSBtn({ event }: { event: Record<string, any> }) {
 
 function FollowClubPill({ event }: { event: Record<string, any> }) {
   const { isLoggedIn, isFollowingClub, followClub, unfollowClub } = useAuth() as any;
+  const [confirmUnfollow, setConfirmUnfollow] = useState(false);
   if (!isLoggedIn || !event.clubId) return null;
   const following = isFollowingClub(event.clubId) as boolean;
   return (
-    <motion.button whileTap={{ scale: 0.88 }}
-      onClick={e => { e.stopPropagation(); following ? unfollowClub(event.clubId) : followClub(event.clubId, { teams: 'all', notif: { match: true, news: true } }); }}
-      title={following ? `Ne plus suivre ${event.clubName ?? 'ce club'}` : `Suivre ${event.clubName ?? 'ce club'}`}
-      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, backgroundColor: following ? 'rgba(34,217,106,0.15)' : 'var(--sl-surface)', color: following ? 'var(--sl-green)' : 'var(--sl-t3)', transition: 'all 0.15s', flexShrink: 0 }}>
-      {following
-        ? <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        : <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      }
-      {following ? 'Suivi' : 'Suivre'}
-    </motion.button>
+    <>
+      <motion.button whileTap={{ scale: 0.88 }}
+        onClick={e => {
+          e.stopPropagation();
+          if (following) {
+            setConfirmUnfollow(true);
+          } else {
+            followClub(event.clubId, { teams: 'all', notif: { match: true, news: true } });
+          }
+        }}
+        title={following ? `Ne plus suivre ${event.clubName ?? 'ce club'}` : `Suivre ${event.clubName ?? 'ce club'}`}
+        style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, backgroundColor: following ? 'rgba(34,217,106,0.15)' : 'var(--sl-surface)', color: following ? 'var(--sl-green)' : 'var(--sl-t3)', transition: 'all 0.15s', flexShrink: 0 }}>
+        {following
+          ? <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          : <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        }
+        {following ? 'Suivi' : 'Suivre'}
+      </motion.button>
+      <ConfirmDialog
+        open={confirmUnfollow}
+        title={`Ne plus suivre ${event.clubName ?? 'ce club'} ?`}
+        message="Vous ne recevrez plus les actualités et résultats de ce club."
+        confirmLabel="Se désabonner"
+        cancelLabel="Garder"
+        confirmColor="#64748b"
+        onConfirm={() => { unfollowClub(event.clubId); setConfirmUnfollow(false); }}
+        onCancel={() => setConfirmUnfollow(false)}
+      />
+    </>
   );
 }
 
@@ -354,7 +374,7 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
         )}
       </div>
 
-      <div style={{ fontWeight: 800, fontSize: 15, lineHeight: 1.25, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 4, textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
+      <div style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.25, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 4, textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
         {event.tournamentName || event.title}
       </div>
 
@@ -370,18 +390,18 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--sl-t2)' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span>{new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · {new Date(event.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--sl-t2)' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.venue || event.city}</span>
         </div>
         {attendeeCount > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: TOURNAMENT_COLOR }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: TOURNAMENT_COLOR }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             {attendeeCount} participant{attendeeCount > 1 ? 's' : ''} inscrit{attendeeCount > 1 ? 's' : ''}
           </div>
         )}
@@ -533,15 +553,15 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
               </div>
 
               {/* Title */}
-              <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 2, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
+              <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 2, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
                 {event.title}
               </div>
 
               {event.eventType === 'championship' && (event.teamName || event.level) && (
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', opacity: 0.85, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[event.teamName, event.level].filter(Boolean).join(' — ')}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#3b82f6', opacity: 0.9, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[event.teamName, event.level].filter(Boolean).join(' — ')}</div>
               )}
               {event.eventType === 'cup' && event.cupType && (
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#f97316', opacity: 0.85, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.cupType}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#f97316', opacity: 0.9, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.cupType}</div>
               )}
 
               {event.score != null && (
@@ -552,24 +572,24 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
                 </div>
               )}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--sl-t2)' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   <span>{dateStr} · {timeStr}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--sl-t2)' }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--sl-t2)' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.venue || event.city}</span>
                 </div>
                 {attendeeCount > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: 'var(--sl-green)' }}>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: 'var(--sl-green)' }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     {attendeeCount} participant{attendeeCount > 1 ? 's' : ''}
                   </div>
                 )}
                 {predictionCount > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#f59e0b' }}>
-                    <IconZap size={10} color="#f59e0b" />{predictionCount} pronostic{predictionCount > 1 ? 's' : ''}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: '#f59e0b' }}>
+                    <IconZap size={11} color="#f59e0b" />{predictionCount} pronostic{predictionCount > 1 ? 's' : ''}
                   </div>
                 )}
               </div>

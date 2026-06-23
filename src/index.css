@@ -353,6 +353,10 @@ html:not([data-theme="light"]) .leaflet-popup-tip {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.4; }
 }
+@keyframes sl-ring-pulse {
+  0%   { transform: translateX(-50%) scale(1);   opacity: 0.9; }
+  100% { transform: translateX(-50%) scale(1.6); opacity: 0; }
+}
 /* Alias générique utilisé par les skeletons inline */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
@@ -456,18 +460,18 @@ a:focus:not(:focus-visible) {
   --sl-font-ui:    'Inter', system-ui, sans-serif;
 
   /* Tailles sémantiques */
-  --sl-text-xs:   11px;
-  --sl-text-sm:   13px;
-  --sl-text-base: 14px;
-  --sl-text-lg:   16px;
+  --sl-text-xs:   13px;
+  --sl-text-sm:   15px;
+  --sl-text-base: 16px;
+  --sl-text-lg:   18px;
   --sl-text-xl:   20px;
   --sl-text-2xl:  26px;
   --sl-text-3xl:  34px;
 
   /* Line-heights */
   --sl-leading-tight:  1.2;
-  --sl-leading-normal: 1.5;
-  --sl-leading-relaxed: 1.65;
+  --sl-leading-normal: 1.55;
+  --sl-leading-relaxed: 1.7;
 }
 
 /* Titres — Barlow Condensed par défaut */
@@ -739,7 +743,7 @@ a[aria-label] > svg {
 
   /* BottomNav — icônes plus petites */
   .sl-bottom-nav-btn { padding: 6px 2px !important; }
-  .sl-bottom-nav-label { font-size: 9px !important; }
+  .sl-bottom-nav-label { font-size: 11px !important; }
 
   /* Eviter le débordement des titres */
   h1, h2, h3 { overflow-wrap: break-word; word-break: break-word; }
@@ -775,6 +779,97 @@ a[aria-label] > svg {
     max-width: 100% !important;
     box-sizing: border-box;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODE SIMPLIFIÉ — Accessibilité seniors
+   Activé via html[data-simple-mode="true"] (localStorage: sl-simple-mode)
+   ═══════════════════════════════════════════════════════════ */
+html[data-simple-mode="true"] {
+  /* Tokens CSS agrandis */
+  --sl-text-xs:        15px;
+  --sl-text-sm:        17px;
+  --sl-text-base:      19px;
+  --sl-text-lg:        22px;
+  --sl-text-xl:        26px;
+  --sl-leading-normal: 1.7;
+  --sl-leading-relaxed: 1.85;
+
+  /* Corps de texte principal */
+  font-size: 19px;
+  line-height: 1.7;
+}
+
+/* Classes Tailwind redéfinies en mode simplifié */
+html[data-simple-mode="true"] .text-xs,
+html[data-simple-mode="true"] [style*="fontSize: 11"],
+html[data-simple-mode="true"] [style*="fontSize: 12"],
+html[data-simple-mode="true"] [style*="font-size: 11px"],
+html[data-simple-mode="true"] [style*="font-size: 12px"] {
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+}
+
+html[data-simple-mode="true"] .text-sm,
+html[data-simple-mode="true"] [style*="fontSize: 13"],
+html[data-simple-mode="true"] [style*="font-size: 13px"] {
+  font-size: 17px !important;
+  line-height: 1.65 !important;
+}
+
+html[data-simple-mode="true"] .text-base,
+html[data-simple-mode="true"] [style*="fontSize: 14"],
+html[data-simple-mode="true"] [style*="font-size: 14px"] {
+  font-size: 19px !important;
+  line-height: 1.7 !important;
+}
+
+html[data-simple-mode="true"] .text-lg,
+html[data-simple-mode="true"] [style*="fontSize: 15"],
+html[data-simple-mode="true"] [style*="font-size: 15px"],
+html[data-simple-mode="true"] [style*="fontSize: 16"],
+html[data-simple-mode="true"] [style*="font-size: 16px"] {
+  font-size: 22px !important;
+  line-height: 1.6 !important;
+}
+
+/* Zones tactiles minimales en mode simplifié */
+html[data-simple-mode="true"] button:not(.sl-no-upscale),
+html[data-simple-mode="true"] [role="button"]:not(.sl-no-upscale) {
+  min-height: 52px !important;
+}
+
+/* Inputs plus grands */
+html[data-simple-mode="true"] input,
+html[data-simple-mode="true"] textarea,
+html[data-simple-mode="true"] select {
+  font-size: 18px !important;
+  min-height: 52px !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+
+/* Labels de formulaire plus lisibles */
+html[data-simple-mode="true"] label {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+/* Espacements augmentés sur les cartes */
+html[data-simple-mode="true"] .sl-card {
+  padding: 20px !important;
+}
+
+/* Nav labels plus grands */
+html[data-simple-mode="true"] .sl-bottom-nav-label {
+  font-size: 14px !important;
+}
+
+/* Désactive les animations complexes */
+html[data-simple-mode="true"] * {
+  animation-duration: 0.1s !important;
+  transition-duration: 0.1s !important;
 }
 
 /* ═══════════════════════════════════════════════════════════

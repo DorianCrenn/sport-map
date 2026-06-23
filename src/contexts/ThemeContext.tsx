@@ -16,6 +16,12 @@ function getInitialTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
+function applySimpleModeOnLoad(): void {
+  if (localStorage.getItem('sl-simple-mode') === 'true') {
+    document.documentElement.setAttribute('data-simple-mode', 'true');
+  }
+}
+
 function applyTheme(theme: Theme): void {
   const el = document.documentElement;
   el.setAttribute('data-theme-transition', '');
@@ -31,7 +37,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useLayoutEffect(() => { applyTheme(theme); }, []);
+  useLayoutEffect(() => { applyTheme(theme); applySimpleModeOnLoad(); }, []);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: light)');

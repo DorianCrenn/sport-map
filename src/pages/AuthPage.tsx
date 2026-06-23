@@ -78,8 +78,8 @@ function OAuthMockModal({ provider, onDone, onClose }: OAuthMockModalProps) {
       >
         <div className="text-center mb-4">
           <div className="text-2xl mb-2">{provider === 'google' ? '🔗' : '📸'}</div>
-          <h3 className="font-bold text-white font-oswald tracking-wide">Connexion {label}</h3>
-          <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+          <h3 className="font-bold text-white font-oswald tracking-wide text-lg">Connexion {label}</h3>
+          <p className="text-sm text-slate-300 mt-1.5 leading-relaxed">
             Entrez l'email associé à votre compte {label}.
           </p>
         </div>
@@ -88,26 +88,30 @@ function OAuthMockModal({ provider, onDone, onClose }: OAuthMockModalProps) {
           value={email}
           onChange={e => { setEmail(e.target.value); setError(''); }}
           placeholder="votre@email.fr"
-          className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 mb-3"
-          style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+          className="w-full px-4 py-3.5 rounded-xl text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 mb-3"
+          style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', fontSize: 16 }}
           onKeyDown={e => e.key === 'Enter' && handleConnect()}
         />
         {error && (
-          <p className="text-xs text-red-400 mb-3 px-1">{error}</p>
+          <div className="flex items-center gap-2 px-3 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', fontSize: 15, fontWeight: 600 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {error}
+          </div>
         )}
         <button
           onClick={handleConnect}
           disabled={loading}
-          className="w-full py-3 rounded-xl font-bold text-sm text-white"
-          style={{ backgroundColor: '#22C55E', opacity: loading ? 0.7 : 1 }}
+          className="w-full py-4 rounded-xl font-bold text-base text-white"
+          style={{ backgroundColor: '#22C55E', opacity: loading ? 0.7 : 1, fontSize: 16 }}
         >
-          {loading ? '...' : `Continuer avec ${label}`}
+          {loading ? 'Connexion…' : `Continuer avec ${label}`}
         </button>
         <button
           onClick={onClose}
-          className="w-full py-2 mt-2 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          className="w-full py-3 mt-2 text-sm font-semibold transition-colors"
+          style={{ color: 'rgba(222,238,255,0.6)', background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 15 }}
         >
-          Annuler
+          ← Annuler
         </button>
       </motion.div>
     </motion.div>
@@ -125,7 +129,7 @@ function ForgotPasswordView({ onBack }: ForgotPasswordViewProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const inputCls = 'w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow';
+  const inputCls = 'w-full px-4 py-3.5 rounded-xl text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow';
   const inputStyle = { backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' };
 
   async function handleSend() {
@@ -167,11 +171,11 @@ function ForgotPasswordView({ onBack }: ForgotPasswordViewProps) {
   return (
     <motion.div initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
       <div>
-        <h3 className="font-bold text-white font-oswald tracking-wide text-lg mb-1">Mot de passe oublié</h3>
-        <p className="text-sm text-slate-400">Entrez votre email pour recevoir un lien de réinitialisation.</p>
+        <h3 className="font-bold text-white font-oswald tracking-wide text-xl mb-1">Mot de passe oublié ?</h3>
+        <p className="text-sm text-slate-300 leading-relaxed">Entrez votre email pour recevoir un lien de réinitialisation.</p>
       </div>
       <div>
-        <label className="text-xs font-medium text-slate-400 mb-1.5 block">Adresse email</label>
+        <label className="text-sm font-semibold text-slate-300 mb-2 block">Adresse email</label>
         <input
           type="email"
           value={email}
@@ -181,19 +185,25 @@ function ForgotPasswordView({ onBack }: ForgotPasswordViewProps) {
           style={inputStyle}
           onKeyDown={e => e.key === 'Enter' && handleSend()}
         />
-        {error && <p className="text-xs text-red-400 mt-1.5">{error}</p>}
+        {error && (
+          <div className="flex items-center gap-2 px-3 py-3 mt-2 rounded-xl" style={{ backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', fontSize: 15, fontWeight: 600 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {error}
+          </div>
+        )}
       </div>
       <button
         onClick={handleSend}
         disabled={loading}
-        className="w-full py-3 rounded-xl font-bold text-sm text-white"
-        style={{ backgroundColor: '#22C55E', boxShadow: '0 4px 20px rgba(34,197,94,0.3)', opacity: loading ? 0.7 : 1 }}
+        className="w-full py-4 rounded-xl font-bold text-base text-white"
+        style={{ backgroundColor: '#22C55E', boxShadow: '0 4px 20px rgba(34,197,94,0.3)', opacity: loading ? 0.7 : 1, fontSize: 16 }}
       >
-        {loading ? '...' : 'Envoyer le lien'}
+        {loading ? 'Envoi…' : 'Envoyer le lien'}
       </button>
       <button
         onClick={onBack}
-        className="w-full py-2 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+        className="w-full py-3 text-sm font-semibold transition-colors"
+        style={{ color: 'rgba(222,238,255,0.6)', background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 15 }}
       >
         ← Retour à la connexion
       </button>
@@ -289,7 +299,7 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
     }
   }
 
-  const inputCls = 'w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow';
+  const inputCls = 'w-full px-4 py-3.5 rounded-xl text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow';
   const inputStyle = { backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' };
 
   return (
@@ -346,7 +356,7 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                   <button
                     key={id}
                     onClick={() => switchMode(id)}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-bold font-poppins transition-all duration-200 cursor-pointer"
+                    className="flex-1 py-3 rounded-xl text-base font-bold font-poppins transition-all duration-200 cursor-pointer"
                     style={mode === id
                       ? { backgroundColor: '#22C55E', color: 'white', boxShadow: '0 2px 12px rgba(34,197,94,0.3)' }
                       : { color: '#64748b' }}
@@ -368,11 +378,11 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                   <div className="text-5xl">📬</div>
                   <h3 className="font-bold text-white text-lg font-oswald tracking-wide">Confirmez votre email</h3>
                   {form.email && (
-                    <div className="text-xs text-slate-400 px-3 py-2 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div className="text-sm text-slate-300 px-3 py-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
                       Un lien a été envoyé à <span className="text-white font-semibold">{form.email}</span>
                     </div>
                   )}
-                  <div className="text-left space-y-2 text-sm text-slate-400">
+                  <div className="text-left space-y-3 text-base text-slate-300">
                     <div className="flex items-start gap-2.5">
                       <span className="text-green-400 mt-0.5 flex-shrink-0">1.</span>
                       <span>Ouvrez votre boîte mail et trouvez l'email de SportLink</span>
@@ -385,18 +395,19 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                       <span className="text-green-400 mt-0.5 flex-shrink-0">3.</span>
                       <span>Revenez ici et connectez-vous</span>
                     </div>
-                    <p className="text-xs text-slate-500 pt-1">Vérifiez vos spams si vous ne trouvez pas l'email.</p>
+                    <p className="text-sm text-slate-400 pt-1">Vérifiez vos spams si vous ne trouvez pas l'email.</p>
                   </div>
                   <button
                     onClick={() => switchMode('login')}
-                    className="w-full py-3 rounded-xl font-bold text-sm text-white mt-2"
-                    style={{ backgroundColor: '#22C55E' }}
+                    className="w-full py-4 rounded-xl font-bold text-base text-white mt-2"
+                    style={{ backgroundColor: '#22C55E', fontSize: 16 }}
                   >
                     J'ai confirmé — Me connecter
                   </button>
                   <button
                     onClick={() => switchMode('register')}
-                    className="w-full py-2.5 rounded-xl text-xs text-slate-400 hover:text-white transition-colors"
+                    className="w-full py-3 rounded-xl text-sm text-slate-400 hover:text-white transition-colors font-medium"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: 'none', cursor: 'pointer', borderRadius: 12 }}
                   >
                     Recommencer l'inscription
                   </button>
@@ -425,8 +436,8 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                     <button
                       type="button"
                       onClick={handleGoogleLogin}
-                      className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
-                      style={{ backgroundColor: 'rgba(255,255,255,0.96)', color: '#1e293b' }}
+                      className="w-full flex items-center justify-center gap-3 py-4 rounded-xl text-base font-semibold transition-colors cursor-pointer"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.96)', color: '#1e293b', fontSize: 16 }}
                     >
                       <GoogleIcon />
                       Continuer avec Google
@@ -434,7 +445,7 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                     <button
                       type="button"
                       onClick={() => setOauthProvider('instagram')}
-                      className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+                      className="w-full flex items-center justify-center gap-3 py-4 rounded-xl text-base font-semibold transition-colors cursor-pointer"
                       style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', color: 'white' }}
                     >
                       <InstagramIcon />
@@ -453,26 +464,26 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                   <form onSubmit={handleSubmit} className="space-y-3.5">
                     {mode === 'register' && (
                       <div>
-                        <label className="text-xs font-medium text-slate-400 mb-1.5 block">Prénom / Surnom</label>
+                        <label className="text-sm font-semibold text-slate-300 mb-2 block">Prénom / Surnom</label>
                         <input type="text" value={form.name} onChange={set('name')}
                           placeholder="Ex: Jean-Michel" required
                           className={inputCls} style={inputStyle} />
                       </div>
                     )}
                     <div>
-                      <label className="text-xs font-medium text-slate-400 mb-1.5 block">Adresse email</label>
+                      <label className="text-sm font-semibold text-slate-300 mb-2 block">Adresse email</label>
                       <input type="email" value={form.email} onChange={set('email')}
                         placeholder="votre@email.fr" required
                         className={inputCls} style={inputStyle} />
                     </div>
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-medium text-slate-400">Mot de passe</label>
+                        <label className="text-sm font-semibold text-slate-300">Mot de passe</label>
                         {mode === 'login' && (
                           <button
                             type="button"
                             onClick={() => switchMode('forgot')}
-                            className="text-[11px] text-slate-500 hover:text-green-400 transition-colors cursor-pointer"
+                            className="text-sm text-slate-400 hover:text-green-400 transition-colors cursor-pointer font-medium"
                           >
                             Mot de passe oublié ?
                           </button>
@@ -482,14 +493,14 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                         placeholder="••••••••" required
                         className={inputCls} style={inputStyle} />
                       {mode === 'register' && (
-                        <p className="text-[11px] text-slate-500 mt-1.5 px-0.5">
+                        <p className="text-sm text-slate-400 mt-1.5 px-0.5">
                           6 caractères minimum
                         </p>
                       )}
                     </div>
                     {mode === 'register' && (
                       <div>
-                        <label className="text-xs font-medium text-slate-400 mb-1.5 block">Confirmer le mot de passe</label>
+                        <label className="text-sm font-semibold text-slate-300 mb-2 block">Confirmer le mot de passe</label>
                         <input type="password" value={form.confirm} onChange={set('confirm')}
                           placeholder="••••••••" required
                           className={inputCls} style={inputStyle} />
@@ -500,8 +511,8 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                       {error && (
                         <motion.div
                           initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium"
-                          style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#fca5a5' }}
+                          className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-semibold"
+                          style={{ backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', fontSize: 15 }}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -514,7 +525,7 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full py-3.5 rounded-2xl font-bold font-poppins text-sm text-white transition-all cursor-pointer"
+                      className="w-full py-4 rounded-2xl font-bold font-poppins text-base text-white transition-all cursor-pointer"
                       style={{
                         backgroundColor: '#22C55E',
                         opacity: loading ? 0.7 : 1,
@@ -525,12 +536,12 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                     </button>
 
                     {mode === 'register' && (
-                      <p className="text-center text-[11px] text-slate-600 pt-0.5">
+                      <p className="text-center text-sm text-slate-400 pt-0.5">
                         Un email de confirmation sera envoyé à votre adresse.
                       </p>
                     )}
                     {mode === 'register' && (
-                      <p className="text-center text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-center text-sm text-slate-400 leading-relaxed">
                         En créant un compte, vous acceptez nos{' '}
                         <button type="button" onClick={() => onShowLegal?.('cgu')} className="text-green-500 hover:text-green-400 underline underline-offset-2 cursor-pointer">
                           CGU
