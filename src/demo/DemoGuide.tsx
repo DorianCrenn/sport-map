@@ -129,16 +129,14 @@ export default function DemoGuide({
           zIndex:         10001,
           background:     pillBg,
           border:         `1px solid ${pillBorder}`,
-          borderRadius:   16,
-          padding:        '10px 10px 10px 14px',
+          borderRadius:   20,
+          padding:        '6px 8px 6px 10px',
           display:        'flex',
           alignItems:     'center',
-          gap:            8,
+          gap:            6,
           cursor:         'grab',
           backdropFilter: 'blur(16px)',
           boxShadow:      '0 4px 24px rgba(0,0,0,0.35)',
-          maxWidth:       'calc(100vw - 24px)',
-          width:          320,
           userSelect:     'none',
           touchAction:    'none',
         }}
@@ -148,27 +146,14 @@ export default function DemoGuide({
         onPointerUp={handleDragEnd}
         onClick={toggleCollapsed}
       >
-        {/* Icône étape */}
-        <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>{step.emoji}</span>
-
-        {/* Texte */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <span style={{
-            fontSize: 10, fontWeight: 600,
-            color: isColored ? 'rgba(255,255,255,0.75)' : 'var(--sl-t3)',
-            display: 'block', marginBottom: 1,
-          }}>
-            {pillSub}
-          </span>
-          <span style={{
-            fontSize: 12, fontWeight: 700, lineHeight: 1.3,
-            color: isColored ? '#fff' : 'var(--sl-t1)',
-            overflow: 'hidden', textOverflow: 'ellipsis',
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-          }}>
-            {pillLabel}
-          </span>
-        </div>
+        {/* Icône + compteur */}
+        <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{step.emoji}</span>
+        <span style={{
+          fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+          color: isColored ? '#fff' : 'var(--sl-t2)',
+        }}>
+          {stepIndex + 1}/{totalSteps}
+        </span>
 
         {/* Bouton agrandir */}
         <button
@@ -176,13 +161,14 @@ export default function DemoGuide({
           title="Agrandir le guide"
           style={{
             background:   'rgba(255,255,255,0.15)',
-            border:       '1px solid rgba(255,255,255,0.25)',
-            borderRadius: 10,
+            border:       '1px solid rgba(255,255,255,0.2)',
+            borderRadius: 8,
             color:        isColored ? '#fff' : 'var(--sl-t2)',
-            padding:      '5px 9px',
-            fontSize:     12,
+            padding:      '3px 7px',
+            fontSize:     11,
             cursor:       'pointer',
             flexShrink:   0,
+            lineHeight:   1,
           }}
         >
           ▲
@@ -193,12 +179,12 @@ export default function DemoGuide({
           onClick={(e) => { e.stopPropagation(); onExit(); }}
           title="Quitter le tutoriel"
           style={{
-            background:   'rgba(255,255,255,0.1)',
+            background:   'rgba(255,255,255,0.08)',
             border:       '1px solid rgba(255,255,255,0.15)',
-            borderRadius: 10,
-            color:        isColored ? 'rgba(255,255,255,0.8)' : 'var(--sl-t3)',
-            padding:      '5px 8px',
-            fontSize:     14,
+            borderRadius: 8,
+            color:        isColored ? 'rgba(255,255,255,0.75)' : 'var(--sl-t3)',
+            padding:      '3px 6px',
+            fontSize:     13,
             cursor:       'pointer',
             flexShrink:   0,
             lineHeight:   1,
