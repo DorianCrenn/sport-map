@@ -114,13 +114,14 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
       const el = document.querySelector(`[data-demo="${target}"]`);
       if (el) updateRect(el);
     }
-    window.addEventListener('scroll', onLayoutChange, { passive: true });
+    // capture:true pour attraper les scrolls sur tous les conteneurs internes
+    window.addEventListener('scroll', onLayoutChange, { passive: true, capture: true });
     window.addEventListener('resize', onLayoutChange, { passive: true });
 
     return () => {
       clearInterval(pollingRef.current);
       observerRef.current?.disconnect();
-      window.removeEventListener('scroll', onLayoutChange);
+      window.removeEventListener('scroll', onLayoutChange, { capture: true } as any);
       window.removeEventListener('resize', onLayoutChange);
     };
   }, [active, target]);
@@ -131,11 +132,12 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
   const VW  = window.innerWidth;
   const VH  = window.innerHeight;
 
-  // Ne pas afficher si l'élément est hors du viewport (autre onglet, overlay fermé)
-  if (rect.top > VH || rect.bottom < 0 || rect.left > VW || rect.right < 0) return null;
-
-  const centerX   = rect.left + rect.width / 2;
+  const centerX    = rect.left + rect.width / 2;
   const rectBottom = rect.top + rect.height;
+  const rectRight  = rect.left + rect.width;
+
+  // Ne pas afficher si l'élément est hors du viewport
+  if (rect.top > VH || rectBottom < 0 || rect.left > VW || rectRight < 0) return null;
 
   // ── Contraindre X pour que la flèche ne sorte jamais du viewport ──────────
   // La flèche/label fait ~160px de large max ("👆 Clique ici" + lettre-spacing)
