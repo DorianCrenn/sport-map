@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { supabase, setDemoMode, isDemoMode } from './lib/supabase.js';
+import { STATIC_CLUBS } from './data/clubs.js';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import SportLinkLogo from './components/SportLinkLogo.jsx';
 const DemoApp = lazy(() => import('./demo/DemoApp.jsx'));
@@ -343,13 +344,28 @@ function AppInner() {
       const id = clubMatch[1];
       pendingDeepLink.current = id;
 
+      // Ouvrir immédiatement avec les données statiques si disponibles (UX offline + test)
+      const staticFallback = (STATIC_CLUBS as any[]).find(c => String(c.id) === id);
+      if (staticFallback) {
+        setSelectedSearchClub({
+          id: staticFallback.id, name: staticFallback.name, sport: staticFallback.sport,
+          city: staticFallback.city ?? '', description: '',
+          logoUrl: null, logo: null, website: '', phone: '', email: staticFallback.contact ?? '',
+          userId: null, isUserCreated: false,
+        });
+        pendingDeepLink.current = null;
+      }
+
+      // Enrichir depuis Supabase en arrière-plan
       setClubOverlayLoading(true);
       supabase.from('clubs').select('*').eq('id', id).maybeSingle()
         .then(({ data }: any) => {
           setClubOverlayLoading(false);
           if (!data) {
-            toast({ message: 'Club introuvable ou lien invalide', type: 'error' });
-            window.history.replaceState(null, '', window.location.pathname);
+            if (!staticFallback) {
+              toast({ message: 'Club introuvable ou lien invalide', type: 'error' });
+              window.history.replaceState(null, '', window.location.pathname);
+            }
             return;
           }
           setSelectedSearchClub({

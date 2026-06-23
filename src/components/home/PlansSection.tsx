@@ -58,7 +58,7 @@ function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCar
       style={{ position: 'relative', display: 'flex', flexDirection: 'column', borderRadius: 20, border: `2px solid ${isPopular ? color : 'var(--sl-border)'}`, backgroundColor: isPopular ? `${color}08` : 'var(--sl-card)', overflow: 'hidden', minWidth: 260, scrollSnapAlign: 'start', flexShrink: 0 }}
     >
       {isPopular && (
-        <div style={{ position: 'absolute', top: 0, right: 0, backgroundColor: color, color: onColor, fontSize: 10, fontWeight: 800, padding: '4px 12px', borderRadius: '0 18px 0 10px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>⭐ Populaire</div>
+        <div style={{ position: 'absolute', top: 0, right: 0, backgroundColor: color, color: onColor, fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: '0 18px 0 10px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>⭐ Populaire</div>
       )}
       <div style={{ padding: '22px 20px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -100,7 +100,7 @@ function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCar
           <div style={{ padding: '10px 20px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {quotaPills.map(({ label, value }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 8, backgroundColor: value === '∞' ? `${color}12` : 'var(--sl-surface)', border: `1px solid ${value === '∞' ? `${color}25` : 'var(--sl-border)'}` }}>
-                <span style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 500 }}>{label}</span>
+                <span style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 500 }}>{label}</span>
                 <span style={{ fontSize: 11, fontWeight: 800, color: value === '∞' ? color : 'var(--sl-t2)' }}>{value}</span>
               </div>
             ))}

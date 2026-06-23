@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ToastType } from '../types/sportlink.js';
 
@@ -98,6 +98,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts(prev => [...prev.slice(-3), { id, message, type, onReport }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
   }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ message?: string; type?: ToastType }>).detail;
+      toast({ message: detail?.message ?? 'Test', type: detail?.type ?? 'success' });
+    };
+    window.addEventListener('sl-test-toast', handler);
+    return () => window.removeEventListener('sl-test-toast', handler);
+  }, [toast]);
 
   return (
     <ToastCtx.Provider value={{ toast }}>

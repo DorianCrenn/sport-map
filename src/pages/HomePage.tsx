@@ -177,7 +177,7 @@ function PhoneMockup() {
   ];
 
   return (
-    <div style={{
+    <div aria-hidden="true" data-audit-ignore="phone-mockup" style={{
       borderRadius: 40,
       border: '3.5px solid #111827',
       backgroundColor: '#111827',
@@ -395,7 +395,7 @@ function ResultCard({ event, sports }) {
             {typeLabel}
           </span>
           {event.teamName && (
-            <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)' }}>
               {event.teamName}
             </span>
           )}
@@ -406,7 +406,7 @@ function ResultCard({ event, sports }) {
         }}>
           {event.title}
         </div>
-        <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>
+        <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>
           {dateStr}{isPast ? '' : ` · ${timeStr}`}
           {event.city && ` · ${event.city}`}
         </div>
@@ -436,7 +436,7 @@ function ResultCard({ event, sports }) {
         </div>
       ) : (
         <div style={{
-          fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', flexShrink: 0,
+          fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', flexShrink: 0,
           padding: '3px 7px', borderRadius: 8, backgroundColor: 'var(--sl-surface)',
         }}>
           Terminé
