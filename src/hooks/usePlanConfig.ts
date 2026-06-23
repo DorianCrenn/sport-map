@@ -13,7 +13,7 @@ export const STATIC_PRICING: Record<string, {
 }> = {
   free:    { plan_id: 'free',    name: 'Gratuit',   price_monthly: 0,  color: '#64748b', badge: '⚪', tagline: 'Découvrir SportLink',  cta_label: 'Commencer gratuitement', is_popular: false, sort_order: 0, is_active: true },
   starter: { plan_id: 'starter', name: 'Starter',   price_monthly: 9,  color: '#3b82f6', badge: '🔵', tagline: 'Communication club',   cta_label: 'Essayer Starter',        is_popular: false, sort_order: 1, is_active: true },
-  pro:     { plan_id: 'pro',     name: 'Club Pro',  price_monthly: 29, color: '#8b5cf6', badge: '🟣', tagline: 'Gestion complète',     cta_label: 'Choisir Club Pro',       is_popular: true,  sort_order: 2, is_active: true },
+  pro:     { plan_id: 'pro',     name: 'Club Pro',  price_monthly: 29, color: '#7c3aed', badge: '🟣', tagline: 'Gestion complète',     cta_label: 'Choisir Club Pro',       is_popular: true,  sort_order: 2, is_active: true },
   elite:   { plan_id: 'elite',   name: 'Elite',     price_monthly: 59, color: '#f59e0b', badge: '👑', tagline: 'Automatisation & IA',  cta_label: 'Choisir Elite',          is_popular: false, sort_order: 3, is_active: true },
 };
 

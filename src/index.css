@@ -743,7 +743,7 @@ a[aria-label] > svg {
 
   /* BottomNav — icônes plus petites */
   .sl-bottom-nav-btn { padding: 6px 2px !important; }
-  .sl-bottom-nav-label { font-size: 11px !important; }
+  .sl-bottom-nav-label { font-size: 13px !important; }
 
   /* Eviter le débordement des titres */
   h1, h2, h3 { overflow-wrap: break-word; word-break: break-word; }

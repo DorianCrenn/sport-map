@@ -209,9 +209,9 @@ function PhoneMockup() {
         <div style={{ display: 'flex', gap: 5, padding: '0 12px 8px' }}>
           {['Tous','Football','Handball'].map((t, i) => (
             <span key={t} style={{
-              fontSize: 9, borderRadius: 20, padding: '3px 10px', fontWeight: 700, whiteSpace: 'nowrap',
+              fontSize: 11, borderRadius: 20, padding: '3px 10px', fontWeight: 700, whiteSpace: 'nowrap',
               backgroundColor: i === 0 ? '#22d96a' : 'var(--sl-surface)',
-              color: i === 0 ? 'white' : '#64748b',
+              color: i === 0 ? '#0a2942' : '#64748b',
             }}>{t}</span>
           ))}
         </div>
@@ -389,7 +389,7 @@ function ResultCard({ event, sports }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
           <span style={{
-            fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5,
+            fontSize: 11, fontWeight: 700, padding: '2px 6px', borderRadius: 5,
             backgroundColor: `${typeColor}18`, color: typeColor,
           }}>
             {typeLabel}

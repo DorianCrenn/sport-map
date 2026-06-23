@@ -31,9 +31,19 @@ interface PlanCardProps {
   onCta: (planId?: string) => void;
 }
 
+function hexLuminance(hex: string): number {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const lin = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
 function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCardProps) {
   const color     = meta.color;
   const isPopular = meta.is_popular;
+  const lum       = hexLuminance(color);
+  const onColor   = (1.05 / (lum + 0.05)) >= 4.5 ? '#fff' : '#0f0623';
 
   const quotaPills = [
     { label: 'Affiches/mois',  value: fmtQuota(quotas?.postersPerMonth,     '/mois') },
@@ -48,7 +58,7 @@ function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCar
       style={{ position: 'relative', display: 'flex', flexDirection: 'column', borderRadius: 20, border: `2px solid ${isPopular ? color : 'var(--sl-border)'}`, backgroundColor: isPopular ? `${color}08` : 'var(--sl-card)', overflow: 'hidden', minWidth: 260, scrollSnapAlign: 'start', flexShrink: 0 }}
     >
       {isPopular && (
-        <div style={{ position: 'absolute', top: 0, right: 0, backgroundColor: color, color: '#fff', fontSize: 10, fontWeight: 800, padding: '4px 12px', borderRadius: '0 18px 0 10px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>⭐ Populaire</div>
+        <div style={{ position: 'absolute', top: 0, right: 0, backgroundColor: color, color: onColor, fontSize: 10, fontWeight: 800, padding: '4px 12px', borderRadius: '0 18px 0 10px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>⭐ Populaire</div>
       )}
       <div style={{ padding: '22px 20px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -98,7 +108,7 @@ function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCar
         </>
       )}
       <div style={{ padding: '12px 20px 20px' }}>
-        <motion.button whileTap={{ scale: 0.97 }} whileHover={{ y: -1 }} onClick={() => onCta(planId)} style={{ width: '100%', padding: '12px 0', borderRadius: 12, border: isPopular ? 'none' : `1.5px solid ${color}50`, backgroundColor: isPopular ? color : `${color}10`, color: isPopular ? '#fff' : color, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-poppins, sans-serif)', boxShadow: isPopular ? `0 4px 16px ${color}35` : 'none', transition: 'all 0.12s' }}>
+        <motion.button whileTap={{ scale: 0.97 }} whileHover={{ y: -1 }} onClick={() => onCta(planId)} style={{ width: '100%', padding: '12px 0', borderRadius: 12, border: isPopular ? 'none' : `1.5px solid ${color}50`, backgroundColor: isPopular ? color : `${color}10`, color: isPopular ? onColor : color, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-poppins, sans-serif)', boxShadow: isPopular ? `0 4px 16px ${color}35` : 'none', transition: 'all 0.12s' }}>
           {meta.cta_label}
         </motion.button>
       </div>
