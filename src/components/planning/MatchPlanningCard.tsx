@@ -228,6 +228,16 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
             </div>
             <div className="flex items-center gap-2">
               {isStaff && <span className="text-[9px] font-black tracking-[0.1em] uppercase px-2.5 py-1 rounded-full" style={{ background: '#06b6d420', color: '#06b6d4' }}>{isCoach ? 'Coach' : 'Comm'}</span>}
+              {!isStaff && !isPast && (
+                <button
+                  data-demo="favorite-btn"
+                  onClick={() => { window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'event-favorited' } })); }}
+                  aria-label="Sauvegarder ce match"
+                  className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-[var(--sl-surface)]"
+                >
+                  <span style={{ fontSize: 16, color: 'var(--sl-t3)' }}>☆</span>
+                </button>
+              )}
               {item.time && <span className="text-sm font-black text-[var(--sl-t1)]">{item.time}</span>}
             </div>
           </div>
@@ -281,7 +291,7 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
           )}
 
           {item.isPlayerClub && (
-            <div className="mb-3">
+            <div className="mb-3" data-demo="convocation-respond">
               <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">Ma présence</p>
               <PresenceButtons myStatus={item.myStatus} onRespond={status => item.onRespond?.('match', item.id, status)} disabled={isPast} size="sm" />
             </div>

@@ -96,10 +96,10 @@ export const presidentTour = [
   {
     id:          10,
     title:       'Abonnez-vous pour tester la notification',
-    body:        'Appuyez sur "Suivre" pour voir exactement ce que vivent vos supporters : ils reçoivent chaque annonce, résultat et actualité en notification push instantanée.',
+    body:        'Appuyez sur un club dans la liste pour ouvrir sa page. Puis appuyez sur "Suivre" — vos supporters reçoivent chaque annonce, résultat et actualité en notification push instantanée.',
     emoji:       '🔔',
     clickTarget: 'follow-club-btn',
-    clickLabel:  'Bouton "Suivre" sur la page du club',
+    clickLabel:  'Bouton "Suivre" sur la page du club (ouvrez d\'abord un club de la liste)',
     tryItAction: 'club-followed',
     tryItLabel:  'Suivre le club',
     why:         'Les abonnés restent 3× plus fidèles au club que les non-abonnés.',

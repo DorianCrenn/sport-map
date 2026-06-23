@@ -30,10 +30,10 @@ export const supporterTour = [
   {
     id:          4,
     title:       'Abonnez-vous pour ne rien rater',
-    body:        'Appuyez sur "Suivre" sur la page du club. Un seul tap et vous recevrez chaque résultat, annonce et actualité en notification push. Pas besoin de revenir consulter.',
+    body:        'Appuyez sur un club dans la liste pour ouvrir sa page. Puis appuyez sur "Suivre". Un seul tap et vous recevrez chaque résultat, annonce et actualité en notification push.',
     emoji:       '💙',
     clickTarget: 'follow-club-btn',
-    clickLabel:  'Bouton "Suivre" sur la page du club',
+    clickLabel:  'Bouton "Suivre" sur la page du club (ouvrez d\'abord un club de la liste)',
     tryItAction: 'club-followed',
     tryItLabel:  'Suivre le club',
     why:         'Les supporters abonnés assistent à 2× plus de matchs que les non-abonnés.',

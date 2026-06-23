@@ -42,10 +42,10 @@ export const communicationTour = [
   {
     id:          5,
     title:       'Abonnez-vous pour tester le flux',
-    body:        'Appuyez sur "Suivre" sur la page du club. C\'est exactement ce que font vos fans : ils reçoivent ensuite chaque annonce, résultat et actualité en notification push.',
+    body:        'Appuyez sur un club dans la liste pour ouvrir sa page. Puis appuyez sur "Suivre" — vos fans reçoivent ensuite chaque annonce, résultat et actualité en notification push.',
     emoji:       '🔔',
     clickTarget: 'follow-club-btn',
-    clickLabel:  'Bouton "Suivre" sur la page du club',
+    clickLabel:  'Bouton "Suivre" sur la page du club (ouvrez d\'abord un club de la liste)',
     tryItAction: 'club-followed',
     tryItLabel:  'Suivre le club',
     why:         'Les abonnés sont 3× plus fidèles et plus engagés que les non-abonnés.',

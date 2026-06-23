@@ -59,10 +59,10 @@ export const parentTour = [
   {
     id:          6,
     title:       'Abonnez-vous pour tout recevoir',
-    body:        'Appuyez sur "Suivre" sur la page du club. Vous recevrez chaque résultat, annonce et convocation urgente directement en notification push. Zéro risque de rater une information.',
+    body:        'Appuyez sur un club dans la liste pour ouvrir sa page. Puis appuyez sur "Suivre". Vous recevrez chaque résultat, annonce et convocation urgente en notification push. Zéro risque de rater une info.',
     emoji:       '🔔',
     clickTarget: 'follow-club-btn',
-    clickLabel:  'Bouton "Suivre" sur la page du club',
+    clickLabel:  'Bouton "Suivre" sur la page du club (ouvrez d\'abord un club de la liste)',
     tryItAction: 'club-followed',
     tryItLabel:  'Suivre le club',
     why:         'Les abonnés reçoivent les informations 3× plus vite que les non-abonnés.',

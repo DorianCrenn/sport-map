@@ -78,7 +78,7 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
     }
 
     let attempts = 0;
-    const MAX_ATTEMPTS = 80; // 8 secondes
+    const MAX_ATTEMPTS = 300; // 30 secondes (assez long pour que l'utilisateur navigue vers la page club)
 
     function updateRect(el) {
       const r = el.getBoundingClientRect();
