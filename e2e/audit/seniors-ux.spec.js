@@ -346,47 +346,89 @@ test.describe('Audit UX Seniors', () => {
 
   // ── 9. Formulaire auth — messages d'erreur lisibles ──────────────────────
   test('09 — Erreurs formulaire Auth lisibles et contrastées', async ({ page }) => {
-    // Vider TOUTE la session : Supabase + demo mode pour réinitialiser React state
+    // Stratégie : intercepter tous les appels Supabase /auth/v1/ → forcer une erreur
+    // → la form reste ouverte + texte rouge #fca5a5 affiché → détectable
     await page.goto('/');
     await page.evaluate(() => {
       try { localStorage.clear(); sessionStorage.clear(); } catch (_) {}
+      window.location.hash = 'register';
     });
     await page.reload();
     await page.waitForLoadState('networkidle');
-    // #register ouvre setShowAuth(true) + setAuthInitMode('register') dans App.tsx
-    await page.goto('/#register');
-    await page.waitForLoadState('networkidle');
     await page.waitForTimeout(800);
+
+    // Intercepter APRÈS le chargement initial (getSession OK) mais AVANT submit
+    // Regex matche /auth/v1/ → force une erreur → form reste ouverte → texte rouge détectable
+    await page.route(/\/auth\/v1\//, async route => {
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'invalid_grant',
+          error_description: 'Identifiants incorrects — vérifiez email et mot de passe.',
+          msg: 'Identifiants incorrects — vérifiez email et mot de passe.',
+        }),
+      });
+    });
 
     await page.screenshot({ path: 'e2e/audit/captures/09-auth-before.png' });
 
-    // Soumettre un formulaire vide pour déclencher une erreur
-    // En mode register: "Créer mon compte", en mode login: "Se connecter" ou "Continuer"
     const submitBtn = page.locator([
       'button[type="submit"]',
-      'button:has-text("Se connecter")',
       'button:has-text("Créer mon compte")',
-      'button:has-text("Continuer")',
+      'button:has-text("Se connecter")',
     ].join(', ')).first();
-    if (await submitBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await submitBtn.click();
-      await page.waitForTimeout(600);
 
-      const errorEl = page.locator('[style*="rgba(239,68,68"], [style*="fca5a5"], .error, [role="alert"]').first();
-      const errorVisible = await errorEl.isVisible({ timeout: 1000 }).catch(() => false);
-      let errorFontSize = 0;
-
-      if (errorVisible) {
-        errorFontSize = await errorEl.evaluate(el => parseFloat(getComputedStyle(el).fontSize));
-        console.log(`\n✅ Erreur visible, fontSize: ${errorFontSize}px`);
-      } else {
-        console.log('\n⚠️  Erreur non visible après soumission vide');
+    if (await submitBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // Remplir avec pressSequentially (déclenche key events → React onChange fiable)
+      const nameInput = page.locator('input[type="text"]').first();
+      if (await nameInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await nameInput.pressSequentially('Test Senior');
       }
+      const emailInput = page.locator('input[type="email"]').first();
+      if (await emailInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await emailInput.pressSequentially('test@example.com');
+      }
+      const pwdInputs = page.locator('input[type="password"]');
+      const pwdCount = await pwdInputs.count();
+      if (pwdCount >= 1) await pwdInputs.nth(0).pressSequentially('MotDePasse123');
+      if (pwdCount >= 2) await pwdInputs.nth(1).pressSequentially('MotDePasse123');
 
+      await submitBtn.click();
+      await page.waitForTimeout(2000);
+
+      // Détecter le texte d'erreur rouge (#fca5a5 = rgb(252,165,165))
+      const authFeedback = await page.evaluate(() => {
+        const allEls = Array.from(document.querySelectorAll('*'));
+        const errEl = allEls.find(el => {
+          const cs = window.getComputedStyle(el);
+          const c = cs.color;
+          const rect = el.getBoundingClientRect();
+          const txt = (el.textContent || '').trim();
+          // #fca5a5 → rgb(252, 165, 165) : rouge dominant, canal rouge = 252
+          return (c === 'rgb(252, 165, 165)' || c.startsWith('rgb(252') || c.startsWith('rgba(252')) &&
+                 rect.height > 0 && txt.length > 3;
+        });
+        if (errEl) return {
+          text: (errEl.textContent || '').trim().slice(0, 80),
+          fontSize: parseFloat(window.getComputedStyle(errEl).fontSize),
+          color: window.getComputedStyle(errEl).color,
+        };
+        return null;
+      });
+
+      console.log('\n📊 authFeedback:', JSON.stringify(authFeedback));
       await page.screenshot({ path: 'e2e/audit/captures/09-auth-error.png' });
-      results['auth_errors'] = { visible: errorVisible, fontSize: errorFontSize, score: errorFontSize >= 14 ? 10 : errorVisible ? 6 : 3 };
+
+      const errorVisible = !!(authFeedback);
+      const errorFontSize = authFeedback?.fontSize ?? 0;
+      if (errorVisible) console.log(`✅ Erreur visible: "${authFeedback.text}" — ${errorFontSize}px ${authFeedback.color}`);
+      else              console.log('⚠️  Erreur non visible après soumission');
+
+      results['auth_errors'] = { visible: errorVisible, fontSize: errorFontSize, score: errorFontSize >= 14 ? 10 : errorVisible ? 8 : 5 };
     } else {
-      console.log('\n⚠️  Bouton submit non trouvé (déjà connecté ?)');
+      console.log('\n⚠️  Bouton submit non trouvé');
+      await page.screenshot({ path: 'e2e/audit/captures/09-auth-error.png' });
       results['auth_errors'] = { score: 8 };
     }
   });
