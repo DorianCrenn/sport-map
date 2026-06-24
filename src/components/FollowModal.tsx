@@ -40,7 +40,7 @@ export default function FollowModal({ club, allEvents = [], currentFollow = null
   return (
     <AnimatePresence>
       <motion.div key="follow-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={e => { if (e.target === e.currentTarget) onClose(); }} style={{ position: 'fixed', inset: 0, zIndex: (Z as any).followModal, backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-        <motion.div ref={dialogRef} key="follow-sheet" role="dialog" aria-modal="true" aria-labelledby="follow-modal-title" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 380, damping: 38 }} style={{ width: '100%', maxWidth: 520, borderRadius: '22px 22px 0 0', padding: '0 0 env(safe-area-inset-bottom, 20px)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', maxHeight: '90dvh', display: 'flex', flexDirection: 'column' }}>
+        <motion.div ref={dialogRef} key="follow-sheet" role="dialog" aria-modal="true" aria-labelledby="follow-modal-title" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 380, damping: 38 }} style={{ width: '100%', maxWidth: 520, borderRadius: '22px 22px 0 0', padding: '0 0 env(safe-area-inset-bottom, 20px)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', maxHeight: '90dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '14px 0 0', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border-s)' }} />
           </div>

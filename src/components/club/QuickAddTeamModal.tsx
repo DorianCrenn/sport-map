@@ -54,7 +54,7 @@ export default function QuickAddTeamModal({ club, onSave, onClose }: QuickAddTea
       <motion.div
         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 380, damping: 38 }}
-        style={{ backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', padding: '0 0 env(safe-area-inset-bottom, 16px)', maxHeight: '80dvh', display: 'flex', flexDirection: 'column' }}
+        style={{ backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', padding: '0 0 env(safe-area-inset-bottom, 16px)', maxHeight: '80dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
           <div style={{ width: 36, height: 3.5, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />

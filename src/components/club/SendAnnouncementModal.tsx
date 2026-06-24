@@ -145,7 +145,7 @@ export default function SendAnnouncementModal({ club, onSend, onClose }: SendAnn
         ref={panelRef}
         initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 360, damping: 34 }}
-        style={{ width: '100%', maxWidth: 540, backgroundColor: 'var(--sl-card)', borderRadius: '22px 22px 0 0', border: '1px solid var(--sl-border)', borderBottom: 'none', maxHeight: '92dvh', display: 'flex', flexDirection: 'column' }}
+        style={{ width: '100%', maxWidth: 540, backgroundColor: 'var(--sl-card)', borderRadius: '22px 22px 0 0', border: '1px solid var(--sl-border)', borderBottom: 'none', maxHeight: '92dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
         role="dialog" aria-modal="true"
         onClick={e => e.stopPropagation()}
       >

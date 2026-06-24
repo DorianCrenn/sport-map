@@ -160,7 +160,7 @@ export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalPr
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 380, damping: 38 }}
-        style={{ width: '100%', maxWidth: 520, borderRadius: '22px 22px 0 0', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', maxHeight: '90dvh', display: 'flex', flexDirection: 'column', paddingBottom: 'env(safe-area-inset-bottom, 20px)' }}
+        style={{ width: '100%', maxWidth: 520, borderRadius: '22px 22px 0 0', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', maxHeight: '90dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingBottom: 'env(safe-area-inset-bottom, 20px)' }}
       >
         <div style={{ padding: '14px 0 0', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border-s)' }} />
@@ -176,7 +176,7 @@ export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalPr
           </button>
         </div>
 
-        <div style={{ overflowY: 'auto', padding: '0 20px 24px' }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '0 20px 24px' }}>
           {results ? (
             <>
               <div style={{ textAlign: 'center', padding: '20px 0 24px' }}>
