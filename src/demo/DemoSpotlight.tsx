@@ -94,6 +94,9 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
         return;
       }
       clearInterval(pollingRef.current);
+      // Scroll l'élément dans le viewport et recalcule la position après animation
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => updateRect(el), 350);
       updateRect(el);
 
       if (!trackedRef.current) {

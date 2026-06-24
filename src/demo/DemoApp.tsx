@@ -155,6 +155,10 @@ export default function DemoApp({ AppInner }) {
     sessionStorage.setItem('sl-demo-profile', selectedProfile);
     sessionStorage.setItem('sl-demo-step', '0');
     window.dispatchEvent(new CustomEvent('sl-demo-profile-selected', { detail: { profile: selectedProfile } }));
+    // Forcer la navigation vers l'onglet home — la landing peut avoir été ouverte depuis n'importe quel onglet
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('sl-demo-navigate', { detail: { action: 'tab', tab: 'home' } }));
+    }, 50);
     startDemoSession(selectedProfile);
   }, []);
 

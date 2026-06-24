@@ -10,7 +10,7 @@ const PROFILES = [
     description: 'Événements, communication, statistiques et gestion complète du club',
     color:       '#1d4ed8',
     gradient:    'linear-gradient(135deg, #1d4ed8, #3b82f6)',
-    steps:       12,
+    steps:       11,
   },
   {
     id:          'coach',
@@ -19,7 +19,7 @@ const PROFILES = [
     description: 'Entraînements, convocations, présences et communication équipe',
     color:       '#059669',
     gradient:    'linear-gradient(135deg, #059669, #10b981)',
-    steps:       8,
+    steps:       9,
   },
   {
     id:          'communication',

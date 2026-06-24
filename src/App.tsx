@@ -512,7 +512,7 @@ function AppInner() {
     if (!isDemoMode()) return;
 
     function onDemoNav(e: Event) {
-      const { action } = (e as CustomEvent).detail ?? {};
+      const { action, tab } = (e as CustomEvent).detail ?? {};
       if (action === 'close-overlay') {
         setShowNewEventForm(false);
         setShowAnnouncements(false);
@@ -522,6 +522,9 @@ function AppInner() {
           history.pushState(null, '', window.location.pathname);
           window.dispatchEvent(new PopStateEvent('popstate'));
         }
+      }
+      if (action === 'tab' && tab) {
+        demoNavRef.current.handleTabChange(tab as string);
       }
     }
 
