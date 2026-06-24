@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { trackCreateAccountClicked } from './demoAnalytics.js';
 
@@ -118,7 +119,7 @@ export default function DemoGuide({
 
     const isColored = tryItInProgress || isInteractive;
 
-    return (
+    return createPortal(
       <motion.div
         key="pill"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -195,12 +196,13 @@ export default function DemoGuide({
         >
           ×
         </button>
-      </motion.div>
+      </motion.div>,
+      document.body,
     );
   }
 
   // ── Guide complet ─────────────────────────────────────────────────────────
-  return (
+  return createPortal(
     <motion.div
       key="full"
       initial={{ opacity: 0, y: 16 }}
@@ -491,6 +493,7 @@ export default function DemoGuide({
           </button>
         )}
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import { trackSpotlightSeen } from './demoAnalytics.js';
 
 // ── Styles injectés une seule fois ────────────────────────────────────────────
@@ -212,7 +213,9 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
     textAlign:     'center',
   };
 
-  return (
+  // createPortal garantit que position:fixed est relatif au viewport,
+  // même si un ancêtre Framer Motion a un transform appliqué
+  return createPortal(
     <div
       aria-hidden="true"
       style={{
@@ -286,6 +289,7 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
           <span style={textStyle}>👆 Clique ici</span>
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
