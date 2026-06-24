@@ -1,5 +1,6 @@
 import { type FC, lazy, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { isDemoMode } from '../lib/supabase.js';
 import ActualitesPage from './ActualitesPage.jsx';
 
 const HomePage = lazy(() => import('./HomePage.jsx'));
@@ -19,7 +20,8 @@ interface HomeScreenProps {
 const HomeScreen: FC<HomeScreenProps> = ({ followedClubIds, onNavigate, stats, clubs, allEvents, onOpenTrainings, externalConvocations, onConvocationRespond, onShowLegal }) => {
   const { currentUser } = useAuth();
 
-  if (currentUser) {
+  // En mode démo tous les profils voient ActualitesPage (cockpit avec convocations/scores/feed)
+  if (currentUser || isDemoMode()) {
     return (
       <ActualitesPage
         followedClubIds={followedClubIds}

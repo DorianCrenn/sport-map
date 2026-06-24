@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.js';
 import { useClubs } from './useClubs.js';
 import type { SportLinkClub } from '../types/sportlink.js';
@@ -14,6 +14,9 @@ interface ManagerRow { club_id: string; role: string; }
 
 // Profils démo "visiteur" qui ne doivent pas hériter des clubs managés par l'email démo
 const NON_ADMIN_DEMO_PROFILES = ['parent', 'player', 'supporter'];
+// Profils démo "gestionnaire" qui voient le club démo comme club managé
+const ADMIN_DEMO_PROFILES     = ['president', 'coach', 'communication'];
+const DEMO_CLUB_ID            = 'demo-club-001';
 
 export function useManagedClubs() {
   const { currentUser, isAdmin, isClubAdmin } = useAuth();
@@ -52,6 +55,17 @@ export function useManagedClubs() {
 
   const managedClubs = useMemo<ManagedClub[]>(() => {
     if (isDemoNonAdmin) return [];
+
+    // En mode démo avec profil admin, retourner le club démo directement (pas de currentUser réel)
+    if (isDemoMode() && demoProfile && ADMIN_DEMO_PROFILES.includes(demoProfile)) {
+      const demoClub = userClubs.find(c => String(c.id) === DEMO_CLUB_ID);
+      if (demoClub) {
+        const managerRole: ManagerRole = demoProfile === 'communication' ? 'communicant' : 'manager';
+        return [{ ...demoClub, managerRole }];
+      }
+      return [];
+    }
+
     const ids = new Set(Object.keys(roleByClubId));
     if (currentUser?.clubId) ids.add(String(currentUser.clubId));
     if (currentUser?.id) {
@@ -66,7 +80,7 @@ export function useManagedClubs() {
         const managerRole: ManagerRole = isOwner ? 'owner' : ((roleByClubId[cid] as ManagerRole) ?? 'manager');
         return { ...c, managerRole };
       });
-  }, [isDemoNonAdmin, userClubs, roleByClubId, currentUser?.clubId, currentUser?.id, isAdmin, isClubAdmin]);
+  }, [isDemoNonAdmin, demoProfile, userClubs, roleByClubId, currentUser?.clubId, currentUser?.id, isAdmin, isClubAdmin]);
 
   const isCoachOrManager = useMemo(() => managedClubs.some(c => c.managerRole !== 'communicant'), [managedClubs]);
   const isCommunicant    = useMemo(() => managedClubs.some(c => c.managerRole === 'communicant'), [managedClubs]);

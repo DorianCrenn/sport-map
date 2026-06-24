@@ -278,7 +278,7 @@ export const eventsBasket = [
   },
   {
     id: 'demo-event-b06', title: 'LAB Équipe A vs AS Brest Basket',
-    sport: 'Basketball', date: past(4, 20, 30),
+    sport: 'Basketball', date: past(4, 20),
     lat: 47.7481, lng: -3.3700, city: 'Lorient', venue: 'Salle Carnot',
     event_type: 'championship', team_name: 'Équipe A', category: 'Seniors',
     home_or_away: 'home', adversaire: 'AS Brest Basket', level: 'Pré-Nationale',

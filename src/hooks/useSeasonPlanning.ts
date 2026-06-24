@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 
 type DBRow = Record<string, unknown>;
 
@@ -70,7 +70,8 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
   useEffect(() => {
     const baseClubIds = clubIdKey.split(',').filter(Boolean);
     const filtered    = clubFilter !== 'all' ? baseClubIds.filter(id => id === String(clubFilter)) : baseClubIds;
-    if (!userId || !filtered.length) { setItems([]); setLoading(false); return; }
+    const demo = isDemoMode();
+    if ((!userId && !demo) || !filtered.length) { setItems([]); setLoading(false); return; }
     let cancelled = false;
     const managedSet = new Set(managedKey.split(',').filter(Boolean));
     const coachSet   = new Set(coachKey.split(',').filter(Boolean));
@@ -78,7 +79,8 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
 
     async function load() {
       setLoading(true);
-      const [{ data: directEntries }, { data: guardianRows }] = await Promise.all([
+      // En mode démo, pas de currentUser → on saute les requêtes dépendant de userId
+      const [{ data: directEntries }, { data: guardianRows }] = (!userId || demo) ? [{ data: [] }, { data: [] }] : await Promise.all([
         supabase.from('club_players').select('club_id, team_id, name').eq('user_id', userId!).eq('is_active', true),
         supabase.from('player_guardians').select('player_id').eq('user_id', userId!),
       ]) as [{ data: { club_id: string; team_id?: string; name?: string }[] | null }, { data: { player_id: string }[] | null }];
@@ -110,8 +112,8 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       const eventIds   = events.map(e => String(e.id));
 
       const [trainAttRes, matchAttRes, trainCntRes, matchCntRes, convocRes, matchScoresRes] = await Promise.all([
-        sessionIds.length ? supabase.from('training_attendance').select('session_id, status').in('session_id', sessionIds).eq('user_id', userId!) : { data: [] },
-        eventIds.length   ? supabase.from('match_player_attendance').select('event_id, status').in('event_id', eventIds).eq('user_id', userId!) : { data: [] },
+        (sessionIds.length && userId) ? supabase.from('training_attendance').select('session_id, status').in('session_id', sessionIds).eq('user_id', userId) : { data: [] },
+        (eventIds.length && userId)   ? supabase.from('match_player_attendance').select('event_id, status').in('event_id', eventIds).eq('user_id', userId) : { data: [] },
         sessionIds.length ? supabase.from('training_attendance_counts').select('session_id, present_count, absent_count, unsure_count').in('session_id', sessionIds) : { data: [] },
         eventIds.length   ? supabase.from('match_attendance_counts').select('event_id, present_count, absent_count, unsure_count').in('event_id', eventIds) : { data: [] },
         (managedSet.size > 0 && eventIds.length) ? supabase.from('event_convocations').select('event_id, status').in('event_id', eventIds) : { data: [] },
