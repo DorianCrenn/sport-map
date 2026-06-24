@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { trackSpotlightSeen } from './demoAnalytics.js';
 
 // ── Styles injectés une seule fois ────────────────────────────────────────────
@@ -128,44 +128,89 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
 
   if (!active || !rect || rect.width === 0) return null;
 
-  const PAD = 10;
-  const VW  = window.innerWidth;
-  const VH  = window.innerHeight;
+  // Utiliser le Visual Viewport pour les mobiles (tient compte du clavier, zoom, chrome navigateur)
+  const vvp      = (typeof window !== 'undefined' && window.visualViewport) ? window.visualViewport : null;
+  const PAD      = 10;
+  const VW       = vvp ? vvp.width  : window.innerWidth;
+  const VH       = vvp ? vvp.height : window.innerHeight;
+  const VVP_X    = vvp ? vvp.offsetLeft : 0;
+  const VVP_Y    = vvp ? vvp.offsetTop  : 0;
 
   const centerX    = rect.left + rect.width / 2;
   const rectBottom = rect.top + rect.height;
   const rectRight  = rect.left + rect.width;
 
   // Ne pas afficher si l'élément est hors du viewport
-  if (rect.top > VH || rectBottom < 0 || rect.left > VW || rectRight < 0) return null;
+  if (rect.top > VH + VVP_Y || rectBottom < VVP_Y || rect.left > VW + VVP_X || rectRight < VVP_X) return null;
 
-  // ── Contraindre X pour que la flèche ne sorte jamais du viewport ──────────
-  // La flèche/label fait ~160px de large max ("👆 Clique ici" + lettre-spacing)
-  const ARROW_W  = 160;
-  const MARGIN_H = 12;
-  const safeX = Math.max(
-    ARROW_W / 2 + MARGIN_H,
-    Math.min(centerX, VW - ARROW_W / 2 - MARGIN_H),
+  // ── Dimensions conservatives du bloc flèche+label ────────────────────────
+  // Estimées larges pour le clamping → le label ne sortira jamais du viewport.
+  // LABEL_W : "👆 CLIQUE ICI" en uppercase 11px + letter-spacing 1px + marge
+  const LABEL_W  = 220;
+  const LABEL_H  = 60;   // SVG 28px + gap 4px + texte 18px + marge
+  const MARGIN_H = 16;
+  const MARGIN_V = 10;
+
+  // ── Position horizontale : left absolu (pas de translateX) ───────────────
+  // On calcule le left du bord gauche du container pour qu'il soit entièrement visible.
+  const idealLeft = centerX - LABEL_W / 2;
+  const labelLeft = Math.max(
+    MARGIN_H,
+    Math.min(idealLeft, VW - LABEL_W - MARGIN_H),
   );
 
-  // ── Choisir la direction selon l'espace réel disponible ──────────────────
-  // Hauteur estimée du container flèche+label (SVG 28px + gap 4px + texte 14px + padding)
-  const ARROW_H  = 58;
-  const MARGIN_V = 8;
-  const spaceBelow = VH - rectBottom - PAD - MARGIN_V;
-  const spaceAbove = rect.top - PAD - MARGIN_V;
+  // ── Direction verticale : au-dessus ou en dessous de l'élément ───────────
+  const spaceBelow = VH - (rectBottom - VVP_Y) - PAD - MARGIN_V;
+  const spaceAbove = (rect.top - VVP_Y) - PAD - MARGIN_V;
 
-  // Flèche en dessous si : il y a de la place ET l'élément est dans la moitié haute
-  // Flèche au-dessus si : il y a de la place ET l'élément est dans la moitié basse
-  // Fallback : forcer en dessous si pas assez de place au-dessus, sinon au-dessus
   let arrowBelow;
-  if (spaceBelow >= ARROW_H && spaceAbove >= ARROW_H) {
-    arrowBelow = rect.top < VH * 0.60; // les 2 options sont possibles → selon position
+  if (spaceBelow >= LABEL_H && spaceAbove >= LABEL_H) {
+    arrowBelow = rect.top - VVP_Y < VH * 0.60;
   } else {
-    arrowBelow = spaceBelow >= ARROW_H || spaceAbove < ARROW_H;
+    arrowBelow = spaceBelow >= LABEL_H || spaceAbove < LABEL_H;
   }
 
+  // ── Position verticale clampée ────────────────────────────────────────────
   const arrowSize = 28;
+  let labelTop;
+  if (arrowBelow) {
+    // Flèche sous l'élément, pointant vers le haut
+    labelTop = Math.min(
+      rectBottom + PAD + 8,
+      VH + VVP_Y - LABEL_H - MARGIN_V,
+    );
+  } else {
+    // Flèche au-dessus de l'élément, pointant vers le bas
+    labelTop = Math.max(
+      rect.top - PAD - arrowSize - 24,
+      VVP_Y + MARGIN_V,
+    );
+  }
+
+  const labelStyle: CSSProperties = {
+    position:      'fixed',
+    top:           labelTop,
+    left:          labelLeft,
+    width:         LABEL_W,
+    display:       'flex',
+    flexDirection: 'column',
+    alignItems:    'center',
+    gap:           4,
+    transition:    'top 0.15s ease, left 0.15s ease',
+    overflow:      'visible',
+  };
+
+  const textStyle: CSSProperties = {
+    fontSize:      11,
+    fontWeight:    800,
+    letterSpacing: 1,
+    color:         '#a5b4fc',
+    textTransform: 'uppercase',
+    textShadow:    '0 1px 8px rgba(0,0,0,0.8)',
+    whiteSpace:    'nowrap',
+    maxWidth:      LABEL_W - 8,
+    textAlign:     'center',
+  };
 
   return (
     <div
@@ -188,16 +233,16 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
           height:     rect.height + PAD * 2,
           borderRadius: 14,
           boxShadow: [
-            `0 0 0 9999px rgba(0,0,0,0.58)`,                         // overlay sombre
-            `0 0 0 2.5px rgba(99,102,241,0.9)`,                      // contour indigo
-            `0 0 0 5px rgba(99,102,241,0.3)`,                        // halo proche
-            `0 0 22px 4px rgba(99,102,241,0.5)`,                     // lueur diffuse
+            `0 0 0 9999px rgba(0,0,0,0.58)`,
+            `0 0 0 2.5px rgba(99,102,241,0.9)`,
+            `0 0 0 5px rgba(99,102,241,0.3)`,
+            `0 0 22px 4px rgba(99,102,241,0.5)`,
           ].join(', '),
           transition: 'top 0.15s ease, left 0.15s ease, width 0.15s ease, height 0.15s ease',
         }}
       />
 
-      {/* ── Anneaux pulsants (expansion et disparition) ─────────────────── */}
+      {/* ── Anneaux pulsants ────────────────────────────────────────────── */}
       <div style={{
         position:     'fixed',
         top:          rect.top  - PAD,
@@ -226,57 +271,19 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
       {/* ── Flèche animée + label "Clique ici" ───────────────────────────── */}
       {arrowBelow ? (
         /* Flèche pointant vers le haut (↑), positionnée sous l'élément */
-        <div style={{
-          position:   'fixed',
-          // Clamper verticalement pour ne pas sortir en bas
-          top:        Math.min(rectBottom + PAD + 8, VH - ARROW_H - MARGIN_V),
-          left:       safeX,
-          transform:  'translateX(-50%)',
-          display:    'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap:        4,
-          animation:  'sl-demo-arrow 0.9s ease-in-out infinite',
-          transition: 'top 0.15s ease, left 0.15s ease',
-        }}>
-          <span style={{
-            fontSize: 11, fontWeight: 800, letterSpacing: 1,
-            color: '#a5b4fc', textTransform: 'uppercase',
-            textShadow: '0 1px 8px rgba(0,0,0,0.8)',
-            whiteSpace: 'nowrap',
-          }}>
-            👆 Clique ici
-          </span>
+        <div style={{ ...labelStyle, animation: 'sl-demo-arrow 0.9s ease-in-out infinite' }}>
+          <span style={textStyle}>👆 Clique ici</span>
           <svg width={arrowSize} height={arrowSize} viewBox="0 0 24 24" fill="none">
             <path d="M12 19V5M5 12l7-7 7 7" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
       ) : (
         /* Flèche pointant vers le bas (↓), positionnée au-dessus de l'élément */
-        <div style={{
-          position:   'fixed',
-          // Clamper verticalement pour ne pas sortir en haut
-          top:        Math.max(rect.top - PAD - arrowSize - 24, MARGIN_V),
-          left:       safeX,
-          transform:  'translateX(-50%)',
-          display:    'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap:        4,
-          animation:  'sl-demo-arrow-up 0.9s ease-in-out infinite',
-          transition: 'top 0.15s ease, left 0.15s ease',
-        }}>
+        <div style={{ ...labelStyle, animation: 'sl-demo-arrow-up 0.9s ease-in-out infinite' }}>
           <svg width={arrowSize} height={arrowSize} viewBox="0 0 24 24" fill="none">
             <path d="M12 5v14M19 12l-7 7-7-7" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span style={{
-            fontSize: 11, fontWeight: 800, letterSpacing: 1,
-            color: '#a5b4fc', textTransform: 'uppercase',
-            textShadow: '0 1px 8px rgba(0,0,0,0.8)',
-            whiteSpace: 'nowrap',
-          }}>
-            👆 Clique ici
-          </span>
+          <span style={textStyle}>👆 Clique ici</span>
         </div>
       )}
     </div>
