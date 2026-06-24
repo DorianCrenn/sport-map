@@ -29,7 +29,7 @@ export default function ClaimPlayerModal({ player, clubId, currentUser, onClose 
   }
 
   if (done) return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pt-4" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }} onClick={onClose}>
       <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center" onClick={e => e.stopPropagation()}>
         <div className="text-4xl mb-3">✅</div>
         <p className="font-bold text-lg font-poppins" style={{ color: '#0F1E3A' }}>Demande envoyée !</p>

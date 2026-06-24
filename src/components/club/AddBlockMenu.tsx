@@ -39,7 +39,7 @@ export default function AddBlockMenu({ onAdd, onCancel }: AddBlockMenuProps) {
               Annuler
             </button>
           </div>
-          <div style={{ overflowY: 'auto', padding: '0 12px 24px' }}>
+          <div style={{ overflowY: 'auto', padding: '0 12px', paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
               {BLOCK_TYPES.map(({ type, label, desc, icon }) => (
                 <button

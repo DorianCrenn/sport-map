@@ -154,12 +154,12 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
       {/* Sticky header */}
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, padding: '0 12px', position: 'relative' }}>
         {snapPoint === 'full' ? (
-          <button onClick={() => setSnapPoint('detail')} aria-label="Réduire" style={{ position: 'absolute', left: 8, top: 4, width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)' }}>
+          <button onPointerDown={(e) => e.stopPropagation()} onClick={() => setSnapPoint('detail')} aria-label="Réduire" style={{ position: 'absolute', left: 8, top: 4, width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
         ) : null}
         <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
-        <button onClick={onClose} aria-label="Fermer" style={{ position: 'absolute', right: 8, top: 4, width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+        <button onPointerDown={(e) => e.stopPropagation()} onClick={onClose} aria-label="Fermer" style={{ position: 'absolute', right: 8, top: 4, width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>

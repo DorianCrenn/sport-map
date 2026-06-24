@@ -111,7 +111,7 @@ export default function TrainingSessionDetail({ session, clubId, currentUser, is
           </div>
         )}
 
-        <div className="px-6 py-5 space-y-2">
+        <div className="px-6 pt-5 space-y-2" style={{ paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))' }}>
           {isManager && (
             <button onClick={() => setShowMsgModal(true)} className="w-full py-3 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2" style={{ backgroundColor: '#0F1E3A' }}>
               <span>📣</span> Envoyer un message aux participants

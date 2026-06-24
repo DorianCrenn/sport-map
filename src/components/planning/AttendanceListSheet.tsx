@@ -86,7 +86,7 @@ function SheetContent({ title, counts, byStatus, onClose }: SheetContentProps) {
         </div>
         <button onClick={onClose} className="w-8 h-8 rounded-full bg-[var(--sl-surface)] flex items-center justify-center text-[var(--sl-t2)]">✕</button>
       </div>
-      <div className="overflow-y-auto flex-1 pt-3 pb-8">
+      <div className="overflow-y-auto flex-1 pt-3" style={{ paddingBottom: 'calc(32px + env(safe-area-inset-bottom, 0px))' }}>
         <Section status="present" records={byStatus.present} />
         <Section status="absent"  records={byStatus.absent}  />
         <Section status="unsure"  records={byStatus.unsure}  />
