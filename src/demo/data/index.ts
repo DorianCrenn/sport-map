@@ -7,6 +7,7 @@ import { demoPlayers } from './players.js';
 import { demoStats, demoPageViews, demoPosterExports, demoClubFollows } from './stats.js';
 import { demoConvocations } from './convocations.js';
 import { extraClubs, extraPlayers, extraEvents, extraAnnouncements } from './extra-clubs.js';
+import { franceClubs, francePlayers, franceEvents, franceAnnouncements } from './extra-clubs-france.js';
 
 export {
   DEMO_CLUB_ID, DEMO_USER_ID,
@@ -85,10 +86,10 @@ export function buildDemoTables() {
 
   // Mutable copies — modifiable during sandbox mode
   const tables = {
-    events:                [...demoEvents, ...extraEvents],
-    clubs:                 [{ ...demoClubRow }, ...extraClubs],
+    events:                [...demoEvents, ...extraEvents, ...franceEvents],
+    clubs:                 [{ ...demoClubRow }, ...extraClubs, ...franceClubs],
     profiles:              [{ ...DEMO_PROFILE_ROW }],
-    club_announcements:    [...demoAnnouncements, ...extraAnnouncements],
+    club_announcements:    [...demoAnnouncements, ...extraAnnouncements, ...franceAnnouncements],
     rides:                 [...demoRides],
     ride_requests:         [...demoRideRequests],
     ride_notifications:    [],
@@ -163,38 +164,140 @@ export function buildDemoTables() {
     // ── Gestionnaires du club ─────────────────────────────────────────────────
     // Permet à useManagedClubs de reconnaître le demo user comme manager
     club_managers: [
-      { id: 'demo-cm-001', club_id: DEMO_CLUB_ID, email: 'demo@sportlink.app',        role: 'owner',        name: 'Alexandre Martin' },
-      { id: 'demo-cm-002', club_id: DEMO_CLUB_ID, email: 'coach@fc-sportlink.app',    role: 'coach',        name: 'Bastien Tilly' },
-      { id: 'demo-cm-003', club_id: DEMO_CLUB_ID, email: 'comm@fc-sportlink.app',     role: 'communicant',  name: 'Sophie Kerboas' },
-      { id: 'demo-cm-004', club_id: DEMO_CLUB_ID, email: 'entraineur@fc-sportlink.app', role: 'editor',     name: 'Marc Derrien' },
+      { id: 'demo-cm-001', club_id: DEMO_CLUB_ID, email: 'demo@sportlink.app',          role: 'manager',     name: 'Alexandre Martin', status: 'active', user_id: DEMO_USER_ID, added_at: '2026-01-15T10:00:00Z', updated_at: '2026-01-15T10:00:00Z' },
+      { id: 'demo-cm-002', club_id: DEMO_CLUB_ID, email: 'coach@fc-sportlink.app',      role: 'editor',      name: 'Bastien Tilly',    status: 'active', user_id: null,         added_at: '2026-01-16T10:00:00Z', updated_at: '2026-01-16T10:00:00Z' },
+      { id: 'demo-cm-003', club_id: DEMO_CLUB_ID, email: 'comm@fc-sportlink.app',       role: 'communicant', name: 'Sophie Kerboas',   status: 'active', user_id: null,         added_at: '2026-01-17T10:00:00Z', updated_at: '2026-01-17T10:00:00Z' },
+      { id: 'demo-cm-004', club_id: DEMO_CLUB_ID, email: 'entraineur@fc-sportlink.app', role: 'editor',      name: 'Marc Derrien',     status: 'active', user_id: null,         added_at: '2026-01-18T10:00:00Z', updated_at: '2026-01-18T10:00:00Z' },
     ],
 
     club_follows: [..._demoFollowsWithUser],
     club_media_assets: [],
-    attendees:         [],
-    favorites:         [],
-    event_comments:    [],
-    event_reactions:   [],
+
+    // ── Favoris — demo user + spectateurs fictifs ─────────────────────────────
+    favorites: [
+      { user_id: DEMO_USER_ID,      event_id: 'demo-event-001', created_at: NOW },
+      { user_id: DEMO_USER_ID,      event_id: 'demo-event-003', created_at: NOW },
+      { user_id: DEMO_USER_ID,      event_id: 'demo-event-006', created_at: NOW },
+      { user_id: 'fake-fan-001',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-002',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-003',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-004',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-005',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-001',    event_id: 'demo-event-003', created_at: NOW },
+      { user_id: 'fake-fan-002',    event_id: 'demo-event-003', created_at: NOW },
+      { user_id: 'fake-fan-006',    event_id: 'demo-event-004', created_at: NOW },
+      { user_id: 'fake-fan-007',    event_id: 'demo-event-002', created_at: NOW },
+    ],
+
+    // ── Attendees ("J'y serai") — demo user + supporters ─────────────────────
+    attendees: [
+      { user_id: DEMO_USER_ID,      event_id: 'demo-event-001', created_at: NOW },
+      { user_id: DEMO_USER_ID,      event_id: 'demo-event-003', created_at: NOW },
+      { user_id: 'fake-fan-001',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-002',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-003',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-004',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-005',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-006',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-007',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-008',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-009',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-010',    event_id: 'demo-event-001', created_at: NOW },
+      { user_id: 'fake-fan-001',    event_id: 'demo-event-003', created_at: NOW },
+      { user_id: 'fake-fan-002',    event_id: 'demo-event-003', created_at: NOW },
+      { user_id: 'fake-fan-003',    event_id: 'demo-event-003', created_at: NOW },
+      { user_id: 'fake-fan-004',    event_id: 'demo-event-003', created_at: NOW },
+      { user_id: 'fake-fan-001',    event_id: 'demo-event-006', created_at: NOW },
+      { user_id: 'fake-fan-002',    event_id: 'demo-event-006', created_at: NOW },
+      { user_id: 'fake-fan-001',    event_id: 'demo-event-004', created_at: NOW },
+    ],
+
+    // ── Commentaires — matchs récents / à venir ───────────────────────────────
+    // profiles: { name } est pré-intégré car demoClient ne résout pas les joins
+    event_comments: [
+      // match J+4 vs AS Plougastel (demo-event-001)
+      { id: 'demo-com-001', event_id: 'demo-event-001', user_id: 'fake-fan-001', content: 'Allez les gars ! On compte sur vous samedi 💪', created_at: new Date(Date.now() - 3 * 3600000).toISOString(), profiles: { name: 'Thomas Le Gall' } },
+      { id: 'demo-com-002', event_id: 'demo-event-001', user_id: 'fake-fan-002', content: 'J\'y serai avec toute la famille ! Bonne chance à l\'équipe 🙌', created_at: new Date(Date.now() - 2 * 3600000).toISOString(), profiles: { name: 'Marie Tanguy' } },
+      { id: 'demo-com-003', event_id: 'demo-event-001', user_id: 'fake-fan-003', content: 'Plougastel est redoutable cette saison mais on a les ressources pour les battre', created_at: new Date(Date.now() - 90 * 60000).toISOString(), profiles: { name: 'Yannick Kervella' } },
+      { id: 'demo-com-004', event_id: 'demo-event-001', user_id: DEMO_USER_ID,   content: 'L\'équipe est prête. La séance vidéo d\'hier a bien préparé les joueurs 🎯', created_at: new Date(Date.now() - 45 * 60000).toISOString(), profiles: { name: 'Alexandre Martin' } },
+      { id: 'demo-com-005', event_id: 'demo-event-001', user_id: 'fake-fan-004', content: 'Coupe de Bretagne + championnat en même semaine... mangez des pâtes les gars 😄', created_at: new Date(Date.now() - 20 * 60000).toISOString(), profiles: { name: 'Gaël Prigent' } },
+      { id: 'demo-com-006', event_id: 'demo-event-001', user_id: 'fake-fan-005', content: 'RDV samedi au stade à 14h30 ! Qui apporte des drapeaux ?', created_at: new Date(Date.now() - 8 * 60000).toISOString(), profiles: { name: 'Céline Morvant' } },
+
+      // match passé victoire 3-1 (demo-event-012)
+      { id: 'demo-com-007', event_id: 'demo-event-012', user_id: 'fake-fan-001', content: 'VICTOIRE 3-1 ! Quelle performance collective 🏆🔥', created_at: new Date(Date.now() - 7 * 86400000).toISOString(), profiles: { name: 'Thomas Le Gall' } },
+      { id: 'demo-com-008', event_id: 'demo-event-012', user_id: 'fake-fan-006', content: 'Lucas Morel, homme du match mérité. Quel match pour lui !', created_at: new Date(Date.now() - 7 * 86400000 + 3600000).toISOString(), profiles: { name: 'Florian Bodennec' } },
+      { id: 'demo-com-009', event_id: 'demo-event-012', user_id: DEMO_USER_ID,   content: 'Bravo à tous. 3 points précieux en vue du top 3. On continue 💪', created_at: new Date(Date.now() - 7 * 86400000 + 7200000).toISOString(), profiles: { name: 'Alexandre Martin' } },
+      { id: 'demo-com-010', event_id: 'demo-event-012', user_id: 'fake-fan-007', content: 'Ambiance de feu au stade ce soir, merci à tous les supporters présents !', created_at: new Date(Date.now() - 7 * 86400000 + 10800000).toISOString(), profiles: { name: 'Sonia Kerambrun' } },
+
+      // tournoi U17 (demo-event-003)
+      { id: 'demo-com-011', event_id: 'demo-event-003', user_id: 'fake-fan-008', content: 'Hâte de voir nos U17 en action ! Noa Kerguelen va régaler 🌟', created_at: new Date(Date.now() - 1 * 86400000).toISOString(), profiles: { name: 'Patrice Guégan' } },
+      { id: 'demo-com-012', event_id: 'demo-event-003', user_id: 'fake-fan-009', content: '8 équipes, belle organisation. Bravo au club pour l\'initiative !', created_at: new Date(Date.now() - 18 * 3600000).toISOString(), profiles: { name: 'Isabelle Conan' } },
+      { id: 'demo-com-013', event_id: 'demo-event-003', user_id: DEMO_USER_ID,   content: 'Restauration sur place dès 9h ! Bénévoles : merci de confirmer votre présence 🙏', created_at: new Date(Date.now() - 12 * 3600000).toISOString(), profiles: { name: 'Alexandre Martin' } },
+
+      // match en direct (demo-event-016)
+      { id: 'demo-com-014', event_id: 'demo-event-016', user_id: 'fake-fan-001', content: '2-1 !!! Superbe but de Julien Prigent en contre-attaque 🔥🔥🔥', created_at: new Date(Date.now() - 25 * 60000).toISOString(), profiles: { name: 'Thomas Le Gall' } },
+      { id: 'demo-com-015', event_id: 'demo-event-016', user_id: 'fake-fan-010', content: 'Tenez bon, plus qu\'à tenir 20 min !!', created_at: new Date(Date.now() - 15 * 60000).toISOString(), profiles: { name: 'Loïc Nédélec' } },
+      { id: 'demo-com-016', event_id: 'demo-event-016', user_id: 'fake-fan-002', content: 'ALLEZ FC SPORTLINK 💚💪 La ville est avec vous !', created_at: new Date(Date.now() - 5 * 60000).toISOString(), profiles: { name: 'Marie Tanguy' } },
+    ],
+
+    // ── Réactions emoji — uniquement les 3 emojis autorisés par le CHECK DB : 👏 🔥 💪
+    event_reactions: [
+      // match à venir J+4
+      { event_id: 'demo-event-001', user_id: 'fake-fan-001', emoji: '💪' },
+      { event_id: 'demo-event-001', user_id: 'fake-fan-002', emoji: '💪' },
+      { event_id: 'demo-event-001', user_id: 'fake-fan-003', emoji: '💪' },
+      { event_id: 'demo-event-001', user_id: 'fake-fan-004', emoji: '🔥' },
+      { event_id: 'demo-event-001', user_id: 'fake-fan-005', emoji: '🔥' },
+      { event_id: 'demo-event-001', user_id: 'fake-fan-006', emoji: '👏' },
+      { event_id: 'demo-event-001', user_id: DEMO_USER_ID,   emoji: '💪' },
+      // victoire 3-1
+      { event_id: 'demo-event-012', user_id: 'fake-fan-001', emoji: '👏' },
+      { event_id: 'demo-event-012', user_id: 'fake-fan-002', emoji: '👏' },
+      { event_id: 'demo-event-012', user_id: 'fake-fan-003', emoji: '👏' },
+      { event_id: 'demo-event-012', user_id: 'fake-fan-004', emoji: '🔥' },
+      { event_id: 'demo-event-012', user_id: 'fake-fan-005', emoji: '🔥' },
+      { event_id: 'demo-event-012', user_id: 'fake-fan-006', emoji: '💪' },
+      { event_id: 'demo-event-012', user_id: 'fake-fan-007', emoji: '💪' },
+      { event_id: 'demo-event-012', user_id: 'fake-fan-008', emoji: '👏' },
+      { event_id: 'demo-event-012', user_id: DEMO_USER_ID,   emoji: '👏' },
+      // match en direct
+      { event_id: 'demo-event-016', user_id: 'fake-fan-001', emoji: '🔥' },
+      { event_id: 'demo-event-016', user_id: 'fake-fan-009', emoji: '🔥' },
+      { event_id: 'demo-event-016', user_id: 'fake-fan-010', emoji: '💪' },
+      { event_id: 'demo-event-016', user_id: 'fake-fan-002', emoji: '👏' },
+      // tournoi
+      { event_id: 'demo-event-003', user_id: 'fake-fan-001', emoji: '💪' },
+      { event_id: 'demo-event-003', user_id: 'fake-fan-002', emoji: '💪' },
+      { event_id: 'demo-event-003', user_id: 'fake-fan-003', emoji: '👏' },
+    ],
 
     // ── Événements mis en avant (featured gallery dans ClubFeed) ─────────────
+    // Colonnes réelles : id, event_id, club_id, plan, priority, starts_at, ends_at
+    // Les champs events:{...} et clubs:{...} sont pré-intégrés car demoClient ne résout pas les joins
     featured_events: [
       {
         id: 'demo-fe-001', event_id: 'demo-event-001', club_id: DEMO_CLUB_ID,
-        plan: 'pro', sport: 'Football', club_name: 'FC SportLink Démo',
-        poster_url: null, home_team: 'FC SportLink Démo', away_team: 'AS Plougastel',
-        event_date: futureDate(4, 15), created_at: NOW,
+        plan: 'pro', priority: 10,
+        starts_at: new Date(Date.now() - 7 * 86400000).toISOString(),
+        ends_at:   futureDate(5, 23),
+        events: { id: 'demo-event-001', title: 'FC SportLink Démo vs AS Plougastel', date: futureDate(4, 15), sport: 'Football', venue: 'Stade Francis-Le Blé', city: 'Brest', team_name: 'FC SportLink Démo', adversaire: 'AS Plougastel', home_or_away: 'home' },
+        clubs:  { name: 'FC SportLink Démo' },
       },
       {
         id: 'demo-fe-002', event_id: 'demo-event-002', club_id: DEMO_CLUB_ID,
-        plan: 'pro', sport: 'Football', club_name: 'FC SportLink Démo',
-        poster_url: null, home_team: 'FC SportLink Démo', away_team: 'Stade Brestois B',
-        event_date: futureDate(7, 14), created_at: NOW,
+        plan: 'pro', priority: 8,
+        starts_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+        ends_at:   futureDate(8, 23),
+        events: { id: 'demo-event-002', title: 'Coupe de Bretagne — FC SportLink vs Stade Brestois B', date: futureDate(7, 14), sport: 'Football', venue: "Stade de l'Elorn", city: 'Brest', team_name: 'FC SportLink Démo', adversaire: 'Stade Brestois B', home_or_away: 'home' },
+        clubs:  { name: 'FC SportLink Démo' },
       },
       {
         id: 'demo-fe-003', event_id: 'demo-event-003', club_id: DEMO_CLUB_ID,
-        plan: 'elite', sport: 'Football', club_name: 'FC SportLink Démo',
-        poster_url: null, home_team: 'Tournoi de la Pentecôte', away_team: 'U17 – 8 équipes',
-        event_date: futureDate(10, 9), created_at: NOW,
+        plan: 'elite', priority: 15,
+        starts_at: new Date(Date.now() - 3 * 86400000).toISOString(),
+        ends_at:   futureDate(11, 23),
+        events: { id: 'demo-event-003', title: 'Tournoi de la Pentecôte U17 — 8 équipes', date: futureDate(10, 9), sport: 'Football', venue: 'Complexe Sportif de la Cavale Blanche', city: 'Brest', team_name: 'FC SportLink Démo U17', adversaire: '7 clubs bretons', home_or_away: 'home' },
+        clubs:  { name: 'FC SportLink Démo' },
       },
     ],
 
@@ -202,13 +305,36 @@ export function buildDemoTables() {
     posters:               [],
     club_ai_usage:         [{ club_id: DEMO_CLUB_ID, month: '2026-06-01', generate_count: 6 }],
     club_page_views:       [...demoPageViews],
-    club_players:          [...demoPlayers, ...extraPlayers],
+    club_players:          [...demoPlayers, ...extraPlayers, ...francePlayers],
     push_subscriptions:    [],
     event_attendee_counts: [...demoAttendeesCounts],
-    event_reaction_counts: [],
+    event_reaction_counts: [
+      { event_id: 'demo-event-001', emoji: '💪', count: 3 },
+      { event_id: 'demo-event-001', emoji: '🔥', count: 2 },
+      { event_id: 'demo-event-001', emoji: '👏', count: 1 },
+      { event_id: 'demo-event-012', emoji: '👏', count: 4 },
+      { event_id: 'demo-event-012', emoji: '🔥', count: 2 },
+      { event_id: 'demo-event-012', emoji: '💪', count: 2 },
+      { event_id: 'demo-event-016', emoji: '🔥', count: 2 },
+      { event_id: 'demo-event-016', emoji: '💪', count: 1 },
+      { event_id: 'demo-event-016', emoji: '👏', count: 1 },
+      { event_id: 'demo-event-003', emoji: '💪', count: 2 },
+      { event_id: 'demo-event-003', emoji: '👏', count: 1 },
+    ],
     event_photos:          [],
     event_predictions:     [],
-    app_feedback:          [],
+
+    // ── Feedback communautaire — données pour le panel admin ─────────────────
+    app_feedback: [
+      { id: 'demo-fb-001', user_id: 'demo-follower-1',  type: 'idea',     title: 'Ajouter un calendrier partagé pour toute l\'équipe',              description: 'Permettre à tous les membres du club de voir le planning complet sur un seul écran, avec export Google Calendar/iCal.',     status: 'planned',    vote_count: 31, admin_note: 'Prévu pour la v2.5 — intégration Google Calendar en cours', created_at: new Date(Date.now() - 12 * 86400000).toISOString() },
+      { id: 'demo-fb-002', user_id: 'demo-follower-2',  type: 'bug',      title: 'Les photos de l\'événement ne s\'affichent pas sur iOS 17',       description: 'Quand j\'ouvre la galerie photo d\'un match sur iPhone 14 iOS 17.4, les images ne chargent pas. Ça tourne indéfiniment.',           status: 'resolved',   vote_count: 18, admin_note: 'Corrigé en v1.8.2 — problème de cache CDN sur Safari', created_at: new Date(Date.now() - 8 * 86400000).toISOString() },
+      { id: 'demo-fb-003', user_id: 'demo-follower-3',  type: 'idea',     title: 'Intégrer les classements régionaux FFF en temps réel',            description: 'Afficher automatiquement le classement de notre ligue dans le tableau de bord du club. Plus besoin d\'aller sur fffoot.fr.',       status: 'in_dev',     vote_count: 47, admin_note: 'API FFF en cours d\'intégration — ETA fin juillet 2026', created_at: new Date(Date.now() - 18 * 86400000).toISOString() },
+      { id: 'demo-fb-004', user_id: 'demo-follower-4',  type: 'question', title: 'Comment exporter les statistiques du club en PDF ?',             description: 'Je cherche comment générer un rapport mensuel avec les stats de présence et les résultats pour le présenter en AG.',               status: 'resolved',   vote_count: 12, admin_note: 'Guide ajouté dans la FAQ — bouton Export dans le dashboard', created_at: new Date(Date.now() - 5 * 86400000).toISOString() },
+      { id: 'demo-fb-005', user_id: 'demo-follower-5',  type: 'idea',     title: 'Notification push pour les scores en direct',                    description: 'Recevoir une notif dès qu\'un but est marqué lors d\'un match en direct. Comme les apps de sport pro.',                          status: 'planned',    vote_count: 63, admin_note: 'Priorité haute — intégration Realtime + push prévue v2.6', created_at: new Date(Date.now() - 25 * 86400000).toISOString() },
+      { id: 'demo-fb-006', user_id: 'demo-follower-6',  type: 'bug',      title: 'Le bouton "Suivre" disparaît parfois sur la page club',          description: 'En rechargement rapide de la page club, le bouton Suivre n\'apparaît pas. Il faut scroller pour le voir apparaître.',              status: 'analyzing',  vote_count:  9, admin_note: null, created_at: new Date(Date.now() - 3 * 86400000).toISOString() },
+      { id: 'demo-fb-007', user_id: 'demo-follower-7',  type: 'idea',     title: 'Partager les convocations directement sur WhatsApp',             description: 'Un bouton partage rapide depuis la liste de convocation pour envoyer la liste confirmée au groupe WhatsApp de l\'équipe.',       status: 'new',        vote_count: 29, admin_note: null, created_at: new Date(Date.now() - 1 * 86400000).toISOString() },
+      { id: 'demo-fb-008', user_id: 'demo-follower-8',  type: 'idea',     title: 'Mode sombre amélioré avec thème personnalisable par club',       description: 'Permettre aux clubs de choisir une couleur principale qui se répercute dans toute l\'interface. Immersion et identité visuelle.',   status: 'new',        vote_count: 22, admin_note: null, created_at: new Date(Date.now() - 2 * 86400000).toISOString() },
+    ],
     app_feedback_votes:    [],
     feedback_notifications: [
       {
@@ -241,7 +367,22 @@ export function buildDemoTables() {
       { id: 'demo-pg-002', player_id: 'demo-player-041', user_id: DEMO_USER_ID, created_at: NOW },
     ],
 
-    club_challenges:         [],
+    club_challenges: [
+      {
+        id: 'demo-ch-001', challenger_id: DEMO_CLUB_ID, challenged_id: 'demo-club-002',
+        type: 'match', message: 'Un match amical avant la fin de saison ? On vous propose un Football vs Rugby 6-a-side !',
+        status: 'pending', created_at: new Date(Date.now() - 2 * 86400000).toISOString(), responded_at: null,
+        challenger: { id: DEMO_CLUB_ID, name: 'FC SportLink Démo', logo_url: null, sport: 'Football' },
+        challenged: { id: 'demo-club-002', name: 'Stade Rennais Rugby', logo_url: null, sport: 'Rugby' },
+      },
+      {
+        id: 'demo-ch-002', challenger_id: 'demo-club-003', challenged_id: DEMO_CLUB_ID,
+        type: 'match', message: 'Challenge inter-clubs ! Basket vs Football — qui est le plus athlétique ?',
+        status: 'accepted', created_at: new Date(Date.now() - 7 * 86400000).toISOString(), responded_at: new Date(Date.now() - 6 * 86400000).toISOString(),
+        challenger: { id: 'demo-club-003', name: 'Brest Basket Armorique', logo_url: null, sport: 'Basketball' },
+        challenged: { id: DEMO_CLUB_ID, name: 'FC SportLink Démo', logo_url: null, sport: 'Football' },
+      },
+    ],
 
     // ── Présences entraînements ────────────────────────────────────────────────
     // Demo user + joueurs fictifs pour alimenter AttendanceListSheet
@@ -329,6 +470,17 @@ export function buildDemoTables() {
     // Calculées à partir des tableaux ci-dessus pour rester cohérentes
     training_attendance_counts: [],
     match_attendance_counts:    [],
+
+    // ── Abonnements club (plan actif) ──────────────────────────────────────────
+    club_subscriptions: [
+      {
+        id: 'demo-sub-001', club_id: DEMO_CLUB_ID, plan: 'pro',
+        stripe_customer_id: null, stripe_subscription_id: null,
+        status: 'active', current_period_start: '2026-06-01T00:00:00Z',
+        current_period_end: '2027-06-01T00:00:00Z', cancel_at_period_end: false,
+        created_at: '2026-06-01T00:00:00Z', updated_at: NOW,
+      },
+    ],
   };
 
   // Calcul des compteurs agrégés à partir des données brutes
