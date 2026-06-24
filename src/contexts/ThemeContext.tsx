@@ -13,7 +13,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 function getInitialTheme(): Theme {
   const saved = localStorage.getItem('sl-theme');
   if (saved === 'light' || saved === 'dark') return saved;
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  return 'light'; // light par défaut — l'utilisateur peut basculer manuellement
 }
 
 function applySimpleModeOnLoad(): void {
@@ -39,18 +39,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => { applyTheme(theme); applySimpleModeOnLoad(); }, []);
 
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: light)');
-    function onChange(e: MediaQueryListEvent) {
-      if (!localStorage.getItem('sl-theme')) {
-        const next: Theme = e.matches ? 'light' : 'dark';
-        applyTheme(next);
-        setThemeState(next);
-      }
-    }
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
+  // Plus de suivi automatique de l'OS — le défaut est light, l'utilisateur choisit manuellement
 
   function setTheme(next: Theme): void {
     localStorage.setItem('sl-theme', next);

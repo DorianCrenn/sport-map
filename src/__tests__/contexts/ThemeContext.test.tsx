@@ -61,9 +61,9 @@ describe('ThemeContext', () => {
     spy.mockRestore();
   });
 
-  it('thème dark par défaut (matchMedia = dark)', () => {
+  it('thème light par défaut (aucune préférence sauvegardée)', () => {
     renderWithTheme();
-    expect(screen.getByTestId('theme').textContent).toBe('dark');
+    expect(screen.getByTestId('theme').textContent).toBe('light');
   });
 
   it('thème light si localStorage contient "light"', () => {
