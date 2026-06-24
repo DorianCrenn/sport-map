@@ -7,6 +7,7 @@ import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import { IconRocket } from '../components/icons.js';
 import WeekendPosters from '../components/dashboard/WeekendPosters.tsx';
 import PlansSection from '../components/home/PlansSection.jsx';
+import HypeBar from '../components/home/HypeBar.jsx';
 
 const PosterStudio = lazy(() => import('../components/PosterStudio.jsx'));
 
@@ -351,7 +352,7 @@ function ClubBanner({ onNavigate }) {
 const EVENT_TYPE_COLOR = { championship: '#3b82f6', cup: '#f97316', friendly: '#22d96a' };
 const EVENT_TYPE_LABEL = { championship: 'Championnat', cup: 'Coupe', friendly: 'Amical' };
 
-function ResultCard({ event, sports }) {
+function ResultCard({ event, sports, index = 0 }) {
   const sport = sports[event.sport];
   const sportColor = sport?.color ?? '#64748b';
   const isPast = new Date(event.date) < new Date();
@@ -362,13 +363,20 @@ function ResultCard({ event, sports }) {
   const timeStr = new Date(event.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div style={{
-      borderRadius: 14, padding: '12px 14px',
-      backgroundColor: 'var(--sl-card)',
-      border: '1px solid var(--sl-border)',
-      display: 'flex', alignItems: 'center', gap: 12,
-      minWidth: 0,
-    }}>
+    <motion.div
+      initial={{ opacity: 0, x: -12 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: '-20px' }}
+      transition={{ delay: index * 0.06, type: 'spring', stiffness: 320, damping: 28 }}
+      whileHover={{ x: 3, boxShadow: `0 4px 20px ${sportColor}22` }}
+      style={{
+        borderRadius: 14, padding: '12px 14px',
+        backgroundColor: 'var(--sl-card)',
+        border: `1px solid var(--sl-border)`,
+        borderLeft: `3px solid ${sportColor}`,
+        display: 'flex', alignItems: 'center', gap: 12,
+        minWidth: 0,
+      }}>
       {/* Sport dot */}
       <div style={{
         width: 36, height: 36, borderRadius: 10, flexShrink: 0,
@@ -442,7 +450,7 @@ function ResultCard({ event, sports }) {
           Terminé
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -492,7 +500,7 @@ function RecentResultsFeed({ allEvents, onNavigate }) {
               </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: upcoming.length > 0 ? 20 : 0 }}>
-              {recent.map(e => <ResultCard key={e.id} event={e} sports={allSports} />)}
+              {recent.map((e, i) => <ResultCard key={e.id} event={e} sports={allSports} index={i} />)}
             </div>
           </>
         )}
@@ -511,7 +519,7 @@ function RecentResultsFeed({ allEvents, onNavigate }) {
               </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {upcoming.map(e => <ResultCard key={e.id} event={e} sports={allSports} />)}
+              {upcoming.map((e, i) => <ResultCard key={e.id} event={e} sports={allSports} index={i} />)}
             </div>
           </>
         )}
@@ -690,9 +698,9 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
           <motion.div className="flex flex-col items-center gap-3 relative"
             initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.29 }}>
             <motion.button
-              whileTap={{ scale:0.95 }} whileHover={{ scale:1.03 }}
+              whileTap={{ scale:0.95 }} whileHover={{ scale:1.03, boxShadow:'0 8px 32px rgba(34,217,106,0.55)' }}
               onClick={() => onNavigate('profil')}
-              className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer w-full justify-center"
+              className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer w-full justify-center sl-btn-shimmer"
               style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'14px 22px', fontSize:15, maxWidth:300, boxShadow:'0 6px 24px rgba(34,217,106,0.4)' }}>
               S'inscrire gratuitement
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -733,6 +741,10 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
 
         {/* Themed section */}
         <div style={{ backgroundColor:'var(--sl-hero-section-bg)', borderRadius:'24px 24px 0 0', marginTop:'-8px', position:'relative', zIndex:1 }}>
+          <HypeBar
+            upcomingThisWeek={stats?.thisWeek ?? 0}
+            clubCount={stats?.clubs ?? 0}
+          />
           <div className="pt-5">
             <WeekendPosters
               onOpenInStudio={handleOpenInStudio}

@@ -1,13 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BADGE_DEFS } from '../hooks/useBadges.js';
+import { hapticSuccess } from '../lib/haptic.js';
 
 const SPARKLES = [
   { x: 0,   y: -68 }, { x: 48,  y: -48 }, { x: 68,  y: 0  }, { x: 48,  y: 48  },
   { x: 0,   y: 68  }, { x: -48, y: 48  }, { x: -68, y: 0  }, { x: -48, y: -48 },
 ];
+
+const CONFETTI_COLORS = ['#ffd700', '#ff6b6b', '#4ecdc4', '#a78bfa', '#22d96a', '#ff9f43', '#fff'];
 
 function SparkleParticles({ color }: { color: string }) {
   return (
@@ -16,6 +19,34 @@ function SparkleParticles({ color }: { color: string }) {
         <motion.div key={i} initial={{ x: 0, y: 0, scale: 0, opacity: 0 }} animate={{ x: pos.x, y: pos.y, scale: [0, 1.3, 0], opacity: [0, 1, 0] }} transition={{ duration: 0.85, delay: 0.05 + i * 0.055, ease: 'easeOut' }} style={{ position: 'absolute', width: 7, height: 7, borderRadius: 2, backgroundColor: color, transform: 'rotate(45deg)', pointerEvents: 'none' }} />
       ))}
     </>
+  );
+}
+
+function ConfettiRain({ color }: { color: string }) {
+  const pieces = useMemo(() =>
+    Array.from({ length: 48 }, (_, i) => ({
+      id: i,
+      x: (i / 48) * 100 + (Math.sin(i * 2.3) * 8),
+      delay: (i % 12) * 0.08,
+      duration: 1.1 + (i % 5) * 0.22,
+      color: i % 7 === 0 ? color : CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      rotate: (i * 37) % 360,
+      size: 5 + (i % 4) * 2,
+      shape: i % 3 === 0 ? '50%' : i % 3 === 1 ? '2px' : '0%',
+    })), [color]
+  );
+  return (
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 9502 }}>
+      {pieces.map(p => (
+        <motion.div
+          key={p.id}
+          initial={{ x: `${p.x}vw`, y: -16, rotate: 0, opacity: 1 }}
+          animate={{ y: '108vh', rotate: p.rotate, opacity: [1, 1, 1, 0] }}
+          transition={{ duration: p.duration, delay: p.delay, ease: 'easeIn' }}
+          style={{ position: 'absolute', width: p.size, height: p.size, borderRadius: p.shape, backgroundColor: p.color }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -36,9 +67,16 @@ export default function BadgeUnlockModal({ badges, onDone }: BadgeUnlockModalPro
     return () => document.removeEventListener('keydown', onKey);
   }, [onDone]);
 
+  useEffect(() => {
+    hapticSuccess();
+    if (navigator.vibrate) navigator.vibrate([20, 10, 20, 10, 40]);
+  }, [index]);
+
   if (!def) return null;
 
   return (
+    <>
+    <ConfettiRain color={def.color} />
     <motion.div key="badge-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} ref={panelRef} role="dialog" aria-modal="true" aria-label="Badge débloqué"
       style={{ position: 'fixed', inset: 0, zIndex: 9500, backgroundColor: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <AnimatePresence mode="wait">
@@ -66,5 +104,6 @@ export default function BadgeUnlockModal({ badges, onDone }: BadgeUnlockModalPro
         </motion.div>
       </AnimatePresence>
     </motion.div>
+    </>
   );
 }

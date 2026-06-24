@@ -167,7 +167,14 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
             <motion.button key={`${tab.id}-${tabIdx}`} whileTap={{ scale: 0.86 }} whileHover={{ color: active ? activeColor : 'rgba(222,238,255,0.7)' }} onClick={() => { setFabOpen(false); onTabChange(tab.id); }} data-demo={`tab-${tab.id}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, padding: '10px 4px', background: 'transparent', border: 'none', cursor: 'pointer', color, position: 'relative' }}>
               {active && <motion.div layoutId="nav-indicator" style={{ position: 'absolute', top: 0, left: 0, right: 0, width: 28, height: 3, borderRadius: 999, backgroundColor: activeColor, margin: '0 auto' }} transition={{ type: 'spring', stiffness: 500, damping: 35 }} />}
               <div style={{ position: 'relative' }}>
-                {tab.icon(active)}
+                <motion.div
+                  key={active ? 'a' : 'i'}
+                  initial={active ? { scale: 0.6, y: 5 } : false}
+                  animate={{ scale: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 700, damping: 22 }}
+                >
+                  {tab.icon(active)}
+                </motion.div>
                 {badgeCount > 0 && (
                   <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} style={{ position: 'absolute', top: -4, right: -6, width: 16, height: 16, borderRadius: '50%', backgroundColor: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 16 }}>
                     <span style={{ color: '#fff', fontWeight: 700, fontSize: 9, lineHeight: 1 }}>{badgeCount > 9 ? '9+' : badgeCount}</span>

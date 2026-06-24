@@ -68,6 +68,74 @@ function StatusBadge({ event }: { event: Record<string, any> }) {
   return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6, color: m.color, backgroundColor: m.bg, flexShrink: 0 }}>{m.label}</span>;
 }
 
+// ─── CountdownBadge ───────────────────────────────────────────────────────────
+
+function CountdownBadge({ date }: { date: string }) {
+  const [label, setLabel] = useState('');
+  useEffect(() => {
+    function compute() {
+      const diff = new Date(date).getTime() - Date.now();
+      if (diff <= 0 || diff > 24 * 3_600_000) { setLabel(''); return; }
+      const h = Math.floor(diff / 3_600_000);
+      const m = Math.floor((diff % 3_600_000) / 60_000);
+      setLabel(h > 0 ? `dans ${h}h${m > 0 ? String(m).padStart(2, '0') : ''}` : `dans ${m}min`);
+    }
+    compute();
+    const id = setInterval(compute, 30_000);
+    return () => clearInterval(id);
+  }, [date]);
+  if (!label) return null;
+  return (
+    <motion.span
+      initial={{ scale: 0.7, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      style={{ fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444', flexShrink: 0, letterSpacing: '0.02em' }}
+    >
+      ⏱ {label}
+    </motion.span>
+  );
+}
+
+// ─── AttendeeAvatarStack ──────────────────────────────────────────────────────
+
+function AttendeeAvatarStack({ eventId, count }: { eventId: string | number; count: number }) {
+  const [profiles, setProfiles] = useState<Array<{ name: string; avatar_url: string | null }>>([]);
+  useEffect(() => {
+    if (!eventId || count === 0) return;
+    import('../lib/supabase.js').then(({ supabase: sb }) => {
+      sb.from('attendees')
+        .select('profiles(name, avatar_url)')
+        .eq('event_id', eventId)
+        .limit(4)
+        .then(({ data }: any) => {
+          if (data) setProfiles(data.map((a: any) => a.profiles).filter(Boolean));
+        });
+    });
+  }, [eventId, count]);
+
+  if (profiles.length === 0 || count === 0) return null;
+  const shown = profiles.slice(0, 4);
+  const extra = count - shown.length;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ display: 'flex' }}>
+        {shown.map((p, i) => (
+          <div key={i} title={p.name} style={{ width: 20, height: 20, borderRadius: '50%', border: '1.5px solid var(--sl-card)', marginLeft: i > 0 ? -6 : 0, flexShrink: 0, backgroundColor: 'var(--sl-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff', backgroundImage: p.avatar_url ? `url(${p.avatar_url})` : undefined, backgroundSize: 'cover', overflow: 'hidden' }}>
+            {!p.avatar_url && (p.name?.[0] ?? '?').toUpperCase()}
+          </div>
+        ))}
+        {extra > 0 && (
+          <div style={{ width: 20, height: 20, borderRadius: '50%', border: '1.5px solid var(--sl-card)', marginLeft: -6, flexShrink: 0, backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: 'var(--sl-t2)' }}>
+            +{extra}
+          </div>
+        )}
+      </div>
+      <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-green)' }}>{count} y seront</span>
+    </div>
+  );
+}
+
 // ─── StandingsRow ─────────────────────────────────────────────────────────────
 
 interface StandingsRowProps {
@@ -512,7 +580,10 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
         {/* Sport texture overlay */}
         {(() => { const p = getSportPattern(event.sport); return p ? <div aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', backgroundImage: p.backgroundImage, backgroundSize: p.backgroundSize, opacity: 0.4 }} /> : null; })()}
 
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'stretch', gap: 0, padding: '12px 12px 12px 0' }}>
+        {/* ── Sport gradient banner (top of card) ───────────────── */}
+        <div aria-hidden="true" className="sl-card-sport-banner" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, ${accentColor}aa 50%, ${accentColor}33 100%)` }} />
+
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'stretch', gap: 0, padding: '10px 12px 12px 0' }}>
           <div style={{ width: 3, minHeight: 40, flexShrink: 0, backgroundColor: accentColor, borderRadius: '0 3px 3px 0', marginRight: 10, alignSelf: 'stretch' }} />
 
           {isTournament ? (
@@ -537,6 +608,10 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
                 </span>
                 <EventTypeBadge event={event} />
                 <StatusBadge event={event} />
+                {status === 'upcoming' && <CountdownBadge date={event.date} />}
+                {attendeeCount >= 5 && status !== 'done' && status !== 'cancelled' && (
+                  <span className="sl-hype-badge" aria-label={`${attendeeCount} personnes participent`}>🔥 {attendeeCount}</span>
+                )}
                 {isUserEvent && <span style={{ fontSize: 10, color: '#4da6ff', fontWeight: 600, flexShrink: 0 }}>✦ Club</span>}
                 {event.clubId && !isUserEvent && <FollowClubPill event={event} />}
                 {canEditThis && (
@@ -582,10 +657,7 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.venue || event.city}</span>
                 </div>
                 {attendeeCount > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: 'var(--sl-green)' }}>
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    {attendeeCount} participant{attendeeCount > 1 ? 's' : ''}
-                  </div>
+                  <AttendeeAvatarStack eventId={event.id} count={attendeeCount} />
                 )}
                 {predictionCount > 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: '#f59e0b' }}>

@@ -28,13 +28,13 @@ export const BADGE_DEFS: Record<string, BadgeDef> = {
 };
 
 export const LEVELS = [
-  { level: 1, name: 'Rookie',       minXp: 0    },
-  { level: 2, name: 'Amateur',      minXp: 100  },
-  { level: 3, name: 'Confirmé',     minXp: 300  },
-  { level: 4, name: 'Expérimenté',  minXp: 600  },
-  { level: 5, name: 'Expert',       minXp: 1000 },
-  { level: 6, name: 'Élite',        minXp: 1500 },
-  { level: 7, name: 'Légende',      minXp: 2500 },
+  { level: 1, name: 'Rookie',       minXp: 0,    icon: '🌱', color: '#64748b' },
+  { level: 2, name: 'Amateur',      minXp: 100,  icon: '⚡', color: '#22d96a' },
+  { level: 3, name: 'Confirmé',     minXp: 300,  icon: '🔥', color: '#f59e0b' },
+  { level: 4, name: 'Expérimenté',  minXp: 600,  icon: '💎', color: '#3b82f6' },
+  { level: 5, name: 'Expert',       minXp: 1000, icon: '🏆', color: '#8b5cf6' },
+  { level: 6, name: 'Élite',        minXp: 1500, icon: '👑', color: '#f59e0b' },
+  { level: 7, name: 'Légende',      minXp: 2500, icon: '🌟', color: '#ec4899' },
 ];
 
 export const BADGE_ORDER = ['first_step', 'explorer', 'loyal_fan', 'streak_3', 'streak_5', 'veteran', 'oracle', 'champion'];

@@ -119,14 +119,22 @@ function AppInner() {
   const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent() as any;
   const { track } = useAnalytics(consent) as any;
 
+  const TAB_ORDER = ['home', 'map', 'favoris', 'clubs', 'profil', 'admin', 'mon-club'];
+  const tabDirRef = useRef(1);
+
   const [activeTab, _setActiveTab] = useState<string>(() => {
     const stored = sessionStorage.getItem('sl-tab') || 'home';
     if (stored === 'news' || stored === 'mon-club') return 'home';
     return stored;
   });
   const setActiveTab = useCallback((tab: string) => {
+    _setActiveTab(prev => {
+      const prevIdx = TAB_ORDER.indexOf(prev);
+      const nextIdx = TAB_ORDER.indexOf(tab);
+      tabDirRef.current = nextIdx >= prevIdx ? 1 : -1;
+      return tab;
+    });
     sessionStorage.setItem('sl-tab', tab);
-    _setActiveTab(tab);
     track('page_view', { tab });
   }, [track]);
   const [activeDepartment] = useState<string>('finistere');
@@ -704,13 +712,14 @@ function AppInner() {
       )}
 
       <main id="main-content" style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', zIndex: 1 }}>
-        <AnimatePresence initial={false} mode="wait">
+        <AnimatePresence initial={false} mode="wait" custom={tabDirRef}>
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, x: 10 }}
+            custom={tabDirRef}
+            initial={{ opacity: 0, x: tabDirRef.current * 28 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            exit={{ opacity: 0, x: tabDirRef.current * -20 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 0.9 }}
             style={{ position: 'absolute', inset: 0 }}
           >
             {activeTab === 'home' && (

@@ -133,10 +133,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <motion.div
               key={t.id}
               layout
-              initial={{ opacity: 0, y: 18, scale: 0.88 }}
-              animate={{ opacity: 1, y: 0,  scale: 1 }}
-              exit={{ opacity: 0,    y: 10,  scale: 0.92 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              initial={{ opacity: 0, y: 28, scale: 0.78, rotate: -3 }}
+              animate={{ opacity: 1, y: 0,  scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, y: -16, scale: 0.88, filter: 'blur(4px)' }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28, mass: 0.8 }}
               style={{ pointerEvents: t.onReport ? 'auto' : 'none' }}
             >
               <ToastItemComponent message={t.message} type={t.type} onReport={t.onReport} />

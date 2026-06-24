@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
+import StreakWidget from '../components/home/StreakWidget.jsx';
 import { APP_VERSION, APP_NAME } from '../lib/appInfo.js';
 import { IconCrown, IconShirt, IconMegaphone, IconUsers, IconBall, IconSiren, IconStadium, IconCar, IconClipboard, IconAlertTriangle, IconZap, IconLock } from '../components/icons.js';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -383,9 +384,19 @@ export default function ProfilPage({
             </div>
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#eef2ef', letterSpacing: '-0.02em', lineHeight: 1.2, fontFamily: 'Inter, sans-serif', margin: 0 }}>
-              {currentUser.name}
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: '#eef2ef', letterSpacing: '-0.02em', lineHeight: 1.2, fontFamily: 'Inter, sans-serif', margin: 0 }}>
+                {currentUser.name}
+              </h2>
+              <motion.span
+                initial={{ scale: 0, rotate: -12 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 18, delay: 0.2 }}
+                style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 999, backgroundColor: `${levelInfo.color ?? '#22d96a'}25`, color: levelInfo.color ?? '#22d96a', border: `1px solid ${levelInfo.color ?? '#22d96a'}50`, flexShrink: 0, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}
+              >
+                {levelInfo.icon ?? '⚡'} Niv.{levelInfo.level}
+              </motion.span>
+            </div>
             <p style={{ fontSize: 12, color: 'rgba(238,242,239,0.5)', margin: '3px 0 8px' }}>{currentUser.email}</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{
@@ -419,25 +430,32 @@ export default function ProfilPage({
                 aria-label={`Voir mes badges — ${earnedBadges.length} sur ${(BADGE_ORDER as any).length} débloqués`}
                 style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                {(BADGE_ORDER as any as string[]).map((id: string) => {
+                {(BADGE_ORDER as any as string[]).map((id: string, bi: number) => {
                   const def = (BADGE_DEFS as any)[id];
                   const isEarned = earnedBadges.includes(id);
                   return (
-                    <span
+                    <motion.span
                       key={id}
                       title={def.name}
+                      initial={isEarned ? { scale: 0, rotate: -12 } : { scale: 0.8, opacity: 0 }}
+                      animate={isEarned ? { scale: 1, rotate: 0 } : { scale: 1, opacity: 0.38 }}
+                      transition={isEarned
+                        ? { type: 'spring', stiffness: 420, damping: 18, delay: bi * 0.04 }
+                        : { delay: bi * 0.03, duration: 0.2 }
+                      }
+                      whileHover={isEarned ? { scale: 1.25, rotate: 5 } : {}}
                       style={{
-                        width: 24, height: 24, borderRadius: 8, fontSize: 12,
+                        width: 26, height: 26, borderRadius: 8, fontSize: 13,
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        backgroundColor: isEarned ? `${def.color}25` : 'rgba(255,255,255,0.06)',
-                        border: `1.5px solid ${isEarned ? def.color + '70' : 'rgba(255,255,255,0.1)'}`,
-                        opacity: isEarned ? 1 : 0.4,
-                        transition: 'all 0.2s',
+                        backgroundColor: isEarned ? `${def.color}28` : 'rgba(255,255,255,0.04)',
+                        border: `1.5px solid ${isEarned ? def.color + '80' : 'rgba(255,255,255,0.08)'}`,
+                        boxShadow: isEarned ? `0 0 8px ${def.color}40` : 'none',
+                        cursor: isEarned ? 'pointer' : 'default',
                         position: 'relative',
                       }}
                     >
-                      {isEarned ? def.icon : <IconLock size={10} color="rgba(255,255,255,0.3)" />}
-                    </span>
+                      {isEarned ? def.icon : <IconLock size={9} color="rgba(255,255,255,0.25)" />}
+                    </motion.span>
                   );
                 })}
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(238,242,239,0.4)', marginLeft: 2 }}>
@@ -448,6 +466,9 @@ export default function ProfilPage({
           </div>
         </div>
       </div>
+
+      {/* ── Streak ── */}
+      <StreakWidget />
 
       {/* ── Barre d'onglets ── */}
       <div style={{ flexShrink: 0, display: 'flex', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-bg)' }}>
@@ -526,29 +547,56 @@ export default function ProfilPage({
         {/* ═══════════ ONGLET STATS ═══════════ */}
         {profileTab === 'stats' && <>
 
-        {/* XP / Level card */}
-        <div style={{ borderRadius: 16, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(139,92,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconZap size={16} color="#a855f7" /></div>
+        {/* XP / Level card — version hype */}
+        <div style={{
+          borderRadius: 16, padding: '16px',
+          background: 'linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(77,166,255,0.08) 100%)',
+          border: '1px solid rgba(139,92,246,0.28)',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* Background deco */}
+          <div aria-hidden="true" style={{ position: 'absolute', right: -20, top: -20, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: 'linear-gradient(135deg, #8b5cf6, #4da6ff)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 16px rgba(139,92,246,0.4)',
+              }}>
+                <span style={{ fontSize: 22, lineHeight: 1 }}>⚡</span>
+              </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Niveau {levelInfo.level} — {levelInfo.name}</div>
-                <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{xpTotal} XP{levelInfo.nextLevel ? ` · ${levelInfo.nextLevel.minXp - xpTotal} XP jusqu'au niv. ${levelInfo.level + 1}` : ' · Niveau max !'}</div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--sl-t1)', fontFamily: 'var(--sl-font-brand)', letterSpacing: '-0.01em' }}>
+                  Niveau {levelInfo.level} · {levelInfo.name}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>
+                  {levelInfo.nextLevel ? `Prochain niveau dans ${levelInfo.nextLevel.minXp - xpTotal} XP` : '🏆 Niveau maximum !'}
+                </div>
               </div>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: '#8b5cf6', fontVariantNumeric: 'tabular-nums' }}>{xpTotal}</div>
+            <div style={{
+              padding: '4px 12px', borderRadius: 999,
+              background: 'linear-gradient(135deg, #8b5cf6, #4da6ff)',
+              fontSize: 16, fontWeight: 900, color: '#fff',
+              fontFamily: 'var(--sl-font-brand)',
+              boxShadow: '0 0 12px rgba(139,92,246,0.4)',
+            }}>
+              {xpTotal} XP
+            </div>
           </div>
           <div style={{ height: 6, borderRadius: 3, backgroundColor: 'var(--sl-border)', overflow: 'hidden' }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${levelInfo.progress * 100}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              style={{ height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, #8b5cf6, #a78bfa)' }}
+            <div
+              className="sl-xp-bar"
+              style={{ width: `${Math.round(levelInfo.progress * 100)}%` }}
             />
           </div>
           {levelInfo.nextLevel && (
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
               <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>{levelInfo.minXp} XP</span>
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#8b5cf6' }}>
+                {levelInfo.nextLevel.minXp - xpTotal} XP manquant
+              </span>
               <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>{levelInfo.nextLevel.minXp} XP</span>
             </div>
           )}

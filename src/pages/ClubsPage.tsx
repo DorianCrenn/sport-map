@@ -440,9 +440,9 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
           return (
             <motion.div
               key={club.id}
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04, duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={{ y: -2, boxShadow: '0 6px 24px rgba(0,0,0,0.18)' }}
+              initial={{ opacity: 0, y: 12, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: i * 0.05, type: 'spring', stiffness: 340, damping: 28 }}
+              whileHover={{ y: -3, boxShadow: `0 8px 28px ${sportColor}28, 0 2px 8px rgba(0,0,0,0.18)` }}
               style={{
                 borderRadius: 14, overflow: 'hidden',
                 backgroundColor: 'var(--sl-card)',
@@ -450,7 +450,9 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                 cursor: 'pointer',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px 10px' }}>
+              {/* Gradient banner sport */}
+              <div aria-hidden="true" style={{ height: 4, background: `linear-gradient(90deg, ${sportColor} 0%, ${sportColor}66 60%, transparent 100%)` }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px 10px' }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: 12, flexShrink: 0,
                   overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',

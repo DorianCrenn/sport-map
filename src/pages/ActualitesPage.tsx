@@ -5,6 +5,8 @@ import { useQuickActions }  from '../hooks/useQuickActions.js';
 import { useDemoFeed }      from '../hooks/useDemoFeed.js';
 import { isDemoMode, supabase } from '../lib/supabase.js';
 import LiveMultiplexSection from '../components/home/LiveMultiplexSection.jsx';
+import HypeBar              from '../components/home/HypeBar.jsx';
+import StreakWidget         from '../components/home/StreakWidget.jsx';
 import PlanningTimeline     from '../components/planning/PlanningTimeline.jsx';
 
 const PosterStudio             = lazy(() => import('../components/PosterStudio.jsx'));
@@ -64,28 +66,65 @@ export default function ActualitesPage({
     setStudioConfig({ event, resultMode: score ?? null, quickMode: !!score, convocationPlayers: convPlayers });
   }, []);
 
+  const isNewUser = !demo && feedClubIds.length === 0 && !isCoachOrManager && !isClubAdmin && !isAdmin;
+
   return (
     <div
       className="flex flex-col h-full bg-[var(--sl-bg)] overflow-y-auto overscroll-contain"
       data-demo="agenda-section"
     >
+      {/* ══ Empty state — nouveau compte sans club suivi ═══════════════════ */}
+      {isNewUser && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: 56, marginBottom: 16, lineHeight: 1 }}>🏆</div>
+          <h2 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 800, color: 'var(--sl-t1)', fontFamily: "'Barlow Condensed', sans-serif" }}>
+            Suivez vos premiers clubs
+          </h2>
+          <p style={{ margin: '0 0 24px', fontSize: 14, color: 'var(--sl-t2)', lineHeight: 1.6, maxWidth: 280 }}>
+            Abonnez-vous à des clubs pour voir leur calendrier, résultats et annonces ici.
+          </p>
+          <button
+            onClick={() => onNavigate?.('clubs')}
+            style={{ backgroundColor: 'var(--sl-green)', color: '#fff', padding: '14px 28px', borderRadius: 14, fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: 15 }}
+          >
+            Découvrir les clubs
+          </button>
+        </div>
+      )}
+
+      {/* ══ HypeBar — ticker activité ════════════════════════════════════════ */}
+      {!isNewUser && (
+        <HypeBar
+          liveCount={effectiveLiveMatches.length}
+        />
+      )}
+
+      {/* ══ Streak quotidien ════════════════════════════════════════════════ */}
+      {!isNewUser && currentUser && (
+        <div style={{ padding: '10px 16px 0' }}>
+          <StreakWidget />
+        </div>
+      )}
+
       {/* ══ Multiplex EN DIRECT ══════════════════════════════════════════════ */}
-      <LiveMultiplexSection liveMatches={effectiveLiveMatches} />
+      {!isNewUser && <LiveMultiplexSection liveMatches={effectiveLiveMatches} />}
 
       {/* ══ Planning de la Saison ════════════════════════════════════════════ */}
-      <PlanningTimeline
-        currentUser={currentUser}
-        managedClubs={managedClubs}
-        isCoachOrManager={isCoachOrManager}
-        isCommunicant={isCommunicant}
-        isClubAdmin={isClubAdmin}
-        isAdmin={isAdmin}
-        followedClubIds={feedClubIds}
-        clubs={allKnownClubs}
-        onOpenPoster={handleOpenPoster}
-        onConvocate={(event: any) => setConvocationEvent(event)}
-        onNavigateRides={() => onNavigate?.('rides')}
-      />
+      {!isNewUser && (
+        <PlanningTimeline
+          currentUser={currentUser}
+          managedClubs={managedClubs}
+          isCoachOrManager={isCoachOrManager}
+          isCommunicant={isCommunicant}
+          isClubAdmin={isClubAdmin}
+          isAdmin={isAdmin}
+          followedClubIds={feedClubIds}
+          clubs={allKnownClubs}
+          onOpenPoster={handleOpenPoster}
+          onConvocate={(event: any) => setConvocationEvent(event)}
+          onNavigateRides={() => onNavigate?.('rides')}
+        />
+      )}
 
       {/* Modale convocation (depuis cartes match) */}
       {convocationEvent && (
@@ -109,7 +148,7 @@ export default function ActualitesPage({
               <button
                 onClick={() => setConvocationEvent(null)}
                 style={{
-                  width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
+                  width: 44, height: 44, borderRadius: 10, border: 'none', cursor: 'pointer',
                   backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
