@@ -141,6 +141,7 @@ export default function ActualitesPage({
             borderRadius: '20px 20px 0 0',
             display: 'flex', flexDirection: 'column',
             maxHeight: '90vh',
+            overflow: 'hidden',
             paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
           }}>
             {/* Poignée drag + bouton fermer */}

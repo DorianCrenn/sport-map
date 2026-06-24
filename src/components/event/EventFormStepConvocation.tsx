@@ -246,7 +246,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <div style={{ padding: '16px 20px 10px', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
         <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: '0 0 3px' }}>
           Convoquer les joueurs
