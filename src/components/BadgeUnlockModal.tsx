@@ -61,6 +61,7 @@ export default function BadgeUnlockModal({ badges, onDone }: BadgeUnlockModalPro
 
   function next() { if (index < badges.length - 1) setIndex(i => i + 1); else onDone(); }
 
+  // Guard first — hooks must not depend on `def` being defined
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onDone?.(); };
     document.addEventListener('keydown', onKey);
@@ -68,9 +69,10 @@ export default function BadgeUnlockModal({ badges, onDone }: BadgeUnlockModalPro
   }, [onDone]);
 
   useEffect(() => {
+    if (!def) return;
     hapticSuccess();
     if (navigator.vibrate) navigator.vibrate([20, 10, 20, 10, 40]);
-  }, [index]);
+  }, [index, def]);
 
   if (!def) return null;
 

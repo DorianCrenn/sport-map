@@ -637,6 +637,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
   const [studioClub,  setStudioClub]  = useState(null);
 
   const handleOpenInStudio = useCallback((match) => {
+    if (!match.posterData?.event) return;
     // Construit les objets event et club attendus par PosterStudio
     setStudioEvent({
       id:          match.id,

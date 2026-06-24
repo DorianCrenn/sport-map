@@ -159,7 +159,8 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
               </div>
             );
           }
-          const active = activeTab === tab.id;
+          const effectiveTab = activeTab === 'mon-club' ? 'clubs' : activeTab;
+          const active = effectiveTab === tab.id;
           const activeColor = 'var(--sl-green)';
           const color = active ? activeColor : 'var(--sl-nav-inactive)';
           const badgeCount = badgeCounts[tab.id] || 0;

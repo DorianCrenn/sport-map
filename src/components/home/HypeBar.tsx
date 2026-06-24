@@ -7,8 +7,6 @@ interface HypeBarProps {
   upcomingThisWeek?: number;
 }
 
-const DOT = <span aria-hidden="true" style={{ opacity: 0.35, margin: '0 4px' }}>·</span>;
-
 export default function HypeBar({
   liveCount = 0,
   totalToday = 0,

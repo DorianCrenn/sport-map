@@ -58,20 +58,22 @@ function TabNav({ activeTab, onTabChange, accentColor, announcementsCount }: {
   return (
     <div style={{ flexShrink: 0, position: 'relative', backgroundColor: 'var(--sl-card)', borderBottom: '1px solid var(--sl-border)' }}>
       <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 32, zIndex: 1, background: 'linear-gradient(to left, var(--sl-card), transparent)', pointerEvents: 'none' }} />
-      <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none' } as React.CSSProperties}>
+      <div role="tablist" aria-label="Sections du club" style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none' } as React.CSSProperties}>
         {TABS.map(tab => {
           const isActive = activeTab === tab.id;
+          const hasNotif = tab.id === 'news' && announcementsCount > 0;
           return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               role="tab"
               aria-selected={isActive}
+              aria-label={hasNotif ? `${tab.label} (${announcementsCount} non lu${announcementsCount > 1 ? 's' : ''})` : tab.label}
               style={{ flexShrink: 0, padding: '11px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 800 : 600, color: isActive ? 'var(--sl-t1)' : 'var(--sl-t3)', borderBottom: `2.5px solid ${isActive ? accentColor : 'transparent'}`, transition: 'all 0.15s', whiteSpace: 'nowrap', position: 'relative', minHeight: 44 }}
             >
               {tab.label}
-              {tab.id === 'news' && announcementsCount > 0 && (
-                <span style={{ position: 'absolute', top: 6, right: 4, width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444' }} />
+              {hasNotif && (
+                <span aria-hidden="true" style={{ position: 'absolute', top: 6, right: 4, width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444' }} />
               )}
             </button>
           );

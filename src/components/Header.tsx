@@ -121,7 +121,9 @@ export default function Header({
 
   const initials = (currentUser?.name as string | undefined)?.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() ?? '?';
 
-  let idx = -1;
+  const cityOffset  = 0;
+  const clubOffset  = matchedCities.length;
+  const eventOffset = matchedCities.length + matchedClubs.length;
 
   return (
     <header style={{
@@ -198,11 +200,11 @@ export default function Header({
                 <div>
                   <SectionLabel label="Villes" />
                   <div style={{ padding: '0 6px 6px' }}>
-                    {matchedCities.map(city => {
-                      idx++;
-                      const isHi = highlightIndex === idx;
+                    {matchedCities.map((city, ci) => {
+                      const ridx = cityOffset + ci;
+                      const isHi = highlightIndex === ridx;
                       return (
-                        <ResultRow key={city} highlighted={isHi} onClick={() => selectCity(city)} onMouseEnter={() => setHighlightIndex(idx)} icon={<div style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, backgroundColor: 'rgba(34,217,106,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>}>
+                        <ResultRow key={city} highlighted={isHi} onClick={() => selectCity(city)} onMouseEnter={() => setHighlightIndex(ridx)} icon={<div style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, backgroundColor: 'rgba(34,217,106,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>}>
                           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)' }}>{city}</span>
                         </ResultRow>
                       );
@@ -217,13 +219,13 @@ export default function Header({
                 <div>
                   <SectionLabel label="Clubs" />
                   <div style={{ padding: '0 6px 6px' }}>
-                    {matchedClubs.map(club => {
-                      idx++;
-                      const isHi = highlightIndex === idx;
+                    {matchedClubs.map((club, cli) => {
+                      const ridx = clubOffset + cli;
+                      const isHi = highlightIndex === ridx;
                       const sportColor = (allSports[club.sport] as any)?.color ?? '#64748b';
                       const init = club.name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
                       return (
-                        <ResultRow key={club.id} highlighted={isHi} onClick={() => selectClub(club)} onMouseEnter={() => setHighlightIndex(idx)} icon={<div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, backgroundColor: sportColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>{init}</div>}>
+                        <ResultRow key={club.id} highlighted={isHi} onClick={() => selectClub(club)} onMouseEnter={() => setHighlightIndex(ridx)} icon={<div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, backgroundColor: sportColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>{init}</div>}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club.name}</div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
                             <span style={{ fontSize: 11, color: 'var(--sl-t2)' }}>{club.city}</span>
@@ -243,15 +245,15 @@ export default function Header({
                 <div>
                   <SectionLabel label="Événements" />
                   <div style={{ padding: '0 6px 6px' }}>
-                    {matchedEvents.map(event => {
-                      idx++;
-                      const isHi = highlightIndex === idx;
+                    {matchedEvents.map((event, evi) => {
+                      const ridx = eventOffset + evi;
+                      const isHi = highlightIndex === ridx;
                       const sportColor = (allSports[event.sport] as any)?.color ?? '#64748b';
                       const d = new Date(event.date);
                       const dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
                       const timeStr = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
                       return (
-                        <ResultRow key={event.id} highlighted={isHi} onClick={() => selectEvent(event)} onMouseEnter={() => setHighlightIndex(idx)} icon={<div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, backgroundColor: `${sportColor}18`, border: `1.5px solid ${sportColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: sportColor }} /></div>}>
+                        <ResultRow key={event.id} highlighted={isHi} onClick={() => selectEvent(event)} onMouseEnter={() => setHighlightIndex(ridx)} icon={<div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, backgroundColor: `${sportColor}18`, border: `1.5px solid ${sportColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: sportColor }} /></div>}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
                             <span style={{ fontSize: 11, color: 'var(--sl-t2)' }}>{dateStr} · {timeStr}</span>

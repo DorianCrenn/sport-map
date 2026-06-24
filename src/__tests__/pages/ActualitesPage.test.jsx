@@ -100,7 +100,7 @@ describe('ActualitesPage — rendu de base', () => {
   });
 
   it('affiche le multiplex en direct (Zone 2)', async () => {
-    render(<ActualitesPage followedClubIds={[]} onNavigate={vi.fn()} />);
+    render(<ActualitesPage followedClubIds={['club-1']} onNavigate={vi.fn()} />);
     await waitFor(() => expect(screen.getByTestId('live-multiplex')).toBeInTheDocument());
   });
 });
@@ -121,7 +121,7 @@ describe('ActualitesPage — convocations parent', () => {
   it('PlanningTimeline reste visible même avec convocations en attente', async () => {
     render(
       <ActualitesPage
-        followedClubIds={[]}
+        followedClubIds={['club-1']}
         onNavigate={vi.fn()}
         externalConvocations={[{ id: 'c1', status: 'pending' }]}
         onConvocationRespond={vi.fn()}

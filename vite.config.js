@@ -109,6 +109,10 @@ export default defineConfig({
           if (id.includes('pages/ProfilPage') || id.includes('pages/AuthPage')) return 'page-profil';
           // DemoApp + tout le dossier demo
           if (id.includes('/demo/'))            return 'demo';
+          // Chart.js → chunk séparé (chargé uniquement sur AdminAnalyticsPage)
+          if (id.includes('chart.js') || id.includes('react-chartjs')) {
+            return 'vendor-charts';
+          }
           // Everything else in node_modules → shared vendor chunk
           if (id.includes('node_modules')) {
             return 'vendor';

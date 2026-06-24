@@ -1,0 +1,55 @@
+{
+  "date": "2026-06-22T22:42:49.923Z",
+  "issues": [
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--04-coach-home",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    },
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--05-coach-clubs",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    },
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--06-coach-mon-club",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    },
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--07-coach-mon-club-matchs",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    },
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--08-coach-mon-club-effectif",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    },
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--09-coach-fab",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    },
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--10-poster-studio",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    },
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--14-president-home",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    },
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--15-president-fab",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    },
+    {
+      "screen": "320-xsmall",
+      "shot": "320-xsmall--16-president-dashboard",
+      "overflow": "SPAN \"— Aucune donnée enregistrée\" +38px"
+    }
+  ]
+}

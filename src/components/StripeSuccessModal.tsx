@@ -95,6 +95,13 @@ export default function StripeSuccessModal({ plan, onClose, onViewSub }: StripeS
   const cfg = PLAN_CFG[plan] ?? PLAN_CFG.starter;
   const unlocked = getUnlockedFeatures(plan);
 
+  // Track souscription activée
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('sl-analytics', {
+      detail: { type: 'subscription_activated', data: { plan } },
+    }));
+  }, [plan]);
+
   // Fermeture automatique après 30s
   useEffect(() => {
     const t = setTimeout(() => setVisible(false), 30000);

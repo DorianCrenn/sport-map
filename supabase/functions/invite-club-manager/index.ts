@@ -39,7 +39,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!isAdmin) {
+    // Protection CSRF : valider que la requête vient d'une origine autorisée
+  const csrfError = checkCsrfOrigin(req);
+  if (csrfError) return csrfError;
+
+  if (!isAdmin) {
       const isClubAdmin = profile?.role === "club_admin" && profile?.club_id === clubId;
       if (!isClubAdmin) {
         const { data: managerRow } = await serviceClient

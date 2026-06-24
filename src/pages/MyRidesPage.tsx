@@ -62,12 +62,14 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
       if (error) return;
       const ride = myDriving.find((r: any) => r.id === rideId);
       if (ride && ride.takenSeats + 1 >= ride.availableSeats) {
-        await supabase.from('rides').update({ status: 'full' }).eq('id', rideId);
+        const { error: rideErr } = await supabase.from('rides').update({ status: 'full' }).eq('id', rideId);
+        if (rideErr) console.warn('[rides] accept: could not mark full', rideErr);
       }
-      await supabase.from('ride_notifications').insert({
+      const { error: notifErr } = await supabase.from('ride_notifications').insert({
         user_id: passengerId, type: 'request_accepted', ride_id: rideId, request_id: requestId,
         data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
       });
+      if (notifErr) console.warn('[rides] accept: notification failed', notifErr);
       refetch();
     } finally {
       unmarkProcessing(requestId);
@@ -78,12 +80,14 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
     if (processingIds.has(requestId)) return;
     markProcessing(requestId);
     try {
-      await supabase.from('ride_requests').update({ status: 'refused' }).eq('id', requestId);
+      const { error: refuseErr } = await supabase.from('ride_requests').update({ status: 'refused' }).eq('id', requestId);
+      if (refuseErr) { console.warn('[rides] refuse: update failed', refuseErr); return; }
       const ride = myDriving.find((r: any) => r.id === rideId);
-      await supabase.from('ride_notifications').insert({
+      const { error: notifErr } = await supabase.from('ride_notifications').insert({
         user_id: passengerId, type: 'request_refused', ride_id: rideId, request_id: requestId,
         data: { driverName: currentUser?.name, rideLocation: ride?.departureLocation },
       });
+      if (notifErr) console.warn('[rides] refuse: notification failed', notifErr);
       refetch();
     } finally {
       unmarkProcessing(requestId);
@@ -92,7 +96,8 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
 
   async function doConfirmedCancelRide(rideId: string) {
     const ride = myDriving.find((r: any) => r.id === rideId);
-    await supabase.from('rides').update({ status: 'cancelled' }).eq('id', rideId);
+    const { error: cancelErr } = await supabase.from('rides').update({ status: 'cancelled' }).eq('id', rideId);
+    if (cancelErr) { console.warn('[rides] cancel: update failed', cancelErr); return; }
     const accepted = ride?.requests.filter((r: any) => r.status === 'accepted') ?? [];
     if (accepted.length > 0) {
       await supabase.from('ride_notifications').insert(

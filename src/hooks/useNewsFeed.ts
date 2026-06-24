@@ -90,32 +90,35 @@ export function useNewsFeed({
     async function load() {
       setLoading(true);
       const clubIds = followedClubIds.map(String);
-
-      const { data: ann } = await supabase
-        .from('club_announcements')
-        .select('id, club_id, club_name, type, title, message, created_at, author_name')
-        .in('club_id', clubIds)
-        .order('created_at', { ascending: false })
-        .limit(20) as { data: Announcement[] | null };
-
       const now = new Date().toISOString();
-      const { data: res } = await supabase
-        .from('events')
-        .select('id, title, sport, date, score, club_id, venue, city, event_type, level, team_name')
-        .in('club_id', clubIds)
-        .not('score', 'is', null)
-        .lt('date', now)
-        .order('date', { ascending: false })
-        .limit(10) as { data: EventRow[] | null };
-
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: ups } = await supabase
-        .from('events')
-        .select('id, title, sport, date, club_id, venue, city, event_type, level, home_or_away, team_name')
-        .in('club_id', clubIds)
-        .gte('date', sevenDaysAgo)
-        .order('date', { ascending: true })
-        .limit(10) as { data: EventRow[] | null };
+
+      // Paralléliser les 3 premières requêtes indépendantes
+      const [{ data: ann }, { data: res }, { data: ups }] = await Promise.all([
+        supabase
+          .from('club_announcements')
+          .select('id, club_id, club_name, type, title, message, created_at, author_name')
+          .in('club_id', clubIds)
+          .order('created_at', { ascending: false })
+          .limit(20) as Promise<{ data: Announcement[] | null }>,
+
+        supabase
+          .from('events')
+          .select('id, title, sport, date, score, club_id, venue, city, event_type, level, team_name')
+          .in('club_id', clubIds)
+          .not('score', 'is', null)
+          .lt('date', now)
+          .order('date', { ascending: false })
+          .limit(10) as Promise<{ data: EventRow[] | null }>,
+
+        supabase
+          .from('events')
+          .select('id, title, sport, date, club_id, venue, city, event_type, level, home_or_away, team_name')
+          .in('club_id', clubIds)
+          .gte('date', sevenDaysAgo)
+          .order('date', { ascending: true })
+          .limit(10) as Promise<{ data: EventRow[] | null }>,
+      ]);
 
       let ridesData: RideRow[] = [];
       const upcomingIds = (ups ?? []).map(e => String(e.id));

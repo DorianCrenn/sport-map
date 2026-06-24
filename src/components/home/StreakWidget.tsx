@@ -62,7 +62,7 @@ export default function StreakWidget({ compact = false }: StreakWidgetProps) {
           const milestones = [3, 7, 14, 30, 60, 100];
           const next = milestones.find(m => m > count) ?? 100;
           const prev = milestones[milestones.indexOf(next) - 1] ?? 0;
-          const pct  = Math.round(((count - prev) / (next - prev)) * 100);
+          const pct  = Math.min(100, Math.round(((count - prev) / (next - prev)) * 100));
           return (
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', marginBottom: 4 }}>→ {next}j</div>

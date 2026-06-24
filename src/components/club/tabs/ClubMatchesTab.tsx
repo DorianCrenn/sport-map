@@ -1,5 +1,7 @@
 import { useMemo, useState, lazy, Suspense } from 'react';
 import { useEventConvocations } from '../../../hooks/useEventConvocations.js';
+import { useClubFeatures } from '../../../hooks/useClubFeatures.js';
+import PlanGate from '../../ui/PlanGate.tsx';
 
 const EventFormStepConvocation = lazy(() => import('../../event/EventFormStepConvocation.jsx'));
 
@@ -104,9 +106,11 @@ interface ClubMatchesTabProps {
   accentColor?: string;
   canAddEvent?: boolean;
   onCreateEvent?: () => void;
+  onUpgrade?: () => void;
 }
 
-export default function ClubMatchesTab({ effectiveEvents, club, accentColor, canAddEvent, onCreateEvent }: ClubMatchesTabProps) {
+export default function ClubMatchesTab({ effectiveEvents, club, accentColor, canAddEvent, onCreateEvent, onUpgrade }: ClubMatchesTabProps) {
+  const { can } = useClubFeatures(String(club.id));
   const now = new Date();
   const [convocEvent, setConvocEvent] = useState<Record<string, any> | null>(null);
 
@@ -145,7 +149,9 @@ export default function ClubMatchesTab({ effectiveEvents, club, accentColor, can
         )}
       </div>
 
-      <StatsRow W={W} D={D} L={L} played={played.length} />
+      <PlanGate allowed={can('TEAM_STATS')} feature="TEAM_STATS" onUpgrade={onUpgrade}>
+        <StatsRow W={W} D={D} L={L} played={played.length} />
+      </PlanGate>
 
       {clubEvents.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 20px' }}>

@@ -94,9 +94,13 @@ Les utilisateurs individuels (joueurs, supporters) accèdent à la plateforme gr
 - Billetterie (à venir)
 - Boutique Club (à venir)
 
+### Inclus (suite)
+
+- **10 générations IA/mois** pour fonds et éléments PosterStudio (comme Starter)
+
 ### Restrictions
 
-- IA PosterStudio verrouillée (réservée Elite)
+- IA illimitée verrouillée (réservée Elite — Elite = illimité)
 - Automatisations intelligentes verrouillées
 - Analytics avancés verrouillés
 
@@ -136,11 +140,12 @@ Les utilisateurs individuels (joueurs, supporters) accèdent à la plateforme gr
 | Affiches/mois | 3 | Illimité | Illimité | Illimité |
 | Featured events/mois | 0 | 0 | 5 | 15 |
 | Durée featured event | — | — | 30 jours | 60 jours |
-| Générations IA/mois | 0 | 10 | 0 | Illimité |
-| Imports joueurs IA/mois | 0 | 10 | 0 | Illimité |
+| Générations IA/mois | 0 | 10 | 10 | Illimité |
+| Imports joueurs IA/mois | 0 | 10 | 10 | Illimité |
 | Équipes covoiturage | 0 | 1 | Toutes | Toutes |
 
-> **Note quotas IA** : Le plan Starter permet 10 générations et 10 imports pour explorer l'IA. Le plan Pro ne donne pas accès à l'IA PosterStudio — c'est une fonctionnalité exclusive Elite.
+> **Note quotas IA** : Le plan Starter permet 10 générations et 10 imports pour explorer l'IA. Le plan Pro maintient le même quota IA (10/mois). L'IA illimitée est réservée Elite.
+> **Note affiches** : Starter, Pro et Elite ont des affiches **illimitées**. Seul le plan Gratuit est limité à 3/mois.
 
 ---
 

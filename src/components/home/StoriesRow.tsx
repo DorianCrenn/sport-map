@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 
 interface StoriesRowProps {
@@ -21,7 +21,6 @@ export default function StoriesRow({
   eventCountBySport = {},
 }: StoriesRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
-  const [dragStart, setDragStart] = useState<number | null>(null);
 
   const items = [
     ALL_ITEM,

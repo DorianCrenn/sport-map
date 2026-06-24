@@ -380,7 +380,7 @@ export default function ProfilPage({
               backgroundColor: '#22d96a', color: '#fff',
               boxShadow: '0 0 0 2px rgba(34,217,106,0.4)',
             }}>
-              {currentUser.name?.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'}
+              {currentUser.name?.trim().split(' ').filter(Boolean).map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || '?'}
             </div>
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -392,9 +392,9 @@ export default function ProfilPage({
                 initial={{ scale: 0, rotate: -12 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 18, delay: 0.2 }}
-                style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 999, backgroundColor: `${levelInfo.color ?? '#22d96a'}25`, color: levelInfo.color ?? '#22d96a', border: `1px solid ${levelInfo.color ?? '#22d96a'}50`, flexShrink: 0, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}
+                style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 999, backgroundColor: `${levelInfo?.color ?? '#22d96a'}25`, color: levelInfo?.color ?? '#22d96a', border: `1px solid ${levelInfo?.color ?? '#22d96a'}50`, flexShrink: 0, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}
               >
-                {levelInfo.icon ?? '⚡'} Niv.{levelInfo.level}
+                {levelInfo?.icon ?? '⚡'} Niv.{levelInfo?.level ?? 1}
               </motion.span>
             </div>
             <p style={{ fontSize: 12, color: 'rgba(238,242,239,0.5)', margin: '3px 0 8px' }}>{currentUser.email}</p>

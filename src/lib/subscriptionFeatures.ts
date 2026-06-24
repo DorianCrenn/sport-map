@@ -169,8 +169,8 @@ export const PLAN_QUOTAS: Record<PlanId, PlanQuotas> = {
     postersPerMonth:     null,
     featuredEventsMax:   5,
     featuredEventsDays:  30,
-    aiGeneratesPerMonth: 0,    // IA réservée Elite
-    aiImportsPerMonth:   0,
+    aiGeneratesPerMonth: 10,   // Pro = 10 génér. IA/mois (escalier de valeur cohérent)
+    aiImportsPerMonth:   10,
     carpoolingTeamsMax:  null,
   },
   elite: {

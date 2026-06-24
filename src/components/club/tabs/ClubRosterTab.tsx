@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import TeamView from '../ClubTeamSection.jsx';
 import QuickAddTeamModal from '../QuickAddTeamModal.jsx';
+import { useClubFeatures } from '../../../hooks/useClubFeatures.js';
+import PlanGate from '../../ui/PlanGate.tsx';
 
 interface Team { id: string; name: string; level?: string }
 
@@ -21,13 +23,15 @@ interface ClubRosterTabProps {
   accentColor?: string;
   canEdit?: boolean;
   onUpdateClub?: (patch: Record<string, any>) => void;
+  onUpgrade?: () => void;
 }
 
 export default function ClubRosterTab({
   club, allTeams, blocks, isEditing, updateBlock, addBlock,
   effectiveEvents, trainings, onUpdateTrainings, onAddEventForTeam,
-  canAddEvent, onBulkAddTrainingEvents, accentColor, canEdit, onUpdateClub,
+  canAddEvent, onBulkAddTrainingEvents, accentColor, canEdit, onUpdateClub, onUpgrade,
 }: ClubRosterTabProps) {
+  const { can } = useClubFeatures(String(club.id));
   const [activeTeamId, setActiveTeamId] = useState<string | null>(null);
   const [showAddTeam, setShowAddTeam]   = useState(false);
   const tabBarRef = useRef<HTMLDivElement>(null);
@@ -105,21 +109,23 @@ export default function ClubRosterTab({
           {showAddTeam && <QuickAddTeamModal club={club} onSave={handleTeamSaved} onClose={() => setShowAddTeam(false)} />}
         </AnimatePresence>
         {activeTeam ? (
-          <TeamView
-            key={activeTeam.id}
-            team={activeTeam}
-            blocks={blocks}
-            isEditing={isEditing}
-            updateBlock={updateBlock}
-            addBlock={addBlock}
-            club={club}
-            allEvents={effectiveEvents}
-            trainings={trainings as any}
-            onUpdateTrainings={onUpdateTrainings as any}
-            onAddEventForTeam={onAddEventForTeam as any}
-            canAddEvent={canAddEvent}
-            onBulkAddTrainingEvents={onBulkAddTrainingEvents}
-          />
+          <PlanGate allowed={can('TEAM_LINEUPS')} feature="TEAM_LINEUPS" onUpgrade={onUpgrade}>
+            <TeamView
+              key={activeTeam.id}
+              team={activeTeam}
+              blocks={blocks}
+              isEditing={isEditing}
+              updateBlock={updateBlock}
+              addBlock={addBlock}
+              club={club}
+              allEvents={effectiveEvents}
+              trainings={trainings as any}
+              onUpdateTrainings={onUpdateTrainings as any}
+              onAddEventForTeam={onAddEventForTeam as any}
+              canAddEvent={canAddEvent}
+              onBulkAddTrainingEvents={onBulkAddTrainingEvents}
+            />
+          </PlanGate>
         ) : (
           <div style={{ padding: '14px 14px calc(90px + env(safe-area-inset-bottom, 0px))' }}>
             <div style={{ marginBottom: 14 }}>

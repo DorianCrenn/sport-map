@@ -52,8 +52,8 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
 
   const filtered = allClubs.filter((c: Record<string, any>) => {
     if (myClub && c.id === myClub.id) return false;
-    const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.city.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = (c.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.city ?? '').toLowerCase().includes(search.toLowerCase());
     const matchSport = sportFilter ? c.sport === sportFilter
       : inFavoritesMode ? favoriteSports.includes(c.sport)
       : true;

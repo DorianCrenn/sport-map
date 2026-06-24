@@ -18,16 +18,11 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import webpush from 'https://esm.sh/web-push@3.6.7';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, handleOptions } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  const preflight = handleOptions(req);
+  if (preflight) return preflight;
 
   try {
     // ── Authentication guard ──────────────────────────────────────────────────
@@ -35,7 +30,7 @@ Deno.serve(async (req) => {
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!token) {
       return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -47,14 +42,14 @@ Deno.serve(async (req) => {
     const { data: { user: caller }, error: authErr } = await anonClient.auth.getUser(token);
     if (authErr || !caller) {
       return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
     const { user_id, title, body, url = '/', tag = 'sportlink-push' } = await req.json();
     if (!user_id || !title) {
       return new Response(JSON.stringify({ error: 'user_id and title are required' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -69,7 +64,7 @@ Deno.serve(async (req) => {
 
     if (caller.id !== user_id && !isAdmin) {
       return new Response(JSON.stringify({ error: 'Forbidden: cannot push to another user' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -89,7 +84,7 @@ Deno.serve(async (req) => {
     if (error) throw new Error(error.message);
     if (!subs || subs.length === 0) {
       return new Response(JSON.stringify({ sent: 0 }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -107,11 +102,11 @@ Deno.serve(async (req) => {
     const failed = results.length - sent;
 
     return new Response(JSON.stringify({ sent, failed }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });
