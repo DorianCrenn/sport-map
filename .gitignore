@@ -43,3 +43,4 @@ supabase/.temp/
 # Audit screenshots (générés, non versionnés)
 /scripts/audit-full/
 /scripts/audit-screenshots/
+scripts/audit-buttons/
