@@ -2,12 +2,14 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { trackCreateAccountClicked } from './demoAnalytics.js';
 
+const BOTTOM_NAV_H = 64; // hauteur de la BottomNav en pixels
+
 function getInitialPos() {
   const vh = window.innerHeight;
-  // Position initiale : bas-gauche de l'écran, au-dessus de la BottomNav (~64px)
+  // Positionner au-dessus de la BottomNav (64px) + marge de sécurité (16px)
   return {
     x: 8,
-    y: Math.max(120, vh - 320),
+    y: Math.max(120, vh - 320 - BOTTOM_NAV_H - 16),
   };
 }
 
@@ -58,7 +60,8 @@ export default function DemoGuide({
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const nx = Math.max(0, Math.min(e.clientX - dragOffsetRef.current.x, vw - GUIDE_W - 8));
-    const ny = Math.max(48, Math.min(e.clientY - dragOffsetRef.current.y, vh - 80));
+    // Contrainte basse : laisser 40px (hauteur pill) + BottomNav (64px) + marge (8px)
+    const ny = Math.max(48, Math.min(e.clientY - dragOffsetRef.current.y, vh - 40 - BOTTOM_NAV_H - 8));
     setPos({ x: nx, y: ny });
   }, []);
 

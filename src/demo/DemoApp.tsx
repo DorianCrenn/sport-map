@@ -290,7 +290,7 @@ function SandboxBadge({ profile, onCreateAccount, onReplayTour, onChangeProfile 
   const emoji = PROFILE_EMOJIS[profile] || '🏖️';
   return (
     <div style={{
-      position:       'fixed', bottom: 80, left: '50%',
+      position:       'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))', left: '50%',
       transform:      'translateX(-50%)', zIndex: 9990,
       display:        'flex', alignItems: 'center', gap: 6,
       background:     'var(--demo-pill-bg)', backdropFilter: 'blur(16px)',

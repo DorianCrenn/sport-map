@@ -67,7 +67,7 @@ export default function PlansMiniModal({ open, onClose, currentPlanId, nextPlanI
                 <div style={{ textAlign: 'center', padding: '8px 0 16px', fontSize: 12, color: 'var(--sl-t3)' }}>Redirection vers le paiement…</div>
               )}
 
-              <div style={{ padding: '0 20px 32px', textAlign: 'center' }}>
+              <div style={{ padding: '0 20px', paddingBottom: 'calc(32px + env(safe-area-inset-bottom, 0px))', textAlign: 'center' }}>
                 <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0, lineHeight: 1.6 }}>
                   Paiement sécurisé par Stripe · 14 jours d'essai gratuit · Sans engagement · Annulable à tout moment
                 </p>
