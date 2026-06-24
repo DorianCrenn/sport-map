@@ -85,22 +85,32 @@ export default function DemoApp({ AppInner }) {
       const s = tourSteps[currentStep];
       if (!s?.clickTarget) return; // étape info → pas de détection de clic
 
-      const clickedEl    = e.target.closest('[data-demo]');
-      const clickedAttr  = clickedEl?.getAttribute('data-demo');
+      // Cherche le clickTarget dans TOUTE la chaîne d'ancêtres (pas seulement le plus proche)
+      // → un clic sur un enfant d'un conteneur data-demo (ex: agenda-section) est accepté
+      function isInsideTarget(el) {
+        let cur = el;
+        while (cur) {
+          if (cur.getAttribute?.('data-demo') === s.clickTarget) return true;
+          cur = cur.parentElement;
+        }
+        return false;
+      }
 
-      if (clickedAttr === s.clickTarget) {
-        // ✅ Bonne cible cliquée
+      if (isInsideTarget(e.target)) {
+        // ✅ Bonne cible cliquée (directement ou via un enfant du conteneur)
         if (s.tryItAction) {
-          // Pour les try-it, avancement déclenché par sl-demo-action, pas par le clic
           setTryItInProgress(true);
         } else {
-          // Simple clic → avancer avec un léger délai (laisse l'action naturelle se faire)
           setTimeout(() => nextStepRef.current?.(), 250);
         }
       } else if (!tryItInProgress) {
-        // ❌ Mauvaise cible → shake
-        setShaking(true);
-        setTimeout(() => setShaking(false), 600);
+        // Ne secouer QUE si l'utilisateur a cliqué un AUTRE élément data-demo explicite
+        // (ignorer les clics sur des éléments sans data-demo : boutons intermédiaires, Admin, Voir la page, etc.)
+        const otherDemoEl = e.target.closest?.('[data-demo]');
+        if (otherDemoEl && otherDemoEl.getAttribute('data-demo') !== s.clickTarget) {
+          setShaking(true);
+          setTimeout(() => setShaking(false), 600);
+        }
       }
     }
 

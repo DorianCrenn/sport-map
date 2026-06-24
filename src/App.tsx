@@ -581,12 +581,10 @@ function AppInner() {
       if (myClub) {
         setSelectedSearchClub(myClub);
         _setActiveTab('mon-club');
-        if (isClubAdmin || isCoachOrManager) {
-          setPendingClubAction('dashboard');
-        }
+        // Pas de pendingClubAction : "Ma page club" ouvre la page publique, pas le dashboard
       } else if (eventsLoading || userClubs.length === 0) {
         // Clubs pas encore chargés — stocker l'intent, résolu dans l'effet ci-dessous
-        pendingMonClubActionRef.current = isClubAdmin || isCoachOrManager ? 'dashboard' : null;
+        pendingMonClubActionRef.current = null;
         _setActiveTab('mon-club');
       } else {
         setActiveTab('clubs');
