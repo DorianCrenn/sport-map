@@ -424,29 +424,6 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
 
                 {form.eventType !== 'tournament' && (
                   <>
-                    <Field label="Réception">
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                        {[
-                          { value: 'home', label: '🏠 Domicile', desc: 'Match à domicile' },
-                          { value: 'away', label: '✈️ Extérieur', desc: 'Match en déplacement' },
-                        ].map(opt => (
-                          <button
-                            key={opt.value} type="button" onClick={() => set('homeOrAway', opt.value)}
-                            style={{
-                              padding: '12px 8px', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
-                              border: `2px solid ${form.homeOrAway === opt.value ? 'var(--sl-green)' : 'var(--sl-border)'}`,
-                              backgroundColor: form.homeOrAway === opt.value ? 'var(--sl-green-dim)' : 'var(--sl-surface)',
-                              transition: 'all 0.15s',
-                            }}
-                          >
-                            <div style={{ fontSize: 14, marginBottom: 2 }}>{opt.label.split(' ')[0]}</div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: form.homeOrAway === opt.value ? 'var(--sl-green)' : 'var(--sl-t1)' }}>{opt.label.split(' ').slice(1).join(' ')}</div>
-                            <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2 }}>{opt.desc}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </Field>
-
                     <Field label="Adversaire" hint={sameSportClubs.length > 1 ? `${sameSportClubs.length - 1} clubs ${myClub?.sport ?? ''} dans la base` : 'Saisissez le nom de l\'adversaire'}>
                       <AdversaireField
                         value={form.adversaire}
@@ -456,6 +433,59 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                         inputStyle={inputStyle}
                       />
                     </Field>
+
+                    {/* Aperçu live du matchup : montre exactement "Mon club vs Adversaire" selon domicile/extérieur */}
+                    <div style={{ borderRadius: 14, border: '1.5px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', overflow: 'hidden' }}>
+                      {/* Sélecteur domicile / extérieur */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+                        {[
+                          { value: 'home', emoji: '🏠', label: 'Domicile' },
+                          { value: 'away', emoji: '✈️', label: 'Extérieur' },
+                        ].map((opt, i) => (
+                          <button
+                            key={opt.value} type="button" onClick={() => set('homeOrAway', opt.value)}
+                            style={{
+                              padding: '10px 8px', cursor: 'pointer', textAlign: 'center',
+                              border: 'none',
+                              borderRight: i === 0 ? '1px solid var(--sl-border)' : 'none',
+                              borderBottom: '1.5px solid var(--sl-border)',
+                              backgroundColor: form.homeOrAway === opt.value ? 'var(--sl-green-dim)' : 'transparent',
+                              transition: 'all 0.15s',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                            }}
+                          >
+                            <span style={{ fontSize: 13 }}>{opt.emoji}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: form.homeOrAway === opt.value ? 'var(--sl-green)' : 'var(--sl-t2)' }}>{opt.label}</span>
+                            {form.homeOrAway === opt.value && (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      {/* Prévisualisation du titre du match */}
+                      <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                        <span style={{
+                          fontSize: 13, fontWeight: 800, color: form.homeOrAway === 'home' ? 'var(--sl-green)' : 'var(--sl-t2)',
+                          padding: '3px 8px', borderRadius: 6,
+                          backgroundColor: form.homeOrAway === 'home' ? 'var(--sl-green-dim)' : 'transparent',
+                          border: form.homeOrAway === 'home' ? '1px solid rgba(34,217,106,0.25)' : 'none',
+                          maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {myClub?.name ?? 'Mon club'}
+                        </span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', flexShrink: 0 }}>vs</span>
+                        <span style={{
+                          fontSize: 13, fontWeight: 800, color: form.homeOrAway === 'away' ? 'var(--sl-green)' : (form.adversaire ? 'var(--sl-t1)' : 'var(--sl-t3)'),
+                          padding: '3px 8px', borderRadius: 6,
+                          backgroundColor: form.homeOrAway === 'away' ? 'var(--sl-green-dim)' : 'transparent',
+                          border: form.homeOrAway === 'away' ? '1px solid rgba(34,217,106,0.25)' : 'none',
+                          maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          fontStyle: form.adversaire ? 'normal' : 'italic',
+                        }}>
+                          {form.adversaire || 'Adversaire'}
+                        </span>
+                      </div>
+                    </div>
                   </>
                 )}
               </>
