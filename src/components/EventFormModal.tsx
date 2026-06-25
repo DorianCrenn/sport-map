@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Z } from '../constants/zIndex.js';
 import { eventFormSchema, validate } from '../lib/schemas.js';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 import { sanitizeText } from '../lib/sanitize.js';
 import HelpTooltip from './HelpTooltip.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -95,6 +95,16 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
           defaults.level    = firstTeam?.level ?? '';
         }
       }
+    }
+    if (isDemoMode()) {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      Object.assign(defaults, {
+        adversaire: defaults.adversaire ?? 'AS Plougastel',
+        date:       d.toISOString().slice(0, 10),
+        time:       '15:00',
+        eventType:  defaults.eventType ?? 'championship',
+      });
     }
     return defaults;
   }, [useSmartMode, myClub]);
@@ -341,6 +351,13 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
           </div>
 
           <form id="event-form" onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 8px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {isDemoMode() && !isEdit && (
+              <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 8, padding: '6px 12px', fontSize: 11, color: 'var(--demo-indigo-text, #818cf8)', display: 'flex', gap: 6, alignItems: 'center' }}>
+                <span>✨</span>
+                <span>Données pré-remplies — modifiez ou validez directement</span>
+              </div>
+            )}
 
             <div style={{ display: (!useSteps || step === 1) ? 'contents' : 'none' }}>
 

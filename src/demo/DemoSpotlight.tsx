@@ -86,8 +86,20 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
       setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
     }
 
+    function findFirstVisible(t: string): HTMLElement | null {
+      const els = document.querySelectorAll(`[data-demo="${t}"]`);
+      for (const el of Array.from(els) as HTMLElement[]) {
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+        const s = window.getComputedStyle(el);
+        if (s.display === 'none' || s.visibility === 'hidden' || parseFloat(s.opacity) < 0.01) continue;
+        return el;
+      }
+      return null;
+    }
+
     function findAndTrack() {
-      const el = document.querySelector(`[data-demo="${target}"]`);
+      const el = findFirstVisible(target);
       if (!el) {
         attempts++;
         if (attempts >= MAX_ATTEMPTS) clearInterval(pollingRef.current);
@@ -115,7 +127,7 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
     findAndTrack();
 
     function onLayoutChange() {
-      const el = document.querySelector(`[data-demo="${target}"]`);
+      const el = findFirstVisible(target);
       if (el) updateRect(el);
     }
     // capture:true pour attraper les scrolls sur tous les conteneurs internes
@@ -289,7 +301,7 @@ export default function DemoSpotlight({ target, active, shaking = false }) {
           <svg width={arrowSize} height={arrowSize} viewBox="0 0 24 24" fill="none">
             <path d="M12 5v14M19 12l-7 7-7-7" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span style={textStyle}>👆 Clique ici</span>
+          <span style={textStyle}>👇 Clique ici</span>
         </div>
       )}
     </div>,

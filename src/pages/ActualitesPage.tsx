@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useCallback, useState } from 'react';
+import { lazy, Suspense, useMemo, useCallback, useState, useEffect } from 'react';
 import { useAuth }          from '../contexts/AuthContext.jsx';
 import { useManagedClubs }  from '../hooks/useManagedClubs.js';
 import { useQuickActions }  from '../hooks/useQuickActions.js';
@@ -49,6 +49,19 @@ export default function ActualitesPage({
 
   const [studioConfig,     setStudioConfig]     = useState<Record<string, any> | null>(null);
   const [convocationEvent, setConvocationEvent] = useState<Record<string, any> | null>(null);
+
+  // En mode démo, fermer les overlays locaux quand DemoApp demande close-overlay
+  useEffect(() => {
+    if (!demo) return;
+    function onDemoNav(e: Event) {
+      if (((e as CustomEvent).detail?.action) === 'close-overlay') {
+        setConvocationEvent(null);
+        setStudioConfig(null);
+      }
+    }
+    window.addEventListener('sl-demo-navigate', onDemoNav);
+    return () => window.removeEventListener('sl-demo-navigate', onDemoNav);
+  }, [demo]);
 
   const handleOpenPoster = useCallback(async ({ event, score, mode }: { event: any; score: any; mode: string }) => {
     let convPlayers: string[] | null = null;

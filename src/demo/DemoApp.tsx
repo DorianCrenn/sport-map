@@ -53,12 +53,14 @@ export default function DemoApp({ AppInner }) {
   const [shaking,            setShaking]            = useState(false);
   // En cours d'action tryIt (entre le clic sur le bouton et l'action complétée)
   const [tryItInProgress,    setTryItInProgress]    = useState(false);
+  // Délai d'activation du spotlight — false pendant 350ms quand closeOverlayBefore pour laisser l'overlay se fermer
+  const [spotlightReady,     setSpotlightReady]     = useState(true);
 
   const showLanding = !profile;
   const step        = tourSteps[currentStep] ?? null;
 
   // Le spotlight est actif sur les étapes interactives hors sandbox/landing
-  const spotlightActive = isInteractiveStep(step) && !showLanding && !isInSandbox && !showSandboxWelcome;
+  const spotlightActive = isInteractiveStep(step) && !showLanding && !isInSandbox && !showSandboxWelcome && spotlightReady;
 
   // ── nextStep stable via ref ───────────────────────────────────────────────
   const nextStepRef = useRef(null);
@@ -132,13 +134,42 @@ export default function DemoApp({ AppInner }) {
     return () => window.removeEventListener('sl-demo-action', onDemoAction);
   }, [currentStep, tourSteps]);
 
-  // ── Fermeture des overlays au changement d'étape ────────────────────────
+  // ── Fermeture des overlays + navigation onglet au changement d'étape ────
   useEffect(() => {
     if (showLanding || !step) return;
-    // Fermer les overlays ouverts (formulaire, annonces, etc.) si l'étape demande
-    window.dispatchEvent(new CustomEvent('sl-demo-navigate', {
-      detail: { action: step.closeOverlayBefore ? 'close-overlay' : null },
-    }));
+    const TAB_ID: Record<string, string> = {
+      agenda: 'home', accueil: 'home', home: 'home',
+      carte: 'map', map: 'map',
+      clubs: 'clubs',
+      favoris: 'favoris',
+      profil: 'profil',
+    };
+    const tabId = step.onTab ? TAB_ID[step.onTab.toLowerCase()] ?? null : null;
+
+    if (step.closeOverlayBefore) {
+      // 1) Désactiver le spotlight immédiatement (évite qu'il flotte sur l'overlay encore ouvert)
+      setSpotlightReady(false);
+      // 2) Fermer tous les overlays
+      window.dispatchEvent(new CustomEvent('sl-demo-navigate', {
+        detail: { action: 'close-overlay' },
+      }));
+      let tTab: ReturnType<typeof setTimeout> | null = null;
+      // 3) Naviguer vers l'onglet (si défini) après la fermeture de l'overlay
+      if (tabId) {
+        tTab = setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('sl-demo-navigate', {
+            detail: { action: 'tab', tab: tabId },
+          }));
+        }, 120);
+      }
+      // 4) Réactiver le spotlight après que l'overlay soit fermé (animation ~200ms)
+      const t = setTimeout(() => setSpotlightReady(true), 350);
+      return () => { clearTimeout(t); if (tTab) clearTimeout(tTab); };
+    } else if (tabId) {
+      window.dispatchEvent(new CustomEvent('sl-demo-navigate', {
+        detail: { action: 'tab', tab: tabId },
+      }));
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 

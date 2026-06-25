@@ -16,8 +16,8 @@ import { supporterTour }    from '../../demo/tours/supporter.js';
 // CES VALEURS DOIVENT ÊTRE MISES À JOUR SI LES TOURS CHANGENT.
 
 const DISPLAYED_STEPS = {
-  president:     12,
-  coach:         8,
+  president:     13,
+  coach:         12,
   communication: 6,
   parent:        7,
   player:        6,
@@ -78,7 +78,7 @@ describe('Tours interactifs — structure des étapes clickTarget', () => {
     // Navigation
     'tab-home', 'tab-map', 'tab-favoris', 'tab-clubs', 'tab-profil', 'tab-mon-club',
     // FAB + sous-items
-    'fab-add', 'fab-dashboard', 'fab-event', 'fab-announce',
+    'fab-add', 'fab-dashboard', 'fab-event', 'fab-announce', 'fab-mon-club', 'fab-training',
     // Éléments app
     'convocation-btn', 'convocation-respond', 'favorite-btn', 'follow-club-btn',
     'live-score-pupitre', 'live-multiplex', 'coach-match-card', 'carpool-card',
