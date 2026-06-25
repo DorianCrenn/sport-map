@@ -1,14 +1,14 @@
-﻿export const DEMO_CLUB_ID  = 'demo-club-001';
+export const DEMO_CLUB_ID  = 'demo-club-001';
 export const DEMO_USER_ID  = 'demo-user-001';
 
-// Données brutes DB (snake_case) â€” mapFromDB dans useClubs.js les convertit
+// Données brutes DB (snake_case) – mapFromDB dans useClubs.js les convertit
 export const demoClubRow = {
   id:                DEMO_CLUB_ID,
   user_id:           DEMO_USER_ID,
   name:              'FC SportLink Démo',
   sport:             'Football',
   city:              'Brest',
-  description:       'Club de démonstration SportLink. Explorez toutes les fonctionnalités en toute liberté â€” aucune donnée n\'est enregistrée.',
+  description:       'Club de démonstration SportLink. Explorez toutes les fonctionnalités en toute liberté – aucune donnée n\'est enregistrée.',
   logo_url:          null,
   website:           'https://sportlink.app',
   phone:             '06 12 34 56 78',
@@ -77,7 +77,7 @@ export const demoClubPage = {
   club_id: DEMO_CLUB_ID,
   blocks: [
     { id: 'b1', type: 'title',           data: { text: 'Bienvenue au FC SportLink Démo' } },
-    { id: 'b2', type: 'about',           data: { text: 'Club fondé en 2018, basé Ã  Brest. Nous évoluons en Régional 2 avec plus de 120 licenciés répartis sur 8 équipes. Rejoignez-nous !' } },
+    { id: 'b2', type: 'about',           data: { text: 'Club fondé en 2018, basé à Brest. Nous évoluons en Régional 2 avec plus de 120 licenciés répartis sur 8 équipes. Rejoignez-nous !' } },
     { id: 'b3', type: 'next-match',      data: {} },
     { id: 'b4', type: 'upcoming-events', data: { title: 'Prochains événements' } },
     { id: 'b5', type: 'roster',          data: { title: 'Notre effectif' } },

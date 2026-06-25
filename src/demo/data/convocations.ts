@@ -1,4 +1,4 @@
-﻿import { DEMO_CLUB_ID } from './club.js';
+import { DEMO_CLUB_ID } from './club.js';
 
 function past(days, hour = 9) {
   const d = new Date();
@@ -21,7 +21,7 @@ const convocEvent001 = [
   { id: 'demo-conv-001-10', event_id: 'demo-event-001', player_id: 'demo-player-010', player_name: 'Baptiste Seznec',  team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), updated_at: past(2) },
   { id: 'demo-conv-001-11', event_id: 'demo-event-001', player_id: 'demo-player-011', player_name: 'Julien Prigent',   team_name: 'Équipe 1', status: 'pending',     note: null,                     created_at: past(2), updated_at: null    },
   { id: 'demo-conv-001-12', event_id: 'demo-event-001', player_id: 'demo-player-012', player_name: 'Florian Calvez',   team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), updated_at: past(1) },
-  { id: 'demo-conv-001-13', event_id: 'demo-event-001', player_id: 'demo-player-013', player_name: 'Mathieu Dourdain', team_name: 'Équipe 1', status: 'unavailable', note: 'Blessure Ã  la cheville', created_at: past(2), updated_at: past(2) },
+  { id: 'demo-conv-001-13', event_id: 'demo-event-001', player_id: 'demo-player-013', player_name: 'Mathieu Dourdain', team_name: 'Équipe 1', status: 'unavailable', note: 'Blessure à la cheville', created_at: past(2), updated_at: past(2) },
   { id: 'demo-conv-001-14', event_id: 'demo-event-001', player_id: 'demo-player-014', player_name: 'Hugo Kervarrec',   team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), updated_at: past(1) },
   { id: 'demo-conv-001-15', event_id: 'demo-event-001', player_id: 'demo-player-015', player_name: 'Nathan Kermarrec', team_name: 'Équipe 1', status: 'accepted',    note: null,                     created_at: past(2), updated_at: past(2) },
   { id: 'demo-conv-001-16', event_id: 'demo-event-001', player_id: 'demo-player-016', player_name: 'Yann Le Guével',   team_name: 'Équipe 1', status: 'pending',     note: null,                     created_at: past(2), updated_at: null    },
@@ -78,7 +78,7 @@ const convocEvent006 = [
 // Convocations pour demo-event-017 (Réserve, J+5 vs CA Brest Métropole R)
 const convocEvent017 = [
   { id: 'demo-conv-017-01', event_id: 'demo-event-017', player_id: 'demo-player-023', player_name: "Enzo Cabioc'h",   team_name: 'Réserve', status: 'accepted', note: null, created_at: past(0), updated_at: past(0) },
-  { id: 'demo-conv-017-02', event_id: 'demo-event-017', player_id: 'demo-player-024', player_name: 'GaÃ«l Kerboas',    team_name: 'Réserve', status: 'accepted', note: null, created_at: past(0), updated_at: past(0) },
+  { id: 'demo-conv-017-02', event_id: 'demo-event-017', player_id: 'demo-player-024', player_name: 'Gaël Kerboas',    team_name: 'Réserve', status: 'accepted', note: null, created_at: past(0), updated_at: past(0) },
   { id: 'demo-conv-017-03', event_id: 'demo-event-017', player_id: 'demo-player-025', player_name: 'Arnaud Coat',     team_name: 'Réserve', status: 'pending',  note: null, created_at: past(0), updated_at: null    },
   { id: 'demo-conv-017-04', event_id: 'demo-event-017', player_id: 'demo-player-026', player_name: 'Loïc Brézulier', team_name: 'Réserve', status: 'accepted', note: null, created_at: past(0), updated_at: past(0) },
   { id: 'demo-conv-017-05', event_id: 'demo-event-017', player_id: 'demo-player-027', player_name: 'Simon Hélias',    team_name: 'Réserve', status: 'accepted', note: null, created_at: past(0), updated_at: past(0) },
@@ -94,7 +94,7 @@ const convocEvent017 = [
 
 // Convocations pour demo-event-007 (Féminines, J+11 vs Quimper FC F)
 const convocEvent007 = [
-  { id: 'demo-conv-007-01', event_id: 'demo-event-007', player_id: 'demo-player-065', player_name: 'AnaÃ«lle Kervran',    team_name: 'Équipe F', status: 'pending',  note: null, created_at: past(0), updated_at: null    },
+  { id: 'demo-conv-007-01', event_id: 'demo-event-007', player_id: 'demo-player-065', player_name: 'Anaëlle Kervran',    team_name: 'Équipe F', status: 'pending',  note: null, created_at: past(0), updated_at: null    },
   { id: 'demo-conv-007-02', event_id: 'demo-event-007', player_id: 'demo-player-066', player_name: 'Maïwenn Pouliquen',  team_name: 'Équipe F', status: 'pending',  note: null, created_at: past(0), updated_at: null    },
   { id: 'demo-conv-007-03', event_id: 'demo-event-007', player_id: 'demo-player-067', player_name: 'Léa Quéré',          team_name: 'Équipe F', status: 'accepted', note: null, created_at: past(0), updated_at: past(0) },
   { id: 'demo-conv-007-04', event_id: 'demo-event-007', player_id: 'demo-player-068', player_name: 'Camille Burel',      team_name: 'Équipe F', status: 'pending',  note: null, created_at: past(0), updated_at: null    },
