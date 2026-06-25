@@ -166,10 +166,17 @@ export function buildEvent(
     awayTeam = form.homeOrAway === 'home' ? (form.adversaire || 'Adversaire') : myName;
     title = `${homeTeam} vs ${awayTeam}`;
   } else {
-    homeTeam = form.homeTeam;
-    awayTeam = form.awayTeam;
     const isTeamSport = ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport);
-    if (isTeamSport && form.homeTeam && form.awayTeam) title = `${form.homeTeam} vs ${form.awayTeam}`;
+    if (isTeamSport && form.adversaire && form.homeOrAway) {
+      const myName = form.homeTeam || 'Mon équipe';
+      homeTeam = form.homeOrAway === 'home' ? myName          : form.adversaire;
+      awayTeam = form.homeOrAway === 'home' ? form.adversaire : myName;
+      title = `${homeTeam} vs ${awayTeam}`;
+    } else {
+      homeTeam = form.homeTeam;
+      awayTeam = form.awayTeam;
+      if (isTeamSport && form.homeTeam && form.awayTeam) title = `${form.homeTeam} vs ${form.awayTeam}`;
+    }
   }
 
   const sport = useSmartMode && myClub ? myClub.sport : form.sport;

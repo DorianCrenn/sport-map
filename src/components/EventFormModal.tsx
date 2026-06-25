@@ -30,6 +30,40 @@ interface EventFormModalProps {
   onOpenPoster?: (event: Record<string, any>, opts?: Record<string, any>) => void;
 }
 
+function HomeAwaySelector({ value, onChange }: { value: 'home' | 'away'; onChange: (v: 'home' | 'away') => void }) {
+  return (
+    <Field label="Réception *">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {([
+          { value: 'home', emoji: '🏠', label: 'Domicile' },
+          { value: 'away', emoji: '✈️', label: 'Extérieur' },
+        ] as const).map(opt => (
+          <button
+            key={opt.value} type="button" onClick={() => onChange(opt.value)}
+            style={{
+              padding: '11px 8px', borderRadius: 12, cursor: 'pointer',
+              border: `1.5px solid ${value === opt.value ? 'var(--sl-green)' : 'var(--sl-border)'}`,
+              backgroundColor: value === opt.value ? 'var(--sl-green-dim)' : 'var(--sl-surface)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              transition: 'all 0.15s',
+            }}
+          >
+            <span style={{ fontSize: 15 }}>{opt.emoji}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: value === opt.value ? 'var(--sl-green)' : 'var(--sl-t2)' }}>
+              {opt.label}
+            </span>
+            {value === opt.value && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="3" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            )}
+          </button>
+        ))}
+      </div>
+    </Field>
+  );
+}
+
 export default function EventFormModal({ event, onSave, onClose, onBulkSave, onOpenPoster }: EventFormModalProps) {
   const { currentUser, isClubAdmin } = useAuth() as any;
   const { allSports } = useSports() as any;
@@ -424,6 +458,11 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
 
                 {form.eventType !== 'tournament' && (
                   <>
+                    <HomeAwaySelector
+                      value={form.homeOrAway as 'home' | 'away'}
+                      onChange={(v: 'home' | 'away') => set('homeOrAway', v)}
+                    />
+
                     <Field label="Adversaire" hint={sameSportClubs.length > 1 ? `${sameSportClubs.length - 1} clubs ${myClub?.sport ?? ''} dans la base` : 'Saisissez le nom de l\'adversaire'}>
                       <AdversaireField
                         value={form.adversaire}
@@ -434,72 +473,41 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                       />
                     </Field>
 
-                    {/* Aperçu live du matchup : montre exactement "Mon club vs Adversaire" selon domicile/extérieur */}
-                    <div style={{ borderRadius: 14, border: '1.5px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', overflow: 'hidden' }}>
-                      {/* Sélecteur domicile / extérieur */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-                        {[
-                          { value: 'home', emoji: '🏠', label: 'Domicile' },
-                          { value: 'away', emoji: '✈️', label: 'Extérieur' },
-                        ].map((opt, i) => (
-                          <button
-                            key={opt.value} type="button" onClick={() => set('homeOrAway', opt.value)}
-                            style={{
-                              padding: '10px 8px', cursor: 'pointer', textAlign: 'center',
-                              border: 'none',
-                              borderRight: i === 0 ? '1px solid var(--sl-border)' : 'none',
-                              borderBottom: '1.5px solid var(--sl-border)',
-                              backgroundColor: form.homeOrAway === opt.value ? 'var(--sl-green-dim)' : 'transparent',
-                              transition: 'all 0.15s',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-                            }}
-                          >
-                            <span style={{ fontSize: 13 }}>{opt.emoji}</span>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: form.homeOrAway === opt.value ? 'var(--sl-green)' : 'var(--sl-t2)' }}>{opt.label}</span>
-                            {form.homeOrAway === opt.value && (
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      {/* Prévisualisation du titre du match */}
-                      <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
-                        <span style={{
-                          fontSize: 13, fontWeight: 800, color: form.homeOrAway === 'home' ? 'var(--sl-green)' : 'var(--sl-t2)',
-                          padding: '3px 8px', borderRadius: 6,
-                          backgroundColor: form.homeOrAway === 'home' ? 'var(--sl-green-dim)' : 'transparent',
-                          border: form.homeOrAway === 'home' ? '1px solid rgba(34,217,106,0.25)' : 'none',
-                          maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        }}>
-                          {myClub?.name ?? 'Mon club'}
-                        </span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', flexShrink: 0 }}>vs</span>
-                        <span style={{
-                          fontSize: 13, fontWeight: 800, color: form.homeOrAway === 'away' ? 'var(--sl-green)' : (form.adversaire ? 'var(--sl-t1)' : 'var(--sl-t3)'),
-                          padding: '3px 8px', borderRadius: 6,
-                          backgroundColor: form.homeOrAway === 'away' ? 'var(--sl-green-dim)' : 'transparent',
-                          border: form.homeOrAway === 'away' ? '1px solid rgba(34,217,106,0.25)' : 'none',
-                          maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          fontStyle: form.adversaire ? 'normal' : 'italic',
-                        }}>
-                          {form.adversaire || 'Adversaire'}
-                        </span>
-                      </div>
-                    </div>
+                    {form.adversaire && (
+                      <p style={{ margin: '-4px 0 0', fontSize: 11, color: 'var(--sl-t3)', textAlign: 'center' }}>
+                        {form.homeOrAway === 'home'
+                          ? `${myClub?.name ?? 'Mon club'} (dom.) vs ${form.adversaire}`
+                          : `${form.adversaire} vs ${myClub?.name ?? 'Mon club'} (ext.)`}
+                      </p>
+                    )}
                   </>
                 )}
               </>
             ) : (
               <>
                 {form.eventType !== 'tournament' && ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport) && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <Field label="Domicile">
+                  <>
+                    <HomeAwaySelector
+                      value={form.homeOrAway as 'home' | 'away'}
+                      onChange={(v: 'home' | 'away') => set('homeOrAway', v)}
+                    />
+
+                    <Field label="Mon équipe">
                       <input type="text" value={form.homeTeam} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('homeTeam', e.target.value)} placeholder="FC Brest" style={inputStyle} />
                     </Field>
-                    <Field label="Visiteur">
-                      <input type="text" value={form.awayTeam} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('awayTeam', e.target.value)} placeholder="FC Quimper" style={inputStyle} />
+
+                    <Field label="Adversaire">
+                      <input type="text" value={form.adversaire} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('adversaire', e.target.value)} placeholder="FC Quimper" style={inputStyle} />
                     </Field>
-                  </div>
+
+                    {(form.homeTeam || form.adversaire) && (
+                      <p style={{ margin: '-4px 0 0', fontSize: 11, color: 'var(--sl-t3)', textAlign: 'center' }}>
+                        {form.homeOrAway === 'home'
+                          ? `${form.homeTeam || 'Mon équipe'} (dom.) vs ${form.adversaire || 'Adversaire'}`
+                          : `${form.adversaire || 'Adversaire'} vs ${form.homeTeam || 'Mon équipe'} (ext.)`}
+                      </p>
+                    )}
+                  </>
                 )}
                 {(form.eventType === 'tournament' || !['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport) || (!form.homeTeam && !form.awayTeam)) && (
                   <Field label="Nom de l'événement *">
