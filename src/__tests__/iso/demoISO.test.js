@@ -153,7 +153,7 @@ import { supporterTour } from '../../demo/tours/supporter.js';
 const VALID_CLICK_TARGETS = [
   undefined, null,
   'tab-home', 'tab-map', 'tab-favoris', 'tab-clubs', 'tab-profil', 'tab-mon-club',
-  'fab-add', 'fab-dashboard', 'fab-event', 'fab-announce',
+  'fab-add', 'fab-dashboard', 'fab-event', 'fab-announce', 'fab-mon-club', 'fab-training',
   'convocation-btn', 'convocation-respond', 'favorite-btn', 'follow-club-btn',
   'live-score-pupitre', 'live-multiplex', 'coach-match-card', 'carpool-card',
   'admin-dashboard', 'training-card', 'agenda-section', 'convocations-tab',
