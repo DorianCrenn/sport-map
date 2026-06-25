@@ -605,6 +605,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                 onChange={(v: string) => set('venue', v)}
                 cityLat={form.cityLat}
                 cityLng={form.cityLng}
+                cityName={form.cityName}
                 onSelect={({ name, city, lat, lng }: any) => {
                   set('venue', name);
                   if (city && !form.cityName) set('cityName', city);

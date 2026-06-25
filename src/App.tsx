@@ -905,7 +905,7 @@ function AppInner() {
               event={{ _isNew: true }}
               onSave={async (data: Record<string, any>) => {
                 const created = await addEventWithToast(data);
-                setActiveTab('map');
+                setActiveTab('home');
                 if (created?.id) setFocusEventId(created.id);
                 return created;
               }}
