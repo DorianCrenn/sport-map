@@ -38,7 +38,7 @@ beforeEach(() => {
 });
 
 describe('useClubAnnouncements â€” chargement', () => {
-  it('dÃ©marre avec loading=true si clubId fourni', () => {
+  it('démarre avec loading=true si clubId fourni', () => {
     const { result } = renderHook(() => useClubAnnouncements('c-1'));
     expect(result.current.loading).toBe(true);
   });

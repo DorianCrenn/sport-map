@@ -30,7 +30,7 @@ beforeEach(() => {
 });
 
 describe('useEventConvocations â€” chargement', () => {
-  it('dÃ©marre avec loading=true si eventId fourni', () => {
+  it('démarre avec loading=true si eventId fourni', () => {
     const { result } = renderHook(() => useEventConvocations('evt-1'));
     expect(result.current.loading).toBe(true);
   });

@@ -38,7 +38,7 @@ beforeEach(() => {
 });
 
 describe('useRides â€” chargement', () => {
-  it('dÃ©marre avec loading=true si eventId fourni', () => {
+  it('démarre avec loading=true si eventId fourni', () => {
     const { result } = renderHook(() => useRides('evt-1'));
     expect(result.current.loading).toBe(true);
   });
@@ -60,7 +60,7 @@ describe('useRides â€” chargement', () => {
     expect(result.current.rides[0].driverId).toBe('u-1');
   });
 
-  it('calcule availableSeatsLeft correctement (sans requÃªtes acceptÃ©es)', async () => {
+  it('calcule availableSeatsLeft correctement (sans requêtes acceptées)', async () => {
     const { result } = renderHook(() => useRides('evt-1'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.rides[0].availableSeatsLeft).toBe(3);
@@ -88,7 +88,7 @@ describe('useRides â€” chargement', () => {
   });
 });
 
-describe('useRides â€” fonctions exposÃ©es', () => {
+describe('useRides â€” fonctions exposées', () => {
   it('expose createRide, cancelRide, requestRide, cancelRequest, acceptRequest, refuseRequest', async () => {
     const { result } = renderHook(() => useRides('evt-1'));
     await waitFor(() => expect(result.current.loading).toBe(false));

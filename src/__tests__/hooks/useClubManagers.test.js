@@ -31,7 +31,7 @@ describe('useClubManagers â€” chargement', () => {
     expect(result.current.managers[0].email).toBe('admin@test.fr');
   });
 
-  it('mappe role (dÃ©faut "manager")', async () => {
+  it('mappe role (défaut "manager")', async () => {
     mockFrom.mockReturnValue(makeQuery({ data: [managerRow({ role: null })], error: null }));
     const { result } = renderHook(() => useClubManagers('c-1'));
     await waitFor(() => expect(result.current.managers.length).toBeGreaterThan(0));
@@ -59,7 +59,7 @@ describe('useClubManagers â€” chargement', () => {
   });
 });
 
-describe('useClubManagers â€” fonctions exposÃ©es', () => {
+describe('useClubManagers â€” fonctions exposées', () => {
   it('expose addManager, removeManager, updateManagerRole', async () => {
     const { result } = renderHook(() => useClubManagers('c-1'));
     await waitFor(() => {});

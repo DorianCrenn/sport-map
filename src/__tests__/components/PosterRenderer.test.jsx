@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 
 // â”€â”€ Mocks des templates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Chaque template est mockÃ© avec son ID pour vÃ©rifier qu'il est bien sÃ©lectionnÃ©
+// Chaque template est mocké avec son ID pour vérifier qu'il est bien sélectionné
 
 vi.mock('../../components/poster/templates/TplSimple.jsx',    () => ({ default: (p) => <div data-testid="tpl-simple"    data-props={JSON.stringify(p)} /> }));
 vi.mock('../../components/poster/templates/TplLight.jsx',     () => ({ default: () => <div data-testid="tpl-light"     /> }));
@@ -44,14 +44,14 @@ vi.mock('../../components/poster/templates/TplTrDynamic.jsx', () => ({ default: 
 import { POSTER_TEMPLATES, BASE_DIMS } from '../../components/poster/PosterRenderer.jsx';
 import PosterRenderer from '../../components/poster/PosterRenderer.jsx';
 
-// â”€â”€ DonnÃ©es de test â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Données de test â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const BASE_DATA = {
   homeTeam:   'FC Brest',
   awayTeam:   'Quimper FC',
   date:       '2026-07-10',
   time:       '18:00',
-  venue:      'Stade Francis-Le BlÃ©',
+  venue:      'Stade Francis-Le Blé',
   accentColor:'#ef4444',
   homeLogo:   null,
   awayLogo:   null,
@@ -168,10 +168,10 @@ describe('PosterRenderer â€” formats', () => {
 });
 
 describe('PosterRenderer â€” watermark', () => {
-  it('affiche le watermark par dÃ©faut (showWatermark=true)', () => {
+  it('affiche le watermark par défaut (showWatermark=true)', () => {
     renderPoster('simple');
     document.querySelector('[data-testid="watermark"], [class*="watermark"]');
-    // Watermark peut Ãªtre dans le container ou absent selon l'implem â€” pas de crash = suffisant
+    // Watermark peut être dans le container ou absent selon l'implem â€” pas de crash = suffisant
     expect(document.body).toBeInTheDocument();
   });
 });
