@@ -66,6 +66,8 @@ function HomeAwaySelector({ value, onChange }: { value: 'home' | 'away'; onChang
 
 export default function EventFormModal({ event, onSave, onClose, onBulkSave, onOpenPoster }: EventFormModalProps) {
   const { currentUser, isClubAdmin } = useAuth() as any;
+  // Demo: coach/president profiles can create convocations
+  const demoIsCoach = isDemoMode() && ['coach', 'president'].includes(sessionStorage.getItem('sl-demo-profile') ?? '');
   const { allSports } = useSports() as any;
   const { userClubs } = useClubs() as any;
   const allClubs = userClubs;
@@ -823,7 +825,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               createdEvent={createdEvent}
               onOpenPoster={onOpenPoster}
               onClose={onClose}
-              isCoach={isClubAdmin}
+              isCoach={isClubAdmin || demoIsCoach}
             />
           )}
         </motion.div>

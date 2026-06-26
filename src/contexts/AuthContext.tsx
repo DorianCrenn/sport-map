@@ -381,11 +381,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [devRole,   setDevRole]   = useState<UserRole | null>(null);
   const [devClubId, setDevClubId] = useState<string | null>(null);
-  const [demoProfileType, setDemoProfileType] = useState<string | null>(() =>
-    isDemoMode() ? sessionStorage.getItem('sl-demo-profile') : null,
+  const [demoProfileType, setDemoProfileType] = useState<string | null>(
+    () => sessionStorage.getItem('sl-demo-profile'),
   );
   useEffect(() => {
-    if (!isDemoMode()) return;
     function onProfileSelected(e: Event) { setDemoProfileType((e as CustomEvent<{ profile: string }>).detail.profile); }
     window.addEventListener('sl-demo-profile-selected', onProfileSelected);
     return () => window.removeEventListener('sl-demo-profile-selected', onProfileSelected);
