@@ -113,6 +113,7 @@ export interface EventFormValues {
   cupType: string;
   homeOrAway: 'home' | 'away';
   adversaire: string;
+  adversaireTeam: string;
   homeTeam: string;
   awayTeam: string;
   recurrenceEnabled: boolean;
@@ -133,7 +134,7 @@ export const EMPTY_FORM: EventFormValues = {
   cityName: BREST.name, cityLat: BREST.lat, cityLng: BREST.lng,
   venue: '', description: '',
   eventType: 'championship', teamName: '', category: '',
-  level: '', cupType: '', homeOrAway: 'home', adversaire: '',
+  level: '', cupType: '', homeOrAway: 'home', adversaire: '', adversaireTeam: '',
   homeTeam: '', awayTeam: '',
   recurrenceEnabled: false, recurrenceFreq: 'weekly', recurrenceUntil: '',
   tournamentName: '', tournamentType: '', numTeams: '',

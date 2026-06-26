@@ -110,14 +110,15 @@ async function setInputValue(el, value) {
   await userEvent.tab();
 }
 
-// Navigate through the 3-step form: step1 → step2 (optionally fill teams) → step3
-async function goToStep3({ homeTeam = '', awayTeam = '' } = {}) {
+// Navigate through the 3-step form: step1 → step2 (optionally fill adversaire) → step3
+// homeTeam is now auto-derived from the selected club; only adversaire is needed to
+// generate a title ("Mon équipe vs <adversaire>").
+async function goToStep3({ adversaire = '' } = {}) {
   // Step 1 → 2
   const next1 = screen.getByRole('button', { name: /suivant/i });
   await userEvent.click(next1);
-  // Fill team names in step 2 (Football full mode) — text inputs work with fireEvent.change
-  if (homeTeam) fireEvent.change(screen.getByPlaceholderText(/fc brest/i), { target: { value: homeTeam } });
-  if (awayTeam) fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: awayTeam } });
+  // Fill adversaire in step 2 to produce a non-empty title
+  if (adversaire) fireEvent.change(screen.getByPlaceholderText(/fc quimper/i), { target: { value: adversaire } });
   // Step 2 → 3
   const next2 = screen.getByRole('button', { name: /suivant/i });
   await userEvent.click(next2);
@@ -196,7 +197,7 @@ describe('EventFormModal — validation Zod', () => {
     renderModal({ onSave });
 
     // Navigate: step1 → step2 (fill teams) → step3 (fill date)
-    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
+    await goToStep3({ adversaire: 'FC Quimper' });
     const dateInputEl = document.querySelector('input[type="date"]');
     await setInputValue(dateInputEl, '2030-06-15');
 
@@ -218,7 +219,7 @@ describe('EventFormModal — validation Zod', () => {
     const onSave = vi.fn(() => new Promise(r => setTimeout(r, 500)));
     renderModal({ onSave });
 
-    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
+    await goToStep3({ adversaire: 'FC Quimper' });
     const dateInputEl = document.querySelector('input[type="date"]');
     await setInputValue(dateInputEl, '2030-06-15');
 
@@ -238,7 +239,7 @@ describe('EventFormModal — récurrence', () => {
     renderModal({ onBulkSave });
 
     // Navigate to step 3 with teams filled
-    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
+    await goToStep3({ adversaire: 'FC Quimper' });
 
     // Fill date (step 3)
     const dateInputEl = document.querySelector('input[type="date"]');
@@ -295,7 +296,7 @@ describe('EventFormModal — erreur lors de la sauvegarde', () => {
     const onSave = vi.fn().mockRejectedValue(new Error('Connexion refusée'));
     renderModal({ onSave });
 
-    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
+    await goToStep3({ adversaire: 'FC Quimper' });
 
     const dateInputEl = document.querySelector('input[type="date"]');
     await setInputValue(dateInputEl, '2030-06-15');
@@ -339,7 +340,7 @@ describe('EventFormModal — structure des données envoyées', () => {
     renderModal({ onSave });
 
     // step1 → step2 (fill teams) → step3 (fill date)
-    await goToStep3({ homeTeam: 'FC Brest', awayTeam: 'FC Quimper' });
+    await goToStep3({ adversaire: 'FC Quimper' });
 
     const dateInputEl = document.querySelector('input[type="date"]');
     await setInputValue(dateInputEl, '2030-06-15');

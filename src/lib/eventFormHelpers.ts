@@ -63,6 +63,7 @@ type EventForForm = Partial<SportLinkEvent> & {
   _isDuplicate?: boolean;
   homeTeam?: string;
   awayTeam?: string;
+  adversaireTeam?: string;
 };
 
 export function toFormValues(
@@ -101,6 +102,7 @@ export function toFormValues(
       cupType:    event.cupType         ?? '',
       homeOrAway: event.homeOrAway      ?? 'home',
       adversaire: event.adversaire      ?? '',
+      adversaireTeam: event.adversaireTeam ?? '',
       homeTeam:   (event.standings as { home?: { team?: string } })?.home?.team ?? '',
       awayTeam:   (event.standings as { away?: { team?: string } })?.away?.team ?? '',
       tournamentName:       event.tournamentName       ?? '',
@@ -134,6 +136,7 @@ export function toFormValues(
     cupType:    event.cupType         ?? '',
     homeOrAway: event.homeOrAway      ?? 'home',
     adversaire: event.adversaire      ?? '',
+    adversaireTeam: event.adversaireTeam ?? '',
     homeTeam:   (event.standings as { home?: { team?: string } })?.home?.team ?? '',
     awayTeam:   (event.standings as { away?: { team?: string } })?.away?.team ?? '',
     tournamentName:       event.tournamentName       ?? '',
@@ -197,6 +200,7 @@ export function buildEvent(
     teamName: form.teamName, category: form.category,
     level: form.level, cupType: form.cupType,
     homeOrAway: form.homeOrAway, adversaire: form.adversaire,
+    adversaireTeam: form.adversaireTeam || undefined,
     ...(form.eventType === 'tournament' ? {
       tournamentName:       form.tournamentName       || undefined,
       tournamentType:       form.tournamentType       || undefined,

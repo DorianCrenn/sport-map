@@ -257,10 +257,11 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
       const sanitizedForm = {
         ...form,
         adversaire:           sanitizeText(form.adversaire ?? ''),
+        adversaireTeam:       sanitizeText(form.adversaireTeam ?? ''),
         description:          sanitizeText(form.description ?? ''),
         venue:                sanitizeText(form.venue ?? ''),
         teamName:             sanitizeText(form.teamName ?? ''),
-        homeTeam:             sanitizeText(form.homeTeam ?? ''),
+        homeTeam:             !useSmartMode && activeClub?.name ? activeClub.name : sanitizeText(form.homeTeam ?? ''),
         awayTeam:             sanitizeText(form.awayTeam ?? ''),
         tournamentName:       sanitizeText(form.tournamentName ?? ''),
         prize:                sanitizeText(form.prize ?? ''),
@@ -310,11 +311,48 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
         : (TEAM_PRESETS as any)[myClub.sport] ?? [])
     : (TEAM_PRESETS as any)[form.sport] ?? [];
 
+  // Non-smartMode : club actif (auto si 1 seul, sélectionnable si plusieurs)
+  const [selectedClubId, setSelectedClubId] = useState<string>(() =>
+    !useSmartMode && allClubs.length > 0 ? String(allClubs[0]?.id ?? '') : ''
+  );
+  useEffect(() => {
+    if (!useSmartMode && allClubs.length > 0 && !selectedClubId) {
+      setSelectedClubId(String(allClubs[0].id));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allClubs.length, useSmartMode]);
+  const activeClub: any = !useSmartMode
+    ? (allClubs.find((c: any) => String(c.id) === selectedClubId) ?? allClubs[0] ?? null)
+    : null;
+
+  // Presets équipes du club actif (non-smartMode)
+  const nonSmartTeamPresets = useMemo(() => {
+    if (useSmartMode || !activeClub) return (TEAM_PRESETS as any)[form.sport] ?? [];
+    return activeClub.categories?.length > 0
+      ? activeClub.categories.flatMap((c: any) => c.teams?.map((t: any) => t?.name ?? t) ?? [])
+      : (TEAM_PRESETS as any)[activeClub.sport] ?? [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useSmartMode, activeClub?.id, form.sport]);
+
   const sameSportClubs = useMemo(() => {
-    const sport = useSmartMode && myClub ? myClub.sport : form.sport;
+    const sport = useSmartMode && myClub ? myClub.sport : (activeClub?.sport ?? form.sport);
     return allClubs.filter((c: any) => c.sport === sport);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [useSmartMode, myClub?.sport, form.sport, allClubs.length]);
+  }, [useSmartMode, myClub?.sport, activeClub?.sport, form.sport, allClubs.length]);
+
+  // Club adverse trouvé dans la base + ses équipes
+  const adversaireClub = useMemo(
+    () => sameSportClubs.find((c: any) => c.name === form.adversaire) ?? null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sameSportClubs, form.adversaire],
+  );
+  const adversaireTeamPresets = useMemo(() => {
+    if (!adversaireClub) return [];
+    return adversaireClub.categories?.length > 0
+      ? adversaireClub.categories.flatMap((c: any) => c.teams?.map((t: any) => t?.name ?? t) ?? [])
+      : (TEAM_PRESETS as any)[adversaireClub.sport] ?? [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adversaireClub?.id]);
   const champLevels = (CHAMPIONSHIP_LEVELS as any)[form.sport] ?? (CHAMPIONSHIP_LEVELS as any).default;
   const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box',
@@ -473,11 +511,32 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                       />
                     </Field>
 
+                    <Field label="Équipe adverse">
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="text"
+                          list="smart-adversaire-team-presets"
+                          value={form.adversaireTeam}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('adversaireTeam', e.target.value)}
+                          placeholder={adversaireTeamPresets.length > 0 ? 'Choisir ou saisir…' : 'Seniors B, U17…'}
+                          style={inputStyle}
+                          autoComplete="off"
+                        />
+                        <datalist id="smart-adversaire-team-presets">
+                          {adversaireTeamPresets.map((t: string) => <option key={t} value={t} />)}
+                        </datalist>
+                      </div>
+                    </Field>
+
                     {form.adversaire && (
                       <p style={{ margin: '-4px 0 0', fontSize: 11, color: 'var(--sl-t3)', textAlign: 'center' }}>
-                        {form.homeOrAway === 'home'
-                          ? `${myClub?.name ?? 'Mon club'} (dom.) vs ${form.adversaire}`
-                          : `${form.adversaire} vs ${myClub?.name ?? 'Mon club'} (ext.)`}
+                        {(() => {
+                          const myTeam = form.teamName ? ` (${form.teamName})` : '';
+                          const advTeam = form.adversaireTeam ? ` (${form.adversaireTeam})` : '';
+                          return form.homeOrAway === 'home'
+                            ? `${myClub?.name ?? 'Mon club'}${myTeam} (dom.) vs ${form.adversaire}${advTeam}`
+                            : `${form.adversaire}${advTeam} vs ${myClub?.name ?? 'Mon club'}${myTeam} (ext.)`;
+                        })()}
                       </p>
                     )}
                   </>
@@ -485,42 +544,105 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               </>
             ) : (
               <>
-                {form.eventType !== 'tournament' && ['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport) && (
+                {/* Sélecteur de club — affiché uniquement si l'utilisateur gère plusieurs clubs */}
+                {form.eventType !== 'tournament'
+                  && ['Football','Handball','Basketball','Rugby'].includes(form.sport)
+                  && allClubs.length > 1 && (
+                  <Field label="Mon club">
+                    <select value={selectedClubId} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedClubId(e.target.value)} style={selectStyle}>
+                      {allClubs.map((c: any) => (
+                        <option key={c.id} value={String(c.id)}>{c.name}</option>
+                      ))}
+                    </select>
+                  </Field>
+                )}
+
+                {form.eventType !== 'tournament' && ['Football','Handball','Basketball','Rugby'].includes(form.sport) && (
                   <>
+                    <Field label="Mon équipe">
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="text"
+                          list="ns-team-presets"
+                          value={form.teamName}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('teamName', e.target.value)}
+                          placeholder={nonSmartTeamPresets.length > 0 ? 'Choisir ou saisir une équipe…' : 'Seniors A, U13 B…'}
+                          style={inputStyle}
+                          autoComplete="off"
+                        />
+                        <datalist id="ns-team-presets">
+                          {nonSmartTeamPresets.map((t: string) => <option key={t} value={t} />)}
+                        </datalist>
+                      </div>
+                    </Field>
+
+                    {form.category && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 10, backgroundColor: 'var(--sl-green-dim)', border: '1px solid rgba(34,217,106,0.2)' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span style={{ fontSize: 12, color: 'var(--sl-green)', fontWeight: 600 }}>Catégorie : {form.category}</span>
+                      </div>
+                    )}
+
                     <HomeAwaySelector
                       value={form.homeOrAway as 'home' | 'away'}
                       onChange={(v: 'home' | 'away') => set('homeOrAway', v)}
                     />
 
-                    <Field label="Mon équipe">
-                      <input type="text" value={form.homeTeam} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('homeTeam', e.target.value)} placeholder="FC Brest" style={inputStyle} />
-                    </Field>
-
                     <Field label="Adversaire">
-                      <input type="text" value={form.adversaire} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('adversaire', e.target.value)} placeholder="FC Quimper" style={inputStyle} />
+                      <AdversaireField
+                        value={form.adversaire}
+                        onChange={(v: string) => set('adversaire', v)}
+                        sameSportClubs={sameSportClubs}
+                        myClubId={activeClub?.id}
+                        inputStyle={inputStyle}
+                      />
                     </Field>
 
-                    {(form.homeTeam || form.adversaire) && (
+                    <Field label="Équipe adverse">
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="text"
+                          list="ns-adversaire-team-presets"
+                          value={form.adversaireTeam}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('adversaireTeam', e.target.value)}
+                          placeholder={adversaireTeamPresets.length > 0 ? 'Choisir ou saisir…' : 'Seniors B, U17…'}
+                          style={inputStyle}
+                          autoComplete="off"
+                        />
+                        <datalist id="ns-adversaire-team-presets">
+                          {adversaireTeamPresets.map((t: string) => <option key={t} value={t} />)}
+                        </datalist>
+                      </div>
+                    </Field>
+
+                    {form.adversaire && (
                       <p style={{ margin: '-4px 0 0', fontSize: 11, color: 'var(--sl-t3)', textAlign: 'center' }}>
-                        {form.homeOrAway === 'home'
-                          ? `${form.homeTeam || 'Mon équipe'} (dom.) vs ${form.adversaire || 'Adversaire'}`
-                          : `${form.adversaire || 'Adversaire'} vs ${form.homeTeam || 'Mon équipe'} (ext.)`}
+                        {(() => {
+                          const myName = activeClub?.name ?? form.homeTeam ?? 'Mon équipe';
+                          const myTeam = form.teamName ? ` (${form.teamName})` : '';
+                          const advTeam = form.adversaireTeam ? ` (${form.adversaireTeam})` : '';
+                          return form.homeOrAway === 'home'
+                            ? `${myName}${myTeam} (dom.) vs ${form.adversaire}${advTeam}`
+                            : `${form.adversaire}${advTeam} vs ${myName}${myTeam} (ext.)`;
+                        })()}
                       </p>
                     )}
                   </>
                 )}
-                {(form.eventType === 'tournament' || !['Football', 'Handball', 'Basketball', 'Rugby'].includes(form.sport) || (!form.homeTeam && !form.awayTeam)) && (
+
+                {(form.eventType === 'tournament' || !['Football','Handball','Basketball','Rugby'].includes(form.sport)) && (
                   <Field label="Nom de l'événement *">
                     <input type="text" required={form.eventType === 'tournament' || !['Football','Handball','Basketball','Rugby'].includes(form.sport)} value={form.title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('title', e.target.value)} placeholder="Trail des Abers, Tournoi de basket…" style={inputStyle} />
                   </Field>
                 )}
-                {form.eventType !== 'tournament' && (
+
+                {form.eventType !== 'tournament' && !['Football','Handball','Basketball','Rugby'].includes(form.sport) && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <Field label="Équipe">
-                      {teamPresets.length > 0 ? (
+                      {nonSmartTeamPresets.length > 0 ? (
                         <select value={form.teamName} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => set('teamName', e.target.value)} style={selectStyle}>
                           <option value="">Équipe (optionnel)</option>
-                          {teamPresets.map((t: string) => <option key={t} value={t}>{t}</option>)}
+                          {nonSmartTeamPresets.map((t: string) => <option key={t} value={t}>{t}</option>)}
                         </select>
                       ) : (
                         <input type="text" value={form.teamName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('teamName', e.target.value)} placeholder="Seniors A, U13…" style={inputStyle} />
@@ -536,7 +658,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                   eventType={form.eventType} level={form.level} cupType={form.cupType}
                   champLevels={champLevels}
                   onLevel={(v: string) => set('level', v)} onCupType={(v: string) => set('cupType', v)}
-                  form={form} set={set} inputStyle={inputStyle} myClub={myClub}
+                  form={form} set={set} inputStyle={inputStyle} myClub={activeClub ?? myClub}
                 />
               </>
             )}
