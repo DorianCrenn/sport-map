@@ -41,41 +41,54 @@ export default function EventFormSuccessScreen({ createdEvent, onOpenPoster, onC
           </div>
         </div>
 
-        {isCoach && isMatchEvent && (
-          <button
-            onClick={() => setShowConvocation(true)}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              padding: '14px 28px', borderRadius: 16, border: 'none', cursor: 'pointer',
-              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-              color: 'white', fontSize: 14, fontWeight: 800,
-              boxShadow: '0 8px 24px rgba(99,102,241,0.32)',
-              width: '100%', maxWidth: 310,
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-            Convoquer les joueurs
-          </button>
-        )}
-
-        {onOpenPoster && (
-          <button
-            onClick={() => { onOpenPoster(createdEvent); onClose(); }}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              padding: '13px 28px', borderRadius: 16, cursor: 'pointer',
-              background: isCoach && isMatchEvent ? 'var(--sl-surface)' : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-              border: isCoach && isMatchEvent ? '1px solid var(--sl-border)' : 'none',
-              color: isCoach && isMatchEvent ? 'var(--sl-t2)' : 'white',
-              fontSize: 14, fontWeight: 700,
-              width: '100%', maxWidth: 310,
-            }}
-          >
-            Générer l'affiche
-          </button>
+        {((isCoach && isMatchEvent) || onOpenPoster) && (
+          <>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--sl-t3)', margin: 0 }}>
+              Et maintenant ?
+            </p>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: (isCoach && isMatchEvent && onOpenPoster) ? '1fr 1fr' : '1fr',
+              gap: 10, width: '100%', maxWidth: 340,
+            }}>
+              {isCoach && isMatchEvent && (
+                <button
+                  data-demo="convocation-popup-btn"
+                  onClick={() => setShowConvocation(true)}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    padding: '14px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                    color: 'white', fontSize: 13, fontWeight: 800,
+                    boxShadow: '0 6px 20px rgba(99,102,241,0.30)',
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  Convoquer
+                </button>
+              )}
+              {onOpenPoster && (
+                <button
+                  onClick={() => { onOpenPoster(createdEvent); onClose(); }}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    padding: '14px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                    color: 'white', fontSize: 13, fontWeight: 800,
+                    boxShadow: '0 6px 20px rgba(124,58,237,0.28)',
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/>
+                  </svg>
+                  Créer l'affiche
+                </button>
+              )}
+            </div>
+          </>
         )}
 
         <button

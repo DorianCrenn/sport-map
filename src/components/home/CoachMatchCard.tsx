@@ -16,7 +16,8 @@ function deriveMatchState(event: Record<string, any>, matchScore: Record<string,
   if (matchDate < now) return 'post_pending';
 
   const hasConvocations = convocationCounts && convocationCounts.total > 0;
-  if (diffDays <= 1.5) return 'match_day';
+  const isMatchDay = matchDate.toDateString() === now.toDateString();
+  if (isMatchDay) return 'match_day';
   return hasConvocations ? 'pre_filled' : 'pre_empty';
 }
 
@@ -168,19 +169,25 @@ export default function CoachMatchCard({ event, matchScore, convocationCounts, o
 
         <AnimatePresence mode="wait">
           {state === 'pre_empty' && (
-            <motion.div key="pre_empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <p className="text-[12px] text-[var(--sl-t3)] mb-2">Aucune convocation créée pour ce match.</p>
+            <motion.div key="pre_empty" className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <p className="text-[12px] text-[var(--sl-t3)]">Aucune convocation créée pour ce match.</p>
               <button onClick={() => onConvocate ? onConvocate(event) : onNavigate?.('mon-club')} data-demo="convocation-btn" className="w-full py-2.5 rounded-xl bg-[var(--sl-blue)] text-white text-[13px] font-bold active:scale-95 transition-transform">Créer la convocation</button>
+              {onOpenPoster && (
+                <button onClick={() => onOpenPoster?.({ event, mode: 'matchday' })} className="w-full py-2 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)] text-[12px] font-bold border border-[var(--sl-border)] active:scale-95 transition-transform">🎨 Affiche avant-match</button>
+              )}
             </motion.div>
           )}
 
           {state === 'pre_filled' && (
-            <motion.div key="pre_filled" className="space-y-2.5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div key="pre_filled" className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <ConvocationSummary counts={convocationCounts} />
               <div className="flex gap-2">
                 <button onClick={handleRelance} className="flex-1 py-2.5 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)] text-[12px] font-bold border border-[var(--sl-border)] active:scale-95 transition-transform">Relancer</button>
                 <button onClick={() => onConvocate ? onConvocate(event) : onNavigate?.('mon-club')} data-demo="convocation-btn" className="flex-1 py-2.5 rounded-xl bg-[var(--sl-blue)] text-white text-[12px] font-bold active:scale-95 transition-transform">Voir les détails</button>
               </div>
+              {onOpenPoster && (
+                <button onClick={() => onOpenPoster?.({ event, mode: 'matchday' })} className="w-full py-2 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)] text-[12px] font-bold border border-[var(--sl-border)] active:scale-95 transition-transform">🎨 Affiche avant-match</button>
+              )}
             </motion.div>
           )}
 

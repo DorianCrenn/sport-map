@@ -571,6 +571,10 @@ function AppInner() {
   const shouldShowOnboarding = !!currentUser && !loading && (pendingOnboarding || (currentUser.onboardingDone === false && !onboardingLocalDone)) && !showAuth;
 
   function handleTabChange(tab: string) {
+    if (tab === 'rides') {
+      setShowMyRides(true);
+      return;
+    }
     if (tab === 'profil' && !currentUser) {
       setShowAuth(true);
       return;

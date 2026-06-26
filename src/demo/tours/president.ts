@@ -41,15 +41,13 @@ export const presidentTour = [
   // ── Convoquer ─────────────────────────────────────────────────────────────
   {
     id:          4,
-    title:       'Convoquez l\'équipe en 3 taps',
-    body:        'Votre match est planifié ! Sur l\'onglet Agenda, appuyez sur "Créer la convocation" sur la carte match. Sélectionnez vos joueurs et validez. Chaque joueur reçoit une notification push instantanément.',
+    title:       'Convoquez en un tap depuis la popup',
+    body:        'Votre match est en ligne ! La popup vous propose deux actions immédiates : envoyer les convocations ou créer l\'affiche avant-match. Appuyez sur "Convoquer" — chaque joueur reçoit une notification push instantanément.',
     emoji:       '📋',
-    clickTarget: 'convocation-btn',
-    clickLabel:  'Bouton convocation sur la carte match (onglet Agenda)',
+    clickTarget: 'convocation-popup-btn',
+    clickLabel:  '"Convoquer" dans la popup de succès',
     tryItAction: 'convocation-sent',
-    tryItLabel:  'Créer la convocation',
-    onTab:       'Agenda',
-    closeOverlayBefore: true,
+    tryItLabel:  'Convoquer les joueurs',
     why:         '89 % de taux de réponse aux convocations vs 60 % par WhatsApp.',
   },
   {

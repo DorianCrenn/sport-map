@@ -28,7 +28,7 @@ function deriveCardState(item: Record<string, any>, localMatchScore: Record<stri
   const matchDate = new Date(item.date + timeStr);
   if (isNaN(matchDate.getTime())) return 'pre_match';
   if (matchDate < now) return 'post_pending';
-  return (matchDate.getTime() - now.getTime()) / 86_400_000 <= 1.5 ? 'match_day' : 'pre_match';
+  return matchDate.toDateString() === now.toDateString() ? 'match_day' : 'pre_match';
 }
 
 function getEffectiveScore(item: Record<string, any>, localMatchScore: Record<string, any> | null) {

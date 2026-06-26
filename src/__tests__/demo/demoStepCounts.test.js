@@ -80,7 +80,7 @@ describe('Tours interactifs — structure des étapes clickTarget', () => {
     // FAB + sous-items
     'fab-add', 'fab-dashboard', 'fab-event', 'fab-announce', 'fab-mon-club', 'fab-training',
     // Éléments app
-    'convocation-btn', 'convocation-respond', 'favorite-btn', 'follow-club-btn',
+    'convocation-btn', 'convocation-popup-btn', 'convocation-respond', 'favorite-btn', 'follow-club-btn',
     'live-score-pupitre', 'live-multiplex', 'coach-match-card', 'carpool-card',
     'admin-dashboard', 'training-card', 'agenda-section',
   ];
