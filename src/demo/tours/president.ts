@@ -46,6 +46,8 @@ export const presidentTour = [
     emoji:       '📋',
     clickTarget: 'convocation-btn',
     clickLabel:  'Bouton convocation sur la carte match (onglet Agenda)',
+    tryItAction: 'convocation-sent',
+    tryItLabel:  'Créer la convocation',
     onTab:       'Agenda',
     closeOverlayBefore: true,
     why:         '89 % de taux de réponse aux convocations vs 60 % par WhatsApp.',

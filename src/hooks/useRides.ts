@@ -75,6 +75,7 @@ export function useRides(eventId: string | null | undefined) {
     if (error) throw error;
     if (ride) { await supabase.from('ride_notifications').insert({ user_id: ride.driverId, type: 'new_request', ride_id: rideId, request_id: saved!.id, data: { passengerName: (currentUser as any).name, rideLocation: ride.departureLocation } }); }
     await fetchRides();
+    if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'carpool-requested' } }));
     return mapRequest(saved!);
   }, [currentUser, rides, fetchRides]);
 

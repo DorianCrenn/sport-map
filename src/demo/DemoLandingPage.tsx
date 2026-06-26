@@ -19,7 +19,7 @@ const PROFILES = [
     description: 'Entraînements, convocations, présences et communication équipe',
     color:       '#059669',
     gradient:    'linear-gradient(135deg, #059669, #10b981)',
-    steps:       12,
+    steps:       13,
   },
   {
     id:          'communication',
@@ -160,6 +160,7 @@ export default function DemoLandingPage({ onSelect }) {
           return (
             <motion.button
               key={profile.id}
+              data-profile={profile.id}
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ y: -2 }}

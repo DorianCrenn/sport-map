@@ -1,7 +1,7 @@
-// Tour Coach — 12 étapes
+// Tour Coach — 13 étapes
 // Ligne de vie : Séance du soir (training-card)
 //              → Planifier le match (créer événement)
-//              → Convoquer → Réponses → Covoiturage
+//              → Affiche → Convoquer → Réponses → Covoiturage
 //              → Match live (score + multiplex)
 //              → Bilan d'après-match
 //              → CTA
@@ -53,20 +53,29 @@ export const coachTour = [
     why:         'Les événements publiés à l\'avance ont 2× plus de participants.',
   },
 
-  // ── Convoquer ─────────────────────────────────────────────────────────────
+  // ── Affiche + Convocations ────────────────────────────────────────────────
   {
-    id:          5,
+    id:    5,
+    title: 'Match publié — et ensuite ?',
+    body:  'Le match est en ligne et vos joueurs sont notifiés. Depuis cet écran, appuyez sur "Générer l\'affiche" pour créer visuels Instagram/Story, ou passez directement à la convocation. Appuyez sur "Suivant" pour continuer.',
+    emoji: '✅',
+    tip:   'L\'affiche est générée entièrement sur votre téléphone, sans compte supplémentaire. Formats Instagram, Story et Print inclus.',
+  },
+  {
+    id:          6,
     title:       'Convoquez votre équipe en 3 taps',
-    body:        'Votre match est planifié ! Sur l\'onglet Agenda, appuyez sur "Créer la convocation" sur la carte match. Sélectionnez vos joueurs, validez. Chaque joueur reçoit une notification push instantanément.',
+    body:        'Sur l\'onglet Agenda, appuyez sur "Créer la convocation" sur la carte match. Sélectionnez vos joueurs, validez. Chaque joueur reçoit une notification push instantanément.',
     emoji:       '📋',
     clickTarget: 'convocation-btn',
     clickLabel:  'Bouton convocation sur la carte match (onglet Agenda)',
+    tryItAction: 'convocation-sent',
+    tryItLabel:  'Créer la convocation',
     onTab:       'Agenda',
     closeOverlayBefore: true,
     why:         '89 % de taux de réponse vs 60 % par WhatsApp.',
   },
   {
-    id:          6,
+    id:          7,
     title:       'Composez votre équipe à l\'avance',
     body:        'Dès qu\'un joueur répond, la carte match se met à jour : présents, absents, en attente. Appuyez sur la carte pour voir l\'état complet de votre effectif et composer tactiquement 48 h avant le match.',
     emoji:       '✅',
@@ -76,7 +85,7 @@ export const coachTour = [
     why:         'Connaître son effectif à l\'avance améliore la préparation tactique.',
   },
   {
-    id:          7,
+    id:          8,
     title:       'Le covoiturage s\'organise tout seul',
     body:        'En répondant à la convocation, vos joueurs indiquent s\'ils conduisent ou cherchent une place. Appuyez sur la carte de covoiturage pour voir les trajets disponibles. Zéro message WhatsApp.',
     emoji:       '🚗',
@@ -88,7 +97,7 @@ export const coachTour = [
 
   // ── Dimanche : Le match ───────────────────────────────────────────────────
   {
-    id:          8,
+    id:          9,
     title:       'Saisissez le score en direct',
     body:        'Pendant le match, appuyez sur le pupitre de score visible à l\'écran. Mettez à jour but après but. Supporters et président voient le résultat s\'actualiser en temps réel.',
     emoji:       '🔴',
@@ -97,7 +106,7 @@ export const coachTour = [
     why:         'Le score en direct augmente l\'engagement des supporters de 3×.',
   },
   {
-    id:          9,
+    id:          10,
     title:       'Tous vos matchs simultanément',
     body:        'Appuyez sur la section Multiplex pour voir l\'Équipe 1, la Réserve, l\'U17 et les Féminines simultanément. Scores mis à jour en direct sans rafraîchir. Vous suivez tout le club depuis le terrain.',
     emoji:       '📡',
@@ -108,7 +117,7 @@ export const coachTour = [
 
   // ── Bilan d'après-match ───────────────────────────────────────────────────
   {
-    id:          10,
+    id:          11,
     title:       'Envoyez le bilan à votre équipe',
     body:        'Le match est terminé. Appuyez sur + en bas au centre. Le menu d\'actions s\'ouvre. Vous allez envoyer votre briefing d\'après-match : bilan, félicitations, consignes pour la semaine.',
     emoji:       '➕',
@@ -117,7 +126,7 @@ export const coachTour = [
     closeOverlayBefore: true,
   },
   {
-    id:          11,
+    id:          12,
     title:       'Rédigez et envoyez',
     body:        'Tapez sur "Envoyer une annonce". Rédigez votre bilan ou vos consignes, choisissez les destinataires et envoyez. Chaque joueur reçoit une notification push.',
     emoji:       '📣',
@@ -130,7 +139,7 @@ export const coachTour = [
 
   // ── CTA ───────────────────────────────────────────────────────────────────
   {
-    id:    12,
+    id:    13,
     title: 'Gérez votre équipe comme un pro',
     body:  'Entraînements, convocations, covoiturage, scores live, communication — tout en un. Créez votre espace coach gratuitement en 2 minutes.',
     emoji: '⚽',

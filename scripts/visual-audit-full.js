@@ -142,17 +142,31 @@ async function acceptConsent(page) {
 /* Entrer en mode démo comme un profil donné.
  * Single-clic "× Quitter" → confirmExit=true (guide reste visible, step 0 sans clickTarget).
  * On N'appelle PAS exitTour() : cela évite l'apparition de SandboxWelcome qui interfère. */
+// Mapping label affiché → data-profile (évite le faux-positif has-text case-insensitive)
+const PROFILE_ID = {
+  'Président':     'president',
+  'Coach':         'coach',
+  'Communication': 'communication',
+  'Parent':        'parent',
+  'Joueur':        'player',
+  'Supporter':     'supporter',
+};
+
 async function enterDemo(page, profileLabel) {
   await goto(page, `${BASE}/demo`);
-  // Bloquer window.location.assign vers /#register pour tout l'audit
+  // Attendre que la landing soit stable (React hydraté, plus de navigation interne)
+  await page.waitForLoadState('domcontentloaded').catch(() => null);
+  await page.waitForTimeout(1200);
+  // Sélectionner le profil via data-profile (évite le faux-positif has-text case-insensitive)
+  const profileId = PROFILE_ID[profileLabel] ?? profileLabel.toLowerCase();
+  const btn = await page.$(`[data-profile="${profileId}"]`);
+  if (btn) { await btn.click({force:true}); await page.waitForTimeout(2500); }
+  // Bloquer window.location.assign vers /#register — maintenant que le démo est chargé
   await page.evaluate(() => {
     const _orig = window.location.assign.bind(window.location);
     window.location.assign = (url) => { if (!String(url).includes('register')) _orig(url); };
-  });
-  await page.waitForTimeout(1500);
-  // Sélectionner le profil (bouton sur landing, pas de guide encore)
-  const btn = await page.$(`button:has-text("${profileLabel}")`);
-  if (btn) { await btn.click({force:true}); await page.waitForTimeout(2500); }
+  }).catch(() => null);
+  await page.waitForTimeout(300);
   // Single-clic "× Quitter" → confirmExit=true (step 1 sans clickTarget = aucun blocage)
   const q = await page.$('button:has-text("Quitter")');
   if (q) { await q.click({force:true}); await page.waitForTimeout(500); }
@@ -412,8 +426,16 @@ async function run() {
       await esc(p);
     } else skip('36-president-club-editor','btn non trouvé');
 
-    // Membres (roster)
+    // Membres (roster) — dans les actions secondaires du FAB (fabExpanded requis)
+    // Forcer retour home pour réinitialiser l'état du FAB
+    await tab(p, 'home', 1000);
     await openFab(p);
+    // Cliquer "Toutes les actions" pour révéler la section secondaire
+    await p.evaluate(() => {
+      const btn = [...document.querySelectorAll('button')].find(b => b.textContent?.includes('Toutes les actions'));
+      if (btn) btn.dispatchEvent(new MouseEvent('click', {bubbles:true, cancelable:true}));
+    }).catch(() => null);
+    await p.waitForTimeout(800);
     const rosterBtn = await p.$('button:has-text("Membres")');
     if (rosterBtn) {
       await clickEl(rosterBtn); await p.waitForTimeout(1500);

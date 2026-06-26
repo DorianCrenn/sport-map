@@ -17,7 +17,7 @@ import { supporterTour }    from '../../demo/tours/supporter.js';
 
 const DISPLAYED_STEPS = {
   president:     13,
-  coach:         12,
+  coach:         13,
   communication: 6,
   parent:        7,
   player:        6,
