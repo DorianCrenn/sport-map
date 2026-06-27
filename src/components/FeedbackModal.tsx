@@ -7,6 +7,8 @@ import { useToast } from '../contexts/ToastContext.js';
 import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import { useScrollInputIntoView } from '../hooks/useScrollInputIntoView.js';
 import { APP_VERSION } from '../lib/appInfo.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import { usePlan } from '../hooks/usePlan.js';
 
 const TYPES = [
   { value: 'bug',      emoji: '🐛', label: 'Bug',     color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
@@ -27,6 +29,9 @@ interface FeedbackModalProps { onClose: () => void; prefilled?: Prefilled; }
 export default function FeedbackModal({ onClose, prefilled = {} }: FeedbackModalProps) {
   const { submit, fetchIdeas, searchSimilar } = useFeedback();
   const { toast } = useToast();
+  const { currentUser, isAdmin, isClubAdmin } = useAuth() as any;
+  const { plan } = usePlan() as any;
+  const userRole = isAdmin ? 'admin' : isClubAdmin ? 'club_admin' : currentUser ? 'user' : 'anonymous';
   const panelRef = useRef<HTMLDivElement>(null);
   useAndroidBack(true, onClose);
   useScrollInputIntoView(panelRef);
@@ -65,7 +70,7 @@ export default function FeedbackModal({ onClose, prefilled = {} }: FeedbackModal
     if (!title.trim()) return;
     setSubmitting(true);
     try {
-      await (submit as (d: any) => Promise<void>)({ type, title: title.trim(), description: description.trim() || null, category: category || null, pageUrl: window.location.href, browserInfo: getBrowserInfo(), appVersion: (APP_VERSION as any) ?? null });
+      await (submit as (d: any) => Promise<void>)({ type, title: title.trim(), description: description.trim() || null, category: category || null, pageUrl: window.location.href, browserInfo: { ...getBrowserInfo(), userRole, userPlan: plan ?? 'free' }, appVersion: (APP_VERSION as any) ?? null });
       (clearDraft as () => void)();
       setDone(true);
     } catch { toast({ message: "Erreur lors de l'envoi — réessayez", type: 'error' }); }
