@@ -4,10 +4,13 @@ import { useManagedClubs }  from '../hooks/useManagedClubs.js';
 import { useQuickActions }  from '../hooks/useQuickActions.js';
 import { useDemoFeed }      from '../hooks/useDemoFeed.js';
 import { isDemoMode, supabase } from '../lib/supabase.js';
-import LiveMultiplexSection from '../components/home/LiveMultiplexSection.jsx';
-import HypeBar              from '../components/home/HypeBar.jsx';
-import StreakWidget         from '../components/home/StreakWidget.jsx';
-import PlanningTimeline     from '../components/planning/PlanningTimeline.jsx';
+import LiveMultiplexSection  from '../components/home/LiveMultiplexSection.jsx';
+import HypeBar               from '../components/home/HypeBar.jsx';
+import StreakWidget           from '../components/home/StreakWidget.jsx';
+import PlanningTimeline      from '../components/planning/PlanningTimeline.jsx';
+import PosterFeatureStrip    from '../components/home/PosterFeatureStrip.jsx';
+import DiscoveryClubs        from '../components/home/DiscoveryClubs.jsx';
+import PosterShowcase        from '../components/planning/PosterShowcase.jsx';
 
 const PosterStudio             = lazy(() => import('../components/PosterStudio.jsx'));
 const EventFormStepConvocation = lazy(() => import('../components/event/EventFormStepConvocation.jsx'));
@@ -88,19 +91,54 @@ export default function ActualitesPage({
     >
       {/* ══ Empty state — nouveau compte sans club suivi ═══════════════════ */}
       {isNewUser && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 56, marginBottom: 16, lineHeight: 1 }}>🏆</div>
-          <h2 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 800, color: 'var(--sl-t1)', fontFamily: "'Barlow Condensed', sans-serif" }}>
-            Suivez vos premiers clubs
-          </h2>
-          <p style={{ margin: '0 0 24px', fontSize: 14, color: 'var(--sl-t2)', lineHeight: 1.6, maxWidth: 280 }}>
-            Abonnez-vous à des clubs pour voir leur calendrier, résultats et annonces ici.
-          </p>
+        <div style={{ padding: '32px 20px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Titre */}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 10, lineHeight: 1 }}>👋</div>
+            <h2 style={{ margin: '0 0 6px', fontSize: 22, fontWeight: 900, color: 'var(--sl-t1)', fontFamily: "'Barlow Condensed', sans-serif" }}>
+              Bienvenue sur SportLink
+            </h2>
+            <p style={{ margin: 0, fontSize: 14, color: 'var(--sl-t2)', lineHeight: 1.55, maxWidth: 280, marginLeft: 'auto', marginRight: 'auto' }}>
+              Suivez des clubs pour voir leurs matchs, résultats et annonces ici.
+            </p>
+          </div>
+
+          {/* Feature pills */}
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {[
+              { icon: '📍', label: 'Carte des événements' },
+              { icon: '📅', label: 'Calendrier des clubs' },
+              { icon: '🎨', label: 'Affiches sportives' },
+            ].map(({ icon, label }) => (
+              <div key={label} style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '6px 12px', borderRadius: 20,
+                backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
+                fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)',
+              }}>
+                {icon} {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Discovery clubs */}
+          <DiscoveryClubs onNavigate={onNavigate} />
+
+          {/* Poster showcase */}
+          <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 20 }}>
+            <PosterShowcase onOpenPoster={handleOpenPoster ? () => handleOpenPoster({ event: null, score: null, mode: 'create' }) : undefined} />
+          </div>
+
+          {/* CTA "Tous les clubs" */}
           <button
             onClick={() => onNavigate?.('clubs')}
-            style={{ backgroundColor: 'var(--sl-green)', color: '#fff', padding: '14px 28px', borderRadius: 14, fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: 15 }}
+            style={{
+              backgroundColor: 'transparent', color: 'var(--sl-t2)',
+              padding: '12px 20px', borderRadius: 12, fontWeight: 600,
+              border: '1px solid var(--sl-border)', cursor: 'pointer', fontSize: 13,
+            }}
           >
-            Découvrir les clubs
+            Voir tous les clubs →
           </button>
         </div>
       )}
@@ -117,6 +155,13 @@ export default function ActualitesPage({
         <div style={{ padding: '10px 16px 0' }}>
           <StreakWidget />
         </div>
+      )}
+
+      {/* ══ Studio d'affiches — strip toujours visible ═══════════════════════ */}
+      {!isNewUser && (
+        <PosterFeatureStrip
+          onOpen={handleOpenPoster ? () => handleOpenPoster({ event: null, score: null, mode: 'create' }) : undefined}
+        />
       )}
 
       {/* ══ Multiplex EN DIRECT ══════════════════════════════════════════════ */}

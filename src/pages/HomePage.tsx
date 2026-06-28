@@ -600,11 +600,32 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             Le sport<br />près de <span style={{ color:'#22d96a' }}>toi</span>
           </motion.h1>
 
-          <motion.p className="font-poppins mb-7 mx-auto relative"
+          <motion.p className="font-poppins mb-5 mx-auto relative"
             style={{ fontSize:15, color:'rgba(255,255,255,0.65)', maxWidth:300, lineHeight:1.6 }}
             initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.23 }}>
-            Rejoignez votre club sportif local. Suivez les matchs, résultats et annonces — gratuit.
+            Carte des événements, calendrier de tes clubs, affiches sportives en quelques taps — gratuit.
           </motion.p>
+
+          {/* Feature pills */}
+          <motion.div
+            className="flex flex-wrap items-center justify-center gap-2 mb-6 relative"
+            initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.26 }}>
+            {[
+              { icon: '📍', label: 'Carte live' },
+              { icon: '📅', label: 'Clubs & calendrier' },
+              { icon: '🎨', label: 'Affiches pro' },
+            ].map(({ icon, label }) => (
+              <div key={label} style={{
+                display:'flex', alignItems:'center', gap:5,
+                padding:'5px 11px', borderRadius:20,
+                backgroundColor:'rgba(255,255,255,0.08)',
+                border:'1px solid rgba(255,255,255,0.14)',
+                fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.75)',
+              }}>
+                {icon} {label}
+              </div>
+            ))}
+          </motion.div>
 
           {/* CTA principal : inscription */}
           <motion.div className="flex flex-col items-center gap-3 relative"

@@ -1,0 +1,130 @@
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { supabase } from '../../lib/supabase.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+
+interface Club {
+  id: string;
+  name: string;
+  sport: string;
+  city: string;
+  logo_url?: string;
+}
+
+function ClubRow({ club, onNavigate }: { club: Club; onNavigate?: (page: string) => void }) {
+  const { followClub } = useAuth() as any;
+  const [followed, setFollowed] = useState(false);
+
+  const initials = club.name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+
+  function handleFollow() {
+    if (followed) return;
+    followClub?.(club.id);
+    setFollowed(true);
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '10px 14px', borderRadius: 14,
+        backgroundColor: 'var(--sl-card)',
+        border: '1px solid var(--sl-border)',
+      }}
+    >
+      {/* Logo */}
+      <div style={{
+        width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+        backgroundColor: 'rgba(34,217,106,0.12)',
+        border: '1px solid rgba(34,217,106,0.2)',
+        overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 13, fontWeight: 800, color: '#22d96a',
+      }}>
+        {club.logo_url
+          ? <img src={club.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { (e.currentTarget as HTMLElement).style.display = 'none'; }} />
+          : initials}
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {club.name}
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>
+          {[club.sport, club.city].filter(Boolean).join(' · ')}
+        </div>
+      </div>
+
+      <motion.button
+        whileTap={{ scale: 0.93 }}
+        onClick={handleFollow}
+        style={{
+          flexShrink: 0, fontSize: 12, fontWeight: 700, borderRadius: 10,
+          padding: '6px 14px', border: 'none', cursor: followed ? 'default' : 'pointer',
+          backgroundColor: followed ? 'rgba(34,217,106,0.15)' : '#22d96a',
+          color: followed ? '#22d96a' : '#fff',
+          transition: 'all 0.2s',
+        }}
+      >
+        {followed ? '✓ Suivi' : 'Suivre'}
+      </motion.button>
+    </motion.div>
+  );
+}
+
+interface DiscoveryClubsProps {
+  onNavigate?: (page: string) => void;
+}
+
+export default function DiscoveryClubs({ onNavigate }: DiscoveryClubsProps) {
+  const [clubs, setClubs]   = useState<Club[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase
+      .from('clubs')
+      .select('id, name, sport, city, logo_url')
+      .order('created_at', { ascending: false })
+      .limit(4)
+      .then(({ data }: { data: Club[] | null }) => {
+        if (mounted) {
+          setClubs(data ?? []);
+          setLoading(false);
+        }
+      });
+    return () => { mounted = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        {[1, 2, 3].map(i => <div key={i} className="h-14 rounded-2xl animate-pulse bg-[var(--sl-surface)]" />)}
+      </div>
+    );
+  }
+
+  if (clubs.length === 0) return null;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)' }}>Clubs à suivre</span>
+        <button
+          onClick={() => onNavigate?.('clubs')}
+          style={{ fontSize: 11, fontWeight: 600, color: '#22d96a', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 4px', minHeight: 44 }}
+        >
+          Voir tout →
+        </button>
+      </div>
+      <div className="space-y-2">
+        {clubs.map((c, i) => (
+          <motion.div key={c.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
+            <ClubRow club={c} onNavigate={onNavigate} />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
