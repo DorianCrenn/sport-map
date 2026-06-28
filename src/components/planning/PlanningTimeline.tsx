@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSeasonPlanning }  from '../../hooks/useSeasonPlanning.js';
 import TrainingPlanningCard   from './TrainingPlanningCard.jsx';
 import MatchPlanningCard      from './MatchPlanningCard.jsx';
+import PosterShowcase         from './PosterShowcase.jsx';
 
 const CompositionPoster = lazy(() => import('./CompositionPoster.jsx'));
 
@@ -198,10 +199,15 @@ export default function PlanningTimeline({
             {[1, 2, 3].map(i => <div key={i} className="h-36 rounded-2xl bg-[var(--sl-surface)] animate-pulse" />)}
           </div>
         ) : groups.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <span className="text-5xl mb-4">📅</span>
-            <p className="text-sm font-bold text-[var(--sl-t2)]">Aucun événement ce mois-ci</p>
-            <p className="text-xs text-[var(--sl-t3)] mt-1.5">{filter !== 'all' ? 'Essayez le filtre "Tout"' : 'Naviguez vers un autre mois'}</p>
+          <div>
+            <div className="flex flex-col items-center justify-center pt-10 pb-6 text-center">
+              <span className="text-5xl mb-4">📅</span>
+              <p className="text-sm font-bold text-[var(--sl-t2)]">Aucun événement ce mois-ci</p>
+              <p className="text-xs text-[var(--sl-t3)] mt-1.5">{filter !== 'all' ? 'Essayez le filtre "Tout"' : 'Naviguez vers un autre mois'}</p>
+            </div>
+            <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 16 }}>
+              <PosterShowcase onOpenPoster={onOpenPoster ? () => onOpenPoster({}) : undefined} />
+            </div>
           </div>
         ) : (
           <div className="relative">
