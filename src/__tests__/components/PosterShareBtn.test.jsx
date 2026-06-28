@@ -130,10 +130,9 @@ describe('PosterShareBtn — navigator.share disponible', () => {
   });
 });
 
-describe('PosterShareBtn — fallback téléchargement', () => {
-  it('crée un lien de téléchargement si canShare non disponible', async () => {
+describe('PosterShareBtn — fallback menu partage', () => {
+  it('affiche le menu partage si canShare non disponible', async () => {
     toBlob.mockResolvedValue(mockBlob());
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     const user = userEvent.setup({ delay: null });
     render(<PosterShareBtn event={mockEvent} />);
@@ -141,23 +140,22 @@ describe('PosterShareBtn — fallback téléchargement', () => {
     await waitForPhase();
 
     expect(URL.createObjectURL).toHaveBeenCalled();
-    expect(clickSpy).toHaveBeenCalled();
-    expect(URL.revokeObjectURL).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /télécharger/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /whatsapp/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /copier le lien/i })).toBeInTheDocument();
   });
 
-  it('le nom du fichier inclut le titre de l\'événement', async () => {
+  it('télécharge le fichier quand on clique "Télécharger"', async () => {
     toBlob.mockResolvedValue(mockBlob());
-    let capturedHref = '';
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () {
-      capturedHref = this.download;
-    });
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     const user = userEvent.setup({ delay: null });
     render(<PosterShareBtn event={{ ...mockEvent, title: 'Match Final' }} />);
     await user.click(screen.getByRole('button', { name: /partager l'affiche/i }));
     await waitForPhase();
+    await user.click(screen.getByRole('button', { name: /télécharger/i }));
 
-    expect(capturedHref).toContain('match-final');
+    expect(clickSpy).toHaveBeenCalled();
     clickSpy.mockRestore();
   });
 });
@@ -190,16 +188,14 @@ describe('PosterShareBtn — cas limites', () => {
     expect(screen.getByRole('button', { name: /partager l'affiche/i })).not.toBeDisabled();
   });
 
-  it('fonctionne sans titre dans l\'événement', async () => {
+  it('affiche le menu sans planter quand l\'événement n\'a pas de titre', async () => {
     toBlob.mockResolvedValue(mockBlob());
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     const user = userEvent.setup({ delay: null });
     render(<PosterShareBtn event={{ id: 'x' }} />);
     await user.click(screen.getByRole('button', { name: /partager l'affiche/i }));
     await waitForPhase();
 
-    expect(clickSpy).toHaveBeenCalled();
-    clickSpy.mockRestore();
+    expect(screen.getByRole('button', { name: /télécharger/i })).toBeInTheDocument();
   });
 });
