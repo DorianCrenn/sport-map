@@ -16,17 +16,17 @@ export default function EmptyMapGuide({ canAddEvent, onAddEvent, onResetFilters 
         {canAddEvent ? (
           <>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>Aucun match dans cette zone</div>
-            <div style={{ fontSize: 12, color: 'var(--sl-t3)', marginBottom: 20, lineHeight: 1.5 }}>Créez votre premier événement pour le faire apparaître sur la carte.</div>
+            <div style={{ fontSize: 12, color: 'var(--sl-t3)', marginBottom: 20, lineHeight: 1.5 }}>Créez votre premier événement pour le faire apparaître sur la carte — visible par tous les sportifs de la région.</div>
             <button onClick={onAddEvent} style={{ width: '100%', padding: '11px 0', borderRadius: 12, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', marginBottom: 8 }}>+ Créer un événement</button>
             <button onClick={onResetFilters} style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', marginBottom: 8 }}>Voir tous les événements</button>
-            <button onClick={handleShare} style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Inviter mon club</button>
+            <button onClick={handleShare} style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>📤 Envoyer le lien à mon club</button>
           </>
         ) : (
           <>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>Aucun événement dans cette zone</div>
-            <div style={{ fontSize: 12, color: 'var(--sl-t3)', marginBottom: 20, lineHeight: 1.5 }}>Pas encore de club SportLink près de chez vous — explorez la carte ou invitez votre club !</div>
+            <div style={{ fontSize: 12, color: 'var(--sl-t3)', marginBottom: 20, lineHeight: 1.5 }}>Pas encore de club SportLink ici. Élargissez la recherche, ou envoyez le lien à votre club pour qu'il rejoigne la plateforme.</div>
             <button onClick={onResetFilters} style={{ width: '100%', padding: '11px 0', borderRadius: 12, border: 'none', backgroundColor: '#0F1E3A', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', marginBottom: 8 }}>Voir tous les événements</button>
-            <button onClick={handleShare} style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Inviter mon club</button>
+            <button onClick={handleShare} style={{ width: '100%', padding: '10px 0', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>📤 Envoyer le lien à mon club</button>
           </>
         )}
       </motion.div>

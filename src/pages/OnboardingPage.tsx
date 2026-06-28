@@ -589,7 +589,7 @@ export default function OnboardingPage({ onDone }: OnboardingPageProps) {
               </motion.button>
               {selected.size === 0 && (
                 <p className="text-center text-xs" style={{ color: '#334155' }}>
-                  Tu pourras modifier tes préférences depuis ton profil
+                  Vous pourrez modifier vos préférences depuis votre profil
                 </p>
               )}
             </div>
@@ -633,14 +633,14 @@ export default function OnboardingPage({ onDone }: OnboardingPageProps) {
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
                 className="text-2xl font-bold text-white font-poppins mb-2"
               >
-                Dans quelle ville es-tu ?
+                Dans quelle ville êtes-vous ?
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
                 className="text-sm font-medium"
                 style={{ color: '#64748b' }}
               >
-                Pour centrer la carte sur chez toi
+                Pour centrer la carte près de chez vous
               </motion.p>
             </div>
 
@@ -736,14 +736,14 @@ export default function OnboardingPage({ onDone }: OnboardingPageProps) {
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
                 className="text-2xl font-bold text-white font-poppins mb-2"
               >
-                Comment tu préfères voir l'app ?
+                Comment préférez-vous utiliser l'application ?
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
                 className="text-sm font-medium"
                 style={{ color: '#64748b' }}
               >
-                Tu pourras changer ça à tout moment dans ton profil.
+                Vous pourrez changer ça à tout moment dans votre profil.
               </motion.p>
             </div>
 

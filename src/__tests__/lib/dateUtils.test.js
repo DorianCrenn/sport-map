@@ -19,8 +19,8 @@ function daysFromNow(delta) {
 // ── timeAgo ───────────────────────────────────────────────────────────────────
 
 describe('timeAgo', () => {
-  it("retourne 'À l'instant' pour moins d'1 minute", () => {
-    expect(timeAgo(ago(30_000))).toBe("À l'instant");
+  it("retourne 'à l'instant' pour moins d'1 minute", () => {
+    expect(timeAgo(ago(30_000))).toBe("à l'instant");
   });
 
   it('retourne "il y a X min" pour 5 minutes', () => {

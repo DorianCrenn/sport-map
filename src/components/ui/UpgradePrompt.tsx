@@ -30,7 +30,7 @@ export default function UpgradePrompt({ open, onClose, currentPlanId = 'free', f
             <div>
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
                 <div style={{ fontSize: 38, marginBottom: 10 }}>🚀</div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 6 }}>Passez à l'étape supérieure</div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 6 }}>Passez au niveau supérieur</div>
                 <div style={{ fontSize: 13, color: 'var(--sl-t2)', lineHeight: 1.6 }}>Débloquez <strong style={{ color: 'var(--sl-t1)' }}>{featureLabel}</strong> en passant à un plan supérieur.</div>
               </div>
               {showDiff && (

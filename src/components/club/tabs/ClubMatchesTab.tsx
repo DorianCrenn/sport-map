@@ -1,7 +1,9 @@
 import { useMemo, useState, lazy, Suspense } from 'react';
+import { motion } from 'framer-motion';
 import { useEventConvocations } from '../../../hooks/useEventConvocations.js';
 import { useClubFeatures } from '../../../hooks/useClubFeatures.js';
 import PlanGate from '../../ui/PlanGate.tsx';
+import type { LiveScore } from '../../../hooks/useClubLiveScores.js';
 
 const EventFormStepConvocation = lazy(() => import('../../event/EventFormStepConvocation.jsx'));
 
@@ -21,7 +23,22 @@ function ConvocBadge({ eventId }: { eventId: string | number }) {
   );
 }
 
-function ScoreBadge({ scoreHome, scoreAway, isHome }: { scoreHome?: number | null; scoreAway?: number | null; isHome?: boolean }) {
+function ScoreBadge({ scoreHome, scoreAway, isHome, liveScore }: { scoreHome?: number | null; scoreAway?: number | null; isHome?: boolean; liveScore?: LiveScore | null }) {
+  if (liveScore?.status === 'in_progress') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+        <motion.span
+          animate={{ opacity: [1, 0.35, 1] }} transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+          style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.08em', color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)', padding: '1px 5px', borderRadius: 4 }}
+        >
+          🔴 EN DIRECT
+        </motion.span>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#ef4444', fontVariantNumeric: 'tabular-nums' }}>
+          {liveScore.scoreHome} – {liveScore.scoreAway}
+        </span>
+      </div>
+    );
+  }
   if (scoreHome === null || scoreHome === undefined) {
     return <span style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600 }}>À venir</span>;
   }
@@ -36,7 +53,7 @@ function ScoreBadge({ scoreHome, scoreAway, isHome }: { scoreHome?: number | nul
   );
 }
 
-function MatchRow({ event, canConvoque, onConvoque }: { event: Record<string, any>; canConvoque?: boolean; onConvoque?: (e: Record<string, any>) => void }) {
+function MatchRow({ event, canConvoque, onConvoque, liveScore }: { event: Record<string, any>; canConvoque?: boolean; onConvoque?: (e: Record<string, any>) => void; liveScore?: LiveScore | null }) {
   const now = new Date();
   const eventDate = new Date(event.date);
   const isPast = eventDate < now;
@@ -62,7 +79,7 @@ function MatchRow({ event, canConvoque, onConvoque }: { event: Record<string, an
       </div>
 
       <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-        <ScoreBadge scoreHome={event.scoreHome} scoreAway={event.scoreAway} isHome={isHome} />
+        <ScoreBadge scoreHome={event.scoreHome} scoreAway={event.scoreAway} isHome={isHome} liveScore={liveScore} />
         {canConvoque && !isPast && (
           <button
             onClick={() => onConvoque?.(event)}
@@ -107,9 +124,10 @@ interface ClubMatchesTabProps {
   canAddEvent?: boolean;
   onCreateEvent?: () => void;
   onUpgrade?: () => void;
+  liveScores?: Record<string, LiveScore>;
 }
 
-export default function ClubMatchesTab({ effectiveEvents, club, accentColor, canAddEvent, onCreateEvent, onUpgrade }: ClubMatchesTabProps) {
+export default function ClubMatchesTab({ effectiveEvents, club, accentColor, canAddEvent, onCreateEvent, onUpgrade, liveScores = {} }: ClubMatchesTabProps) {
   const { can } = useClubFeatures(String(club.id));
   const now = new Date();
   const [convocEvent, setConvocEvent] = useState<Record<string, any> | null>(null);
@@ -169,7 +187,7 @@ export default function ClubMatchesTab({ effectiveEvents, club, accentColor, can
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)', marginBottom: 8 }}>À venir ({upcoming.length})</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {upcoming.map(e => <MatchRow key={e.id} event={e} canConvoque={canAddEvent} onConvoque={setConvocEvent} />)}
+                {upcoming.map(e => <MatchRow key={e.id} event={e} canConvoque={canAddEvent} onConvoque={setConvocEvent} liveScore={liveScores[e.id]} />)}
               </div>
             </div>
           )}
@@ -177,7 +195,7 @@ export default function ClubMatchesTab({ effectiveEvents, club, accentColor, can
             <div>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--sl-t3)', marginBottom: 8 }}>Résultats ({past.length})</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {past.map(e => <MatchRow key={e.id} event={e} canConvoque={false} />)}
+                {past.map(e => <MatchRow key={e.id} event={e} canConvoque={false} liveScore={liveScores[e.id]} />)}
               </div>
             </div>
           )}

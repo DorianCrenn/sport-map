@@ -34,7 +34,7 @@ export const HELP_CONTENT = [
   {
     id: 'ev-06', category: 'events',
     question: 'Puis-je créer des événements récurrents ?',
-    answer: 'Oui ! Lors de la création, activez "Récurrence" et choisissez la fréquence (hebdomadaire, bimensuel) et la date de fin. SportLink génère automatiquement tous les événements.',
+    answer: 'Oui ! Lors de la création, activez "Récurrence" et choisissez la fréquence (hebdomadaire, toutes les deux semaines) et la date de fin. SportLink génère automatiquement tous les événements.',
   },
 
   // ── POSTER STUDIO ───────────────────────────────────────────────────────────

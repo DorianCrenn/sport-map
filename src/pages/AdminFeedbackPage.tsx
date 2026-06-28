@@ -14,7 +14,7 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string }> 
   analyzing: { label: 'En analyse',  color: '#6366f1', bg: 'rgba(99,102,241,0.12)' },
   planned:   { label: 'Planifié',    color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
   in_dev:    { label: 'En cours',    color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-  resolved:  { label: 'Déployé',     color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+  resolved:  { label: 'Réalisé',     color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
   closed:    { label: 'Fermé',       color: '#6b7280', bg: 'rgba(107,114,128,0.08)' },
 };
 

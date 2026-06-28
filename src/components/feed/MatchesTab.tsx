@@ -416,7 +416,7 @@ export default function MatchesTab({ followedClubIds = [], onNavigateClubs }: Ma
               const isActive  = statusFilter === f.key;
               const isLiveBtn = f.key === 'live';
               return (
-                <button key={f.key} onClick={() => setStatusFilter(isActive ? null : f.key)} aria-pressed={isActive} aria-label={`${f.label}${isActive ? ' (actif, cliquer pour désactiver)' : ''}`} className={['flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-semibold whitespace-nowrap transition-all shrink-0', isActive && isLiveBtn ? 'bg-red-600 text-white shadow-sm' : isActive ? 'bg-[var(--sl-t1)] text-[var(--sl-bg)]' : 'bg-[var(--sl-pill-bg)] text-[var(--sl-pill-text)] border border-[var(--sl-border)] hover:border-[var(--sl-border-s)]'].join(' ')}>
+                <button key={f.key} onClick={() => setStatusFilter(isActive ? null : f.key)} aria-pressed={isActive} aria-label={`${f.label}${isActive ? ' (actif, cliquer pour désactiver)' : ''}`} className={['flex items-center gap-1.5 px-3.5 py-2 min-h-[36px] rounded-full text-[12px] font-semibold whitespace-nowrap transition-all shrink-0', isActive && isLiveBtn ? 'bg-red-600 text-white shadow-sm' : isActive ? 'bg-[var(--sl-t1)] text-[var(--sl-bg)]' : 'bg-[var(--sl-pill-bg)] text-[var(--sl-pill-text)] border border-[var(--sl-border)] hover:border-[var(--sl-border-s)]'].join(' ')}>
                   {isLiveBtn && <span className={['w-1.5 h-1.5 rounded-full shrink-0 transition-colors', isActive ? 'bg-white' : liveCount > 0 ? 'bg-red-500' : 'bg-[var(--sl-t3)]'].join(' ')} />}
                   {f.label}
                   {isLiveBtn && liveCount > 0 && <span className={`font-black ${isActive ? 'text-white/80' : 'text-red-500'}`}>({liveCount})</span>}

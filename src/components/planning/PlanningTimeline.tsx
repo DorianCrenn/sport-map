@@ -7,7 +7,7 @@ import MatchPlanningCard      from './MatchPlanningCard.jsx';
 const CompositionPoster = lazy(() => import('./CompositionPoster.jsx'));
 
 const WEEKDAYS_FULL = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-const MONTHS_FR     = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MONTHS_FR     = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 
 function DateBubble({ dateStr }: { dateStr: string }) {
   const d = new Date((dateStr ?? '') + 'T12:00:00');
@@ -28,7 +28,7 @@ function DateBubble({ dateStr }: { dateStr: string }) {
 
 function FilterPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all select-none"
+    <button onClick={onClick} className="px-3.5 py-2 min-h-[36px] rounded-full text-xs font-bold transition-all select-none"
       style={active ? { background: '#22d96a', color: '#000' } : { background: 'var(--sl-pill-bg)', color: 'var(--sl-pill-text)' }}
     >{label}</button>
   );
@@ -36,7 +36,7 @@ function FilterPill({ label, active, onClick }: { label: string; active: boolean
 
 function ClubPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all select-none"
+    <button onClick={onClick} className="px-3.5 py-2 min-h-[36px] rounded-full text-xs font-semibold whitespace-nowrap transition-all select-none"
       style={active ? { background: 'var(--sl-t1)', color: 'var(--sl-bg)' } : { background: 'var(--sl-pill-bg)', color: 'var(--sl-pill-text)' }}
     >{label}</button>
   );
@@ -164,8 +164,8 @@ export default function PlanningTimeline({
       <div className="sticky top-0 z-20 px-4 pt-4 pb-2 space-y-3 border-b border-[var(--sl-border)] bg-[var(--sl-bg)]">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-black text-[var(--sl-t1)] leading-tight">Planning de la Saison</h1>
-            <p className="text-xs font-semibold text-[var(--sl-t3)] mt-0.5 capitalize">Mois de {monthLabel}</p>
+            <h1 className="text-xl font-black text-[var(--sl-t1)] leading-tight">Planning de la saison</h1>
+            <p className="text-xs font-semibold text-[var(--sl-t3)] mt-0.5">Mois de {monthLabel}</p>
           </div>
           <div className="flex items-center gap-1">
             <button onClick={prevMonth} aria-label="Mois précédent" className="w-9 h-9 rounded-full bg-[var(--sl-surface)] flex items-center justify-center text-[var(--sl-t2)] text-lg hover:bg-[var(--sl-hover)] transition-colors">‹</button>

@@ -168,11 +168,14 @@ export default function DemoGuide({
             border:       '1px solid rgba(255,255,255,0.2)',
             borderRadius: 8,
             color:        isColored ? '#fff' : 'var(--sl-t2)',
-            padding:      '3px 7px',
+            padding:      '8px 10px',
+            minHeight:    36,
             fontSize:     11,
             cursor:       'pointer',
             flexShrink:   0,
             lineHeight:   1,
+            display:      'flex',
+            alignItems:   'center',
           }}
         >
           ▲
@@ -187,11 +190,14 @@ export default function DemoGuide({
             border:       '1px solid rgba(255,255,255,0.15)',
             borderRadius: 8,
             color:        isColored ? 'rgba(255,255,255,0.75)' : 'var(--sl-t3)',
-            padding:      '3px 6px',
+            padding:      '8px 9px',
+            minHeight:    36,
             fontSize:     13,
             cursor:       'pointer',
             flexShrink:   0,
             lineHeight:   1,
+            display:      'flex',
+            alignItems:   'center',
           }}
         >
           ×
@@ -270,7 +276,8 @@ export default function DemoGuide({
               border:       '1px solid var(--demo-surface-border)',
               borderRadius: 8,
               color:        'var(--sl-t3)',
-              padding:      '3px 9px',
+              padding:      '6px 9px',
+              minHeight:    36,
               fontSize:     10,
               fontWeight:   600,
               cursor:       'pointer',
@@ -290,7 +297,7 @@ export default function DemoGuide({
               background:   confirmExit ? 'rgba(239,68,68,0.2)' : 'transparent',
               border:       '1px solid', borderColor: confirmExit ? '#ef4444' : 'var(--demo-surface-border)',
               borderRadius: 8, color: confirmExit ? '#fca5a5' : 'var(--sl-t3)',
-              padding:      '3px 9px', fontSize: 10, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
+              padding:      '6px 9px', minHeight: 36, fontSize: 10, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
             }}
           >
             {confirmExit ? '✓ OK ?' : '× Quitter'}
@@ -350,7 +357,7 @@ export default function DemoGuide({
               style={{
                 background: 'transparent', border: 'none',
                 color: 'var(--demo-indigo-text-dim)', fontSize: 11, fontWeight: 600,
-                cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4,
+                cursor: 'pointer', padding: '8px 0', minHeight: 36, display: 'flex', alignItems: 'center', gap: 4,
               }}
             >
               <span>📊</span>
@@ -483,7 +490,7 @@ export default function DemoGuide({
             onClick={onChangeProfile}
             style={{
               display: 'block', width: '100%', marginTop: 6,
-              background: 'none', border: 'none', padding: '2px 0',
+              background: 'none', border: 'none', padding: '8px 0', minHeight: 36,
               fontSize: 11, color: 'var(--sl-t3)', cursor: 'pointer', textAlign: 'center', transition: 'color 0.15s',
             }}
             onMouseEnter={e => { e.currentTarget.style.color = 'var(--sl-t1)'; }}

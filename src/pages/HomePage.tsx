@@ -163,20 +163,6 @@ function FadeUp({ children, delay = 0, y = 18, className = '', style = {} }: { c
 
 // ── Phone mockup ──────────────────────────────────────────────────────────────
 function PhoneMockup() {
-  const markers = [
-    { x: 100, y: 108, color: '#22d96a', r: 13 },
-    { x: 155, y: 82,  color: '#f97316', r: 13 },
-    { x: 65,  y: 148, color: '#8b5cf6', r: 13 },
-    { x: 185, y: 140, color: '#22d96a', r: 13 },
-    { x: 130, y: 178, color: '#3B82F6', r: 11 },
-  ];
-  const clusters = [
-    { x: 68,  y: 75,  n: 7 },
-    { x: 198, y: 108, n: 4 },
-    { x: 50,  y: 185, n: 3 },
-    { x: 170, y: 195, n: 7 },
-  ];
-
   return (
     <div aria-hidden="true" data-audit-ignore="phone-mockup" style={{
       borderRadius: 40,
@@ -186,88 +172,13 @@ function PhoneMockup() {
       boxShadow: '0 40px 100px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.15)',
       width: '100%',
     }}>
-      {/* Status bar */}
-      <div style={{ backgroundColor: '#111827', padding: '10px 16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
-        <span style={{ color: 'white', fontSize: 10, fontWeight: 700, fontFamily: 'Poppins,sans-serif' }}>9:41</span>
-        <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', width: 80, height: 22, backgroundColor: '#000', borderRadius: 14 }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <div style={{ display: 'flex', gap: '1.5px', alignItems: 'flex-end' }}>
-            {[3,5,7,9].map((h,i) => <div key={i} style={{ width: 2.5, height: h, backgroundColor: 'white', borderRadius: 1 }} />)}
-          </div>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><rect x="1" y="6" width="15" height="12" rx="2"/><path d="M23 13V11a2 2 0 0 0-2-2h-1"/></svg>
-        </div>
-      </div>
-
-      <div style={{ backgroundColor: 'white' }}>
-        {/* App header */}
-        <div style={{ padding: '10px 14px 7px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', fontFamily: 'Poppins,sans-serif' }}>Carte</span>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
-        </div>
-
-        {/* Filter pills */}
-        <div style={{ display: 'flex', gap: 5, padding: '0 12px 8px' }}>
-          {['Tous','Football','Handball'].map((t, i) => (
-            <span key={t} style={{
-              fontSize: 11, borderRadius: 20, padding: '3px 10px', fontWeight: 700, whiteSpace: 'nowrap',
-              backgroundColor: i === 0 ? '#22d96a' : 'var(--sl-surface)',
-              color: i === 0 ? '#0a2942' : '#64748b',
-            }}>{t}</span>
-          ))}
-        </div>
-
-        {/* Map */}
-        <div style={{ position: 'relative', overflow: 'hidden', aspectRatio: '1 / 0.95' }}>
-          <svg width="100%" height="100%" viewBox="0 0 240 228" preserveAspectRatio="xMidYMid slice">
-            <rect width="240" height="228" fill="#e8efe8"/>
-            <path d="M0 0 Q60 20 120 10 Q180 0 240 15 L240 80 Q200 70 160 75 Q100 80 60 70 Q30 65 0 75Z" fill="#d4e8c2" opacity="0.7"/>
-            <ellipse cx="170" cy="55" rx="40" ry="22" fill="#c8e0b0" opacity="0.8"/>
-            <ellipse cx="40"  cy="40" rx="30" ry="18" fill="#d0e8b8" opacity="0.6"/>
-            <path d="M0 155 Q40 138 85 148 Q130 158 175 138 Q205 128 240 136 L240 228 L0 228Z" fill="#a8cfe8" opacity="0.85"/>
-            <path d="M0 178 Q55 162 110 172 Q155 180 240 162 L240 228 L0 228Z" fill="#90b8d8" opacity="0.6"/>
-            <path d="M30 0 Q75 55 110 110 Q140 160 170 210" stroke="white" strokeWidth="6" fill="none" strokeLinecap="round"/>
-            <path d="M0 88 Q65 98 130 88 Q180 80 240 95" stroke="white" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
-            <path d="M50 0 L60 228" stroke="white" strokeWidth="3" fill="none" opacity="0.55"/>
-            <path d="M0 130 Q100 122 240 135" stroke="white" strokeWidth="3" fill="none" opacity="0.5"/>
-            {clusters.map((c,i) => (
-              <g key={i}>
-                <circle cx={c.x} cy={c.y} r="14" fill="white" stroke="#d1d5db" strokeWidth="1.5"/>
-                <text x={c.x} y={c.y+4} textAnchor="middle" fontSize="11" fontWeight="800" fill="#0F1E3A" fontFamily="Poppins,sans-serif">{c.n}</text>
-              </g>
-            ))}
-            <circle cx="118" cy="112" r="10" fill="#3B82F6" opacity="0.2"/>
-            <circle cx="118" cy="112" r="6" fill="#3B82F6"/>
-            <circle cx="118" cy="112" r="3" fill="white"/>
-            {markers.map((m,i) => (
-              <g key={i}>
-                <ellipse cx={m.x} cy={m.y+m.r+3} rx={m.r*0.45} ry="3" fill="rgba(0,0,0,0.2)"/>
-                <path d={`M${m.x} ${m.y-m.r-2} C${m.x-m.r-2} ${m.y-m.r-2} ${m.x-m.r-2} ${m.y+m.r} ${m.x} ${m.y+m.r+8} C${m.x+m.r+2} ${m.y+m.r} ${m.x+m.r+2} ${m.y-m.r-2} ${m.x} ${m.y-m.r-2}Z`} fill={m.color}/>
-                <circle cx={m.x} cy={m.y} r={m.r*0.55} fill="white" opacity="0.9"/>
-              </g>
-            ))}
-          </svg>
-          <div style={{ position:'absolute', bottom:10, right:10, backgroundColor:'#111827', borderRadius:14, padding:'6px 14px', display:'flex', alignItems:'center', gap:5, boxShadow:'0 4px 16px rgba(0,0,0,0.35)' }}>
-            <span style={{ color:'white', fontSize:12, fontWeight:700, fontFamily:'Poppins,sans-serif' }}>+ Ajouter</span>
-          </div>
-        </div>
-
-        {/* Bottom nav */}
-        <div style={{ display:'flex', borderTop:'1px solid var(--sl-border)', padding:'9px 0 8px', backgroundColor:'var(--sl-hero-section-bg)' }}>
-          {[
-            { label:'Accueil', icon:<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>, active: false },
-            { label:'Carte',   icon:<><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></>, active: true },
-            { label:'Actus',   icon:<><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2z"/><path d="M18 14h-8"/></>, active: false },
-            { label:'Clubs',   icon:<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></>, active: false },
-            { label:'Profil',  icon:<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>, active: false },
-          ].map(({ label, icon, active }) => (
-            <div key={label} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={active ? '#22d96a' : '#94a3b8'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
-              <span style={{ fontSize:7.5, color: active ? '#22d96a' : '#94a3b8', fontWeight: active ? 700 : 500, fontFamily:'Poppins,sans-serif' }}>{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <img
+        src="/screenshots/map-mobile.png"
+        alt=""
+        style={{ width: '100%', display: 'block' }}
+        loading="lazy"
+        decoding="async"
+      />
     </div>
   );
 }
@@ -702,7 +613,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
               whileTap={{ scale:0.95 }} whileHover={{ scale:1.03, boxShadow:'0 8px 32px rgba(34,217,106,0.55)' }}
               onClick={() => onNavigate('profil')}
               className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer w-full justify-center sl-btn-shimmer"
-              style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'14px 22px', fontSize:15, maxWidth:300, boxShadow:'0 6px 24px rgba(34,217,106,0.4)' }}>
+              style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'14px 22px', fontSize:15, maxWidth:300, boxShadow:'0 6px 24px rgba(34,217,106,0.4)', whiteSpace:'nowrap', overflow:'hidden' }}>
               S'inscrire gratuitement
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </motion.button>
@@ -805,7 +716,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             <div className="flex gap-4 mb-4">
               <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('profil')}
                 className="font-bold font-poppins text-white flex items-center gap-2.5 cursor-pointer"
-                style={{ backgroundColor:'#22d96a', borderRadius:16, padding:'14px 28px', fontSize:16, boxShadow:'0 8px 28px rgba(34,217,106,0.45)' }}>
+                style={{ backgroundColor:'#22d96a', borderRadius:16, padding:'14px 28px', fontSize:16, boxShadow:'0 8px 28px rgba(34,217,106,0.45)', whiteSpace:'nowrap', overflow:'hidden' }}>
                 S'inscrire gratuitement
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </motion.button>

@@ -21,7 +21,7 @@ const NOTIF_STATUS_LABELS: Record<string, string> = {
   analyzing: 'En analyse',
   planned:   'Planifié',
   in_dev:    'En cours',
-  resolved:  'Déployé',
+  resolved:  'Réalisé',
   closed:    'Fermé',
 };
 
@@ -399,7 +399,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
           >
             <div style={{ marginBottom: 16 }}>
               <p style={{ fontSize: 13, color: 'var(--sl-t2)', margin: 0, lineHeight: 1.5 }}>
-                Votez pour les idées qui vous semblent prioritaires. Les plus populaires intègrent la roadmap.
+                Votez pour les idées qui vous semblent prioritaires. Les plus populaires seront intégrées à la feuille de route.
               </p>
             </div>
 
@@ -411,7 +411,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
               <EmptyState
                 emoji="💡"
                 title="Aucune idée pour l'instant"
-                subtitle="Soyez le premier à proposer une amélioration"
+                subtitle="Soyez le premier à proposer une idée"
                 actionLabel={onOpenFeedback ? "Proposer une idée" : null}
                 onAction={onOpenFeedback}
               />

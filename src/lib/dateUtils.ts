@@ -1,7 +1,7 @@
 export function timeAgo(isoStr: string): string {
   const diff = Date.now() - new Date(isoStr).getTime();
   const m = Math.floor(diff / 60_000);
-  if (m < 1)  return "À l'instant";
+  if (m < 1)  return "à l'instant";
   if (m < 60) return `il y a ${m} min`;
   const h = Math.floor(m / 60);
   if (h < 24) return `il y a ${h} h`;

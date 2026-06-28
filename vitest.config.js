@@ -8,6 +8,13 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.js'],
     testTimeout: 15000,
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        maxForks: 4,
+        minForks: 1,
+      },
+    },
     exclude: ['**/node_modules/**', '**/e2e/**', '**/dist/**'],
     coverage: {
       provider: 'v8',

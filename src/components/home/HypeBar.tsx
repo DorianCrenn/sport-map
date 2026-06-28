@@ -19,7 +19,7 @@ export default function HypeBar({
     if (totalToday > 0) s.push(`⚡ ${totalToday} inscrits aujourd'hui`);
     if (upcomingThisWeek > 0) s.push(`📅 ${upcomingThisWeek} matchs cette semaine`);
     if (clubCount > 0) s.push(`🏟️ ${clubCount} clubs actifs`);
-    if (s.length === 0) s.push('⚡ SportLink Bretagne en live');
+    if (s.length === 0) s.push('⚡ SportLink Bretagne en direct');
     return s;
   }, [liveCount, totalToday, clubCount, upcomingThisWeek]);
 

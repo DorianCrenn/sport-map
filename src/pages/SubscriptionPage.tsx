@@ -267,7 +267,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
             <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(107,114,128,0.1)', border: '1px solid rgba(107,114,128,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconClipboard size={18} color="var(--sl-t2)" /></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Factures</div>
-              <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Historique de paiements</div>
+              <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Historique des paiements</div>
             </div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: 'var(--sl-t3)', flexShrink: 0, transform: showInvoices ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="9 18 15 12 9 6"/></svg>
           </button>

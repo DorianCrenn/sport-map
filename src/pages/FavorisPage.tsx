@@ -48,7 +48,7 @@ export default function FavorisPage({ allEvents, allClubs = [], onNavigate }: Fa
         <div style={{ fontSize: 48, marginBottom: 20 }}>🔖</div>
         <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 8 }}>Rien de sauvegardé</p>
         <p style={{ fontSize: 14, color: 'var(--sl-t3)', lineHeight: 1.6, marginBottom: 28, maxWidth: 280 }}>
-          Suis des clubs pour voir leurs matchs et annonces ici, ou sauvegarde des événements depuis la carte.
+          Suis des clubs pour voir leur calendrier ici. Sur la carte, tape ❤️ sur un événement pour le sauvegarder.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 300 }}>
           <button

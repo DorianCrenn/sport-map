@@ -17,6 +17,7 @@ import { usePlan } from '../hooks/usePlan.js';
 import { useAnalyticsConsent } from '../hooks/useAnalyticsConsent.js';
 import ClubLeaderboard from '../components/ClubLeaderboard.jsx';
 import UserLeaderboard from '../components/UserLeaderboard.jsx';
+import { useMyPlayerStats } from '../hooks/usePlayerStats.js';
 
 const BadgeUnlockModal = lazy(() => import('../components/BadgeUnlockModal.jsx'));
 
@@ -272,6 +273,7 @@ export default function ProfilPage({
 
   const xpTotal: number = (currentUser?.xp ?? 0);
   const levelInfo = getLevel(xpTotal) as any;
+  const { stats: playerStats } = useMyPlayerStats(currentUser?.id ?? null);
 
   if (!currentUser) {
     return (
@@ -547,6 +549,41 @@ export default function ProfilPage({
         {/* ═══════════ ONGLET STATS ═══════════ */}
         {profileTab === 'stats' && <>
 
+        {/* Stats joueur de football / sport */}
+        {playerStats && (
+          <div style={{ borderRadius: 16, padding: 16, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 12, letterSpacing: '-0.01em' }}>
+              ⚽ Statistiques de saison
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 10 }}>
+              {[
+                { label: 'Matchs joués', value: playerStats.matchesPlayed, icon: '🏟️' },
+                { label: 'Buts',         value: playerStats.totalGoals,    icon: '⚽' },
+                { label: 'Passes D.',    value: playerStats.totalAssists,  icon: '🅰️' },
+              ].map(s => (
+                <div key={s.label} style={{ padding: '10px 8px', borderRadius: 12, backgroundColor: 'var(--sl-surface)', textAlign: 'center' }}>
+                  <div style={{ fontSize: 20, marginBottom: 2 }}>{s.icon}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--sl-t1)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{s.value}</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)', marginTop: 2, letterSpacing: '0.04em' }}>{s.label.toUpperCase()}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              {[
+                { label: 'Présences',   value: `${playerStats.matchesPlayed}/${playerStats.matchesTotal}`, icon: '✅' },
+                { label: 'Carton J.',   value: playerStats.totalYellow, icon: '🟨' },
+                { label: 'Carton R.',   value: playerStats.totalRed,    icon: '🟥' },
+              ].map(s => (
+                <div key={s.label} style={{ padding: '8px 6px', borderRadius: 10, backgroundColor: 'var(--sl-surface)', textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, marginBottom: 1 }}>{s.icon}</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--sl-t1)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{s.value}</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)', marginTop: 2, letterSpacing: '0.04em' }}>{s.label.toUpperCase()}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* XP / Level card — version hype */}
         <div style={{
           borderRadius: 16, padding: '16px',
@@ -571,7 +608,7 @@ export default function ProfilPage({
                   Niveau {levelInfo.level} · {levelInfo.name}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>
-                  {levelInfo.nextLevel ? `Prochain niveau dans ${levelInfo.nextLevel.minXp - xpTotal} XP` : '🏆 Niveau maximum !'}
+                  {levelInfo.nextLevel ? `Plus que ${levelInfo.nextLevel.minXp - xpTotal} XP pour le niveau suivant` : '🏆 Niveau maximum !'}
                 </div>
               </div>
             </div>
@@ -595,7 +632,7 @@ export default function ProfilPage({
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
               <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>{levelInfo.minXp} XP</span>
               <span style={{ fontSize: 9, fontWeight: 700, color: '#8b5cf6' }}>
-                {levelInfo.nextLevel.minXp - xpTotal} XP manquant
+                {levelInfo.nextLevel.minXp - xpTotal} XP manquant{(levelInfo.nextLevel.minXp - xpTotal) > 1 ? 's' : ''}
               </span>
               <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>{levelInfo.nextLevel.minXp} XP</span>
             </div>
@@ -813,7 +850,7 @@ export default function ProfilPage({
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs" style={{ color: 'var(--sl-t3)' }}>Aucun sport sélectionné — cliquez sur Modifier.</p>
+                  <p className="text-xs" style={{ color: 'var(--sl-t3)' }}>Aucun sport sélectionné — appuyez sur Modifier.</p>
                 )}
               </motion.div>
             ) : (
@@ -917,7 +954,7 @@ export default function ProfilPage({
                 Digest hebdo
               </div>
               <div className="text-xs text-left" style={{ color: 'var(--sl-t2)' }}>
-                Reçois les matchs du week-end par email
+                Recevez les matchs du week-end par email
               </div>
             </div>
           </div>

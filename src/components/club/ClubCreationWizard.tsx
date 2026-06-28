@@ -292,7 +292,7 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
     ),
     2: (
       <>
-        <StepHeader step={2} total={3} title="Vos équipes" subtitle="Sélectionnez vos équipes d'un tap. Vous pourrez en ajouter d'autres après." optional />
+        <StepHeader step={2} total={3} title="Vos équipes" subtitle="Sélectionnez vos équipes en un geste. Vous pourrez en ajouter d'autres après." optional />
         <ClubPreview form={form} accentColor={accentColor} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
           {QUICK_TEAMS.map(qt => {

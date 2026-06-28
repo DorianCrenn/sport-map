@@ -13,6 +13,8 @@ import ClubDashboard from './ClubDashboard.jsx';
 import ClubRosterPanel from './ClubRosterPanel.jsx';
 import ClubSponsorsPanel from './ClubSponsorsPanel.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
+import PushBroadcastModal from './PushBroadcastModal.jsx';
+import ICSImportModal from '../ICSImportModal.jsx';
 import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
 import ClubFormModal from './ClubFormModal.jsx';
 import QuickAddTeamModal from './QuickAddTeamModal.jsx';
@@ -23,6 +25,7 @@ import { useClubTrainings } from '../../hooks/useClubTrainings.js';
 import { useShare } from '../../hooks/useShare.js';
 import { useClubEvents } from '../../hooks/useClubEvents.js';
 import { useClubPlan } from '../../hooks/useClubPlan.js';
+import { useClubLiveScores } from '../../hooks/useClubLiveScores.js';
 import { downloadClubICS } from '../../utils/exportICS.js';
 import ClubHero, { OverflowMenu } from './ClubHero.jsx';
 import ClubAdminDrawer from './ClubAdminDrawer.jsx';
@@ -147,9 +150,11 @@ export default function ClubPageView({
   const showManagersPanel = modal === 'managersPanel';
   const showRosterPanel   = modal === 'rosterPanel';
   const showSponsorsPanel = modal === 'sponsorsPanel';
-  const showAnnouncement  = modal === 'announcement';
-  const showEditInfo      = modal === 'editInfo';
-  const showPoster        = modal === 'poster';
+  const showAnnouncement    = modal === 'announcement';
+  const showPushBroadcast   = (modal as string) === 'pushBroadcast';
+  const showICSImport       = (modal as string) === 'icsImport';
+  const showEditInfo        = modal === 'editInfo';
+  const showPoster          = modal === 'poster';
   const [teamEventModal,  setTeamEventModal] = useState<Record<string, any> | undefined>(undefined);
 
   const checklistKey = `sl-club-checklist-dismissed-${club.id}`;
@@ -169,6 +174,8 @@ export default function ClubPageView({
     () => effectiveEvents.filter(e => String(e.clubId) === String(club.id)).map(e => e.id),
     [effectiveEvents, club.id]
   );
+
+  const liveScores = useClubLiveScores(clubEventIds);
 
   const allTeams = useMemo(
     () => (club.categories ?? []).flatMap((c: any) =>
@@ -278,6 +285,7 @@ export default function ClubPageView({
       case 'edit-page':         setIsEditing((e: boolean) => !e); setActiveTab('accueil'); break;
       case 'event':             handleCreateClubEvent(); break;
       case 'announce':          setModal('announcement'); break;
+      case 'push':              setModal('pushBroadcast' as any); break;
       case 'edit-info':         setModal('editInfo'); break;
       case 'managers':          setModal('managersPanel'); break;
       case 'roster':            setModal('rosterPanel'); break;
@@ -405,6 +413,7 @@ export default function ClubPageView({
             accentColor={accentColor}
             canAddEvent={canAddEvent && !!onAddEvent}
             onCreateEvent={handleCreateClubEvent}
+            liveScores={liveScores}
           />
         )}
 
@@ -491,6 +500,7 @@ export default function ClubPageView({
             const upcoming = effectiveEvents.filter((e: any) => e.clubId === club.id && new Date(e.date) >= new Date());
             downloadClubICS(upcoming, club.name);
           }},
+          ...(canEdit && onAddEvent ? [{ Icon: IconCalendar, label: 'Importer un calendrier .ics', action: () => setModal('icsImport' as any) }] : []),
           ...(club.email ? [{ Icon: IconMail, label: `Contacter ${club.name}`, action: () => window.open(`mailto:${club.email}`) }] : []),
         ]}
       />
@@ -606,6 +616,46 @@ export default function ClubPageView({
                 : 'Annonce envoyée à tes abonnés !';
               toast({ message: msg, type: 'success' });
             }}
+            onClose={() => setModal(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showICSImport && onAddEvent && (
+          <ICSImportModal
+            key="ics-import"
+            clubId={String(club.id)}
+            onImport={async (icsEvents) => {
+              for (const ev of icsEvents) {
+                await onAddEvent({
+                  title:       ev.title,
+                  date:        ev.date,
+                  venue:       ev.venue ?? '',
+                  city:        ev.city ?? '',
+                  description: ev.description ?? '',
+                  clubId:      club.id,
+                  sport:       club.sport ?? 'Football',
+                  eventType:   'match',
+                  homeOrAway:  'home',
+                });
+              }
+            }}
+            onClose={() => setModal(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showPushBroadcast && (
+          <PushBroadcastModal
+            key="push-broadcast"
+            clubId={String(club.id)}
+            clubName={club.name ?? ''}
+            teams={allTeams}
+            upcomingEvents={(effectiveEvents as any[])
+              .filter(e => new Date(e.date) >= new Date() && String(e.clubId) === String(club.id))
+              .slice(0, 20)}
             onClose={() => setModal(null)}
           />
         )}

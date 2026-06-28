@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase }          from '../../lib/supabase.js';
 import { useToast }          from '../../contexts/ToastContext.jsx';
@@ -6,6 +6,8 @@ import PresenceButtons       from './PresenceButtons.jsx';
 import CarpoolSection        from './CarpoolSection.jsx';
 import AttendanceListSheet   from './AttendanceListSheet.jsx';
 import LiveScorePupitre      from '../home/LiveScorePupitre.jsx';
+
+const MatchStatsModal = lazy(() => import('../stats/MatchStatsModal.jsx'));
 
 const TYPE_CONFIG: Record<string, { label: string; color: string }> = {
   championship: { label: 'Championnat', color: '#06b6d4' },
@@ -158,6 +160,7 @@ interface MatchPlanningCardProps {
 export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach, isCommunicant, onOpenPoster, onConvocate, onOpenRides, onScoreSaved, showClubBadge }: MatchPlanningCardProps) {
   const [showList,        setShowList]        = useState(false);
   const [showScoreInput,  setShowScoreInput]  = useState(false);
+  const [showStatsModal,  setShowStatsModal]  = useState(false);
   const [localMatchScore, setLocalMatchScore] = useState<Record<string, any> | null>(null);
   const [launching,       setLaunching]       = useState(false);
   const { toast } = useToast() as any;
@@ -335,8 +338,9 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
             )}
 
             {cardState === 'post_pending' && isCoach && (
-              <motion.div key="post_pending" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div key="post_pending" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
                 <button onClick={() => setShowScoreInput(v => !v)} className="w-full py-2.5 rounded-xl text-[13px] font-bold active:scale-95 transition-transform text-black" style={{ background: '#f59e0b' }}>{showScoreInput ? 'Annuler' : '📊 Saisir le score final'}</button>
+                <button onClick={() => setShowStatsModal(true)} className="w-full py-2.5 rounded-xl text-[13px] font-bold active:scale-95 transition-transform" style={{ background: 'var(--sl-card-hi)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border)' }}>📋 Stats joueurs</button>
                 <AnimatePresence>
                   {showScoreInput && <ScoreInputInline key="score-form" eventId={item.id} sport={item.sport} homeTeam={homeTeam} awayTeam={awayTeam} onSaved={handleScoreSaved} />}
                 </AnimatePresence>
@@ -344,11 +348,14 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
             )}
 
             {cardState === 'post_done' && isStaff && (
-              <motion.div key="post_done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div key="post_done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
                 <button onClick={() => onOpenPoster?.({ event: item, club, score: { home: effectiveScore?.home, away: effectiveScore?.away }, mode: 'result' })} className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-black active:opacity-80 transition-opacity" style={{ background: '#22d96a' }}>
                   <span className="flex items-center gap-2"><span>⚡</span><span>Générer l'affiche résultat</span></span>
                   <span className="text-black/50 text-lg">↗</span>
                 </button>
+                {isCoach && (
+                  <button onClick={() => setShowStatsModal(true)} className="w-full py-2.5 rounded-xl text-[13px] font-bold active:scale-95 transition-transform" style={{ background: 'var(--sl-card-hi)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border)' }}>📋 Stats joueurs</button>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -362,6 +369,12 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
       </motion.div>
 
       <AttendanceListSheet open={showList} onClose={() => setShowList(false)} type="match" id={item.id} userId={userId} />
+
+      {showStatsModal && item.club_id && (
+        <Suspense fallback={null}>
+          <MatchStatsModal event={item} clubId={String(item.club_id)} onClose={() => setShowStatsModal(false)} />
+        </Suspense>
+      )}
     </>
   );
 }

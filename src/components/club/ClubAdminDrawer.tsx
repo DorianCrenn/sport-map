@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 import {
-  IconBarChart, IconEdit, IconCalendar, IconMegaphone,
+  IconBarChart, IconEdit, IconCalendar, IconMegaphone, IconBell,
   IconClipboard, IconShirt, IconShield, IconUsers, IconBriefcase,
   type IconProps,
 } from '../icons.js';
@@ -13,7 +13,8 @@ const ITEMS: { id: string; Icon?: IconComponent; color?: string; label?: string;
   { id: 'dashboard',  Icon: IconBarChart,   color: 'var(--sl-green)', label: 'Tableau de bord',     desc: 'Stats, vues, conversions' },
   { id: 'edit-page',  Icon: IconEdit,       color: '#3da5ff',         label: 'Modifier la page',    desc: 'Blocs, design, typographie' },
   { id: 'event',      Icon: IconCalendar,   color: '#a855f7',         label: 'Créer un événement',  desc: 'Match, tournoi, entraînement' },
-  { id: 'announce',   Icon: IconMegaphone,  color: '#f97316',         label: 'Envoyer une annonce', desc: 'Tous les abonnés ou une équipe' },
+  { id: 'announce',   Icon: IconMegaphone,  color: '#f97316',         label: 'Envoyer une annonce',  desc: 'Tous les abonnés ou une équipe' },
+  { id: 'push',       Icon: IconBell,       color: '#6366f1',         label: 'Notification push',    desc: 'Envoyer aux joueurs ou convoqués' },
   { id: 'divider' },
   { id: 'edit-info',  Icon: IconClipboard,  color: 'var(--sl-t2)',    label: 'Infos du club',       desc: 'Nom, sport, ville, équipes' },
   { id: 'add-team',   Icon: IconShirt,      color: 'var(--sl-t2)',    label: 'Créer une équipe',    desc: 'Ajouter une catégorie ou une équipe' },

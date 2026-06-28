@@ -348,6 +348,14 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
             </button>
           </div>
 
+          {/* Context tagline */}
+          {mode !== 'forgot' && mode !== 'confirm-email' && (
+            <p className="flex-shrink-0 text-center text-sm px-6 -mt-1 mb-3 font-poppins"
+               style={{ color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>
+              Suivez les matchs et résultats de vos clubs sportifs locaux
+            </p>
+          )}
+
           {/* Tab switcher (hidden in forgot/confirm modes) */}
           {mode !== 'forgot' && mode !== 'confirm-email' && (
             <div className="flex-shrink-0 px-5 mb-5">

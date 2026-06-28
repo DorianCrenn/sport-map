@@ -29,6 +29,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
   const [fabOpen, setFabOpen] = useState(false);
   const [fabExpanded, setFabExpanded] = useState(false);
   const [fabHintSeen, setFabHintSeen] = useState(() => localStorage.getItem('sl-fab-hint') === 'true');
+  const [fabWelcomeSeen, setFabWelcomeSeen] = useState(() => localStorage.getItem('sl-fab-welcome') === 'true');
 
   useEffect(() => { if (overlayOpen) { setFabOpen(false); setFabExpanded(false); } }, [overlayOpen]);
 
@@ -41,6 +42,11 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
   function dismissFabHint() {
     setFabHintSeen(true);
     localStorage.setItem('sl-fab-hint', 'true');
+  }
+
+  function dismissFabWelcome() {
+    setFabWelcomeSeen(true);
+    localStorage.setItem('sl-fab-welcome', 'true');
   }
 
   const tabs: (TabDef | null)[] = isClubAdminOnly
@@ -67,6 +73,15 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setFabOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 1001 }} />
             <motion.div initial={{ opacity: 0, scale: 0.92, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 8 }} transition={{ type: 'spring', stiffness: 420, damping: 34 }} style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 82px)', left: isClubAdminOnly ? 'calc(50% - 148px)' : 'calc(50% - 124px)', width: isClubAdminOnly ? 296 : 248, zIndex: 1002, backgroundColor: 'var(--sl-card)', borderRadius: 20, border: '1px solid var(--sl-border-s)', boxShadow: 'var(--sl-shadow-xl)', overflow: 'hidden' }}>
+              {!fabWelcomeSeen && (
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--sl-border)', marginBottom: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)' }}>🎯 Votre centre de commande</span>
+                    <button onClick={dismissFabWelcome} aria-label="Fermer" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', color: 'var(--sl-t3)', fontSize: 18, lineHeight: 1 }}>×</button>
+                  </div>
+                  <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: 0, lineHeight: 1.4 }}>Créez événements, annonces et affiches depuis ici.</p>
+                </div>
+              )}
               <div style={{ padding: 6 }}>
                 {isClubAdminOnly ? (
                   <>

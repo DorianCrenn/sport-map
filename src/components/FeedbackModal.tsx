@@ -97,7 +97,7 @@ export default function FeedbackModal({ onClose, prefilled = {} }: FeedbackModal
               <motion.div key="done" initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', padding: '40px 16px' }}>
                 <div style={{ fontSize: 56, marginBottom: 16 }}>{type === 'bug' ? '🙏' : type === 'idea' ? '🚀' : '✅'}</div>
                 <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', margin: '0 0 8px' }}>{type === 'bug' ? 'Bug reçu !' : type === 'idea' ? 'Super idée !' : 'Question envoyée !'}</h3>
-                <p style={{ fontSize: 13, color: 'var(--sl-t2)', lineHeight: 1.6, margin: '0 0 24px' }}>{type === 'bug' ? "Merci de nous avoir signalé ce problème. Nous allons l'analyser rapidement." : type === 'idea' ? 'Votre idée rejoint notre roadmap. La communauté pourra voter pour elle.' : 'Nous avons bien reçu votre question et vous répondrons par notification.'}</p>
+                <p style={{ fontSize: 13, color: 'var(--sl-t2)', lineHeight: 1.6, margin: '0 0 24px' }}>{type === 'bug' ? "Merci de nous avoir signalé ce problème. Nous allons l'analyser rapidement." : type === 'idea' ? 'Votre idée a été ajoutée à notre feuille de route. La communauté pourra voter pour elle.' : 'Nous avons bien reçu votre question et vous répondrons par notification.'}</p>
                 <button onClick={onClose} style={{ padding: '12px 28px', borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: currentType?.color ?? '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700 }}>Fermer</button>
               </motion.div>
             ) : (
@@ -124,7 +124,7 @@ export default function FeedbackModal({ onClose, prefilled = {} }: FeedbackModal
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--sl-t3)' }}>{type === 'bug' ? 'Décrivez le problème *' : type === 'idea' ? 'Votre idée en une ligne *' : 'Votre question *'}</label>
-                    {title.length > 70 && <span style={{ fontSize: 10, color: charLeft < 10 ? '#ef4444' : 'var(--sl-t3)' }}>{charLeft} restants</span>}
+                    {title.length > 70 && <span style={{ fontSize: 10, color: charLeft < 10 ? '#ef4444' : 'var(--sl-t3)' }}>{charLeft} restant{charLeft > 1 ? 's' : ''}</span>}
                   </div>
                   <input type="text" value={title} onChange={e => setTitle(e.target.value)} maxLength={100} required placeholder={type === 'bug' ? "ex: La carte ne s'affiche pas sur mon téléphone" : type === 'idea' ? 'ex: Pouvoir partager les affiches directement sur Instagram' : 'ex: Comment inviter des gestionnaires dans mon club ?'} style={inputStyle} autoFocus />
                   <AnimatePresence>
