@@ -682,7 +682,8 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
           <div className="pt-5">
             <WeekendPosters
               matches={getMockWeekendMatches()}
-              title="Exemples d'affiches"
+              title="Voici des exemples d'affiches de création"
+              subtitle="Créez la vôtre en quelques secondes ✨"
               onOpenInStudio={handleOpenInStudio}
             />
           </div>
