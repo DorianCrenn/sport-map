@@ -147,6 +147,43 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       });
 
       const merged: SeasonItem[] = [...trainingItems, ...matchItems as SeasonItem[]].sort((a, b) => a.date !== b.date ? (a.date < b.date ? -1 : 1) : (a.time ?? '').localeCompare(b.time ?? ''));
+
+      // Demo: inject a synthetic live match so live-score-pupitre is always visible for coach/president tours
+      if (demo) {
+        const coachIds = coachKey.split(',').filter(Boolean);
+        if (coachIds.length > 0 && !merged.some(m => m.matchScore?.status === 'in_progress')) {
+          merged.unshift({
+            id: 'demo-live-match',
+            type: 'match',
+            date: new Date().toISOString().slice(0, 10),
+            time: '15:00',
+            title: 'FC Brestois vs FC Rival',
+            location: 'Stade municipal de Brest',
+            club_id: coachIds[0],
+            sport: 'Football',
+            adversaire: 'FC Rival',
+            event_type: 'championship',
+            category: 'Senior A',
+            team_name: 'Équipe 1',
+            home_or_away: 'home',
+            level: 'D3 Régionale',
+            cup_type: '',
+            score: null,
+            matchScore: { status: 'in_progress', score_home: 2, score_away: 1 },
+            myStatus: null,
+            presentCount: 12,
+            absentCount: 2,
+            unsureCount: 1,
+            convocs: { total: 15, accepted: 12, pending: 1, declined: 1, unavailable: 1 },
+            isStaffClub: true,
+            isCoachClub: true,
+            isCommClub: false,
+            isPlayerClub: false,
+            isSupporter: false,
+          });
+        }
+      }
+
       matchEventIdsRef.current = new Set(matchItems.map(m => String(m.id)));
       setItems(merged); setLoading(false);
     }

@@ -1,9 +1,6 @@
 // Tour Président — 13 étapes
-// Ligne de vie : Planifier → Convoquer → Réponses → Covoiturage
-//              → Match live (score + multiplex)
-//              → Vitrine club (voir + éditer)
-//              → Après-match (bilan annonce)
-//              → CTA
+// Planifier → Convoquer → Covoiturage → Match live (score + multiplex)
+// → Affiche résultat → Vitrine club → Bilan annonce → CTA
 
 export const presidentTour = [
   // ── 1 : Intro ────────────────────────────────────────────────────────────
@@ -91,24 +88,28 @@ export const presidentTour = [
     why:         'Pilotez plusieurs équipes en même temps, depuis n\'importe où.',
   },
 
-  // ── Vitrine club ──────────────────────────────────────────────────────────
+  // ── Affiche résultat ──────────────────────────────────────────────────────
   {
     id:          9,
-    title:       'Votre vitrine publique',
-    body:        'Votre club existe aussi en ligne. Appuyez sur + en bas pour ouvrir le menu — vous y trouverez "Ma page club" pour voir votre vitrine, et "Modifier la page" pour personnaliser les blocs, ajouter sponsors et galerie.',
-    emoji:       '🌐',
-    clickTarget: 'fab-add',
-    clickLabel:  'Bouton + au centre de la barre en bas',
+    title:       'Créez l\'affiche du score final',
+    body:        'Le match est terminé. Appuyez sur le bandeau Studio d\'affiches pour créer l\'affiche résultat en 30 secondes. 37 templates, le score intégré, format Story et Post prêts pour Instagram.',
+    emoji:       '🎨',
+    clickTarget: 'poster-feature-strip',
+    clickLabel:  'Bandeau Studio d\'affiches (faites défiler si besoin)',
+    tryItAction: 'poster-opened',
+    tryItLabel:  'Ouvrir le Studio',
     closeOverlayBefore: true,
-    tip:         'Tout changement est visible immédiatement par vos abonnés.',
+    why:         'Les clubs qui partagent leurs résultats en affiche ont 2× plus d\'abonnés Instagram.',
   },
+
+  // ── Vitrine club ──────────────────────────────────────────────────────────
   {
     id:          10,
-    title:       'Ouvrez votre page club',
-    body:        'Tapez sur "Ma page club". Vous voyez exactement ce que vos 342 abonnés, supporters et futurs membres découvrent. Agenda complet, résultats, effectif, sponsors — sans aucune compétence web.',
-    emoji:       '🏆',
-    clickTarget: 'fab-mon-club',
-    clickLabel:  '"Ma page club" dans le menu',
+    title:       'Votre vitrine publique',
+    body:        'Appuyez sur l\'onglet Clubs en bas. Vous verrez la page que vos 342 abonnés, supporters et futurs membres découvrent : agenda complet, résultats, effectif, sponsors — sans aucune compétence web.',
+    emoji:       '🌐',
+    clickTarget: 'tab-clubs',
+    clickLabel:  'Onglet Clubs en bas à droite',
     closeOverlayBefore: true,
     why:         'Une page club soignée augmente les abonnements spontanés de 60 %.',
   },
@@ -117,7 +118,7 @@ export const presidentTour = [
   {
     id:          11,
     title:       'Partagez le bilan avec vos supporters',
-    body:        'Le match est terminé. Appuyez à nouveau sur + en bas au centre pour envoyer le bilan à vos abonnés. 85 % de taux d\'ouverture — vs 20 % pour un email.',
+    body:        'Appuyez sur + en bas au centre pour envoyer le bilan à vos abonnés. 85 % de taux d\'ouverture — vs 20 % pour un email.',
     emoji:       '➕',
     clickTarget: 'fab-add',
     clickLabel:  'Bouton + au centre de la barre en bas',
@@ -139,7 +140,7 @@ export const presidentTour = [
   {
     id:    13,
     title: 'Prêt à créer votre club ?',
-    body:  'Planification, convocations, covoiturage, scores en direct, page club, communication — tout en un. Créez votre club gratuitement en 2 minutes et commencez à fédérer votre communauté !',
+    body:  'Planification, convocations, covoiturage, scores en direct, affiches pro, vitrine club, communication — tout en un. Créez votre club gratuitement en 2 minutes et commencez à fédérer votre communauté !',
     emoji: '🚀',
     isCTA: true,
   },

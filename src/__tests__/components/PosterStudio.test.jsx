@@ -46,6 +46,7 @@ vi.mock('../../lib/supabase.js', () => ({
     auth: { getSession: vi.fn().mockResolvedValue({ data: { session: null } }) },
     storage: { from: vi.fn(() => ({ upload: vi.fn(), getPublicUrl: vi.fn(() => ({ data: { publicUrl: '' } })) })) },
   },
+  isDemoMode: vi.fn(() => false),
 }));
 
 vi.mock('../../contexts/AuthContext.jsx', () => ({

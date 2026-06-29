@@ -43,6 +43,7 @@ export default function PosterFeatureStrip({ onOpen }: PosterFeatureStripProps) 
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.05 }}
+      data-demo="poster-feature-strip"
       style={{
         margin: '8px 12px 4px',
         borderRadius: 18,

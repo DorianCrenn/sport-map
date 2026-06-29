@@ -1,5 +1,5 @@
-// Tour Communication — 6 étapes
-// Annonce (navigue vers Mon Club) puis navigation vers Clubs depuis Mon Club.
+// Tour Communication — 9 étapes
+// Annonce → Affiche → Multiplex → Vitrine club → Abonnement → CTA
 
 export const communicationTour = [
   {
@@ -21,26 +21,54 @@ export const communicationTour = [
   {
     id:          3,
     title:       'Publiez une annonce percutante',
-    body:        'Tapez sur "Envoyer une annonce". La page Mon Club s\'ouvre. Choisissez le type (résultat, info, urgence), rédigez votre message et envoyez. 85% de taux d\'ouverture.',
+    body:        'Tapez sur "Envoyer une annonce". Choisissez le type (résultat, info, urgence), rédigez votre message et envoyez. 85 % de taux d\'ouverture sur push vs 20 % par email.',
     emoji:       '📢',
     clickTarget: 'fab-announce',
     clickLabel:  '"Envoyer une annonce" dans le menu',
     tryItAction: 'announcement-sent',
     tryItLabel:  'Publier l\'annonce',
-    why:         'Les annonces push ont 85% de taux d\'ouverture vs 20% pour les emails.',
+    why:         'Les annonces push ont 85 % de taux d\'ouverture vs 20 % pour les emails.',
   },
+
+  // ── Studio d'affiches ─────────────────────────────────────────────────────
   {
     id:          4,
+    title:       'Créez des affiches pro en 30 secondes',
+    body:        'Appuyez sur le bandeau Studio d\'affiches. 37 templates, logos de votre club, couleurs personnalisées. Formats Story, Post et Paysage. Publiez directement sur Instagram depuis l\'app.',
+    emoji:       '🎨',
+    clickTarget: 'poster-feature-strip',
+    clickLabel:  'Bandeau Studio d\'affiches (faites défiler si besoin)',
+    tryItAction: 'poster-opened',
+    tryItLabel:  'Ouvrir le Studio',
+    closeOverlayBefore: true,
+    why:         'Les clubs qui publient des affiches de match ont 2× plus d\'engagement Instagram.',
+  },
+
+  // ── Multiplex en direct ───────────────────────────────────────────────────
+  {
+    id:          5,
+    title:       'Suivez tous vos matchs en direct',
+    body:        'Appuyez sur la section Multiplex pour voir les scores de toutes vos équipes simultanément. Les supporters reçoivent les mises à jour en temps réel — plus besoin de WhatsApp.',
+    emoji:       '📡',
+    clickTarget: 'live-multiplex',
+    clickLabel:  'Section Multiplex des scores live',
+    closeOverlayBefore: true,
+    why:         'Le multiplex en direct multiplie par 3 le temps passé sur la page du club.',
+  },
+
+  // ── Vitrine club ──────────────────────────────────────────────────────────
+  {
+    id:          6,
     title:       'Découvrez votre vitrine publique',
     body:        'Appuyez sur l\'onglet "Clubs" en bas à droite. C\'est la page que vos supporters, partenaires et futurs membres découvrent. Agenda, résultats, sponsors — sans aucune compétence web.',
     emoji:       '🌐',
     clickTarget: 'tab-clubs',
     clickLabel:  'Onglet "Clubs" en bas à droite',
     closeOverlayBefore: true,
-    why:         'Une page club soignée augmente les abonnements spontanés de 60%.',
+    why:         'Une page club soignée augmente les abonnements spontanés de 60 %.',
   },
   {
-    id:          5,
+    id:          7,
     title:       'Abonnez-vous pour tester le flux',
     body:        'Appuyez sur un club dans la liste pour ouvrir sa page. Puis appuyez sur "Suivre" — vos fans reçoivent ensuite chaque annonce, résultat et actualité en notification push.',
     emoji:       '🔔',
@@ -51,9 +79,9 @@ export const communicationTour = [
     why:         'Les abonnés sont 3× plus fidèles et plus engagés que les non-abonnés.',
   },
   {
-    id:    6,
+    id:    8,
     title: 'Transformez la communication de votre club',
-    body:  'Annonces push, page club pro, scores en direct — tout en un. Créez votre espace communication gratuitement en 2 minutes.',
+    body:  'Annonces push, affiches pro, scores en direct, page club — tout en un. Créez votre espace communication gratuitement en 2 minutes.',
     emoji: '📣',
     isCTA: true,
   },

@@ -22,7 +22,7 @@ import { usePosterAI } from '../hooks/usePosterAI.js';
 import { usePosterState } from '../hooks/usePosterState.js';
 import { deriveInitialFields } from '../lib/posterVariables.js';
 import { generateMatchPoster } from '../lib/posterVariants.js';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 import { IcoExporter } from './poster/PosterAtoms.jsx';
 import {
   SPORT_PALETTE, PANEL_TABS,
@@ -102,6 +102,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+  useEffect(() => {
+    if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'poster-opened' } }));
+  }, []); // eslint-disable-line
   useEffect(() => {
     if (isDesktop && activeTab === 'template') setActiveTab('style');
   }, [isDesktop]); // eslint-disable-line

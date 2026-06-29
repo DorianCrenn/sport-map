@@ -156,14 +156,14 @@ const VALID_CLICK_TARGETS = [
   'fab-add', 'fab-dashboard', 'fab-event', 'fab-announce', 'fab-mon-club', 'fab-training',
   'convocation-btn', 'convocation-popup-btn', 'convocation-respond', 'favorite-btn', 'follow-club-btn',
   'live-score-pupitre', 'live-multiplex', 'coach-match-card', 'carpool-card',
-  'admin-dashboard', 'training-card', 'agenda-section', 'convocations-tab',
+  'admin-dashboard', 'training-card', 'agenda-section', 'convocations-tab', 'poster-feature-strip',
 ];
 
 const VALID_TRY_IT_ACTIONS = [
   undefined,
   'event-created', 'announcement-sent', 'convocation-sent',
   'convocation-responded', 'event-favorited', 'carpool-requested',
-  'poster-generated', 'club-followed',
+  'poster-generated', 'poster-opened', 'club-followed',
 ];
 
 const TOURS = [

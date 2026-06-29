@@ -17,11 +17,11 @@ import { supporterTour }    from '../../demo/tours/supporter.js';
 
 const DISPLAYED_STEPS = {
   president:     13,
-  coach:         13,
-  communication: 6,
+  coach:         14,
+  communication: 8,
   parent:        7,
-  player:        6,
-  supporter:     7,
+  player:        7,
+  supporter:     8,
 };
 
 const TOURS = {
@@ -82,14 +82,14 @@ describe('Tours interactifs — structure des étapes clickTarget', () => {
     // Éléments app
     'convocation-btn', 'convocation-popup-btn', 'convocation-respond', 'favorite-btn', 'follow-club-btn',
     'live-score-pupitre', 'live-multiplex', 'coach-match-card', 'carpool-card',
-    'admin-dashboard', 'training-card', 'agenda-section',
+    'admin-dashboard', 'training-card', 'agenda-section', 'poster-feature-strip',
   ];
 
   const VALID_TRY_IT_ACTIONS = [
     undefined,
     'event-created', 'announcement-sent', 'convocation-sent',
     'convocation-responded', 'event-favorited', 'carpool-requested',
-    'poster-generated', 'club-followed',
+    'poster-generated', 'poster-opened', 'club-followed',
   ];
 
   for (const [profile, tour] of Object.entries(TOURS)) {
