@@ -419,7 +419,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={w} innerRef={exportRef} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} showWatermark={!hasPremium} />
             {scoreHome !== undefined && scoreAway !== undefined && (
               <div style={{
-                position: 'absolute', bottom: 72, left: '50%', transform: 'translateX(-50%)',
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                 whiteSpace: 'nowrap', zIndex: 10,
                 backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 16, padding: '12px 28px',
                 display: 'flex', alignItems: 'center', gap: 16,
@@ -446,7 +446,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             <PosterRenderer templateId={templateId} data={posterData} format={altFormat} previewWidth={altW} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} showWatermark={!hasPremium} />
             {scoreHome !== undefined && scoreAway !== undefined && (
               <div style={{
-                position: 'absolute', bottom: 72, left: '50%', transform: 'translateX(-50%)',
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                 whiteSpace: 'nowrap', zIndex: 10,
                 backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 16, padding: '12px 28px',
                 display: 'flex', alignItems: 'center', gap: 16,
@@ -843,7 +843,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               )}
               {scoreHome !== undefined && scoreAway !== undefined && (
                 <div style={{
-                  position: 'absolute', bottom: Math.round(72 * previewH / h), left: '50%', transform: 'translateX(-50%)',
+                  position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                   whiteSpace: 'nowrap', zIndex: 5,
                   backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: Math.round(16 * previewH / h),
                   padding: `${Math.round(12 * previewH / h)}px ${Math.round(28 * previewH / h)}px`,

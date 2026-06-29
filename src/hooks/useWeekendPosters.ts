@@ -259,7 +259,7 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       sat, 14, 0,
       'Gymnase Kerichen, Brest',
       'Ligue Bretagne · U15 F Régional',
-      'basket', 'glass', '#EA580C',
+      'basket', 'neon', '#EA580C',
       'En route pour la victoire ! 🏀',
       'concrete-jungle'
     ),
@@ -269,7 +269,7 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       sat, 18, 0,
       'Salle Pen Ar Creac\'h, Brest',
       'Nationale 3 · Poule Bretagne',
-      'handball', 'glass', '#2563EB',
+      'handball', 'editorial', '#2563EB',
       'Tous ensemble pour la victoire ! 🤾',
       'abstract-force'
     ),
@@ -279,7 +279,7 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       sun, 15, 0,
       'Stade Francis-Le Blé, Brest',
       'Fédérale 3 · Poule Ouest',
-      'rugby', 'glass', '#DC2626',
+      'rugby', 'aurora', '#DC2626',
       'On lâche rien jusqu\'au bout ! 🏉',
       'raw-power'
     ),
