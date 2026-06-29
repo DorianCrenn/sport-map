@@ -5,7 +5,7 @@ import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import { IconRocket } from '../components/icons.js';
-import WeekendPosters from '../components/dashboard/WeekendPosters.tsx';
+import WeekendPosters, { getMockWeekendMatches } from '../components/dashboard/WeekendPosters.tsx';
 import PlansSection from '../components/home/PlansSection.jsx';
 import HypeBar from '../components/home/HypeBar.jsx';
 
@@ -680,6 +680,8 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
           />
           <div className="pt-5">
             <WeekendPosters
+              matches={getMockWeekendMatches()}
+              title="Exemples d'affiches"
               onOpenInStudio={handleOpenInStudio}
             />
           </div>
@@ -794,6 +796,8 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             {/* Affiches du week-end — desktop */}
             <div className="pt-8">
               <WeekendPosters
+                matches={getMockWeekendMatches()}
+                title="Exemples d'affiches"
                 onOpenInStudio={handleOpenInStudio}
               />
             </div>

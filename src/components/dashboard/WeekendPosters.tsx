@@ -28,6 +28,8 @@ export interface WeekendPostersProps {
    */
   onOpenInStudio?: (match: WeekendMatch) => void;
   className?: string;
+  /** Titre de la section (défaut : "Mes affiches du week-end") */
+  title?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -312,6 +314,7 @@ export default function WeekendPosters({
   matches: matchesProp,
   onOpenInStudio,
   className = '',
+  title = 'Mes affiches du week-end',
 }: WeekendPostersProps) {
   // Données live (hook) ou mockées (prop)
   const liveMatches = useWeekendPosters();
@@ -529,7 +532,7 @@ export default function WeekendPosters({
       <div className="flex items-center justify-between px-4 mb-3">
         <div>
           <h2 className="text-[14px] font-bold text-white leading-tight">
-            Mes affiches du week-end
+            {title}
           </h2>
           <p className="text-[11px] text-white/35 mt-0.5 capitalize">
             {fmtWeekLabel(matches)}
