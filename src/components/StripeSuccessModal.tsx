@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FEATURE_GATES, PLAN_RANK } from '../lib/subscriptionFeatures.js';
 
@@ -61,13 +61,15 @@ function getUnlockedFeatures(plan: string): string[] {
 
 // Confetti simple
 function Confetti() {
-  const pieces = Array.from({ length: 24 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    delay: Math.random() * 0.8,
-    color: ['#22d96a', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#ffffff'][i % 6],
-    size: 6 + Math.random() * 8,
-  }));
+  const pieces = useMemo(() => Array.from({ length: 24 }, (_, i) => ({
+    id:       i,
+    x:        Math.random() * 100,
+    delay:    Math.random() * 0.8,
+    color:    ['#22d96a', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#ffffff'][i % 6],
+    size:     6 + Math.random() * 8,
+    duration: 2.5 + Math.random(),
+    rounded:  Math.random() > 0.5,
+  })), []);
 
   return (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 3102 }}>
@@ -76,8 +78,8 @@ function Confetti() {
           key={p.id}
           initial={{ x: `${p.x}vw`, y: -20, rotate: 0, opacity: 1 }}
           animate={{ y: '110vh', rotate: 720, opacity: 0 }}
-          transition={{ duration: 2.5 + Math.random(), delay: p.delay, ease: 'easeIn' }}
-          style={{ position: 'absolute', top: 0, left: 0, width: p.size, height: p.size, borderRadius: Math.random() > 0.5 ? '50%' : 2, backgroundColor: p.color }}
+          transition={{ duration: p.duration, delay: p.delay, ease: 'easeIn' }}
+          style={{ position: 'absolute', top: 0, left: 0, width: p.size, height: p.size, borderRadius: p.rounded ? '50%' : 2, backgroundColor: p.color }}
         />
       ))}
     </div>

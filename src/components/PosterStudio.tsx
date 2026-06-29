@@ -43,7 +43,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   // Feature flags explicites — remplacent le booléen hasPremium générique
   const hasPremium       = features.can('POSTER_WATERMARK_REMOVE');  // Starter+
   const canUseAI         = features.can('POSTER_AI_BACKGROUND');      // Elite
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const canUseSponsors   = features.can('POSTER_SPONSORS_LOGOS');     // Pro+ (réservé pour un futur check côté serveur)
 
   const posterRef           = useRef(null);
@@ -104,7 +104,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   }, []);
   useEffect(() => {
     if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'poster-opened' } }));
-  }, []); // eslint-disable-line
+  }, []);
   useEffect(() => {
     if (isDesktop && activeTab === 'template') setActiveTab('style');
   }, [isDesktop]); // eslint-disable-line
