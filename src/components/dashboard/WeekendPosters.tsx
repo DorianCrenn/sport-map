@@ -144,6 +144,17 @@ const IcoCalendar = () => (
 
 const PREVIEW_WIDTH = 200; // px, correspond à la largeur de la carte
 
+// 3 styles proposés par template de départ — visuellement très distincts
+const TEMPLATE_ALTS: Record<string, Array<{ id: string; label: string }>> = {
+  glass:     [{ id: 'glass',    label: 'Glass'   }, { id: 'neon',     label: 'Néon'    }, { id: 'cinema',   label: 'Cinéma'  }],
+  neon:      [{ id: 'neon',     label: 'Néon'    }, { id: 'aurora',   label: 'Aurora'  }, { id: 'impact',   label: 'Impact'  }],
+  editorial: [{ id: 'editorial',label: 'Édito'   }, { id: 'glass',    label: 'Glass'   }, { id: 'vivid',    label: 'Vivid'   }],
+  aurora:    [{ id: 'aurora',   label: 'Aurora'  }, { id: 'cinema',   label: 'Cinéma'  }, { id: 'neon',     label: 'Néon'    }],
+  impact:    [{ id: 'impact',   label: 'Impact'  }, { id: 'glass',    label: 'Glass'   }, { id: 'neon',     label: 'Néon'    }],
+  cinema:    [{ id: 'cinema',   label: 'Cinéma'  }, { id: 'neon',     label: 'Néon'    }, { id: 'aurora',   label: 'Aurora'  }],
+};
+const DEFAULT_ALTS = [{ id: 'glass', label: 'Glass' }, { id: 'neon', label: 'Néon' }, { id: 'aurora', label: 'Aurora' }];
+
 interface PosterCardProps {
   match: WeekendMatch;
   bgImage?: string;
@@ -155,9 +166,11 @@ interface PosterCardProps {
 }
 
 function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, onEdit }: PosterCardProps) {
+  const [activeTemplate, setActiveTemplate] = useState(match.templateId);
   const previewHeight = Math.round((PREVIEW_WIDTH / 360) * 640);
   const accent = (match.posterData as any).accentColor || '#22d96a';
   const sportMeta = getSportMeta(match.sport);
+  const styleOptions = TEMPLATE_ALTS[match.templateId] ?? DEFAULT_ALTS;
 
   // Palette carte UI selon le thème
   const cardBg     = isDark ? '#0d0d14'                : '#ffffff';
@@ -211,7 +224,7 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
       <div className="relative" style={{ height: previewHeight, background: sportMeta.gradient }}>
         {/* PosterRenderer gère la photo sport en fond via bgImage/bgPreset */}
         <PosterRenderer
-          templateId={match.templateId}
+          templateId={activeTemplate}
           data={bgImage ? { ...match.posterData, bgImage } : match.posterData}
           format="story"
           previewWidth={PREVIEW_WIDTH}
@@ -247,6 +260,35 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* ── Sélecteur de style ── */}
+      <div style={{ display: 'flex', gap: 5, padding: '7px 10px 6px', borderTop: `1px solid ${divider}` }}>
+        {styleOptions.map(({ id, label }) => (
+          <motion.button
+            key={id}
+            type="button"
+            whileTap={{ scale: 0.88 }}
+            onClick={() => setActiveTemplate(id)}
+            style={{
+              flex: 1,
+              fontSize: 9.5,
+              fontWeight: 800,
+              padding: '5px 4px',
+              borderRadius: 8,
+              border: activeTemplate === id ? `1.5px solid ${accent}` : `1px solid ${divider}`,
+              cursor: 'pointer',
+              background: activeTemplate === id ? accent : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+              color: activeTemplate === id ? '#fff' : (isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.42)'),
+              transition: 'all 0.14s',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              lineHeight: 1,
+            }}
+          >
+            {label}
+          </motion.button>
+        ))}
       </div>
 
       {/* ── Infos du match ── */}
