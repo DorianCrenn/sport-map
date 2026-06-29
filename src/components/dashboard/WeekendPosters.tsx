@@ -144,16 +144,16 @@ const IcoCalendar = () => (
 
 const PREVIEW_WIDTH = 200; // px, correspond à la largeur de la carte
 
-// 3 styles proposés par template de départ — visuellement très distincts
+// 3 styles proposés par template de départ : mix sombre + clair + vivid/intermédiaire
 const TEMPLATE_ALTS: Record<string, Array<{ id: string; label: string }>> = {
-  glass:     [{ id: 'glass',    label: 'Glass'   }, { id: 'neon',     label: 'Néon'    }, { id: 'cinema',   label: 'Cinéma'  }],
-  neon:      [{ id: 'neon',     label: 'Néon'    }, { id: 'aurora',   label: 'Aurora'  }, { id: 'impact',   label: 'Impact'  }],
-  editorial: [{ id: 'editorial',label: 'Édito'   }, { id: 'glass',    label: 'Glass'   }, { id: 'vivid',    label: 'Vivid'   }],
-  aurora:    [{ id: 'aurora',   label: 'Aurora'  }, { id: 'cinema',   label: 'Cinéma'  }, { id: 'neon',     label: 'Néon'    }],
-  impact:    [{ id: 'impact',   label: 'Impact'  }, { id: 'glass',    label: 'Glass'   }, { id: 'neon',     label: 'Néon'    }],
-  cinema:    [{ id: 'cinema',   label: 'Cinéma'  }, { id: 'neon',     label: 'Néon'    }, { id: 'aurora',   label: 'Aurora'  }],
+  glass:     [{ id: 'glass',    label: 'Glass'   }, { id: 'light',    label: 'Light'   }, { id: 'fluo',     label: 'Fluo'    }],
+  neon:      [{ id: 'neon',     label: 'Néon'    }, { id: 'elegant',  label: 'Élégant' }, { id: 'aurora',   label: 'Aurora'  }],
+  editorial: [{ id: 'editorial',label: 'Édito'   }, { id: 'blanc',    label: 'Blanc'   }, { id: 'vivid',    label: 'Vivid'   }],
+  aurora:    [{ id: 'aurora',   label: 'Aurora'  }, { id: 'light',    label: 'Light'   }, { id: 'impact',   label: 'Impact'  }],
+  impact:    [{ id: 'impact',   label: 'Impact'  }, { id: 'elegant',  label: 'Élégant' }, { id: 'neon',     label: 'Néon'    }],
+  cinema:    [{ id: 'cinema',   label: 'Cinéma'  }, { id: 'blanc',    label: 'Blanc'   }, { id: 'neon',     label: 'Néon'    }],
 };
-const DEFAULT_ALTS = [{ id: 'glass', label: 'Glass' }, { id: 'neon', label: 'Néon' }, { id: 'aurora', label: 'Aurora' }];
+const DEFAULT_ALTS = [{ id: 'glass', label: 'Glass' }, { id: 'light', label: 'Light' }, { id: 'fluo', label: 'Fluo' }];
 
 interface PosterCardProps {
   match: WeekendMatch;
