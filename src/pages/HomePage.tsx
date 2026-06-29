@@ -684,6 +684,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
               matches={getMockWeekendMatches()}
               title="Voici des exemples d'affiches de création"
               subtitle="Créez la vôtre en quelques secondes ✨"
+              hiddenActions={['share', 'cal']}
               onOpenInStudio={handleOpenInStudio}
             />
           </div>

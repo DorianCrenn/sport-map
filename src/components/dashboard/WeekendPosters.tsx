@@ -32,6 +32,8 @@ export interface WeekendPostersProps {
   title?: string;
   /** Sous-titre (remplace la date auto quand fourni) */
   subtitle?: string;
+  /** Clés d'actions à masquer sur les cartes, ex: ['share', 'cal'] */
+  hiddenActions?: string[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -162,12 +164,13 @@ interface PosterCardProps {
   bgImage?: string;
   isDark: boolean;
   isExporting: boolean;
+  hiddenActions?: string[];
   onDownload: (m: WeekendMatch) => void;
   onShare:    (m: WeekendMatch) => void;
   onEdit:     (m: WeekendMatch) => void;
 }
 
-function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, onEdit }: PosterCardProps) {
+function PosterCard({ match, bgImage, isDark, isExporting, hiddenActions = [], onDownload, onShare, onEdit }: PosterCardProps) {
   const [activeTemplate, setActiveTemplate] = useState(match.templateId);
   const previewHeight = Math.round((PREVIEW_WIDTH / 360) * 640);
   const accent = (match.posterData as any).accentColor || '#22d96a';
@@ -194,7 +197,7 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
     { key: 'edit',  Icon: IcoEdit,     label: 'Modifier',    onClick: () => onEdit(match) },
     { key: 'share', Icon: IcoShare,    label: 'Partager',    onClick: () => onShare(match), loading: isExporting },
     { key: 'cal',   Icon: IcoCalendar, label: 'Planifier',   onClick: () => {}, disabled: true },
-  ];
+  ].filter(a => !hiddenActions.includes(a.key));
 
   return (
     <div
@@ -398,6 +401,7 @@ export default function WeekendPosters({
   className = '',
   title = 'Mes affiches du week-end',
   subtitle,
+  hiddenActions = [],
 }: WeekendPostersProps) {
   // Données live (hook) ou mockées (prop)
   const liveMatches = useWeekendPosters();
@@ -612,15 +616,15 @@ export default function WeekendPosters({
       {/* En-tête de section */}
       <div className="flex items-center justify-between px-4 mb-3">
         <div>
-          <h2 className="text-[15px] font-black text-white leading-tight tracking-tight">
+          <h2 className="text-[15px] font-black leading-tight tracking-tight" style={{ color: 'var(--sl-t1)' }}>
             {title}
           </h2>
-          <p className="text-[11px] text-white/45 mt-0.5">
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--sl-t2)' }}>
             {subtitle ?? fmtWeekLabel(matches)}
           </p>
         </div>
         {matches.length > 0 && (
-          <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/8 text-white/45">
+          <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)' }}>
             {matches.length} match{matches.length > 1 ? 's' : ''}
           </span>
         )}
@@ -663,6 +667,7 @@ export default function WeekendPosters({
                   bgImage={bgImages[match.id]}
                   isDark={isDark}
                   isExporting={loadingMatchId === match.id}
+                  hiddenActions={hiddenActions}
                   onDownload={m => triggerExport(m, 'download')}
                   onShare={m => triggerExport(m, 'share')}
                   onEdit={m => onOpenInStudio?.(m)}
