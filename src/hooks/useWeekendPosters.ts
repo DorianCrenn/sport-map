@@ -254,26 +254,6 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       'ignite'
     ),
     makeMatch(
-      'saint-renan-u18', 'U18',
-      { name: 'ES Saint-Renan' }, { name: 'Plougastel SC' },
-      sat, 11, 0,
-      'Stade du Vallon, Saint-Renan',
-      'Ligue Bretagne · U18 Régional 2',
-      'football', 'glass', '#00C2FF',
-      'Allez les jeunes ! 🔥',
-      'golden-hour'
-    ),
-    makeMatch(
-      'lannilis-senior-b', 'Senior B',
-      { name: 'US Lannilis' }, { name: 'FC Plouguerneau' },
-      sun, 10, 30,
-      'Terrain du Bourg, Lannilis',
-      'District Brest Iroise · D5',
-      'football', 'glass', '#D4AF37',
-      'Cap sur la victoire ! 🏆',
-      'raw-power'
-    ),
-    makeMatch(
       'brest-basket-u15', 'U15 Féminines',
       { name: 'Brest BB' }, { name: 'Quimper Basket' },
       sat, 14, 0,
@@ -282,6 +262,26 @@ export function getMockWeekendMatches(): WeekendMatch[] {
       'basket', 'glass', '#EA580C',
       'En route pour la victoire ! 🏀',
       'concrete-jungle'
+    ),
+    makeMatch(
+      'brest-handball-senior', 'Senior Masculin',
+      { name: 'Brest HB' }, { name: 'Lorient HB' },
+      sat, 18, 0,
+      'Salle Pen Ar Creac\'h, Brest',
+      'Nationale 3 · Poule Bretagne',
+      'handball', 'glass', '#2563EB',
+      'Tous ensemble pour la victoire ! 🤾',
+      'abstract-force'
+    ),
+    makeMatch(
+      'stade-brestois-rugby', 'Seniors',
+      { name: 'SB Rugby' }, { name: 'RC Vannes B' },
+      sun, 15, 0,
+      'Stade Francis-Le Blé, Brest',
+      'Fédérale 3 · Poule Ouest',
+      'rugby', 'glass', '#DC2626',
+      'On lâche rien jusqu\'au bout ! 🏉',
+      'raw-power'
     ),
   ];
 }
