@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 import PosterRenderer from '../poster/PosterRenderer.jsx';
 import { generateCustomBackground } from '../../lib/posterVariants.js';
-import { normalizeSport, getBgCache, setBgCache, SPORT_BG_PROMPTS } from '../../lib/sportBgCache.js';
+import { normalizeSport, getBgCache, setBgCache, SPORT_BG_PROMPTS, getOrGenerateBg } from '../../lib/sportBgCache.js';
 import { useWeekendPosters } from '../../hooks/useWeekendPosters.js';
 import type { WeekendMatch, ExportAction } from '../../types/sportlink.js';
 
@@ -35,6 +35,24 @@ export interface WeekendPostersProps {
 // ─────────────────────────────────────────────────────────────────────────────
 // Utilitaires locaux
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Méta-données visuelles par sport
+const SPORT_META: Record<string, { emoji: string; label: string; gradient: string }> = {
+  football:   { emoji: '⚽', label: 'Football',    gradient: 'linear-gradient(160deg,#071a0a 0%,#0f3d18 55%,#071a0a 100%)' },
+  basket:     { emoji: '🏀', label: 'Basketball',  gradient: 'linear-gradient(160deg,#1a0800 0%,#4a1e00 55%,#1a0800 100%)' },
+  handball:   { emoji: '🤾', label: 'Handball',    gradient: 'linear-gradient(160deg,#06061a 0%,#15256a 55%,#06061a 100%)' },
+  volleyball: { emoji: '🏐', label: 'Volleyball',  gradient: 'linear-gradient(160deg,#1a1000 0%,#4a3000 55%,#1a1000 100%)' },
+  tennis:     { emoji: '🎾', label: 'Tennis',      gradient: 'linear-gradient(160deg,#1a0500 0%,#5a1400 55%,#1a0500 100%)' },
+  rugby:      { emoji: '🏉', label: 'Rugby',       gradient: 'linear-gradient(160deg,#1a0000 0%,#4a0808 55%,#1a0000 100%)' },
+  padel:      { emoji: '🎾', label: 'Padel',       gradient: 'linear-gradient(160deg,#00101a 0%,#00305a 55%,#00101a 100%)' },
+  badminton:  { emoji: '🏸', label: 'Badminton',   gradient: 'linear-gradient(160deg,#081a02 0%,#1a5a08 55%,#081a02 100%)' },
+  default:    { emoji: '🏆', label: 'Sport',       gradient: 'linear-gradient(160deg,#0a0a1a 0%,#1a1a4a 55%,#0a0a1a 100%)' },
+};
+
+function getSportMeta(sport: string) {
+  const key = normalizeSport(sport);
+  return SPORT_META[key] ?? SPORT_META.default;
+}
 
 function fmtTime(time?: string): string {
   return time ? time.replace(':', 'h') : '';
@@ -139,6 +157,7 @@ interface PosterCardProps {
 function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, onEdit }: PosterCardProps) {
   const previewHeight = Math.round((PREVIEW_WIDTH / 360) * 640);
   const accent = (match.posterData as any).accentColor || '#22d96a';
+  const sportMeta = getSportMeta(match.sport);
 
   // Palette carte UI selon le thème
   const cardBg     = isDark ? '#0d0d14'                : '#ffffff';
@@ -150,7 +169,7 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
   const divider    = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
   const btnActive  = isDark ? 'rgba(255,255,255,0.68)' : 'rgba(0,0,0,0.58)';
   const btnOff     = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)';
-  const shadow     = isDark ? '0 8px 32px rgba(0,0,0,0.55)' : '0 4px 20px rgba(0,0,0,0.10)';
+  const shadow     = isDark ? `0 8px 32px rgba(0,0,0,0.55), 0 0 0 1.5px ${accent}30` : '0 4px 20px rgba(0,0,0,0.10)';
 
   // Jour de l'événement — ex: "SAM. 30 MAI · 15h00"
   const dayStr = match.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
@@ -167,28 +186,48 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
       className="flex-shrink-0 flex flex-col rounded-2xl overflow-hidden"
       style={{ width: PREVIEW_WIDTH, backgroundColor: cardBg, border: `1px solid ${cardBorder}`, boxShadow: shadow }}
     >
-      {/* ── Jour de l'événement ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px 6px', borderBottom: `1px solid ${divider}` }}>
-        <span style={{ fontSize: 9.5, fontWeight: 800, color: accent, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          {dayStr}
-        </span>
-        {match.time && (
-          <span style={{ fontSize: 9.5, fontWeight: 700, color: txtMeta, letterSpacing: '0.04em' }}>
-            {fmtTime(match.time)}
+      {/* ── Bandeau sport — emoji + label + date ── */}
+      <div style={{
+        background: sportMeta.gradient,
+        padding: '9px 12px 8px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        borderBottom: `1px solid ${accent}30`,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 20, lineHeight: 1, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))' }}>
+            {sportMeta.emoji}
           </span>
-        )}
+          <span style={{ fontSize: 11, fontWeight: 900, color: accent, letterSpacing: '0.08em', textTransform: 'uppercase', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+            {sportMeta.label}
+          </span>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 8.5, fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{dayStr}</div>
+          {match.time && <div style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.80)', letterSpacing: '0.04em' }}>{fmtTime(match.time)}</div>}
+        </div>
       </div>
 
-      {/* ── Aperçu de l'affiche ── */}
-      <div className="relative" style={{ height: previewHeight }}>
-        <PosterRenderer
-          templateId={match.templateId}
-          data={bgImage ? { ...match.posterData, bgImage } : match.posterData}
-          format="story"
-          previewWidth={PREVIEW_WIDTH}
-          bgPresetId={bgImage ? '' : (match.bgPresetId ?? '')}
-          bgImageGradient={!!bgImage}
-        />
+      {/* ── Aperçu de l'affiche (photo sport en fond si disponible) ── */}
+      <div className="relative" style={{ height: previewHeight, background: bgImage ? undefined : sportMeta.gradient }}>
+        {/* Fond sport photo — apparaît dès que Pollinations répond */}
+        {bgImage && (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 0,
+            backgroundImage: `url(${bgImage})`,
+            backgroundSize: 'cover', backgroundPosition: 'center',
+            filter: 'brightness(0.55)',
+          }} />
+        )}
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <PosterRenderer
+            templateId={match.templateId}
+            data={bgImage ? { ...match.posterData, bgImage } : match.posterData}
+            format="story"
+            previewWidth={PREVIEW_WIDTH}
+            bgPresetId={bgImage ? '' : (match.bgPresetId ?? '')}
+            bgImageGradient={!!bgImage}
+          />
+        </div>
 
         {/* Badge catégorie */}
         <div className="absolute top-2 left-2 z-10">
@@ -196,6 +235,15 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
             {match.category}
           </span>
         </div>
+
+        {/* Indicateur photo en cours de chargement */}
+        {!bgImage && (
+          <div className="absolute bottom-2 right-2 z-10">
+            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', background: 'rgba(0,0,0,0.45)', padding: '2px 6px', borderRadius: 8, backdropFilter: 'blur(4px)' }}>
+              photo en cours…
+            </span>
+          </div>
+        )}
 
         <AnimatePresence>
           {isExporting && (
@@ -345,12 +393,12 @@ export default function WeekendPosters({
     return init;
   });
 
-  // Génération séquentielle — une image par sport unique, cache localStorage 7 j
+  // Génération parallèle — une image par sport unique, cache localStorage 7 j
   useEffect(() => {
     if (!matches.length) return;
     let cancelled = false;
 
-    // Hydrate d'abord depuis le cache pour les matchs live (pas injectés en prop)
+    // Hydrate d'abord depuis le cache (matchs live ou mockés)
     setBgImages(prev => {
       const next = { ...prev };
       for (const m of matches) {
@@ -361,36 +409,34 @@ export default function WeekendPosters({
       return next;
     });
 
-    // Ne génère que les sports sans cache
-    const run = async () => {
-      const done = new Set<string>();
-      for (const match of matches) {
-        if (cancelled) break;
-        const key = normalizeSport(match.sport);
-        if (done.has(key)) continue;
-        done.add(key);
-        if (getBgCache(key)) continue; // déjà en cache
+    // Regroupe les matchs par sport pour ne générer qu'une image par sport
+    const sportToIds: Record<string, string[]> = {};
+    for (const m of matches) {
+      const key = normalizeSport(m.sport);
+      if (!sportToIds[key]) sportToIds[key] = [];
+      sportToIds[key].push(m.id);
+    }
+
+    // Génère tous les sports manquants en parallèle
+    Promise.all(
+      Object.entries(sportToIds).map(async ([key, ids]) => {
+        if (getBgCache(key)) return; // déjà en cache
         const prompt = SPORT_BG_PROMPTS[key] ?? SPORT_BG_PROMPTS.default;
         try {
-          const { imageUrl } = await generateCustomBackground(prompt);
+          const imageUrl = await getOrGenerateBg(key, () => generateCustomBackground(prompt));
           if (!cancelled && imageUrl) {
-            setBgCache(key, imageUrl);
-            // Applique à tous les matchs du même sport
             setBgImages(prev => {
               const next = { ...prev };
-              for (const m of matches) {
-                if (normalizeSport(m.sport) === key) next[m.id] = imageUrl;
-              }
+              for (const id of ids) next[id] = imageUrl;
               return next;
             });
           }
         } catch {
-          // Silencieux — fond statique bgPreset en fallback
+          // Silencieux — fond sport gradient en fallback
         }
-      }
-    };
+      })
+    );
 
-    run();
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matches.map(m => m.id).join(',')]);
