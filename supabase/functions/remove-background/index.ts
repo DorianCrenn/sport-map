@@ -13,6 +13,7 @@
  *          { error: string, mockFallback: true } — if all APIs unavailable
  */
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, handleOptions, checkCsrfOrigin } from '../_shared/cors.ts';
 
 // ── Fal.ai BRIA RMBG fallback ─────────────────────────────────────────────────
@@ -67,6 +68,24 @@ Deno.serve(async (req: Request) => {
   const ch = corsHeaders(req);
 
   try {
+    // ── Auth obligatoire ──────────────────────────────────────────────────────
+    const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '');
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...ch, 'Content-Type': 'application/json' },
+      });
+    }
+    const anonClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    );
+    const { data: { user } } = await anonClient.auth.getUser(token);
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...ch, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { imageBase64 } = await req.json();
     const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 

@@ -94,13 +94,13 @@ export function useNewsFeed({
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
       // Paralléliser les 3 premières requêtes indépendantes
-      const [{ data: ann }, { data: res }, { data: ups }] = await Promise.all([
+      const [annRes, resRes, upsRes] = await Promise.all([
         supabase
           .from('club_announcements')
           .select('id, club_id, club_name, type, title, message, created_at, author_name')
           .in('club_id', clubIds)
           .order('created_at', { ascending: false })
-          .limit(20) as Promise<{ data: Announcement[] | null }>,
+          .limit(20),
 
         supabase
           .from('events')
@@ -109,7 +109,7 @@ export function useNewsFeed({
           .not('score', 'is', null)
           .lt('date', now)
           .order('date', { ascending: false })
-          .limit(10) as Promise<{ data: EventRow[] | null }>,
+          .limit(10),
 
         supabase
           .from('events')
@@ -117,8 +117,11 @@ export function useNewsFeed({
           .in('club_id', clubIds)
           .gte('date', sevenDaysAgo)
           .order('date', { ascending: true })
-          .limit(10) as Promise<{ data: EventRow[] | null }>,
+          .limit(10),
       ]);
+      const ann = annRes.data as Announcement[] | null;
+      const res = resRes.data as EventRow[] | null;
+      const ups = upsRes.data as EventRow[] | null;
 
       let ridesData: RideRow[] = [];
       const upcomingIds = (ups ?? []).map(e => String(e.id));

@@ -61,19 +61,25 @@ Deno.serve(async (req: Request) => {
   const ch = corsHeaders(req);
 
   try {
-    // ── Auth + rate limiting ──────────────────────────────────────────────────
+    // ── Auth obligatoire + rate limiting ─────────────────────────────────────
     const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '');
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...ch, 'Content-Type': 'application/json' },
+      });
+    }
     const serviceClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
-
-    let userId = 'anonymous';
-    if (token) {
-      const anonClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_ANON_KEY') ?? '');
-      const { data: { user } } = await anonClient.auth.getUser(token);
-      if (user) userId = user.id;
+    const anonClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_ANON_KEY') ?? '');
+    const { data: { user } } = await anonClient.auth.getUser(token);
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...ch, 'Content-Type': 'application/json' },
+      });
     }
+    const userId = user.id;
 
     // 10 generations per hour per user
     const limited = await checkRateLimit(serviceClient, userId, 'generate-variant-bg', 10, 3600);

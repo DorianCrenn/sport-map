@@ -26,7 +26,7 @@ export default function EmptyState({ emoji, title, subtitle, actionLabel, onActi
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.3 }}
-        style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', margin: 0, fontFamily: 'var(--sl-font-brand)', fontSize: 16 }}
+        style={{ fontSize: 16, fontWeight: 700, color: 'var(--sl-t1)', margin: 0, fontFamily: 'var(--sl-font-brand)' }}
       >
         {title}
       </motion.p>

@@ -161,9 +161,9 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
                   style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
                   Annuler
                 </button>
-                <button onClick={handleImport} disabled={selected.size === 0 || phase === 'importing'}
+                <button onClick={handleImport} disabled={selected.size === 0}
                   style={{ flex: 2, padding: '11px', borderRadius: 10, border: 'none', backgroundColor: selected.size > 0 ? 'var(--sl-accent)' : 'var(--sl-border)', color: selected.size > 0 ? '#fff' : 'var(--sl-t3)', fontSize: 13, fontWeight: 800, cursor: selected.size > 0 ? 'pointer' : 'not-allowed' }}>
-                  {phase === 'importing' ? '⏳ Import…' : `Importer ${selected.size} événement${selected.size > 1 ? 's' : ''}`}
+                  {`Importer ${selected.size} événement${selected.size > 1 ? 's' : ''}`}
                 </button>
               </div>
             </motion.div>

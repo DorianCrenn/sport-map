@@ -1,9 +1,9 @@
 import { type FC, lazy, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { isDemoMode } from '../lib/supabase.js';
-import ActualitesPage from './ActualitesPage.jsx';
 
-const HomePage = lazy(() => import('./HomePage.jsx'));
+const HomePage       = lazy(() => import('./HomePage.jsx'));
+const ActualitesPage = lazy(() => import('./ActualitesPage.jsx'));
 
 interface HomeScreenProps {
   followedClubIds: string[];
