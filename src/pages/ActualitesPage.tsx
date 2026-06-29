@@ -24,7 +24,7 @@ export default function ActualitesPage({
   followedClubIds = [],
   onNavigate,
 }: ActualitesPageProps) {
-  const { currentUser, isAdmin, isClubAdmin } = useAuth() as any;
+  const { currentUser, isAdmin, isClubAdmin, loading: authLoading } = useAuth() as any;
   const { managedClubs, isCoachOrManager, isCommunicant } = useManagedClubs() as any;
   const demo = isDemoMode();
 
@@ -82,7 +82,20 @@ export default function ActualitesPage({
     setStudioConfig({ event, resultMode: score ?? null, quickMode: !!score, convocationPlayers: convPlayers });
   }, []);
 
-  const isNewUser = !demo && feedClubIds.length === 0 && !isCoachOrManager && !isClubAdmin && !isAdmin;
+  // Ne pas décider isNewUser tant que l'auth charge (évite un flash "nouveau compte")
+  const isNewUser = !demo && !authLoading && feedClubIds.length === 0 && !isCoachOrManager && !isClubAdmin && !isAdmin;
+
+  // Skeleton pendant le chargement auth (évite le flash "nouveau compte")
+  if (authLoading && !demo) {
+    return (
+      <div className="flex flex-col h-full bg-[var(--sl-bg)]" style={{ padding: '16px 16px 0' }}>
+        <div className="h-7 rounded-full animate-pulse bg-[var(--sl-surface)] mb-4" style={{ width: '60%' }} />
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-28 rounded-2xl animate-pulse bg-[var(--sl-surface)] mb-3" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div

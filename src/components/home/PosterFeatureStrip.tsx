@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 
-// Mini-poster CSS cards — données statiques
 const CARDS = [
   {
     key: 'match',
@@ -43,88 +42,109 @@ export default function PosterFeatureStrip({ onOpen }: PosterFeatureStripProps) 
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.1 }}
-      style={{ padding: '12px 16px 8px' }}
+      transition={{ duration: 0.3, delay: 0.05 }}
+      style={{
+        margin: '8px 12px 4px',
+        borderRadius: 18,
+        background: 'linear-gradient(135deg, rgba(34,217,106,0.07) 0%, rgba(10,22,40,0.06) 100%)',
+        border: '1px solid rgba(34,217,106,0.18)',
+        padding: '14px 14px 12px',
+      }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 15 }}>🎨</span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)' }}>Studio d'affiches</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <div style={{
+            width: 30, height: 30, borderRadius: 9,
+            background: 'rgba(34,217,106,0.15)',
+            border: '1px solid rgba(34,217,106,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, flexShrink: 0,
+          }}>
+            🎨
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', lineHeight: 1.2 }}>Studio d'affiches</div>
+            <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>Créez vos affiches de match en quelques taps</div>
+          </div>
         </div>
         {onOpen && (
           <motion.button
-            whileTap={{ scale: 0.93 }}
+            whileTap={{ scale: 0.92 }}
             onClick={onOpen}
             style={{
-              fontSize: 12, fontWeight: 700, color: '#22d96a',
-              background: 'rgba(34,217,106,0.1)', border: '1px solid rgba(34,217,106,0.25)',
-              borderRadius: 10, padding: '5px 12px', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, color: '#fff',
+              background: '#22d96a',
+              border: 'none', borderRadius: 10,
+              padding: '7px 13px', cursor: 'pointer', flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(34,217,106,0.35)',
             }}
           >
-            Créer →
+            Créer
           </motion.button>
         )}
       </div>
 
-      {/* Mini-posters horizontal scroll */}
+      {/* Mini-posters */}
       <div
         className="no-scrollbar"
-        style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}
+        style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2 }}
       >
         {CARDS.map(card => (
           <motion.div
             key={card.key}
+            whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.96 }}
             onClick={onOpen}
             style={{
-              width: 100, flexShrink: 0, borderRadius: 12,
+              width: 108, flexShrink: 0, borderRadius: 13,
               background: card.gradient,
-              border: `1px solid ${card.accent}33`,
-              padding: '10px 9px 8px',
-              display: 'flex', flexDirection: 'column', gap: 3,
+              border: `1.5px solid ${card.accent}40`,
+              boxShadow: `0 3px 14px ${card.accent}18`,
+              padding: '11px 10px 9px',
+              display: 'flex', flexDirection: 'column', gap: 4,
               cursor: onOpen ? 'pointer' : 'default',
             }}
           >
-            <span style={{ fontSize: 8, fontWeight: 800, color: card.accent, letterSpacing: 1, textTransform: 'uppercase' }}>
+            <span style={{ fontSize: 9, fontWeight: 800, color: card.accent, letterSpacing: 1.2, textTransform: 'uppercase' }}>
               {card.label}
             </span>
-            <div style={{ fontSize: 18, margin: '2px 0' }}>{card.sport}</div>
-            <div style={{ height: 1, background: `${card.accent}44`, margin: '1px 0' }} />
-            <div style={{ fontSize: 10, fontWeight: 900, color: '#fff', lineHeight: 1.2, fontFamily: "'Barlow Condensed', sans-serif", textTransform: 'uppercase' }}>
+            <div style={{ fontSize: 20, margin: '2px 0' }}>{card.sport}</div>
+            <div style={{ height: 1, background: `${card.accent}50`, margin: '1px 0' }} />
+            <div style={{ fontSize: 11, fontWeight: 900, color: '#fff', lineHeight: 1.2, fontFamily: "'Barlow Condensed', sans-serif", textTransform: 'uppercase' }}>
               {card.title}
             </div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: `${card.accent}bb` }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: `${card.accent}dd` }}>
               {card.sub}
             </div>
-            <div style={{ height: 1, background: `${card.accent}22`, margin: '2px 0' }} />
-            <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.45)' }}>{card.meta}</div>
+            <div style={{ height: 1, background: `${card.accent}25`, margin: '2px 0' }} />
+            <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>{card.meta}</div>
           </motion.div>
         ))}
 
-        {/* Card CTA */}
         {onOpen && (
           <motion.div
             whileTap={{ scale: 0.96 }}
             onClick={onOpen}
             style={{
-              width: 80, flexShrink: 0, borderRadius: 12,
-              border: '1.5px dashed rgba(34,217,106,0.35)',
+              width: 84, flexShrink: 0, borderRadius: 13,
+              border: '1.5px dashed rgba(34,217,106,0.4)',
+              background: 'rgba(34,217,106,0.04)',
               display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', gap: 6, cursor: 'pointer',
+              justifyContent: 'center', gap: 7, cursor: 'pointer',
               padding: '10px 8px',
             }}
           >
             <div style={{
-              width: 28, height: 28, borderRadius: 8,
-              background: 'rgba(34,217,106,0.15)',
+              width: 30, height: 30, borderRadius: 9,
+              background: 'rgba(34,217,106,0.18)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 14,
+              fontSize: 18, color: '#22d96a',
             }}>
               +
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, color: '#22d96a', textAlign: 'center', lineHeight: 1.3 }}>
-              Créer la mienne
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#22d96a', textAlign: 'center', lineHeight: 1.3 }}>
+              La mienne
             </span>
           </motion.div>
         )}
