@@ -1,4 +1,6 @@
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+// Incrémenter quand les prompts changent pour invalider le cache existant
+const CACHE_VERSION = 2;
 
 export function normalizeSport(sport: string | null | undefined): string {
   const s = (sport ?? '').toLowerCase();
@@ -15,25 +17,25 @@ export function normalizeSport(sport: string | null | undefined): string {
 }
 
 export const SPORT_BG_PROMPTS: Record<string, string> = {
-  football:   'vibrant green football grass close-up, stadium floodlights bokeh, electric match atmosphere, lush field texture',
-  basket:     'basketball court hardwood parquet texture, arena neon spotlights, orange energy, dynamic vibrant colors',
-  handball:   'handball parquet court blue lines detail, sports hall dramatic lighting, vibrant blue and orange',
-  volleyball: 'beach volleyball golden sand court, sunset orange sky, ocean blues, summer vibrant energy',
-  tennis:     'clay tennis court deep orange-red texture, Roland Garros atmosphere, vibrant court lines detail',
-  rugby:      'green rugby field grass close-up, dramatic storm sky, vibrant stadium floodlights, intense atmosphere',
-  padel:      'padel court glass walls blue artificial turf, modern neon arena lighting, vibrant colors',
-  squash:     'squash court orange walls glass detail, dramatic arena lighting, vibrant colors',
-  badminton:  'badminton court colorful lines, sports hall bright lighting, vibrant energy shuttlecock',
+  football:   'soccer football pitch close-up lush green grass, white painted yard lines and center circle, round ball, stadium floodlights bokeh, electric atmosphere',
+  basket:     'basketball court gleaming hardwood parquet floor, orange basketball hoop net close-up, arena neon spotlights, dynamic vibrant colors',
+  handball:   'indoor handball gymnasium arena, small rectangular goals on polished parquet, ceiling floodlights, blue and orange court markings, dramatic sports hall atmosphere',
+  volleyball: 'beach volleyball golden sand court close-up, net and volleyball, sunset orange sky, vibrant summer energy',
+  tennis:     'clay tennis court deep orange-red texture, white court lines, Roland Garros atmosphere, dramatic shadows',
+  rugby:      'rugby H-shaped goal posts on muddy green pitch, oval rugby ball close-up on wet grass, dramatic storm sky, scrum player silhouettes, intense atmosphere',
+  padel:      'padel court glass walls and artificial turf, modern arena neon lighting, racket and ball detail, vibrant colors',
+  squash:     'squash court orange walls glass back wall, dramatic arena spotlight, vibrant colors',
+  badminton:  'badminton court bright gymnasium, shuttlecock in motion, colorful court lines, sports hall lighting',
   default:    'sports arena dramatic colorful lighting, vibrant energy, athletic stadium atmosphere at night',
 };
 
 export function getBgCache(sport: string): string | null {
   try {
-    const raw = localStorage.getItem(`sl-sport-bg-${sport}`);
+    const raw = localStorage.getItem(`sl-sport-bg-v${CACHE_VERSION}-${sport}`);
     if (!raw) return null;
     const { imageUrl, ts } = JSON.parse(raw) as { imageUrl: string; ts: number };
     if (Date.now() - ts > CACHE_TTL) {
-      localStorage.removeItem(`sl-sport-bg-${sport}`);
+      localStorage.removeItem(`sl-sport-bg-v${CACHE_VERSION}-${sport}`);
       return null;
     }
     return imageUrl || null;
@@ -44,7 +46,7 @@ export function getBgCache(sport: string): string | null {
 
 export function setBgCache(sport: string, imageUrl: string): void {
   try {
-    localStorage.setItem(`sl-sport-bg-${sport}`, JSON.stringify({ imageUrl, ts: Date.now() }));
+    localStorage.setItem(`sl-sport-bg-v${CACHE_VERSION}-${sport}`, JSON.stringify({ imageUrl, ts: Date.now() }));
   } catch {
     // localStorage full — silent
   }

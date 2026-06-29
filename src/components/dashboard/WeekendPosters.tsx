@@ -207,27 +207,17 @@ function PosterCard({ match, bgImage, isDark, isExporting, onDownload, onShare, 
         </div>
       </div>
 
-      {/* ── Aperçu de l'affiche (photo sport en fond si disponible) ── */}
-      <div className="relative" style={{ height: previewHeight, background: bgImage ? undefined : sportMeta.gradient }}>
-        {/* Fond sport photo — apparaît dès que Pollinations répond */}
-        {bgImage && (
-          <div style={{
-            position: 'absolute', inset: 0, zIndex: 0,
-            backgroundImage: `url(${bgImage})`,
-            backgroundSize: 'cover', backgroundPosition: 'center',
-            filter: 'brightness(0.55)',
-          }} />
-        )}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <PosterRenderer
-            templateId={match.templateId}
-            data={bgImage ? { ...match.posterData, bgImage } : match.posterData}
-            format="story"
-            previewWidth={PREVIEW_WIDTH}
-            bgPresetId={bgImage ? '' : (match.bgPresetId ?? '')}
-            bgImageGradient={!!bgImage}
-          />
-        </div>
+      {/* ── Aperçu de l'affiche ── */}
+      <div className="relative" style={{ height: previewHeight, background: sportMeta.gradient }}>
+        {/* PosterRenderer gère la photo sport en fond via bgImage/bgPreset */}
+        <PosterRenderer
+          templateId={match.templateId}
+          data={bgImage ? { ...match.posterData, bgImage } : match.posterData}
+          format="story"
+          previewWidth={PREVIEW_WIDTH}
+          bgPresetId={bgImage ? '' : (match.bgPresetId ?? '')}
+          bgImageGradient={!!bgImage}
+        />
 
         {/* Badge catégorie */}
         <div className="absolute top-2 left-2 z-10">
