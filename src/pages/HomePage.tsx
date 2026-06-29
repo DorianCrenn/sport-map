@@ -5,7 +5,8 @@ import { useSports } from '../hooks/useSports.js';
 import { SPORT_ICONS } from '../components/sportIcons.js';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import { IconRocket } from '../components/icons.js';
-import WeekendPosters, { getMockWeekendMatches } from '../components/dashboard/WeekendPosters.tsx';
+import WeekendPosters from '../components/dashboard/WeekendPosters.tsx';
+import { getMockWeekendMatches } from '../hooks/useWeekendPosters.js';
 import PlansSection from '../components/home/PlansSection.jsx';
 import HypeBar from '../components/home/HypeBar.jsx';
 
