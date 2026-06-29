@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
   pending:     { label: 'En attente',   color: '#f59e0b', bg: 'rgba(245,158,11,0.1)'  },
-  accepted:    { label: 'Accepté',      color: '#22c55e', bg: 'rgba(34,197,94,0.1)'   },
-  declined:    { label: 'Décliné',      color: '#ef4444', bg: 'rgba(239,68,68,0.1)'   },
+  accepted:    { label: 'Accepté',      color: 'var(--sl-success)', bg: 'var(--sl-success-dim)'   },
+  declined:    { label: 'Décliné',      color: 'var(--sl-error)',   bg: 'var(--sl-error-dim)'     },
   unavailable: { label: 'Indisponible', color: '#64748b', bg: 'rgba(100,116,139,0.1)' },
 };
 

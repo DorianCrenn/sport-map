@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Z } from '../constants/zIndex.js';
 import { useSubscriptionManagement, StripeInvoice } from '../hooks/useSubscriptionManagement.js';
 import { getPlanMeta } from '../lib/planHelpers.js';
 import { PLAN_META } from '../lib/subscriptionFeatures.js';
@@ -135,7 +136,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        style={{ position: 'fixed', inset: 0, zIndex: 1490, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
+        style={{ position: 'fixed', inset: 0, zIndex: Z.planOverlay, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
       />
 
       {/* Sheet slide-up */}
@@ -146,7 +147,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
         transition={{ type: 'spring', stiffness: 320, damping: 36 }}
         style={{
           position: 'fixed', bottom: 0, left: 0, right: 0,
-          height: '92dvh', zIndex: 1500,
+          height: '92dvh', zIndex: Z.planOverlay,
           backgroundColor: 'var(--sl-bg)',
           borderRadius: '20px 20px 0 0',
           display: 'flex', flexDirection: 'column',

@@ -3,6 +3,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap.js';
 import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BADGE_DEFS } from '../hooks/useBadges.js';
+import { Z } from '../constants/zIndex.js';
 import { hapticSuccess } from '../lib/haptic.js';
 
 const SPARKLES = [
@@ -36,7 +37,7 @@ function ConfettiRain({ color }: { color: string }) {
     })), [color]
   );
   return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 9502 }}>
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: Z.badgeOverlay }}>
       {pieces.map(p => (
         <motion.div
           key={p.id}
@@ -80,7 +81,7 @@ export default function BadgeUnlockModal({ badges, onDone }: BadgeUnlockModalPro
     <>
     <ConfettiRain color={def.color} />
     <motion.div key="badge-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} ref={panelRef} role="dialog" aria-modal="true" aria-label="Badge débloqué"
-      style={{ position: 'fixed', inset: 0, zIndex: 9500, backgroundColor: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      style={{ position: 'fixed', inset: 0, zIndex: Z.badgeModal, backgroundColor: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <AnimatePresence mode="wait">
         <motion.div key={index} initial={{ opacity: 0, scale: 0.65, y: 70 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.82, y: -35 }} transition={{ type: 'spring', stiffness: 270, damping: 22 }} style={{ textAlign: 'center', maxWidth: 310, width: '100%' }}>
           {badges.length > 1 && (

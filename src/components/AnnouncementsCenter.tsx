@@ -3,6 +3,7 @@ import { useAndroidBack } from '../hooks/useAndroidBack.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyAnnouncements } from '../hooks/useMyAnnouncements.js';
 import AnnouncementCard from './AnnouncementCard.jsx';
+import { Z } from '../constants/zIndex.js';
 import { IconBell } from './icons.js';
 
 interface AnnouncementsCenterProps { onClose: () => void; }
@@ -27,7 +28,7 @@ export default function AnnouncementsCenter({ onClose }: AnnouncementsCenterProp
   }, [onClose]);
 
   return (
-    <motion.div role="dialog" aria-modal="true" aria-label="Annonces clubs" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 340, damping: 36 }} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)', zIndex: 1200 }}>
+    <motion.div role="dialog" aria-modal="true" aria-label="Annonces clubs" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 340, damping: 36 }} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)', zIndex: Z.announcementsPanel }}>
       <div style={{ flexShrink: 0, backgroundColor: 'var(--sl-card)', borderBottom: '1px solid var(--sl-border)', padding: '14px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={onClose} aria-label="Retour" style={{ width: 44, height: 44, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>

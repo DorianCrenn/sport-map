@@ -142,7 +142,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
           </>
         )}
       </AnimatePresence>
-      <nav style={{ display: 'flex', alignItems: 'stretch', margin: '8px 12px 12px', borderRadius: 24, background: 'var(--sl-nav-bg)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)', boxShadow: 'var(--sl-nav-shadow)', border: '1px solid var(--sl-nav-border)', overflow: 'visible', position: 'relative' }}>
+      <nav style={{ display: 'flex', alignItems: 'stretch', margin: '8px 12px 12px', borderRadius: 24, background: 'var(--sl-nav-bg)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: 'var(--sl-nav-shadow)', border: '1px solid var(--sl-nav-border)', overflow: 'visible', position: 'relative' }}>
         {tabs.map((tab, tabIdx) => {
           if (tab === null) {
             return (

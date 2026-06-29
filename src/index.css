@@ -97,6 +97,23 @@
   /* Leaflet popup */
   --sl-popup-bg:     #152848;
   --sl-popup-border: rgba(255,255,255,0.10);
+
+  /* Semantic state colors */
+  --sl-error:        #ef4444;
+  --sl-error-dim:    rgba(239,68,68,0.12);
+  --sl-success:      #22d96a;
+  --sl-success-dim:  rgba(34,217,106,0.12);
+  --sl-warning:      #f59e0b;
+  --sl-warning-dim:  rgba(245,158,11,0.12);
+  --sl-info:         #4da6ff;
+  --sl-info-dim:     rgba(77,166,255,0.12);
+
+  /* Border radius scale */
+  --sl-radius-sm:   8px;
+  --sl-radius-md:   12px;
+  --sl-radius-lg:   16px;
+  --sl-radius-xl:   20px;
+  --sl-radius-full: 9999px;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -170,6 +187,15 @@
 
   --sl-popup-bg:     #FFFFFF;
   --sl-popup-border: #D4DDD6;
+
+  --sl-error:       #dc2626;
+  --sl-error-dim:   rgba(220,38,38,0.10);
+  --sl-success:     #16A34A;
+  --sl-success-dim: rgba(22,163,74,0.10);
+  --sl-warning:     #d97706;
+  --sl-warning-dim: rgba(217,119,6,0.10);
+  --sl-info:        #2563EB;
+  --sl-info-dim:    rgba(37,99,235,0.10);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -317,7 +343,7 @@ html:not([data-theme="light"]) {
    LEAFLET — dark map tiles + controls
    ═══════════════════════════════════════════════════════════ */
 html:not([data-theme="light"]) .leaflet-tile-pane {
-  filter: brightness(0.45) contrast(1.2) saturate(0.5) hue-rotate(195deg);
+  filter: brightness(0.5) saturate(0.6) hue-rotate(190deg);
 }
 
 html:not([data-theme="light"]) .leaflet-control-zoom a {
@@ -385,14 +411,8 @@ html:not([data-theme="light"]) .leaflet-popup-tip {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ACCESSIBILITY — keyboard focus ring
+   ACCESSIBILITY — keyboard focus ring (voir section plus bas)
    ═══════════════════════════════════════════════════════════ */
-:focus-visible {
-  outline: 2px solid var(--sl-blue);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
 button:focus:not(:focus-visible),
 a:focus:not(:focus-visible) {
   outline: none;
@@ -681,14 +701,6 @@ button, [role="button"] {
   pointer-events: none;
 }
 
-/* ── Badge pop — pour les badges XP débloqués ───────────── */
-@keyframes badge-pop {
-  0%   { transform: scale(0)   rotate(-15deg); opacity: 0; }
-  60%  { transform: scale(1.2) rotate(5deg);  opacity: 1; }
-  80%  { transform: scale(0.9) rotate(-2deg); }
-  100% { transform: scale(1)   rotate(0deg);  opacity: 1; }
-}
-
 /* ── Notification badge pulse ────────────────────────────── */
 @keyframes notif-ping {
   0%   { transform: scale(1);   opacity: 0.9; }
@@ -792,7 +804,7 @@ button, [role="button"] {
 .leaflet-popup-content-wrapper {
   border-radius: 14px !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.14) !important;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--sl-font-ui);
 }
 
 .leaflet-popup-tip-container {
@@ -836,13 +848,8 @@ html:not([data-theme="light"]) {
    ACCESSIBILITÉ — focus-visible + landmarks
    ═══════════════════════════════════════════════════════════ */
 
-/* Focus visible global (WCAG 2.4.7) — remplace outline:none par outline seulement au clavier */
+/* Focus visible global (WCAG 2.4.7) — défini dans la section FOCUS RINGS ci-dessous */
 :focus { outline: none; }
-:focus-visible {
-  outline: 2px solid var(--sl-green, #22d96a);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
 
 /* Icônes SVG décoratives — masquées aux lecteurs d'écran globalement quand dans un bouton avec aria-label */
 button[aria-label] > svg,
@@ -896,15 +903,6 @@ a[aria-label] > svg {
 ::-webkit-scrollbar-track    { background: transparent; }
 ::-webkit-scrollbar-thumb    { background: var(--sl-border); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--sl-t3); }
-
-/* ═══════════════════════════════════════════════════════════
-   REDUCED MOTION — respecte prefers-reduced-motion
-   ═══════════════════════════════════════════════════════════ */
-@media (prefers-reduced-motion: reduce) {
-  .img-skeleton   { animation: none !important; }
-  .sl-live-pulse  { animation: none !important; }
-  * { transition-duration: 0.01ms !important; }
-}
 
 /* ═══════════════════════════════════════════════════════════
    TABLET — sidebar responsive width + touch improvements

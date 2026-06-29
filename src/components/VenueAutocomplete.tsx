@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Z } from '../constants/zIndex.js';
 
 interface VenueSelection { name: string; city: string; lat: number; lng: number; }
 interface VenueAutocompleteProps {
@@ -187,8 +189,12 @@ export default function VenueAutocomplete({ value, onChange, onSelect, placehold
         )}
       </div>
 
+      <AnimatePresence>
       {open && displaySuggestions.length > 0 && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 2100, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 28px rgba(0,0,0,0.18)' }}>
+        <motion.div
+          initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.12 }}
+          style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: Z.venueDropdown, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 28px rgba(0,0,0,0.18)' }}>
           {isCityMode && cityName && (
             <div style={{ padding: '7px 14px 5px', display: 'flex', alignItems: 'center', gap: 5, borderBottom: '1px solid var(--sl-border)' }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 8-8z"/></svg>
@@ -230,8 +236,9 @@ export default function VenueAutocomplete({ value, onChange, onSelect, placehold
             <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>OpenStreetMap via Photon · lieu non trouvé ? Saisissez-le manuellement</span>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
       <style>{`@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }`}</style>
     </div>
   );

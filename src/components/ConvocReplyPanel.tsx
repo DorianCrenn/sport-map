@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase.js';
+import { Z } from '../constants/zIndex.js';
 
 async function sendReplyConfirmation(token: string, status: string) {
   try {
@@ -103,7 +104,7 @@ export default function ConvocReplyPanel({ token, onClose }: ConvocReplyPanelPro
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 20px' }}
+      style={{ position: 'fixed', inset: 0, zIndex: Z.convocPanel, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 20px' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div

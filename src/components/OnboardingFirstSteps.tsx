@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Z } from '../constants/zIndex.js';
 
 interface Step { id: string; emoji: string; label: string; sublabel: string; tab: string; }
 
@@ -26,7 +27,7 @@ export default function OnboardingFirstSteps({ jobRole, onNavigate, onClose }: O
   const allDone = done.size >= steps.length;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 100%)', display: 'flex', flexDirection: 'column', padding: '28px 20px calc(28px + env(safe-area-inset-bottom, 0px))' }}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: Z.onboarding, background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 100%)', display: 'flex', flexDirection: 'column', padding: '28px 20px calc(28px + env(safe-area-inset-bottom, 0px))' }}>
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 280, damping: 18 }} style={{ width: 64, height: 64, borderRadius: 18, backgroundColor: 'rgba(34,197,94,0.2)', border: '1px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 30 }}>🚀</motion.div>
         <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ fontSize: 22, fontWeight: 800, color: 'white', fontFamily: 'Poppins, sans-serif', marginBottom: 6 }}>Vos premiers pas</motion.h1>

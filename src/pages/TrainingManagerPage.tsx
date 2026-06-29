@@ -17,8 +17,8 @@ const BackIcon = () => (
 );
 
 const STATUS_CFG: Record<string, { label: string; emoji: string; color: string; bg: string }> = {
-  present: { label: 'Présent',   emoji: '✅', color: '#22c55e', bg: 'rgba(34,197,94,0.12)'  },
-  absent:  { label: 'Absent',    emoji: '❌', color: '#ef4444', bg: 'rgba(239,68,68,0.12)'  },
+  present: { label: 'Présent',   emoji: '✅', color: 'var(--sl-success)', bg: 'var(--sl-success-dim)'  },
+  absent:  { label: 'Absent',    emoji: '❌', color: 'var(--sl-error)',   bg: 'var(--sl-error-dim)'    },
   unsure:  { label: 'Peut-être', emoji: '🤔', color: '#f97316', bg: 'rgba(249,115,22,0.12)' },
 };
 

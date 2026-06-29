@@ -43,7 +43,7 @@ export function OverflowMenu({ items, open, onClose }: { items: (OverflowMenuIte
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 340, damping: 34 }}
-            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 311, backgroundColor: 'var(--sl-card)', borderRadius: '18px 18px 0 0', border: '1px solid var(--sl-border)', borderBottom: 'none', padding: '0 0 calc(8px + env(safe-area-inset-bottom, 0px))', boxShadow: '0 -8px 40px rgba(0,0,0,0.25)' }}
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 311, backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', border: '1px solid var(--sl-border)', borderBottom: 'none', padding: '0 0 calc(8px + env(safe-area-inset-bottom, 0px))', boxShadow: '0 -8px 40px rgba(0,0,0,0.25)' }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
@@ -134,7 +134,7 @@ export default function ClubHero({ club, accentColor, heroBackground, isFollowin
         {mapsOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 300, backgroundColor: 'rgba(0,0,0,0.45)' }} onClick={() => setMapsOpen(false)} />
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 340, damping: 34 }} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, backgroundColor: 'var(--sl-card)', borderRadius: '18px 18px 0 0', border: '1px solid var(--sl-border)', borderBottom: 'none', padding: '0 0 calc(16px + env(safe-area-inset-bottom, 0px))', boxShadow: '0 -8px 40px rgba(0,0,0,0.25)' }}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 340, damping: 34 }} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', border: '1px solid var(--sl-border)', borderBottom: 'none', padding: '0 0 calc(16px + env(safe-area-inset-bottom, 0px))', boxShadow: '0 -8px 40px rgba(0,0,0,0.25)' }}>
               <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 6px' }}>
                 <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border)' }} />
               </div>

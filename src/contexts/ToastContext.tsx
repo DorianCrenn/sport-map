@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ToastType } from '../types/sportlink.js';
+import { Z } from '../constants/zIndex.js';
 
 interface ToastItem {
   id: string;
@@ -30,8 +31,8 @@ function ToastItemComponent({ message, type, onReport }: { message: string; type
   const isInfo    = type === 'info';
   const isSuccess = !isError && !isInfo;
 
-  const accent    = isError ? '#ef4444' : isInfo ? 'var(--sl-blue)' : 'var(--sl-green)';
-  const accentBg  = isError ? 'rgba(239,68,68,0.14)' : isInfo ? 'rgba(77,166,255,0.14)' : 'rgba(34,217,106,0.14)';
+  const accent    = isError ? 'var(--sl-error)' : isInfo ? 'var(--sl-info)' : 'var(--sl-green)';
+  const accentBg  = isError ? 'var(--sl-error-dim)' : isInfo ? 'var(--sl-info-dim)' : 'rgba(34,217,106,0.14)';
   const borderCol = isError ? 'rgba(239,68,68,0.3)'  : isInfo ? 'rgba(77,166,255,0.28)' : 'rgba(34,217,106,0.28)';
 
   const iconPath = isError
@@ -124,7 +125,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         position: 'fixed',
         bottom: 'calc(72px + env(safe-area-inset-bottom, 0px) + 10px)',
         left: '50%', transform: 'translateX(-50%)',
-        zIndex: 99999,
+        zIndex: Z.toast,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
         pointerEvents: 'none',
       }}>

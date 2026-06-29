@@ -1019,7 +1019,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     {showUpgradeModal && (
       <div
         onClick={() => setShowUpgradeModal(false)}
-        style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 env(safe-area-inset-bottom)' }}
+        style={{ position: 'fixed', inset: 0, zIndex: Z.posterStudioPanel, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 env(safe-area-inset-bottom)' }}
       >
         <div
           onClick={e => e.stopPropagation()}

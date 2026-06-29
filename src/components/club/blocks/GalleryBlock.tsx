@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Z } from '../../../constants/zIndex.js';
 
 const MAX_IMAGES = 5;
 
@@ -119,7 +120,7 @@ export function GalleryBlockView({ block }: { block: Record<string, any> }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setLightbox(null)}
-            style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+            style={{ position: 'fixed', inset: 0, zIndex: Z.gallery, backgroundColor: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           >
             <motion.img
               key={lightbox}

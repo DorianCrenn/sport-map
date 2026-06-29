@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase.js';
+import { Z } from '../../constants/zIndex.js';
 
 const ROLES = [
   { id: 'manager',      label: 'Manager',       desc: 'Accès complet (events, affiches, annonces, page)', color: '#6366f1' },
@@ -73,7 +74,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 16 }} onClick={onClose}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: Z.clubManagers, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 16 }} onClick={onClose}>
       <motion.div
         initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
         transition={{ duration: 0.2 }}

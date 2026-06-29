@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } fro
 import { supabase, setDemoMode, isDemoMode } from './lib/supabase.js';
 import { STATIC_CLUBS } from './data/clubs.js';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import { Z } from './constants/zIndex.js';
 import SportLinkLogo from './components/SportLinkLogo.jsx';
 const DemoApp = lazy(() => import('./demo/DemoApp.jsx'));
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
@@ -99,7 +100,7 @@ function UpdateBanner() {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       gap: 10, padding: '9px 14px',
       backgroundColor: '#1a3a2a', borderBottom: '1px solid rgba(34,217,106,0.25)',
-      fontSize: 13, color: '#22d96a', flexShrink: 0, zIndex: 200,
+      fontSize: 13, color: '#22d96a', flexShrink: 0, zIndex: Z.simulatorBanner,
     }}>
       <span style={{ fontWeight: 600 }}>Nouvelle version disponible !</span>
       <button
@@ -859,7 +860,7 @@ function AppInner() {
       {isAdmin && activeTab === 'admin' && <SimulatorBanner />}
 
       {isAdmin && activeTab === 'admin' && adminSubView && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1500, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: Z.planOverlay, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)' }}>
           <Suspense fallback={<ModalLoader />}>
             {adminSubView === 'feedback'
               ? <AdminFeedbackPage    onBack={() => setAdminSubView(null)} />
@@ -997,7 +998,7 @@ function AppInner() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 340, damping: 30 }}
-            style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)', left: 12, right: 12, zIndex: 1200, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border-s)', borderRadius: 18, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: 'var(--sl-shadow-xl)' }}
+            style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + var(--sl-nav-height))', left: 12, right: 12, zIndex: Z.pwaInstallPrompt, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border-s)', borderRadius: 18, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: 'var(--sl-shadow-xl)' }}
           >
             <SportLinkLogo size={36} />
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -1101,7 +1102,7 @@ export default function App() {
               ? (
                 <Suspense fallback={
                   <div style={{
-                    position: 'fixed', inset: 0, zIndex: 9999,
+                    position: 'fixed', inset: 0, zIndex: Z.demoSpotlight,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: 'linear-gradient(160deg, #0a0f1e 0%, #0f1729 50%, #0d1526 100%)',
                   }}>

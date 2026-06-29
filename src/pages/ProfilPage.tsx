@@ -13,6 +13,7 @@ import SportIcon from '../components/SportIcon.jsx';
 import RgpdExportButton from '../components/RgpdExportButton.jsx';
 import SportLinkLogo from '../components/SportLinkLogo.jsx';
 import { BADGE_DEFS, BADGE_ORDER, getLevel } from '../hooks/useBadges.js';
+import { Z } from '../constants/zIndex.js';
 import { usePlan } from '../hooks/usePlan.js';
 import { useAnalyticsConsent } from '../hooks/useAnalyticsConsent.js';
 import ClubLeaderboard from '../components/ClubLeaderboard.jsx';
@@ -1084,7 +1085,7 @@ export default function ProfilPage({
         {showDeleteModal && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, zIndex: 9000, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+            style={{ position: 'fixed', inset: 0, zIndex: Z.profilDrawer, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
             onClick={(e: React.MouseEvent) => e.target === e.currentTarget && setShowDeleteModal(false)}
           >
             <motion.div

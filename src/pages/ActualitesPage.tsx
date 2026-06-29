@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo, useCallback, useState, useEffect } from 'react';
+import { Z } from '../constants/zIndex.js';
 import { useAuth }          from '../contexts/AuthContext.jsx';
 import { useManagedClubs }  from '../hooks/useManagedClubs.js';
 import { useQuickActions }  from '../hooks/useQuickActions.js';
@@ -200,7 +201,7 @@ export default function ActualitesPage({
       {/* Modale convocation (depuis cartes match) */}
       {convocationEvent && (
         <div style={{
-          position: 'fixed', inset: 0, zIndex: 9500,
+          position: 'fixed', inset: 0, zIndex: Z.activityModal,
           backgroundColor: 'rgba(0,0,0,0.55)',
           display: 'flex', flexDirection: 'column',
           justifyContent: 'flex-end',

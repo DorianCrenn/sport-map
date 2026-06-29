@@ -34,8 +34,8 @@ export default function AnnouncementCard({ ann, variant = 'full', isRead = false
         </div>
         {confirmDelete ? (
           <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-            <button onClick={() => setConfirmDelete(false)} style={{ padding: '4px 8px', borderRadius: 7, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 10, cursor: 'pointer' }}>Non</button>
-            <button onClick={handleDelete} disabled={deleting} style={{ padding: '4px 8px', borderRadius: 7, border: 'none', backgroundColor: '#ef4444', color: 'white', fontSize: 10, fontWeight: 700, cursor: deleting ? 'wait' : 'pointer' }}>{deleting ? '…' : 'Supprimer'}</button>
+            <button onClick={() => setConfirmDelete(false)} style={{ padding: '4px 8px', borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 10, cursor: 'pointer' }}>Non</button>
+            <button onClick={handleDelete} disabled={deleting} style={{ padding: '4px 8px', borderRadius: 8, border: 'none', backgroundColor: '#ef4444', color: 'white', fontSize: 10, fontWeight: 700, cursor: deleting ? 'wait' : 'pointer' }}>{deleting ? '…' : 'Supprimer'}</button>
           </div>
         ) : (
           <button onClick={() => setConfirmDelete(true)} style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>✕</button>
