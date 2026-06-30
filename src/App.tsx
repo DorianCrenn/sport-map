@@ -507,8 +507,6 @@ function AppInner() {
     return () => window.removeEventListener('beforeinstallprompt', handler as EventListener);
   }, []);
 
-  demoNavRef.current = { handleTabChange, handleOpenPoster, userEvents, handleClubAdminFabAction };
-
   useEffect(() => {
     if (!isDemoMode()) return;
 
@@ -571,6 +569,8 @@ function AppInner() {
     setActiveTab(tab);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.id, currentUser?.clubId, isAdmin, userClubs, eventsLoading, setActiveTab]);
+
+  demoNavRef.current = { handleTabChange, handleOpenPoster, userEvents, handleClubAdminFabAction };
 
   useEffect(() => {
     if (!isDemoMode() || !pendingDemoTabRef.current || userClubs.length === 0) return;
