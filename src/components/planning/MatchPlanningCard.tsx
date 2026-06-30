@@ -230,7 +230,7 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
               {showClubBadge && club?.name && <span className="text-[9px] font-semibold text-[var(--sl-t3)] truncate max-w-[80px]">{club.name}</span>}
             </div>
             <div className="flex items-center gap-2">
-              {isStaff && <span className="text-[9px] font-black tracking-[0.1em] uppercase px-2.5 py-1 rounded-full" style={{ background: '#06b6d420', color: '#06b6d4' }}>{isCoach ? 'Coach' : 'Comm'}</span>}
+              {isStaff && <span className="text-[9px] font-black tracking-[0.1em] uppercase px-2.5 py-1 rounded-full" style={{ background: '#06b6d420', color: '#06b6d4' }}>{isCoach ? 'Coach' : isCommunicant ? 'Comm.' : 'Staff'}</span>}
               {!isStaff && !isPast && (
                 <button
                   data-demo="favorite-btn"
@@ -326,6 +326,19 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
               </motion.div>
             )}
 
+            {cardState === 'match_day' && isCommunicant && !isCoach && (
+              <motion.div key="match_day_comm" className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <button
+                  onClick={() => onOpenPoster?.({ event: item, club, mode: 'announce' })}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-white active:opacity-80 transition-opacity"
+                  style={{ background: '#f97316' }}
+                >
+                  <span className="flex items-center gap-2"><span>📣</span><span>Annoncer le match</span></span>
+                  <span className="text-white/50 text-lg">↗</span>
+                </button>
+              </motion.div>
+            )}
+
             {cardState === 'pre_match' && (isCoach || isCommunicant) && (
               <motion.div key="pre_match" className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 {isCoach && (
@@ -338,6 +351,12 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
                   <span className="flex items-center gap-2"><span>🎨</span><span>Créer l'affiche</span></span>
                   <span className="text-white/50 text-lg">↗</span>
                 </button>
+              </motion.div>
+            )}
+
+            {cardState === 'post_pending' && isCommunicant && !isCoach && (
+              <motion.div key="post_pending_comm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <p className="text-[11px] text-center text-[var(--sl-t3)] py-1">En attente du score — l'affiche résultat sera disponible ensuite</p>
               </motion.div>
             )}
 
