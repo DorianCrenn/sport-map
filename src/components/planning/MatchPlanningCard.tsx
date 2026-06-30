@@ -386,19 +386,6 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
               </motion.div>
             )}
 
-            {cardState === 'post_done' && !isStaff && effectiveScore && onOpenPoster && (
-              <motion.div key="post_done_supporter" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <button
-                  onClick={() => onOpenPoster({ event: item, club, score: { home: effectiveScore.home, away: effectiveScore.away }, mode: 'result' })}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm active:opacity-80 transition-opacity"
-                  style={{ background: 'var(--sl-surface)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border)' }}
-                >
-                  <span className="flex items-center gap-2"><span>🎨</span><span>Voir l'affiche du match</span></span>
-                  <span className="text-[var(--sl-t3)] text-lg">↗</span>
-                </button>
-              </motion.div>
-            )}
-
             {cardState === 'post_pending' && !isStaff && (
               <motion.div key="post_pending_supporter" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <p className="text-[11px] text-center text-[var(--sl-t3)] py-1">Résultat en attente de saisie</p>
