@@ -20,6 +20,7 @@ export default function ExportPanel({ ps }) {
     handleDownload, handleDownloadAll,
     handleShareWhatsApp, handleShareIG, handleShareFacebook, handleCopyLink,
     setExportOpen,
+    canPublish, publishing, published, handlePublish,
   } = ps;
 
   return (
@@ -49,6 +50,30 @@ export default function ExportPanel({ ps }) {
           </svg>
         )}
       </div>
+      <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
+
+      {/* Publier au club — visible aux supporters/joueurs/famille en lecture seule */}
+      {canPublish && (
+        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { handlePublish(); dispatchPosterGenerated(); }} disabled={publishing}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 13, border: 'none', cursor: 'pointer', backgroundColor: published ? 'rgba(34,217,106,0.14)' : accentColor }}>
+          <div style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: published ? 'rgba(34,217,106,0.22)' : 'rgba(0,0,0,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            {published ? (
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#22D96A" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            ) : (
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 11a9 9 0 0 1 9-9 9 9 0 0 1 9 9"/><path d="M12 14v7"/><path d="M9 17l3-3 3 3"/><circle cx="12" cy="6" r="1.4" fill="#fff" stroke="none"/>
+              </svg>
+            )}
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: published ? 'var(--sl-green)' : '#fff' }}>
+              {publishing ? 'Publication…' : published ? 'Affiche publiée !' : 'Publier au club'}
+            </div>
+            <div style={{ fontSize: 10, color: published ? 'var(--sl-t3)' : 'rgba(255,255,255,0.75)' }}>Visible par tous les membres du club</div>
+          </div>
+        </motion.button>
+      )}
+
       <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '4px 0' }} />
 
       {/* PNG download */}

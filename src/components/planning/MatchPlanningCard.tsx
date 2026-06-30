@@ -5,6 +5,7 @@ import { useToast }          from '../../contexts/ToastContext.jsx';
 import PresenceButtons       from './PresenceButtons.jsx';
 import CarpoolSection        from './CarpoolSection.jsx';
 import AttendanceListSheet   from './AttendanceListSheet.jsx';
+import MatchPosterViewer     from './MatchPosterViewer.jsx';
 import LiveScorePupitre      from '../home/LiveScorePupitre.jsx';
 
 const MatchStatsModal = lazy(() => import('../stats/MatchStatsModal.jsx'));
@@ -140,6 +141,7 @@ interface MatchItem extends Record<string, any> {
   absentCount?: number;
   unsureCount?: number;
   convocs?: ConvocationCounts & { total: number };
+  posterUrl?: string | null;
   onRespond?: (type: string, id: string | number, status: string) => void;
 }
 
@@ -161,6 +163,7 @@ interface MatchPlanningCardProps {
 
 export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach, isCommunicant, isPresident, isGuardian, onOpenPoster, onConvocate, onOpenRides, onScoreSaved, showClubBadge }: MatchPlanningCardProps) {
   const [showList,        setShowList]        = useState(false);
+  const [showPoster,      setShowPoster]      = useState(false);
   const [showScoreInput,  setShowScoreInput]  = useState(false);
   const [showStatsModal,  setShowStatsModal]  = useState(false);
   const [localMatchScore, setLocalMatchScore] = useState<Record<string, any> | null>(null);
@@ -299,6 +302,16 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
             </button>
           )}
 
+          {!isStaff && item.posterUrl && (
+            <button
+              onClick={() => setShowPoster(true)}
+              className="w-full text-left text-xs font-semibold text-[var(--sl-t2)] py-2 px-3 rounded-xl bg-[var(--sl-surface)] hover:bg-[var(--sl-hover)] transition-colors mb-3 flex items-center justify-between"
+            >
+              <span>🖼️ Voir l'affiche du match</span>
+              <span className="text-[var(--sl-t3)] ml-2">›</span>
+            </button>
+          )}
+
           {item.isPlayerClub && (
             <div className="mb-3" data-demo="convocation-respond">
               <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
@@ -402,6 +415,10 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
       </motion.div>
 
       <AttendanceListSheet open={showList} onClose={() => setShowList(false)} type="match" id={item.id} userId={userId} />
+
+      {showPoster && item.posterUrl && (
+        <MatchPosterViewer imageUrl={item.posterUrl} title={`${homeTeam} vs ${awayTeam}`} onClose={() => setShowPoster(false)} />
+      )}
 
       {showStatsModal && item.club_id && (
         <Suspense fallback={null}>

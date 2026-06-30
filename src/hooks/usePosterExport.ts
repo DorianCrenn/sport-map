@@ -103,5 +103,5 @@ export function usePosterExport({ exportWrapperRef, altExportWrapperRef, format,
     });
   }
 
-  return { downloading, sharing, sharingIG, exportingAll, linkCopied, platformPreview, setPlatformPreview, handleDownload, handleShareWhatsApp, handleShareIG, handleShareFacebook, handleDownloadAll, handleCopyLink };
+  return { downloading, sharing, sharingIG, exportingAll, linkCopied, platformPreview, setPlatformPreview, handleDownload, handleShareWhatsApp, handleShareIG, handleShareFacebook, handleDownloadAll, handleCopyLink, getBlob };
 }

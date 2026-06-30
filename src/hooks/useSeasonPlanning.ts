@@ -49,6 +49,7 @@ export interface SeasonItem {
   isCoachClub?: boolean;
   isCommClub?:  boolean;
   isOwnerClub?: boolean;    // président / créateur du club
+  posterUrl?:   string | null; // affiche publiée par le staff (lecture seule pour les autres rôles)
 }
 
 export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = [], managedClubs = [], year, month, clubFilter = 'all' }: SeasonPlanningOptions) {
@@ -117,14 +118,15 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       const sessionIds = sessions.map(s => s.id);
       const eventIds   = events.map(e => String(e.id));
 
-      const [trainAttRes, matchAttRes, trainCntRes, matchCntRes, convocRes, matchScoresRes] = await Promise.all([
+      const [trainAttRes, matchAttRes, trainCntRes, matchCntRes, convocRes, matchScoresRes, postersRes] = await Promise.all([
         (sessionIds.length && userId) ? supabase.from('training_attendance').select('session_id, status').in('session_id', sessionIds).eq('user_id', userId) : { data: [] },
         (eventIds.length && userId)   ? supabase.from('match_player_attendance').select('event_id, status').in('event_id', eventIds).eq('user_id', userId) : { data: [] },
         sessionIds.length ? supabase.from('training_attendance_counts').select('session_id, present_count, absent_count, unsure_count').in('session_id', sessionIds) : { data: [] },
         eventIds.length   ? supabase.from('match_attendance_counts').select('event_id, present_count, absent_count, unsure_count').in('event_id', eventIds) : { data: [] },
         (managedSet.size > 0 && eventIds.length) ? supabase.from('event_convocations').select('event_id, status').in('event_id', eventIds) : { data: [] },
         eventIds.length   ? supabase.from('match_scores').select('event_id, score_home, score_away, status').in('event_id', eventIds) : { data: [] },
-      ]) as [{ data: { session_id: string; status: string }[] | null }, { data: { event_id: string; status: string }[] | null }, { data: { session_id: string; present_count?: number; absent_count?: number; unsure_count?: number }[] | null }, { data: { event_id: string; present_count?: number; absent_count?: number; unsure_count?: number }[] | null }, { data: { event_id: string; status: string }[] | null }, { data: MatchScore & { event_id: string }[] | null }];
+        eventIds.length   ? supabase.from('match_posters').select('event_id, image_url').in('event_id', eventIds) : { data: [] },
+      ]) as [{ data: { session_id: string; status: string }[] | null }, { data: { event_id: string; status: string }[] | null }, { data: { session_id: string; present_count?: number; absent_count?: number; unsure_count?: number }[] | null }, { data: { event_id: string; present_count?: number; absent_count?: number; unsure_count?: number }[] | null }, { data: { event_id: string; status: string }[] | null }, { data: MatchScore & { event_id: string }[] | null }, { data: { event_id: string; image_url: string }[] | null }];
       if (cancelled) return;
 
       const trainStatusMap = Object.fromEntries((trainAttRes.data ?? []).map(a => [a.session_id, a.status]));
@@ -133,6 +135,7 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       const trainCntMap: Record<string, CntRow> = Object.fromEntries((trainCntRes.data ?? []).map(r => [r.session_id, r]));
       const matchCntMap: Record<string, CntRow> = Object.fromEntries((matchCntRes.data ?? []).map(r => [r.event_id,   r]));
       const matchScoreMap  = Object.fromEntries((matchScoresRes.data ?? []).map(r => [r.event_id, r]));
+      const posterMap: Record<string, string> = Object.fromEntries((postersRes.data ?? []).map(r => [r.event_id, r.image_url]));
       const convocMap: Record<string, ConvocStats> = {};
       (convocRes.data ?? []).forEach(c => {
         if (!convocMap[c.event_id]) convocMap[c.event_id] = { total: 0, accepted: 0, pending: 0, declined: 0, unavailable: 0 };
@@ -152,7 +155,7 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
         const isStaffClub = managedSet.has(clubIdStr); const isPlayerClub = playerClubSet.has(clubIdStr);
         const isGuardian  = !directClubSet.has(clubIdStr) && guardianClubSet.has(clubIdStr);
         const dateStr = String(ev.date).slice(0, 10); const rawTime = String(ev.date).slice(11, 16); const timeStr = rawTime !== '00:00' ? rawTime : '';
-        return { id, type: 'match', date: dateStr, time: timeStr, title: String(ev.title ?? ''), location: String(ev.venue ?? ev.city ?? ''), club_id: clubIdStr, sport: String(ev.sport ?? 'Football'), adversaire: String(ev.adversaire ?? ''), event_type: String(ev.event_type ?? ''), category: String(ev.category ?? ''), team_name: String(ev.team_name ?? ''), home_or_away: ev.home_or_away as string | undefined, level: String(ev.level ?? ''), cup_type: String(ev.cup_type ?? ''), score: ev.score, matchScore, myStatus: matchStatusMap[id] ?? null, presentCount: cnt.present_count ?? 0, absentCount: cnt.absent_count ?? 0, unsureCount: cnt.unsure_count ?? 0, convocs, isStaffClub, isCoachClub, isCommClub, isOwnerClub, isPlayerClub, isGuardian, isSupporter: !isStaffClub && !isPlayerClub };
+        return { id, type: 'match', date: dateStr, time: timeStr, title: String(ev.title ?? ''), location: String(ev.venue ?? ev.city ?? ''), club_id: clubIdStr, sport: String(ev.sport ?? 'Football'), adversaire: String(ev.adversaire ?? ''), event_type: String(ev.event_type ?? ''), category: String(ev.category ?? ''), team_name: String(ev.team_name ?? ''), home_or_away: ev.home_or_away as string | undefined, level: String(ev.level ?? ''), cup_type: String(ev.cup_type ?? ''), score: ev.score, matchScore, myStatus: matchStatusMap[id] ?? null, presentCount: cnt.present_count ?? 0, absentCount: cnt.absent_count ?? 0, unsureCount: cnt.unsure_count ?? 0, convocs, isStaffClub, isCoachClub, isCommClub, isOwnerClub, isPlayerClub, isGuardian, isSupporter: !isStaffClub && !isPlayerClub, posterUrl: posterMap[id] ?? null };
       });
 
       const merged: SeasonItem[] = [...trainingItems, ...matchItems as SeasonItem[]].sort((a, b) => a.date !== b.date ? (a.date < b.date ? -1 : 1) : (a.time ?? '').localeCompare(b.time ?? ''));
@@ -191,6 +194,7 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
             isPlayerClub: false,
             isGuardian:   false,
             isSupporter:  false,
+            posterUrl:    null,
           });
         }
       }
