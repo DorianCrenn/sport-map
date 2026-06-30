@@ -222,7 +222,7 @@ export default function PlanningTimeline({
                       return item.type === 'training' ? (
                         <TrainingPlanningCard key={item.id} item={{ ...item, ...withRespond(item) } as any} userId={currentUser?.id} isStaff={item.isStaffClub} onOpenRides={onNavigateRides} />
                       ) : (
-                        <MatchPlanningCard key={item.id} item={{ ...item, ...withRespond(item) } as any} userId={currentUser?.id} club={club} isStaff={item.isStaffClub} isCoach={item.isCoachClub} isCommunicant={item.isCommClub} onOpenPoster={onOpenPoster} onConvocate={onConvocate} onOpenRides={onNavigateRides} onScoreSaved={updateMatchScore} showClubBadge={showClubFilter && clubFilter === 'all'} />
+                        <MatchPlanningCard key={item.id} item={{ ...item, ...withRespond(item) } as any} userId={currentUser?.id} club={club} isStaff={item.isStaffClub} isCoach={item.isCoachClub} isCommunicant={item.isCommClub} isPresident={item.isOwnerClub} isGuardian={item.isGuardian} onOpenPoster={onOpenPoster} onConvocate={onConvocate} onOpenRides={onNavigateRides} onScoreSaved={updateMatchScore} showClubBadge={showClubFilter && clubFilter === 'all'} />
                       );
                     })}
                   </div>

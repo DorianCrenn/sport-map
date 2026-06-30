@@ -30,9 +30,10 @@ export interface SeasonItem {
   presentCount: number;
   absentCount:  number;
   unsureCount:  number;
-  isStaffClub:  boolean;
-  isPlayerClub: boolean;
-  isSupporter:  boolean;
+  isStaffClub:   boolean;
+  isPlayerClub:  boolean;
+  isSupporter:   boolean;
+  isGuardian?:   boolean;   // parent/tuteur d'un joueur (non-joueur direct)
   // match-only
   sport?:       string;
   adversaire?:  string;
@@ -47,6 +48,7 @@ export interface SeasonItem {
   convocs?:     ConvocStats | null;
   isCoachClub?: boolean;
   isCommClub?:  boolean;
+  isOwnerClub?: boolean;    // président / créateur du club
 }
 
 export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = [], managedClubs = [], year, month, clubFilter = 'all' }: SeasonPlanningOptions) {
@@ -66,6 +68,7 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
   const managedKey = useMemo(() => [...new Set(managedClubIds.map(String).filter(Boolean))].sort().join(','), [managedClubIds]);
   const coachKey   = useMemo(() => managedClubs.filter(c => c.managerRole !== 'communicant').map(c => String(c.id)).sort().join(','), [managedClubs]);
   const commKey    = useMemo(() => managedClubs.filter(c => c.managerRole === 'communicant').map(c => String(c.id)).sort().join(','), [managedClubs]);
+  const ownerKey   = useMemo(() => managedClubs.filter(c => c.managerRole === 'owner').map(c => String(c.id)).sort().join(','), [managedClubs]);
 
   useEffect(() => {
     const baseClubIds = clubIdKey.split(',').filter(Boolean);
@@ -76,6 +79,7 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
     const managedSet = new Set(managedKey.split(',').filter(Boolean));
     const coachSet   = new Set(coachKey.split(',').filter(Boolean));
     const commSet    = new Set(commKey.split(',').filter(Boolean));
+    const ownerSet   = new Set(ownerKey.split(',').filter(Boolean));
 
     async function load() {
       setLoading(true);
@@ -93,8 +97,10 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       }
       if (cancelled) return;
 
-      const allEntries    = [...(directEntries ?? []), ...childEntries];
-      const playerClubSet = new Set(allEntries.map(e => String(e.club_id)));
+      const allEntries       = [...(directEntries ?? []), ...childEntries];
+      const directClubSet    = new Set((directEntries ?? []).map(e => String(e.club_id)));
+      const guardianClubSet  = new Set(childEntries.map(e => String(e.club_id)));
+      const playerClubSet    = new Set(allEntries.map(e => String(e.club_id)));
       const playerTeamIds = [...new Set(allEntries.map(e => String(e.team_id)).filter(Boolean))];
       const trainingClubs = filtered.filter(id => playerClubSet.has(id) || managedSet.has(id));
 
@@ -141,9 +147,12 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       });
       const matchItems = events.map(ev => {
         const id = String(ev.id); const cnt = matchCntMap[id] ?? {}; const convocs = convocMap[id] ?? null; const matchScore = matchScoreMap[id] ?? null;
-        const isCoachClub = coachSet.has(String(ev.club_id)); const isCommClub = commSet.has(String(ev.club_id)); const isStaffClub = managedSet.has(String(ev.club_id)); const isPlayerClub = playerClubSet.has(String(ev.club_id));
+        const clubIdStr   = String(ev.club_id);
+        const isCoachClub = coachSet.has(clubIdStr); const isCommClub = commSet.has(clubIdStr); const isOwnerClub = ownerSet.has(clubIdStr);
+        const isStaffClub = managedSet.has(clubIdStr); const isPlayerClub = playerClubSet.has(clubIdStr);
+        const isGuardian  = !directClubSet.has(clubIdStr) && guardianClubSet.has(clubIdStr);
         const dateStr = String(ev.date).slice(0, 10); const rawTime = String(ev.date).slice(11, 16); const timeStr = rawTime !== '00:00' ? rawTime : '';
-        return { id, type: 'match', date: dateStr, time: timeStr, title: String(ev.title ?? ''), location: String(ev.venue ?? ev.city ?? ''), club_id: String(ev.club_id), sport: String(ev.sport ?? 'Football'), adversaire: String(ev.adversaire ?? ''), event_type: String(ev.event_type ?? ''), category: String(ev.category ?? ''), team_name: String(ev.team_name ?? ''), home_or_away: ev.home_or_away as string | undefined, level: String(ev.level ?? ''), cup_type: String(ev.cup_type ?? ''), score: ev.score, matchScore, myStatus: matchStatusMap[id] ?? null, presentCount: cnt.present_count ?? 0, absentCount: cnt.absent_count ?? 0, unsureCount: cnt.unsure_count ?? 0, convocs, isStaffClub, isCoachClub, isCommClub, isPlayerClub, isSupporter: !isStaffClub && !isPlayerClub };
+        return { id, type: 'match', date: dateStr, time: timeStr, title: String(ev.title ?? ''), location: String(ev.venue ?? ev.city ?? ''), club_id: clubIdStr, sport: String(ev.sport ?? 'Football'), adversaire: String(ev.adversaire ?? ''), event_type: String(ev.event_type ?? ''), category: String(ev.category ?? ''), team_name: String(ev.team_name ?? ''), home_or_away: ev.home_or_away as string | undefined, level: String(ev.level ?? ''), cup_type: String(ev.cup_type ?? ''), score: ev.score, matchScore, myStatus: matchStatusMap[id] ?? null, presentCount: cnt.present_count ?? 0, absentCount: cnt.absent_count ?? 0, unsureCount: cnt.unsure_count ?? 0, convocs, isStaffClub, isCoachClub, isCommClub, isOwnerClub, isPlayerClub, isGuardian, isSupporter: !isStaffClub && !isPlayerClub };
       });
 
       const merged: SeasonItem[] = [...trainingItems, ...matchItems as SeasonItem[]].sort((a, b) => a.date !== b.date ? (a.date < b.date ? -1 : 1) : (a.time ?? '').localeCompare(b.time ?? ''));
@@ -175,11 +184,13 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
             absentCount: 2,
             unsureCount: 1,
             convocs: { total: 15, accepted: 12, pending: 1, declined: 1, unavailable: 1 },
-            isStaffClub: true,
-            isCoachClub: true,
-            isCommClub: false,
+            isStaffClub:  true,
+            isCoachClub:  true,
+            isCommClub:   false,
+            isOwnerClub:  typeof sessionStorage !== 'undefined' && sessionStorage.getItem('sl-demo-profile') === 'president',
             isPlayerClub: false,
-            isSupporter: false,
+            isGuardian:   false,
+            isSupporter:  false,
           });
         }
       }

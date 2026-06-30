@@ -150,6 +150,8 @@ interface MatchPlanningCardProps {
   isStaff?: boolean;
   isCoach?: boolean;
   isCommunicant?: boolean;
+  isPresident?: boolean;
+  isGuardian?: boolean;
   onOpenPoster?: (opts: Record<string, any>) => void;
   onConvocate?: (item: MatchItem) => void;
   onOpenRides?: () => void;
@@ -157,7 +159,7 @@ interface MatchPlanningCardProps {
   showClubBadge?: boolean;
 }
 
-export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach, isCommunicant, onOpenPoster, onConvocate, onOpenRides, onScoreSaved, showClubBadge }: MatchPlanningCardProps) {
+export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach, isCommunicant, isPresident, isGuardian, onOpenPoster, onConvocate, onOpenRides, onScoreSaved, showClubBadge }: MatchPlanningCardProps) {
   const [showList,        setShowList]        = useState(false);
   const [showScoreInput,  setShowScoreInput]  = useState(false);
   const [showStatsModal,  setShowStatsModal]  = useState(false);
@@ -230,7 +232,7 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
               {showClubBadge && club?.name && <span className="text-[9px] font-semibold text-[var(--sl-t3)] truncate max-w-[80px]">{club.name}</span>}
             </div>
             <div className="flex items-center gap-2">
-              {isStaff && <span className="text-[9px] font-black tracking-[0.1em] uppercase px-2.5 py-1 rounded-full" style={{ background: '#06b6d420', color: '#06b6d4' }}>{isCoach ? 'Coach' : isCommunicant ? 'Comm.' : 'Staff'}</span>}
+              {isStaff && <span className="text-[9px] font-black tracking-[0.1em] uppercase px-2.5 py-1 rounded-full" style={{ background: '#06b6d420', color: '#06b6d4' }}>{isPresident ? 'Prés.' : isCoach ? 'Coach' : isCommunicant ? 'Comm.' : 'Staff'}</span>}
               {!isStaff && !isPast && (
                 <button
                   data-demo="favorite-btn"
@@ -299,7 +301,9 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
 
           {item.isPlayerClub && (
             <div className="mb-3" data-demo="convocation-respond">
-              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">Ma présence</p>
+              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
+                {isGuardian ? 'Présence de mon enfant' : 'Ma présence'}
+              </p>
               <PresenceButtons myStatus={item.myStatus} onRespond={status => item.onRespond?.('match', item.id, status)} disabled={isPast} size="sm" />
             </div>
           )}
