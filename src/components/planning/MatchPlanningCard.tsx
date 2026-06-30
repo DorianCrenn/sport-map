@@ -288,9 +288,13 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
           )}
 
           {item.isSupporter && (item.convocs?.accepted ?? 0) > 0 && (
-            <div className="w-full text-xs font-semibold text-[var(--sl-t2)] py-2 px-3 rounded-xl bg-[var(--sl-surface)] mb-3">
-              👥 {item.convocs!.accepted} joueur{(item.convocs!.accepted ?? 0) > 1 ? 's' : ''} convoqué{(item.convocs!.accepted ?? 0) > 1 ? 's' : ''}
-            </div>
+            <button
+              onClick={() => setShowList(true)}
+              className="w-full text-left text-xs font-semibold text-[var(--sl-t2)] py-2 px-3 rounded-xl bg-[var(--sl-surface)] hover:bg-[var(--sl-hover)] transition-colors mb-3 flex items-center justify-between"
+            >
+              <span>👥 {item.convocs!.accepted} joueur{(item.convocs!.accepted ?? 0) > 1 ? 's' : ''} convoqué{(item.convocs!.accepted ?? 0) > 1 ? 's' : ''}</span>
+              <span className="text-[var(--sl-t3)] ml-2">›</span>
+            </button>
           )}
 
           {item.isPlayerClub && (
@@ -356,6 +360,25 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
                 {isCoach && (
                   <button onClick={() => setShowStatsModal(true)} className="w-full py-2.5 rounded-xl text-[13px] font-bold active:scale-95 transition-transform" style={{ background: 'var(--sl-card-hi)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border)' }}>📋 Stats joueurs</button>
                 )}
+              </motion.div>
+            )}
+
+            {cardState === 'post_done' && !isStaff && effectiveScore && onOpenPoster && (
+              <motion.div key="post_done_supporter" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <button
+                  onClick={() => onOpenPoster({ event: item, club, score: { home: effectiveScore.home, away: effectiveScore.away }, mode: 'result' })}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm active:opacity-80 transition-opacity"
+                  style={{ background: 'var(--sl-surface)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border)' }}
+                >
+                  <span className="flex items-center gap-2"><span>🎨</span><span>Voir l'affiche du match</span></span>
+                  <span className="text-[var(--sl-t3)] text-lg">↗</span>
+                </button>
+              </motion.div>
+            )}
+
+            {cardState === 'post_pending' && !isStaff && (
+              <motion.div key="post_pending_supporter" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <p className="text-[11px] text-center text-[var(--sl-t3)] py-1">Résultat en attente de saisie</p>
               </motion.div>
             )}
           </AnimatePresence>
