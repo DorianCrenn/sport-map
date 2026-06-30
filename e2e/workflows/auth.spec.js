@@ -1,6 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { collectConsoleErrors } from '../helpers/utils.js';
-
 /**
  * Tests Authentication — P0 CRITIQUE
  * Connexion email/password, Google OAuth (mocked), création de compte.
@@ -75,9 +73,6 @@ test.describe('Page Authentification', () => {
       await submitButton.click();
       await page.waitForTimeout(2000);
 
-      // Un message d'erreur doit apparaître (pas un crash)
-      const errorMessage = page.locator('[role="alert"], .error, [class*="error"], [class*="toast"]');
-      const hasError = await errorMessage.count() > 0;
       // On vérifie juste qu'il n'y a pas de crash React
       const errorBoundary = page.getByText(/quelque chose s'est mal passé/i);
       await expect(errorBoundary).not.toBeVisible();

@@ -15,6 +15,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, handleOptions, checkCsrfOrigin } from '../_shared/cors.ts';
+import { checkRateLimit } from '../_shared/rateLimit.ts';
 
 // ── Fal.ai BRIA RMBG fallback ─────────────────────────────────────────────────
 
@@ -83,6 +84,18 @@ Deno.serve(async (req: Request) => {
     if (!user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401, headers: { ...ch, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Rate limiting : 20 suppressions de fond / heure / utilisateur
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+    const limited = await checkRateLimit(serviceClient, user.id, 'remove-background', 20, 3600);
+    if (limited) {
+      return new Response(JSON.stringify({ error: 'Trop de requêtes. Réessayez dans une heure.' }), {
+        status: 429, headers: { ...ch, 'Content-Type': 'application/json' },
       });
     }
 

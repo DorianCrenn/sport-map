@@ -1,10 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 
 type EventType = "verified" | "rejected" | "info_requested" | "suspended";
 
@@ -92,22 +87,23 @@ const STATUS_CONFIG: Record<EventType, StatusConfig> = {
   },
 };
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+Deno.serve(async (req) => {
+  const prelight = handleOptions(req); if (prelight) return prelight;
+  const ch = corsHeaders(req);
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: ch });
 
     const { club_id, event_type, note } = await req.json() as { club_id: string; event_type: EventType; note?: string };
 
     if (!club_id || !event_type) {
-      return new Response(JSON.stringify({ error: "club_id and event_type required" }), { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "club_id and event_type required" }), { status: 400, headers: ch });
     }
 
     const config = STATUS_CONFIG[event_type];
     if (!config) {
-      return new Response(JSON.stringify({ error: "Invalid event_type" }), { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Invalid event_type" }), { status: 400, headers: ch });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -121,14 +117,14 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user } } = await callerClient.auth.getUser();
-    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: ch });
 
     const admin = createClient(supabaseUrl, serviceKey);
 
     // Vérifier le rôle admin
     const { data: profile } = await admin.from("profiles").select("role").eq("id", user.id).single();
     if (!profile || !["admin", "superadmin"].includes(profile.role)) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: ch });
     }
 
     // Récupérer le club + son propriétaire
@@ -139,7 +135,7 @@ serve(async (req) => {
       .single();
 
     if (clubErr || !club) {
-      return new Response(JSON.stringify({ error: "Club not found" }), { status: 404, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Club not found" }), { status: 404, headers: ch });
     }
 
     // Récupérer l'email du propriétaire
@@ -162,7 +158,7 @@ serve(async (req) => {
     if (!resendKey) {
       console.warn("[notify-club-status] RESEND_API_KEY not set — skipping email");
       return new Response(JSON.stringify({ sent: false, reason: "RESEND_API_KEY missing" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
@@ -207,13 +203,13 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ sent: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ch, "Content-Type": "application/json" },
     });
 
   } catch (err) {
     console.error("[notify-club-status] Unexpected error:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...ch, "Content-Type": "application/json" },
     });
   }
 });

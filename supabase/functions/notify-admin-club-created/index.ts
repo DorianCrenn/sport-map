@@ -1,20 +1,16 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+Deno.serve(async (req) => {
+  const prelight = handleOptions(req); if (prelight) return prelight;
+  const ch = corsHeaders(req);
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: ch });
 
     const { club_id } = await req.json();
-    if (!club_id) return new Response(JSON.stringify({ error: "club_id required" }), { status: 400, headers: corsHeaders });
+    if (!club_id) return new Response(JSON.stringify({ error: "club_id required" }), { status: 400, headers: ch });
 
     const supabaseUrl  = Deno.env.get("SUPABASE_URL")!;
     const serviceKey   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -27,7 +23,7 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user } } = await callerClient.auth.getUser();
-    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: ch });
 
     // Client service role — accès complet pour les inserts de notifs
     const admin = createClient(supabaseUrl, serviceKey);
@@ -40,19 +36,26 @@ serve(async (req) => {
       .single();
 
     if (clubErr || !club) {
-      return new Response(JSON.stringify({ error: "Club not found" }), { status: 404, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Club not found" }), { status: 404, headers: ch });
     }
     if (club.user_id !== user.id) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: ch });
     }
 
-    // Récupérer tous les admins
-    const { data: admins } = await admin
+    // Récupérer tous les admins (profils uniquement — email dans auth.users)
+    const { data: adminProfiles } = await admin
       .from("profiles")
-      .select("id, name, email")
+      .select("id, name")
       .in("role", ["admin", "superadmin"]);
 
-    const adminList = admins ?? [];
+    const adminList = adminProfiles ?? [];
+
+    // Résolution des emails via auth.admin (profiles n'a pas de colonne email)
+    const { data: { users: authUsers } } = await admin.auth.admin.listUsers({ perPage: 1000 });
+    const emailMap: Record<string, string> = {};
+    for (const u of authUsers) {
+      if (u.email) emailMap[u.id] = u.email;
+    }
 
     // Insérer notification in-app pour chaque admin
     if (adminList.length > 0) {
@@ -80,12 +83,12 @@ serve(async (req) => {
     if (!resendKey) {
       console.warn("[notify-club-created] RESEND_API_KEY not set — skipping emails");
       return new Response(JSON.stringify({ notified: adminList.length, emailSent: false }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
-    // Email aux admins
-    const adminEmails = adminList.map(a => a.email).filter(Boolean);
+    // Email aux admins (via emailMap résolu depuis auth.users)
+    const adminEmails = adminList.map(a => emailMap[a.id]).filter(Boolean);
     if (adminEmails.length > 0) {
       const adminHtml = `
 <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/></head>
@@ -174,13 +177,13 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ notified: adminList.length, emailSent: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ch, "Content-Type": "application/json" },
     });
 
   } catch (err) {
     console.error("[notify-club-created] Unexpected error:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...ch, "Content-Type": "application/json" },
     });
   }
 });

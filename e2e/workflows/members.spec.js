@@ -23,9 +23,6 @@ test.describe('Gestion membres — ClubsPage accessible', () => {
     const clubsTab = page.getByRole('button', { name: /clubs/i }).last();
     await clubsTab.click({ force: true });
     await page.waitForLoadState('networkidle');
-    // Au moins un club ou un message "aucun club"
-    const hasClubs = await page.locator('[data-testid="club-card"], [class*="club-card"]').count() > 0;
-    const hasEmpty = await page.getByText(/aucun club|pas encore|créer/i).isVisible().catch(() => false);
     // L'un ou l'autre doit être vrai (ou page chargée sans crash)
     await expect(page.getByText(/quelque chose s'est mal passé/i)).not.toBeVisible();
   });

@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, handleOptions } from "../_shared/cors.ts";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -9,11 +9,6 @@ const APP_URL        = Deno.env.get("APP_URL")         ?? "https://sportlink-fin
 
 // Délais pour lesquels on envoie un rappel (en jours avant expiration)
 const REMINDER_DAYS = [7, 1];
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -137,10 +132,9 @@ function buildEmailHtml(opts: {
 
 // ── Handler principal ──────────────────────────────────────────────────────────
 
-serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+Deno.serve(async (req: Request) => {
+  const prelight = handleOptions(req); if (prelight) return prelight;
+  const ch = corsHeaders(req);
 
   try {
     const supabase = createClient(
@@ -227,13 +221,13 @@ serve(async (req: Request) => {
 
     return new Response(JSON.stringify({ ok: true, ...results }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ch, "Content-Type": "application/json" },
     });
 
   } catch (err) {
     return new Response(JSON.stringify({ ok: false, error: String(err) }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ch, "Content-Type": "application/json" },
     });
   }
 });

@@ -3,7 +3,6 @@
  * Capture screenshots, erreurs console, overflow, interactions UX
  */
 import { test, expect } from '@playwright/test';
-import path from 'path';
 
 const AUDIT_DIR = 'e2e/audit/captures';
 
@@ -208,7 +207,6 @@ test.describe('AUDIT-03 · Carte Leaflet', () => {
     await goToTab(page, 'Carte');
     await page.waitForTimeout(2000);
     // Filtres sport
-    const filterBtns = page.locator('button').filter({ hasText: /foot|basket|rugby|sport|tous/i });
     await page.screenshot({ path: `${AUDIT_DIR}/A03-03-map-filters.png` });
   });
 });
@@ -302,8 +300,6 @@ test.describe('AUDIT-06 · Profil / Authentification', () => {
     await page.waitForLoadState('networkidle');
     await goToTab(page, 'Profil');
     await page.waitForTimeout(1000);
-    const emailInput = page.locator('input[type="email"]').first();
-    const hasEmail = await emailInput.isVisible().catch(() => false);
     await page.screenshot({ path: `${AUDIT_DIR}/A06-02-auth-form.png` });
     // Pas de validation — juste capture
   });

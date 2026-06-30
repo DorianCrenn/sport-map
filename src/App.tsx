@@ -114,13 +114,13 @@ function UpdateBanner() {
   );
 }
 
+const TAB_ORDER = ['home', 'map', 'favoris', 'clubs', 'profil', 'admin', 'mon-club'] as const;
+
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs, followClub, isFollowingClub } = useAuth() as any;
   const { isCoachOrManager } = useManagedClubs();
   const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent() as any;
   const { track } = useAnalytics(consent) as any;
-
-  const TAB_ORDER = ['home', 'map', 'favoris', 'clubs', 'profil', 'admin', 'mon-club'];
   const tabDirRef = useRef(1);
 
   const [activeTab, _setActiveTab] = useState<string>(() => {
@@ -568,10 +568,13 @@ function AppInner() {
     };
   }, [userClubs, allEvents, allSports]);
 
-  const onboardingLocalDone = currentUser ? !!localStorage.getItem(`sl_onboarded_${currentUser.id}`) : false;
+  const onboardingLocalDone = useMemo(
+    () => currentUser ? !!localStorage.getItem(`sl_onboarded_${currentUser.id}`) : false,
+    [currentUser?.id] // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const shouldShowOnboarding = !!currentUser && !loading && (pendingOnboarding || (currentUser.onboardingDone === false && !onboardingLocalDone)) && !showAuth;
 
-  function handleTabChange(tab: string) {
+  const handleTabChange = useCallback((tab: string) => {
     if (tab === 'rides') {
       setShowMyRides(true);
       return;
@@ -601,7 +604,8 @@ function AppInner() {
     }
     setSelectedSearchClub(null);
     setActiveTab(tab);
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id, currentUser?.clubId, isAdmin, userClubs, eventsLoading, setActiveTab]);
 
   function handleClubAdminFabAction(actionId: string): boolean {
     const myClub = userClubs.find((c: any) =>
@@ -627,19 +631,19 @@ function AppInner() {
     return false;
   }
 
-  function handleAuthClose() {
+  const handleAuthClose = useCallback(() => {
     setShowAuth(false);
     setAuthInitMode('login');
-  }
+  }, []);
 
-  function handleNeedOnboarding() {
+  const handleNeedOnboarding = useCallback(() => {
     setShowAuth(false);
     setPendingOnboarding(true);
-  }
+  }, []);
 
   const [onboardingSport, setOnboardingSport] = useState<string | null>(null);
 
-  function handleOnboardingDone(selectedSports: string[]) {
+  const handleOnboardingDone = useCallback((selectedSports: string[]) => {
     setPendingOnboarding(false);
     if (selectedSports?.length > 0) {
       setOnboardingSport(selectedSports[0]);
@@ -650,7 +654,8 @@ function AppInner() {
     } else {
       toast({ message: 'Bienvenue sur SportLink ! Explore les clubs et événements autour de toi.', type: 'info' });
     }
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClubAdmin, setActiveTab, toast]);
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-bg)', gap: 24 }}>
@@ -1077,12 +1082,14 @@ export default function App() {
     return <OAuthPopupCallback />;
   }
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [isDemo, setIsDemo] = useState(() => {
     const fromPath = window.location.pathname.startsWith('/demo');
     if (fromPath && !isDemoMode()) setDemoMode(true);
     return fromPath;
   });
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     function onLaunchDemo() {
       history.pushState({}, '', '/demo');

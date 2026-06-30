@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
@@ -158,9 +157,24 @@ function buildHtml(name: string, events: any[], sat: Date, sun: Date, appUrl: st
 
 // ── Main handler ──────────────────────────────────────────────────────────────
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { status: 200 });
+  }
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
+  }
+
+  // Protection : vérifier le secret partagé (appelé uniquement par pg_cron ou admin)
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  if (cronSecret) {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const providedSecret = authHeader.replace("Bearer ", "");
+    if (providedSecret !== cronSecret) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { "Content-Type": "application/json" },
+      });
+    }
   }
 
   try {

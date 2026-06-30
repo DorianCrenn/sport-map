@@ -69,9 +69,8 @@ export function useMyAnnouncements() {
   useEffect(() => {
     fetchAll();
     if (!currentUser) return;
-    const key = Math.random().toString(36).slice(2, 7);
     const ch = supabase
-      .channel(`my-ann-${currentUser.id}-${key}`)
+      .channel(`my-ann-${currentUser.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'club_announcements' },
         ({ new: row }: { new: DBRow }) => {
           const ann    = mapAnn(row);

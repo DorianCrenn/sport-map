@@ -33,6 +33,7 @@ Deno.serve(async (req) => {
       .from("convocation_reply_tokens")
       .select("player_name, player_email, events(title, date, time, venue), clubs(name)")
       .eq("token", token)
+      .gt("expires_at", new Date().toISOString())
       .maybeSingle() as { data: any };
 
     if (!row?.player_email) {

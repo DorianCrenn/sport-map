@@ -1,4 +1,3 @@
-/* global process */
 /**
  * Generates public/sitemap.xml at build time.
  * Queries Supabase for all public club pages.

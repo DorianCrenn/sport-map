@@ -31,6 +31,10 @@ Deno.serve(async (req) => {
 
   const isAdmin = ["admin", "superadmin"].includes(profile?.role ?? "");
 
+  // Protection CSRF : valider l'origine AVANT de consommer le body
+  const csrfError = checkCsrfOrigin(req);
+  if (csrfError) return csrfError;
+
   try {
     const { email, clubId, clubName, role, inviterName } = await req.json();
     if (!email || !clubId) {
@@ -38,10 +42,6 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
-
-    // Protection CSRF : valider que la requête vient d'une origine autorisée
-  const csrfError = checkCsrfOrigin(req);
-  if (csrfError) return csrfError;
 
   if (!isAdmin) {
       const isClubAdmin = profile?.role === "club_admin" && profile?.club_id === clubId;

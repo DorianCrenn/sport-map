@@ -66,10 +66,6 @@ test.describe('Rôles démo — accès différenciés', () => {
 
   test('Parent — le tour commence sans actions admin', async ({ page }) => {
     await selectDemoProfile(page, 'parent');
-    // Le guide parent doit apparaître (contenu quelconque du guide)
-    const guide = page.locator('[data-testid="demo-guide"], .demo-guide, [class*="DemoGuide"]')
-      .or(page.getByText(/votre canapé|agenda|convocation/i).first());
-    const guideVisible = await guide.isVisible({ timeout: 8000 }).catch(() => false);
     // Au minimum : pas de crash, pas de fonctionnalités admin visibles
     await expect(page.getByText(/quelque chose s'est mal passé/i)).not.toBeVisible();
     // Tableau de bord admin ne doit pas être en première étape

@@ -43,8 +43,8 @@ export function useOfflineSync(): OfflineSyncState {
       const token = sessionData?.session?.access_token;
       if (!token) return;
 
-      const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL as string;
-      const anonKey     = (import.meta as any).env.VITE_SUPABASE_ANON_KEY as string;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const anonKey     = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
       const result: SyncResult = await processQueue(supabaseUrl, anonKey, token, ({ processed, failed }) => {
         setPendingOps(prev => Math.max(0, prev - (processed > 0 ? 1 : 0)));

@@ -160,7 +160,7 @@ export function useClubDNA(clubId: string | null | undefined) {
   const persist = useCallback((profile: DAProfile | null) => {
     setDaProfile(profile);
     lsWrite(clubId, profile);
-    if (profile) syncToSupabase(clubId, profile).catch(() => {});
+    if (profile) syncToSupabase(clubId, profile).catch((e: unknown) => console.warn('[useClubDNA] sync failed:', e));
   }, [clubId]);
 
   async function analyzePoster(file: File): Promise<DAProfile> {

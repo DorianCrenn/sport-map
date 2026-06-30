@@ -175,7 +175,11 @@ export function useBadges({ attending, allEvents }: UseBadgesInput) {
     if (!currentUser) return;
     await updateProfile({ badges: earned });
     // XP via RPC sécurisé (guard DB : pas de décréments, pas de sauts > +500)
-    await Promise.resolve(supabase.rpc('sl_increment_xp', { uid: currentUser.id, delta: levelInfo.xp - (currentUser.xp ?? 0) })).catch(() => {});
+    const delta = Math.max(0, Math.min(200, levelInfo.xp - (currentUser.xp ?? 0)));
+    if (delta > 0) {
+      const { error: xpErr } = await supabase.rpc('sl_increment_xp', { p_delta: delta });
+      if (xpErr) console.warn('[useBadges] sl_increment_xp failed:', xpErr.message);
+    }
   }
 
   return { earned, newBadges, markSeen, ...levelInfo };

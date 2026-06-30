@@ -95,9 +95,12 @@ export function usePosterExport({ exportWrapperRef, altExportWrapperRef, format,
 
   function handleCopyLink() {
     const url = event?.id ? `${window.location.origin}${window.location.pathname}#event/${event.id}` : window.location.origin;
-    navigator.clipboard.writeText(url).catch(() => {});
-    setLinkCopied(true);
-    setTimeout(() => setLinkCopied(false), 2000);
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }).catch((e: unknown) => {
+      console.warn('[usePosterExport] clipboard write failed:', e);
+    });
   }
 
   return { downloading, sharing, sharingIG, exportingAll, linkCopied, platformPreview, setPlatformPreview, handleDownload, handleShareWhatsApp, handleShareIG, handleShareFacebook, handleDownloadAll, handleCopyLink };

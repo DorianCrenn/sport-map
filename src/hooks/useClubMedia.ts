@@ -76,7 +76,7 @@ export function useClubMedia(clubId: string | null | undefined) {
       const next = [asset, ...assets].slice(0, MAX_LOCAL_ASSETS);
       persist(next);
       setLastUpload(asset);
-      syncToSupabase(asset).catch(() => {});
+      syncToSupabase(asset).catch((e: unknown) => console.warn('[useClubMedia] sync failed:', e));
       return asset;
     } catch (err) {
       setUploadPhase('error');

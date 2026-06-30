@@ -84,13 +84,15 @@ export function useEventPredictionCount(eventId: string | null | undefined): num
   const [total, setTotal] = useState(0);
   useEffect(() => {
     if (!eventId) return;
+    let cancelled = false;
     supabase
       .from('event_prediction_counts')
       .select('count')
       .eq('event_id', eventId)
       .then(({ data }: { data: { count: number }[] | null }) => {
-        if (data) setTotal(data.reduce((s, r) => s + (r.count ?? 0), 0));
+        if (!cancelled && data) setTotal(data.reduce((s, r) => s + (r.count ?? 0), 0));
       });
+    return () => { cancelled = true; };
   }, [eventId]);
   return total;
 }

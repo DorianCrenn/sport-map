@@ -429,12 +429,12 @@ export default function ProfilPage({
 
               {/* Compact badge strip */}
               <button
-                onClick={() => setPreviewBadges((BADGE_ORDER as any) as string[])}
-                aria-label={`Voir mes badges — ${earnedBadges.length} sur ${(BADGE_ORDER as any).length} débloqués`}
+                onClick={() => setPreviewBadges(BADGE_ORDER)}
+                aria-label={`Voir mes badges — ${earnedBadges.length} sur ${BADGE_ORDER.length} débloqués`}
                 style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                {(BADGE_ORDER as any as string[]).map((id: string, bi: number) => {
-                  const def = (BADGE_DEFS as any)[id];
+                {BADGE_ORDER.map((id: string, bi: number) => {
+                  const def = BADGE_DEFS[id];
                   const isEarned = earnedBadges.includes(id);
                   return (
                     <motion.span
@@ -462,7 +462,7 @@ export default function ProfilPage({
                   );
                 })}
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(238,242,239,0.4)', marginLeft: 2 }}>
-                  {earnedBadges.length}/{(BADGE_ORDER as any).length}
+                  {earnedBadges.length}/{BADGE_ORDER.length}
                 </span>
               </button>
             </div>
@@ -864,7 +864,7 @@ export default function ProfilPage({
                       key={sport.id}
                       onClick={() => setSelectedSports(prev => {
                         const next = new Set(prev);
-                        on ? next.delete(sport.id) : next.add(sport.id);
+                        if (on) { next.delete(sport.id); } else { next.add(sport.id); }
                         return next;
                       })}
                       className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-left transition-colors"
