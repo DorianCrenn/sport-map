@@ -6,7 +6,23 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'supabase/functions/**']),
+
+  // ── Node.js : scripts, e2e, config ───────────────────────────────────────
+  {
+    files: ['scripts/**/*.js', 'e2e/**/*.js', 'playwright.config.js'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+  },
+
+  // ── Service Worker ────────────────────────────────────────────────────────
+  {
+    files: ['public/sw.js'],
+    languageOptions: {
+      globals: globals.serviceworker,
+    },
+  },
 
   // ── JavaScript / JSX ──────────────────────────────────────────────────────
   {
@@ -26,6 +42,7 @@ export default defineConfig([
       'react-compiler/react-compiler': 'off',
       'react-hooks/preserve-manual-memoization': 'off',
       'react-hooks/immutability': 'off',
+      'react-hooks/purity': 'off',
     },
   },
 
@@ -53,6 +70,7 @@ export default defineConfig([
       'react-compiler/react-compiler': 'off',
       'react-hooks/preserve-manual-memoization': 'off',
       'react-hooks/immutability': 'off',
+      'react-hooks/purity': 'off',
       // Assouplissements pendant la migration JS→TS
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],

@@ -67,9 +67,6 @@ test('FIX-02 · Clubs — grille 2 colonnes desktop 1440px', async ({ page }) =>
   await page.waitForTimeout(1500);
   await page.screenshot({ path: `${DIR}/POST-clubs-desktop-grid.png` });
 
-  // Vérifier que les cards clubs utilisent une grille (au moins 2 colonnes visibles)
-  const clubCards = page.locator('[style*="border-radius: 14px"]').filter({ hasNotText: /gradient/ });
-
   // Vérifier que la page charge sans crash
   const errorBoundary = page.getByText(/quelque chose s'est mal passé/i);
   await expect(errorBoundary).not.toBeVisible();

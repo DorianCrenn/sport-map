@@ -55,28 +55,6 @@ async function getAllTextSizes(page) {
   });
 }
 
-function luminance(r, g, b) {
-  const [rs, gs, bs] = [r, g, b].map(c => {
-    c /= 255;
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  });
-  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
-}
-
-function contrastRatio(rgb1, rgb2) {
-  const l1 = luminance(...rgb1);
-  const l2 = luminance(...rgb2);
-  const lighter = Math.max(l1, l2);
-  const darker  = Math.min(l1, l2);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-function parseRGB(cssColor) {
-  const m = cssColor.match(/\d+/g);
-  if (!m || m.length < 3) return [128, 128, 128];
-  return [+m[0], +m[1], +m[2]];
-}
-
 // ─── tests ───────────────────────────────────────────────────────────────────
 
 test.describe('Audit UX Seniors', () => {
@@ -350,7 +328,7 @@ test.describe('Audit UX Seniors', () => {
     // → la form reste ouverte + texte rouge #fca5a5 affiché → détectable
     await page.goto('/');
     await page.evaluate(() => {
-      try { localStorage.clear(); sessionStorage.clear(); } catch (_) {}
+      try { localStorage.clear(); sessionStorage.clear(); } catch { /* noop */ }
       window.location.hash = 'register';
     });
     await page.reload();
@@ -434,7 +412,7 @@ test.describe('Audit UX Seniors', () => {
   });
 
   // ── 10. Score global ─────────────────────────────────────────────────────
-  test('10 — Rapport score global seniors', async ({ page }) => {
+  test('10 — Rapport score global seniors', async () => {
     const scores = Object.values(results).map(r => r.score || 0);
     const total = scores.reduce((a, b) => a + b, 0);
     const max   = scores.length * 10;

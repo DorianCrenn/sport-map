@@ -421,7 +421,7 @@ export default function OnboardingPage({ onDone }: OnboardingPageProps) {
   function toggle(sportId: string) {
     setSelected(prev => {
       const next = new Set(prev);
-      next.has(sportId) ? next.delete(sportId) : next.add(sportId);
+      if (next.has(sportId)) next.delete(sportId); else next.add(sportId);
       return next;
     });
   }

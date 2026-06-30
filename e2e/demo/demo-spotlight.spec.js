@@ -79,15 +79,6 @@ async function isSpotlightActive(page) {
   return page.evaluate(() => !!document.querySelector('[style*="sl-demo-highlight"]'));
 }
 
-// Attend que l'élément [data-demo="<target>"] soit dans le DOM.
-async function waitForDemoTarget(page, target, timeout = 5000) {
-  await page.waitForFunction(
-    (t) => !!document.querySelector(`[data-demo="${t}"]`),
-    target,
-    { timeout }
-  );
-}
-
 // ── GROUPE 1 : Présence des data-demo targets dans le DOM ────────────────────
 
 test.describe('DemoSpotlight — data-demo targets présents dans le DOM', () => {

@@ -143,16 +143,6 @@ self.addEventListener('fetch', e => {
   );
 });
 
-async function staleWhileRevalidate(request) {
-  const cache  = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
-  const fetchPromise = fetch(request).then(res => {
-    cache.put(request, res.clone());
-    return res;
-  }).catch(() => null);
-  return cached ?? fetchPromise;
-}
-
 // ── Web Push ──────────────────────────────────────────────────────────────────
 self.addEventListener('push', e => {
   const data = e.data?.json?.() ?? {};

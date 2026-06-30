@@ -80,11 +80,6 @@ async function goToStep(page, targetStep) {
   await expectStep(page, targetStep);
 }
 
-// Récupère l'onglet actif depuis sessionStorage (App.jsx l'y stocke)
-async function getActiveTab(page) {
-  return page.evaluate(() => sessionStorage.getItem('sl-tab'));
-}
-
 // ── PARCOURS COMPLETS ─────────────────────────────────────────────────────────
 
 test.describe('Parcours complet — Président (12 étapes)', () => {
@@ -230,12 +225,6 @@ test.describe('Données démo — club, événements, carte', () => {
     await selectProfile(page, 'Président');
     await expect(page.getByText(stepRegex(1))).toBeVisible({ timeout: 6000 });
     await page.waitForTimeout(800);
-
-    // En mode démo, l'utilisateur est club_admin → le FAB (+) doit être dans la BottomNav.
-    // S'il est absent, l'auth démo est cassée (rôle non reconnu).
-    const fab = page.locator('[data-testid="fab"], button[aria-label*="Ajouter"], button[aria-label*="Créer"]')
-      .or(page.locator('nav').locator('button').filter({ hasText: /^\+$/ }))
-      .first();
 
     // Alternative : vérifier le nom du club dans le header ou le dashboard
     const clubName = page.getByText('FC SportLink Démo').first();

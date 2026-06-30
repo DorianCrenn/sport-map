@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { SPORTS as DEFAULT_SPORTS } from '../data/events.js';
 

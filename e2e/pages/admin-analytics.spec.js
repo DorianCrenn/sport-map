@@ -42,7 +42,7 @@ test.describe('AdminAnalyticsPage — protection & rendu', () => {
   });
 
   test('AA05 · Aucune erreur JS fatale au chargement', async ({ page }) => {
-    const errors: string[] = [];
+    const errors = [];
     page.on('pageerror', err => errors.push(err.message));
     await page.goto('http://localhost:5173/');
     await page.waitForLoadState('networkidle');

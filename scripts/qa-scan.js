@@ -6,7 +6,7 @@
  * Usage : node scripts/qa-scan.js
  */
 
-import { readdir, readFile, writeFile, mkdir } from 'fs/promises';
+import { readdir, writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

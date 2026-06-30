@@ -253,7 +253,7 @@ async function enterDemo(page, profileLabel = 'Président') {
   if (!found) return;
   await page.waitForTimeout(2000);
   // Quitter le guide
-  const quit = await page.evaluate(() => {
+  await page.evaluate(() => {
     const btn = [...document.querySelectorAll('button')].find(b => b.textContent?.includes('Quitter'));
     if (btn) { btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); return true; }
     return false;
@@ -319,9 +319,9 @@ async function auditDevice(browser, device) {
       await runCheck(page, device, 'Map — Event Sheet peek', '04-map-sheet-peek');
       // Expand en mode detail via JS
       await page.evaluate(() => {
-        const btn = [...document.querySelectorAll('button')].find(b =>
+        [...document.querySelectorAll('button')].find(b =>
           b.style.position === 'absolute' || b.getAttribute('aria-label')?.includes('Fermer')
-        );
+        )?.click();
       });
       await page.waitForTimeout(400);
       await runCheck(page, device, 'Map — Event Sheet detail', '05-map-sheet-detail');
@@ -668,7 +668,7 @@ function filterDev(id,b){resetBtns();b.classList.add('on');document.querySelecto
 
   await browser.close();
 
-  const reportPath = generateReport();
+  generateReport();
   const totalErrors = allResults.reduce((s, r) => s + r.errors.length, 0);
   const totalWarns  = allResults.reduce((s, r) => s + r.warns.length, 0);
   const okPages     = allResults.filter(r => !r.errors.length && !r.warns.length).length;

@@ -60,7 +60,7 @@ export function useAttendees(): UseAttendeesResult {
 
     setAttending(prev => {
       const next = new Set(prev);
-      isCurrent ? next.delete(strId) : next.add(strId);
+      if (isCurrent) next.delete(strId); else next.add(strId);
       if (!userId) localStorage.setItem(lsKey(null), JSON.stringify([...next]));
       return next;
     });
@@ -81,7 +81,7 @@ export function useAttendees(): UseAttendeesResult {
       console.error('[Attendees] toggle failed, rolling back:', (err as Error).message);
       setAttending(prev => {
         const rolled = new Set(prev);
-        isCurrent ? rolled.add(strId) : rolled.delete(strId);
+        if (isCurrent) rolled.add(strId); else rolled.delete(strId);
         return rolled;
       });
     }

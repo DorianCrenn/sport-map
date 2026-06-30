@@ -18,7 +18,6 @@ test.describe('ClubCreationWizard (P0)', () => {
     await clubsTab.click({ force: true });
     await page.waitForLoadState('networkidle');
 
-    const createClubButton = page.getByRole('button', { name: /créer.*club|nouveau.*club|ajouter.*club/i }).first();
     const errorBoundary = page.getByText(/quelque chose s'est mal passé/i);
     await expect(errorBoundary).not.toBeVisible();
   });

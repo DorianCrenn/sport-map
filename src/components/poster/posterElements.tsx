@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // src/components/poster/posterElements.jsx
 // Decorative overlay elements for PosterStudio
 // Each component: props = { h, color } — width is always 360px

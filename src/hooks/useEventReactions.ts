@@ -51,7 +51,7 @@ export function useEventReactions(eventId: string | null | undefined) {
   const toggle = useCallback(async (emoji: Emoji) => {
     if (!userId) return;
     const hasIt = mine.has(emoji);
-    setMine(prev => { const next = new Set(prev); hasIt ? next.delete(emoji) : next.add(emoji); return next; });
+    setMine(prev => { const next = new Set(prev); if (hasIt) next.delete(emoji); else next.add(emoji); return next; });
     setCounts(prev => ({ ...prev, [emoji]: Math.max(0, (prev[emoji] ?? 0) + (hasIt ? -1 : 1)) }));
     if (hasIt) { await supabase.from('event_reactions').delete().eq('event_id', eventId).eq('user_id', userId).eq('emoji', emoji); }
     else { await supabase.from('event_reactions').insert({ event_id: eventId, user_id: userId, emoji }); }

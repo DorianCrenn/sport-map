@@ -25,11 +25,6 @@ async function shot(page, name) {
   await page.waitForTimeout(500);
   await page.screenshot({ path: resolve(OUT, `${name}.png`), clip: { x: 0, y: 0, width: W, height: H } });
 }
-async function shotFull(page, name) {
-  await page.waitForTimeout(500);
-  await page.screenshot({ path: resolve(OUT, `${name}.png`), fullPage: false });
-}
-
 async function tab(page, id, ms = 1000) {
   await page.click(`[data-demo="tab-${id}"]`, { force: true, timeout: 5000 }).catch(() => null);
   await page.waitForTimeout(ms);

@@ -37,8 +37,6 @@ test.describe('[P0] Bouton démo — homepage → /demo', () => {
 
     // Pour les utilisateurs non connectés, la HomePage affiche le bouton démo
     // Si connecté (ActualitesPage), on cherche quand même un bouton démo alternatif
-    const demoBtn = page.getByRole('link', { name: /démo|demo/i }).first();
-
     // Attendre que la page soit chargée (lazy chunks)
     await page.waitForTimeout(1500);
 
@@ -152,7 +150,7 @@ test.describe('[P0] Bouton démo — homepage → /demo', () => {
       !e.includes('supabase') && !e.includes('removebg') && !e.includes('vapid') &&
       !e.includes('service-worker')
     );
-    expect(critiques, `Erreurs JS lors de l\'ouverture démo : ${critiques.join('\n')}`).toHaveLength(0);
+    expect(critiques, `Erreurs JS lors de l'ouverture démo : ${critiques.join('\n')}`).toHaveLength(0);
   });
 
   test('DB07 · La session démo est toujours réinitialisée à chaque visite /demo', async ({ page }) => {

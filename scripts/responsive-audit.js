@@ -291,7 +291,6 @@ async function run() {
   /* ── Rapport ─────────────────────────────────────────────────────── */
   await browser.close();
 
-  const totalShots = VIEWPORTS.length * 16; // approx
   console.log(`\n${'═'.repeat(55)}`);
   if (issues.length === 0) {
     console.log('✅ Aucun overflow détecté sur toutes les tailles');

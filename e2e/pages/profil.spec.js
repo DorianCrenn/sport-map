@@ -43,8 +43,6 @@ test.describe('ProfilPage / Auth', () => {
   test('P05 · Onglets Connexion / S\'inscrire présents', async ({ page }) => {
     const connexion = page.getByRole('button', { name: /connexion/i })
       .or(page.getByText(/connexion/i).first());
-    const inscrire = page.getByRole('button', { name: /s'inscrire/i })
-      .or(page.getByText(/s'inscrire/i).first());
     if (await connexion.first().isVisible({ timeout: 2000 }).catch(() => false)) {
       await expect(connexion.first()).toBeVisible();
     }

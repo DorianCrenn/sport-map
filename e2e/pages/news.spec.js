@@ -281,7 +281,7 @@ test.describe('ActualitesPage — Zone 2 · Multiplex live', () => {
     await expect(page.locator('[data-demo="live-multiplex"]')).toBeVisible({ timeout: 7000 });
     const text = await page.locator('[data-demo="live-multiplex"]').innerText();
     // Au moins un score de la forme "X – Y"
-    expect(text).toMatch(/\d+\s*[–\-]\s*\d+/);
+    expect(text).toMatch(/\d+\s*[–-]\s*\d+/);
   });
 
   test('N23 · Score auto-incrémenté après 12 secondes (fake timer)', async ({ page }) => {

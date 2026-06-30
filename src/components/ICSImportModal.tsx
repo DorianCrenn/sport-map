@@ -79,7 +79,7 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
   function toggleEvent(key: string) {
     setSelected(prev => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
   }
@@ -123,7 +123,7 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
                 </div>
                 <button onClick={() => {
                   const allKeys = events.map((e, i) => e.uid ?? String(i));
-                  selected.size === events.length ? setSelected(new Set()) : setSelected(new Set(allKeys));
+                  if (selected.size === events.length) setSelected(new Set()); else setSelected(new Set(allKeys));
                 }} style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-accent)', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', padding: '4px 8px' }}>
                   {selected.size === events.length ? 'Tout désélectionner' : 'Tout sélectionner'}
                 </button>

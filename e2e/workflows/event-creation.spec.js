@@ -20,7 +20,6 @@ test.describe('Formulaire création événement (UI)', () => {
 
   test('le bouton de création événement est visible pour club_admin', async ({ page }) => {
     // Le FAB de création peut nécessiter auth — on vérifie juste l'absence de crash
-    const fab = page.locator('button[aria-label*="créer"], button[aria-label*="ajouter"], [data-testid*="fab"]').first();
     // Pas forcément visible (non connecté) mais aucun crash
     const errorBoundary = page.getByText(/quelque chose s'est mal passé/i);
     await expect(errorBoundary).not.toBeVisible();
@@ -93,7 +92,6 @@ test.describe('EventCard — interactions', () => {
 
     const attendButton = page.getByRole('button', { name: /j'y serai|présent|participe/i }).first();
     if (await attendButton.isVisible()) {
-      const initialText = await attendButton.innerText();
       await attendButton.click();
       await page.waitForTimeout(500);
       // Le bouton doit changer d'état (feedback visuel)
@@ -107,7 +105,6 @@ test.describe('EventCard — interactions', () => {
     await mapTab.click({ force: true });
     await page.waitForLoadState('networkidle');
 
-    const reactionButton = page.locator('[data-testid*="reaction"], button[aria-label*="réaction"]').first();
     const errorBoundary = page.getByText(/quelque chose s'est mal passé/i);
     await expect(errorBoundary).not.toBeVisible();
   });

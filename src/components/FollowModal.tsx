@@ -33,7 +33,7 @@ export default function FollowModal({ club, allEvents = [], currentFollow = null
     return () => document.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
-  function toggleTeam(name: string) { setSelectedTeams(prev => { const next = new Set(prev); next.has(name) ? next.delete(name) : next.add(name); return next; }); }
+  function toggleTeam(name: string) { setSelectedTeams(prev => { const next = new Set(prev); if (next.has(name)) next.delete(name); else next.add(name); return next; }); }
   function handleSave() { const teams = followAll || availableTeams.length === 0 ? 'all' : [...selectedTeams]; onSave({ teams, notif }); }
   const isEditing = !!currentFollow;
 

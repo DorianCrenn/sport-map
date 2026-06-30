@@ -32,7 +32,6 @@ test.describe('PosterStudio — ouverture', () => {
       await page.waitForTimeout(1000);
 
       // Le studio doit s'ouvrir
-      const studio = page.locator('[data-testid="poster-studio"], [class*="poster-studio"]').first();
       const errorBoundary = page.getByText(/quelque chose s'est mal passé/i);
       await expect(errorBoundary).not.toBeVisible();
     }

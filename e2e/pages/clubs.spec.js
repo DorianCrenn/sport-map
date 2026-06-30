@@ -34,7 +34,6 @@ test.describe('ClubsPage', () => {
   test('le leaderboard clubs est visible (si connecté)', async ({ page }) => {
     // Le leaderboard peut n'être visible qu'aux utilisateurs connectés
     // On vérifie juste qu'il n'y a pas d'erreur
-    const errorBoundary = page.getByText(/error|erreur/i).first();
     const bodyText = await page.locator('body').innerText();
     expect(bodyText.length).toBeGreaterThan(20);
   });

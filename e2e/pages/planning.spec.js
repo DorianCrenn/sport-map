@@ -64,11 +64,6 @@ async function waitForTimeline(page) {
   ).toBeVisible({ timeout: 10000 });
 }
 
-/** Click DOM pour bypasser l'overlay DemoGuide */
-async function domClick(page, selector) {
-  await page.locator(selector).first().evaluate(el => el.click());
-}
-
 // ── P01 — Chargement de base ──────────────────────────────────────────────────
 
 test.describe('P01 · Chargement de base', () => {

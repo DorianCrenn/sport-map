@@ -476,7 +476,7 @@ async function run() {
       await clickEl(posterBtn); await p.waitForTimeout(3000);
       // Vérifier que PosterStudio est ouvert (chercher un élément distinctif)
       const studioEl = await p.$('[data-testid="poster-studio"], button:has-text("Télécharger"), button:has-text("Exporter"), button:has-text("template"), .poster-studio');
-      if (studioEl || true) { // toujours screenshot pour vérifier
+      if (studioEl) { // toujours screenshot pour vérifier
         await shot(p, '42-poster-studio');
         await scroll(p, 400); await shot(p, '43-poster-studio-scroll'); await scrollTop(p);
         await esc(p); await p.waitForTimeout(500);

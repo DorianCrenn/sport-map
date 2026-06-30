@@ -56,7 +56,7 @@ export function useFavorites(): UseFavoritesResult {
     setFavorites(prev => {
       const next   = new Set(prev);
       const adding = !next.has(strId);
-      adding ? next.add(strId) : next.delete(strId);
+      if (adding) next.add(strId); else next.delete(strId);
       save(userId, next);
 
       if (userId) {
@@ -69,7 +69,7 @@ export function useFavorites(): UseFavoritesResult {
             console.error('[Favorites] sync failed, rolling back:', error.message);
             setFavorites(curr => {
               const rolled = new Set(curr);
-              adding ? rolled.delete(strId) : rolled.add(strId);
+              if (adding) rolled.delete(strId); else rolled.add(strId);
               save(userId, rolled);
               return rolled;
             });

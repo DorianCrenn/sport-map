@@ -32,7 +32,7 @@ export const supabase = new Proxy({} as SupabaseClient, {
       );
     }
     const val = (target as unknown as Record<string | symbol, unknown>)[prop];
-    return typeof val === 'function' ? (val as Function).bind(target) : val;
+    return typeof val === 'function' ? (val as (...args: unknown[]) => unknown).bind(target) : val;
   },
   set(_: SupabaseClient, prop: string | symbol, val: unknown) {
     if (_isDemoMode) (demoClient as unknown as Record<string | symbol, unknown>)[prop] = val;

@@ -28,6 +28,7 @@ const SPAN_OPTIONS = [
   { span: 8,  label: '2/3' },
 ];
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function spanToFlex(span: number): string {
   if (span === 4) return '0 0 calc(33.33% - 8px)';
   if (span === 6) return '0 0 calc(50% - 8px)';
@@ -35,6 +36,7 @@ export function spanToFlex(span: number): string {
   return '1 1 100%';
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function remainingSpanLabel(rem: number): string {
   if (rem === 6) return '1/2 restant';
   if (rem === 4) return '1/3 restant';
@@ -43,6 +45,7 @@ export function remainingSpanLabel(rem: number): string {
   return `${rem}/12 restant`;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function getRows(blocks: Record<string, any>[]) {
   const result: { rowId: string; blocks: Record<string, any>[] }[] = [];
   const seen = new Map<string, { rowId: string; blocks: Record<string, any>[] }>();

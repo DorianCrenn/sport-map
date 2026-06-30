@@ -43,7 +43,7 @@ test.describe('AdminFeedbackPage — protection & rendu', () => {
   });
 
   test('AF05 · La page principale charge sans erreur JS', async ({ page }) => {
-    const errors: string[] = [];
+    const errors = [];
     page.on('pageerror', err => errors.push(err.message));
     await page.goto('http://localhost:5173/');
     await page.waitForLoadState('networkidle');

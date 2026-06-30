@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { fmtDate, truncate, blockStyle, venueFs, scaledTitle } from '../posterUtils.js';
 export { fmtDate, truncate, blockStyle, venueFs, scaledTitle };
 
