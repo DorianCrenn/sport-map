@@ -539,6 +539,39 @@ function AppInner() {
     };
   }, []);
 
+  const handleTabChange = useCallback((tab: string) => {
+    if (tab === 'rides') {
+      setShowMyRides(true);
+      return;
+    }
+    if (tab === 'profil' && !currentUser) {
+      setShowAuth(true);
+      return;
+    }
+    if (tab === 'admin' && !isAdmin) return;
+    if (tab === 'mon-club') {
+      const myClub = userClubs.find((c: any) =>
+        c.userId === currentUser?.id ||
+        String(c.id) === String(currentUser?.clubId)
+      ) ?? userClubs[0] ?? null;
+      if (myClub) {
+        setSelectedSearchClub(myClub);
+        _setActiveTab('mon-club');
+        // Pas de pendingClubAction : "Ma page club" ouvre la page publique, pas le dashboard
+      } else if (eventsLoading || userClubs.length === 0) {
+        // Clubs pas encore chargés — stocker l'intent, résolu dans l'effet ci-dessous
+        pendingMonClubActionRef.current = null;
+        _setActiveTab('mon-club');
+      } else {
+        setActiveTab('clubs');
+      }
+      return;
+    }
+    setSelectedSearchClub(null);
+    setActiveTab(tab);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id, currentUser?.clubId, isAdmin, userClubs, eventsLoading, setActiveTab]);
+
   useEffect(() => {
     if (!isDemoMode() || !pendingDemoTabRef.current || userClubs.length === 0) return;
     const tab = pendingDemoTabRef.current;
@@ -573,39 +606,6 @@ function AppInner() {
     [currentUser?.id] // eslint-disable-line react-hooks/exhaustive-deps
   );
   const shouldShowOnboarding = !!currentUser && !loading && (pendingOnboarding || (currentUser.onboardingDone === false && !onboardingLocalDone)) && !showAuth;
-
-  const handleTabChange = useCallback((tab: string) => {
-    if (tab === 'rides') {
-      setShowMyRides(true);
-      return;
-    }
-    if (tab === 'profil' && !currentUser) {
-      setShowAuth(true);
-      return;
-    }
-    if (tab === 'admin' && !isAdmin) return;
-    if (tab === 'mon-club') {
-      const myClub = userClubs.find((c: any) =>
-        c.userId === currentUser?.id ||
-        String(c.id) === String(currentUser?.clubId)
-      ) ?? userClubs[0] ?? null;
-      if (myClub) {
-        setSelectedSearchClub(myClub);
-        _setActiveTab('mon-club');
-        // Pas de pendingClubAction : "Ma page club" ouvre la page publique, pas le dashboard
-      } else if (eventsLoading || userClubs.length === 0) {
-        // Clubs pas encore chargés — stocker l'intent, résolu dans l'effet ci-dessous
-        pendingMonClubActionRef.current = null;
-        _setActiveTab('mon-club');
-      } else {
-        setActiveTab('clubs');
-      }
-      return;
-    }
-    setSelectedSearchClub(null);
-    setActiveTab(tab);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser?.id, currentUser?.clubId, isAdmin, userClubs, eventsLoading, setActiveTab]);
 
   function handleClubAdminFabAction(actionId: string): boolean {
     const myClub = userClubs.find((c: any) =>
