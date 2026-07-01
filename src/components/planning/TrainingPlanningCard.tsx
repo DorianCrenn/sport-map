@@ -19,8 +19,11 @@ interface TrainingItem {
   unsureCount?: number;
   isPlayerClub?: boolean;
   isStaffClub?: boolean;
+  isGuardian?: boolean;
+  childPlayerName?: string;
+  childPlayerId?: string;
   myStatus?: string | null;
-  onRespond?: (type: string, id: string | number, status: string) => void;
+  onRespond?: (type: string, id: string | number, status: string, playerId?: string | null) => void;
 }
 
 interface TrainingPlanningCardProps {
@@ -100,12 +103,21 @@ export default function TrainingPlanningCard({ item, userId, isStaff, onOpenRide
             </div>
           )}
 
-          {item.isPlayerClub && (
+          {(item.isPlayerClub || item.isGuardian) && (
             <div>
-              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">Joueur</p>
+              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
+                {item.isGuardian && item.childPlayerName
+                  ? `Pour ${item.childPlayerName}`
+                  : 'Joueur'}
+              </p>
               <PresenceButtons
                 myStatus={item.myStatus}
-                onRespond={status => item.onRespond?.('training', item.id, status)}
+                onRespond={status => item.onRespond?.(
+                  'training',
+                  item.id,
+                  status,
+                  item.isGuardian ? item.childPlayerId : undefined,
+                )}
                 size="sm"
               />
             </div>

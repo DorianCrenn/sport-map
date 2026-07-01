@@ -34,7 +34,9 @@ export interface SeasonItem {
   isStaffClub:   boolean;
   isPlayerClub:  boolean;
   isSupporter:   boolean;
-  isGuardian?:   boolean;   // parent/tuteur d'un joueur (non-joueur direct)
+  isGuardian?:     boolean;   // parent/tuteur d'un joueur (non-joueur direct)
+  childPlayerName?: string;  // prénom de l'enfant concerné (si isGuardian)
+  childPlayerId?:   string;  // club_players.id de l'enfant (pour respond)
   // match-only
   sport?:       string;
   adversaire?:  string;
@@ -94,7 +96,7 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       let childEntries: { club_id: string; team_id?: string; name?: string }[] = [];
       if (guardianRows?.length) {
         const pids = guardianRows.map(g => g.player_id);
-        const { data: children } = await supabase.from('club_players').select('club_id, team_id, name').in('id', pids).eq('is_active', true) as { data: typeof childEntries | null };
+        const { data: children } = await supabase.from('club_players').select('id, club_id, team_id, name').in('id', pids).eq('is_active', true) as { data: typeof childEntries | null };
         childEntries = children ?? [];
       }
       if (cancelled) return;
@@ -103,8 +105,10 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       const directClubSet    = new Set((directEntries ?? []).map(e => String(e.club_id)));
       const guardianClubSet  = new Set(childEntries.map(e => String(e.club_id)));
       const playerClubSet    = new Set(allEntries.map(e => String(e.club_id)));
-      const playerTeamIds = [...new Set(allEntries.map(e => String(e.team_id)).filter(Boolean))];
-      const trainingClubs = filtered.filter(id => playerClubSet.has(id) || managedSet.has(id));
+      const playerTeamIds    = [...new Set(allEntries.map(e => String(e.team_id)).filter(Boolean))];
+      const trainingClubs    = filtered.filter(id => playerClubSet.has(id) || managedSet.has(id));
+      // IDs club_players des enfants (pour fetch présence par player_id)
+      const childPlayerUUIDs = childEntries.map(e => (e as any).id).filter((id): id is string => !!id);
 
       const [sessionsRes, eventsRes] = await Promise.all([
         trainingClubs.length
@@ -119,7 +123,7 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       const sessionIds = sessions.map(s => s.id);
       const eventIds   = events.map(e => String(e.id));
 
-      const [trainAttRes, matchAttRes, trainCntRes, matchCntRes, convocRes, matchScoresRes, postersRes] = await Promise.all([
+      const [trainAttRes, matchAttRes, trainCntRes, matchCntRes, convocRes, matchScoresRes, postersRes, childTrainAttRes] = await Promise.all([
         (sessionIds.length && userId) ? supabase.from('training_attendance').select('session_id, status').in('session_id', sessionIds).eq('user_id', userId) : { data: [] },
         (eventIds.length && userId)   ? supabase.from('match_player_attendance').select('event_id, status').in('event_id', eventIds).eq('user_id', userId) : { data: [] },
         sessionIds.length ? supabase.from('training_attendance_counts').select('session_id, present_count, absent_count, unsure_count').in('session_id', sessionIds) : { data: [] },
@@ -127,10 +131,18 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
         (managedSet.size > 0 && eventIds.length) ? supabase.from('event_convocations').select('event_id, status').in('event_id', eventIds) : { data: [] },
         eventIds.length   ? supabase.from('match_scores').select('event_id, score_home, score_away, status').in('event_id', eventIds) : { data: [] },
         eventIds.length   ? supabase.from('match_posters').select('event_id, poster_type, image_url').in('event_id', eventIds) : { data: [] },
-      ]) as [{ data: { session_id: string; status: string }[] | null }, { data: { event_id: string; status: string }[] | null }, { data: { session_id: string; present_count?: number; absent_count?: number; unsure_count?: number }[] | null }, { data: { event_id: string; present_count?: number; absent_count?: number; unsure_count?: number }[] | null }, { data: { event_id: string; status: string }[] | null }, { data: MatchScore & { event_id: string }[] | null }, { data: { event_id: string; poster_type: string; image_url: string }[] | null }];
+        // Présence des enfants (pour tuteurs/parents) — par player_id
+        (sessionIds.length && childPlayerUUIDs.length) ? supabase.from('training_attendance').select('session_id, status, player_id').in('session_id', sessionIds).in('player_id', childPlayerUUIDs) : { data: [] },
+      ]) as [{ data: { session_id: string; status: string }[] | null }, { data: { event_id: string; status: string }[] | null }, { data: { session_id: string; present_count?: number; absent_count?: number; unsure_count?: number }[] | null }, { data: { event_id: string; present_count?: number; absent_count?: number; unsure_count?: number }[] | null }, { data: { event_id: string; status: string }[] | null }, { data: MatchScore & { event_id: string }[] | null }, { data: { event_id: string; poster_type: string; image_url: string }[] | null }, { data: { session_id: string; status: string; player_id: string }[] | null }];
       if (cancelled) return;
 
-      const trainStatusMap = Object.fromEntries((trainAttRes.data ?? []).map(a => [a.session_id, a.status]));
+      const trainStatusMap: Record<string, string> = Object.fromEntries((trainAttRes.data ?? []).map(a => [a.session_id, a.status]));
+      // Présence des enfants (par player_id) — indexée par session_id + player_id
+      const childAttMap: Record<string, Record<string, string>> = {};
+      for (const a of (childTrainAttRes.data ?? [])) {
+        if (!childAttMap[a.session_id]) childAttMap[a.session_id] = {};
+        childAttMap[a.session_id][a.player_id] = a.status;
+      }
       const matchStatusMap = Object.fromEntries((matchAttRes.data ?? []).map(a => [a.event_id,   a.status]));
       type CntRow = { present_count?: number; absent_count?: number; unsure_count?: number; [key: string]: unknown };
       const trainCntMap: Record<string, CntRow> = Object.fromEntries((trainCntRes.data ?? []).map(r => [r.session_id, r]));
@@ -148,10 +160,19 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
         convocMap[c.event_id][c.status as keyof ConvocStats] = ((convocMap[c.event_id][c.status as keyof ConvocStats] as number) ?? 0) + 1;
       });
 
+      const directClubTeamSet = new Set((directEntries ?? []).map(e => `${e.club_id}|${e.team_id ?? ''}`));
       const trainingItems: SeasonItem[] = sessions.map(s => {
-        const cnt   = trainCntMap[s.id] ?? {};
-        const entry = allEntries.find(e => String(e.team_id) === String(s.team_id) && String(e.club_id) === String(s.club_id));
-        return { id: s.id, type: 'training', date: s.date, time: s.time ?? '', title: entry?.name ? `Entraînement ${entry.name}` : 'Entraînement', location: s.location ?? '', club_id: s.club_id, status: s.status, team_id: s.team_id, myStatus: trainStatusMap[s.id] ?? null, presentCount: cnt.present_count ?? 0, absentCount: cnt.absent_count ?? 0, unsureCount: cnt.unsure_count ?? 0, isStaffClub: managedSet.has(String(s.club_id)), isPlayerClub: playerClubSet.has(String(s.club_id)), isSupporter: false };
+        const cnt         = trainCntMap[s.id] ?? {};
+        const entry       = allEntries.find(e => String(e.team_id) === String(s.team_id) && String(e.club_id) === String(s.club_id));
+        // Détection guardian : entrée trouvée mais pas dans les joueurs directs
+        const childEntry  = childEntries.find(e => String((e as any).club_id) === String(s.club_id) && String((e as any).team_id) === String(s.team_id));
+        const isGuardian  = !!childEntry && !directClubTeamSet.has(`${s.club_id}|${s.team_id ?? ''}`);
+        const childPlayerId   = isGuardian ? ((childEntry as any).id as string | undefined) : undefined;
+        const childPlayerName = isGuardian ? (childEntry?.name ?? undefined) : undefined;
+        // Status : propre si joueur, statut de l'enfant si parent
+        const childStatus = childPlayerId ? (childAttMap[s.id]?.[childPlayerId] ?? null) : null;
+        const myStatus    = isGuardian ? childStatus : (trainStatusMap[s.id] ?? null);
+        return { id: s.id, type: 'training', date: s.date, time: s.time ?? '', title: entry?.name ? `Entraînement ${entry.name}` : 'Entraînement', location: s.location ?? '', club_id: s.club_id, status: s.status, team_id: s.team_id, myStatus, presentCount: cnt.present_count ?? 0, absentCount: cnt.absent_count ?? 0, unsureCount: cnt.unsure_count ?? 0, isStaffClub: managedSet.has(String(s.club_id)), isPlayerClub: playerClubSet.has(String(s.club_id)), isGuardian, childPlayerName, childPlayerId, isSupporter: false };
       });
       const matchItems = events.map(ev => {
         const id = String(ev.id); const cnt = matchCntMap[id] ?? {}; const convocs = convocMap[id] ?? null; const matchScore = matchScoreMap[id] ?? null;
@@ -232,12 +253,23 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
-  const respond = useCallback(async (type: 'training' | 'match', id: string, status: string) => {
+  const respond = useCallback(async (type: 'training' | 'match', id: string, status: string, playerId?: string | null) => {
     if (!userId || !status) return;
     setItems(prev => prev.map(item => item.id === id ? { ...item, myStatus: status } : item));
-    const table   = type === 'training' ? 'training_attendance' : 'match_player_attendance';
-    const payload = type === 'training' ? { session_id: id, user_id: userId, status, updated_at: new Date().toISOString() } : { event_id: id, user_id: userId, status, updated_at: new Date().toISOString() };
-    const conflict = type === 'training' ? 'session_id,user_id' : 'event_id,user_id';
+    const table = type === 'training' ? 'training_attendance' : 'match_player_attendance';
+    let payload: Record<string, unknown>;
+    let conflict: string;
+    if (type === 'training' && playerId) {
+      // Parent répond pour son enfant → conflit sur (session_id, player_id)
+      payload  = { session_id: id, user_id: userId, player_id: playerId, status, responded_by: userId, updated_at: new Date().toISOString() };
+      conflict = 'session_id,player_id';
+    } else if (type === 'training') {
+      payload  = { session_id: id, user_id: userId, status, updated_at: new Date().toISOString() };
+      conflict = 'session_id,user_id';
+    } else {
+      payload  = { event_id: id, user_id: userId, status, updated_at: new Date().toISOString() };
+      conflict = 'event_id,user_id';
+    }
     const { error } = await supabase.from(table).upsert(payload as any, { onConflict: conflict }) as { error: { message: string } | null };
     if (error) { console.error('[SeasonPlanning] respond failed:', error.message); setItems(prev => prev.map(item => item.id === id ? { ...item, myStatus: null } : item)); }
   }, [userId]);
