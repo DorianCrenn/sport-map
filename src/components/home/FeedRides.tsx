@@ -162,48 +162,56 @@ export default function FeedRides({
                   )}
                 </div>
 
-                {/* CTA */}
-                {isStaffOnly ? (
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => !isRelanced && handleRelancer(match.eventId, match.clubId, match.adversaire)}
-                    disabled={isSending || isRelanced}
-                    style={{
-                      flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: 'none',
-                      cursor: isSending || isRelanced ? 'default' : 'pointer',
-                      fontSize: 11, fontWeight: 700,
-                      backgroundColor: isRelanced
-                        ? 'rgba(34,217,106,0.12)'
-                        : 'rgba(59,130,246,0.12)',
-                      color: isRelanced ? '#22d96a' : '#3b82f6',
-                      transition: 'all 0.2s',
-                      minWidth: 72, textAlign: 'center',
-                    }}
-                  >
-                    {isSending ? '…' : isRelanced ? '✓ Envoyé' : 'Relancer'}
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setSelectedEvent({
-                      id:         match.eventId,
-                      clubId:     match.clubId,
-                      title:      `${match.clubName} vs ${match.adversaire}`,
-                      sport:      match.sport,
-                      adversaire: match.adversaire,
-                      date:       match.date,
-                    })}
-                    style={{
-                      flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: 'none',
-                      cursor: 'pointer', fontSize: 11, fontWeight: 700,
-                      backgroundColor: hasSeats ? '#22d96a' : 'rgba(34,217,106,0.12)',
-                      color: hasSeats ? '#fff' : '#22d96a',
-                      minWidth: 72, textAlign: 'center',
-                    }}
-                  >
-                    {hasRides ? 'Rejoindre' : 'Proposer'}
-                  </motion.button>
-                )}
+                {/* CTA — staff only: Relancer seul / coach: les deux / autre: Rejoindre seul */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flexShrink: 0 }}>
+
+                  {/* Rejoindre / Proposer — visible pour coach + utilisateurs non-staff */}
+                  {!isStaffOnly && (
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSelectedEvent({
+                        id:         match.eventId,
+                        clubId:     match.clubId,
+                        title:      `${match.clubName} vs ${match.adversaire}`,
+                        sport:      match.sport,
+                        adversaire: match.adversaire,
+                        date:       match.date,
+                      })}
+                      style={{
+                        padding: '7px 12px', borderRadius: 10, border: 'none',
+                        cursor: 'pointer', fontSize: 11, fontWeight: 700,
+                        backgroundColor: hasSeats ? '#22d96a' : 'rgba(34,217,106,0.12)',
+                        color: hasSeats ? '#fff' : '#22d96a',
+                        minWidth: 76, textAlign: 'center',
+                      }}
+                    >
+                      {hasRides ? 'Rejoindre' : 'Proposer'}
+                    </motion.button>
+                  )}
+
+                  {/* Relancer — visible pour staff ET coach */}
+                  {(isStaffOnly || isCoachOrManager) && (
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => !isRelanced && handleRelancer(match.eventId, match.clubId, match.adversaire)}
+                      disabled={isSending || isRelanced}
+                      style={{
+                        padding: isStaffOnly ? '7px 12px' : '5px 12px',
+                        borderRadius: 10, border: 'none',
+                        cursor: isSending || isRelanced ? 'default' : 'pointer',
+                        fontSize: isStaffOnly ? 11 : 10, fontWeight: 700,
+                        backgroundColor: isRelanced
+                          ? 'rgba(34,217,106,0.12)'
+                          : 'rgba(59,130,246,0.12)',
+                        color: isRelanced ? '#22d96a' : '#3b82f6',
+                        transition: 'all 0.2s',
+                        minWidth: 76, textAlign: 'center',
+                      }}
+                    >
+                      {isSending ? '…' : isRelanced ? '✓ Envoyé' : 'Relancer'}
+                    </motion.button>
+                  )}
+                </div>
               </motion.div>
             );
           })}
