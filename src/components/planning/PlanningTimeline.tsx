@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSeasonPlanning }  from '../../hooks/useSeasonPlanning.js';
+import { useFeedRides }       from '../../hooks/useFeedRides.js';
 import TrainingPlanningCard   from './TrainingPlanningCard.jsx';
 import MatchPlanningCard      from './MatchPlanningCard.jsx';
 
@@ -103,6 +104,13 @@ export default function PlanningTimeline({
   const { items, loading, respond, updateMatchScore } = useSeasonPlanning({
     userId: currentUser?.id, allClubIds, managedClubIds, managedClubs: managedClubs as any[], year, month, clubFilter, teamFilter,
   }) as any;
+
+  const { items: feedRideItems } = useFeedRides(allClubIds, teamFilter);
+  const ridesMap = useMemo(() => {
+    const map: Record<string, { total: number; seats: number }> = {};
+    feedRideItems.forEach(r => { map[r.eventId] = { total: r.totalRides, seats: r.availableSeats }; });
+    return map;
+  }, [feedRideItems]);
 
   // ── Auto-avance au prochain mois si le mois courant est vide (max 3 mois) ──
   useEffect(() => {
@@ -221,7 +229,7 @@ export default function PlanningTimeline({
                       return item.type === 'training' ? (
                         <TrainingPlanningCard key={item.id} item={{ ...item, ...withRespond(item) } as any} userId={currentUser?.id} isStaff={item.isStaffClub} onOpenRides={onNavigateRides} />
                       ) : (
-                        <MatchPlanningCard key={item.id} item={{ ...item, ...withRespond(item) } as any} userId={currentUser?.id} club={club} isStaff={item.isStaffClub} isCoach={item.isCoachClub} isCommunicant={item.isCommClub} isPresident={item.isOwnerClub} isGuardian={item.isGuardian} onOpenPoster={onOpenPoster} onConvocate={onConvocate} onOpenRides={onNavigateRides} onScoreSaved={updateMatchScore} showClubBadge={showClubFilter && clubFilter === 'all'} />
+                        <MatchPlanningCard key={item.id} item={{ ...item, ...withRespond(item) } as any} userId={currentUser?.id} club={club} isStaff={item.isStaffClub} isCoach={item.isCoachClub} isCommunicant={item.isCommClub} isPresident={item.isOwnerClub} isGuardian={item.isGuardian} rides={ridesMap[String(item.id)] ?? null} onOpenPoster={onOpenPoster} onConvocate={onConvocate} onOpenRides={onNavigateRides} onScoreSaved={updateMatchScore} showClubBadge={showClubFilter && clubFilter === 'all'} />
                       );
                     })}
                   </div>

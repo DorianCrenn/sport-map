@@ -154,6 +154,7 @@ interface MatchPlanningCardProps {
   isCommunicant?: boolean;
   isPresident?: boolean;
   isGuardian?: boolean;
+  rides?: { total: number; seats: number } | null;
   onOpenPoster?: (opts: Record<string, any>) => void;
   onConvocate?: (item: MatchItem) => void;
   onOpenRides?: () => void;
@@ -167,7 +168,7 @@ const POSTER_LABELS: Record<string, { emoji: string; label: string }> = {
   announce:    { emoji: '🖼️', label: 'Voir l\'affiche du match' },
 };
 
-export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach, isCommunicant, isPresident, isGuardian, onOpenPoster, onConvocate, onOpenRides, onScoreSaved, showClubBadge }: MatchPlanningCardProps) {
+export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach, isCommunicant, isPresident, isGuardian, rides, onOpenPoster, onConvocate, onOpenRides, onScoreSaved, showClubBadge }: MatchPlanningCardProps) {
   const [showList,        setShowList]        = useState(false);
   const [showPosterUrl,   setShowPosterUrl]   = useState<string | null>(null);
   const [showScoreInput,  setShowScoreInput]  = useState(false);
@@ -380,6 +381,30 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
                 <button onClick={() => onOpenPoster?.({ event: item, club })} className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-white active:opacity-80 transition-opacity" style={{ background: '#f97316' }}>
                   <span className="flex items-center gap-2"><span>🎨</span><span>Créer l'affiche</span></span>
                   <span className="text-white/50 text-lg">↗</span>
+                </button>
+              </motion.div>
+            )}
+
+            {/* Covoiturage inline — pour staff, joueurs et parents */}
+            {(cardState === 'pre_match' || cardState === 'match_day') && (isStaff || item.isPlayerClub || isGuardian) && rides && rides.total > 0 && (
+              <motion.div key="rides" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <button
+                  onClick={onOpenRides}
+                  data-demo="ride-on-card"
+                  className="w-full text-left px-3 py-2.5 rounded-xl bg-[var(--sl-surface)] hover:bg-[var(--sl-hover)] transition-colors flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🚗</span>
+                    <div>
+                      <p className="text-[11px] font-bold text-[var(--sl-t2)]">Covoiturage</p>
+                      <p className="text-[10px] text-[var(--sl-t3)]">
+                        {rides.total} trajet{rides.total > 1 ? 's' : ''}
+                        {rides.seats > 0 && <> · <span className="text-emerald-400 font-bold">{rides.seats} place{rides.seats > 1 ? 's' : ''} libre{rides.seats > 1 ? 's' : ''}</span></>}
+                        {rides.seats === 0 && <span className="text-red-400"> · complet</span>}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[var(--sl-t3)] text-[10px]">›</span>
                 </button>
               </motion.div>
             )}
