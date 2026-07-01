@@ -141,7 +141,7 @@ interface MatchItem extends Record<string, any> {
   absentCount?: number;
   unsureCount?: number;
   convocs?: ConvocationCounts & { total: number };
-  posterUrl?: string | null;
+  posters?: { announce?: string | null; convocation?: string | null; result?: string | null } | null;
   onRespond?: (type: string, id: string | number, status: string) => void;
 }
 
@@ -161,9 +161,15 @@ interface MatchPlanningCardProps {
   showClubBadge?: boolean;
 }
 
+const POSTER_LABELS: Record<string, { emoji: string; label: string }> = {
+  result:      { emoji: '🏆', label: 'Voir l\'affiche résultat' },
+  convocation: { emoji: '📋', label: 'Voir la convocation' },
+  announce:    { emoji: '🖼️', label: 'Voir l\'affiche du match' },
+};
+
 export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach, isCommunicant, isPresident, isGuardian, onOpenPoster, onConvocate, onOpenRides, onScoreSaved, showClubBadge }: MatchPlanningCardProps) {
   const [showList,        setShowList]        = useState(false);
-  const [showPoster,      setShowPoster]      = useState(false);
+  const [showPosterUrl,   setShowPosterUrl]   = useState<string | null>(null);
   const [showScoreInput,  setShowScoreInput]  = useState(false);
   const [showStatsModal,  setShowStatsModal]  = useState(false);
   const [localMatchScore, setLocalMatchScore] = useState<Record<string, any> | null>(null);
@@ -302,14 +308,21 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
             </button>
           )}
 
-          {!isStaff && item.posterUrl && (
-            <button
-              onClick={() => setShowPoster(true)}
-              className="w-full text-left text-xs font-semibold text-[var(--sl-t2)] py-2 px-3 rounded-xl bg-[var(--sl-surface)] hover:bg-[var(--sl-hover)] transition-colors mb-3 flex items-center justify-between"
-            >
-              <span>🖼️ Voir l'affiche du match</span>
-              <span className="text-[var(--sl-t3)] ml-2">›</span>
-            </button>
+          {!isStaff && item.posters && (
+            <div className="space-y-1.5 mb-3">
+              {(['result', 'convocation', 'announce'] as const).map(type => {
+                const url = item.posters![type];
+                if (!url) return null;
+                const cfg = POSTER_LABELS[type];
+                return (
+                  <button key={type} onClick={() => setShowPosterUrl(url)}
+                    className="w-full text-left text-xs font-semibold text-[var(--sl-t2)] py-2 px-3 rounded-xl bg-[var(--sl-surface)] hover:bg-[var(--sl-hover)] transition-colors flex items-center justify-between">
+                    <span>{cfg.emoji} {cfg.label}</span>
+                    <span className="text-[var(--sl-t3)] ml-2">›</span>
+                  </button>
+                );
+              })}
+            </div>
           )}
 
           {item.isPlayerClub && (
@@ -416,8 +429,8 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
 
       <AttendanceListSheet open={showList} onClose={() => setShowList(false)} type="match" id={item.id} userId={userId} />
 
-      {showPoster && item.posterUrl && (
-        <MatchPosterViewer imageUrl={item.posterUrl} title={`${homeTeam} vs ${awayTeam}`} onClose={() => setShowPoster(false)} />
+      {showPosterUrl && (
+        <MatchPosterViewer imageUrl={showPosterUrl} title={`${homeTeam} vs ${awayTeam}`} onClose={() => setShowPosterUrl(null)} />
       )}
 
       {showStatsModal && item.club_id && (

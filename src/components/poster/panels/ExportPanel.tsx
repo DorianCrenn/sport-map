@@ -20,8 +20,21 @@ export default function ExportPanel({ ps }) {
     handleDownload, handleDownloadAll,
     handleShareWhatsApp, handleShareIG, handleShareFacebook, handleCopyLink,
     setExportOpen,
-    canPublish, publishing, published, handlePublish,
+    canPublish, publishing, published, posterType, handlePublish,
   } = ps;
+
+  const POSTER_TYPE_LABEL: Record<string, string> = {
+    announce:    'Publier l\'affiche match',
+    convocation: 'Publier la convocation',
+    result:      'Publier l\'affiche résultat',
+  };
+  const POSTER_TYPE_SUB: Record<string, string> = {
+    announce:    'Visible par les membres du club',
+    convocation: 'Avec la liste des joueurs convoqués',
+    result:      'Avec le score final du match',
+  };
+  const publishLabel = POSTER_TYPE_LABEL[posterType ?? 'announce'] ?? POSTER_TYPE_LABEL.announce;
+  const publishSub   = POSTER_TYPE_SUB[posterType ?? 'announce']   ?? POSTER_TYPE_SUB.announce;
 
   return (
     <motion.div
@@ -67,9 +80,9 @@ export default function ExportPanel({ ps }) {
           </div>
           <div style={{ textAlign: 'left' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: published ? 'var(--sl-green)' : '#fff' }}>
-              {publishing ? 'Publication…' : published ? 'Affiche publiée !' : 'Publier au club'}
+              {publishing ? 'Publication…' : published ? 'Affiche publiée !' : publishLabel}
             </div>
-            <div style={{ fontSize: 10, color: published ? 'var(--sl-t3)' : 'rgba(255,255,255,0.75)' }}>Visible par tous les membres du club</div>
+            <div style={{ fontSize: 10, color: published ? 'var(--sl-t3)' : 'rgba(255,255,255,0.75)' }}>{publishSub}</div>
           </div>
         </motion.button>
       )}

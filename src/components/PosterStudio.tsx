@@ -29,7 +29,7 @@ import {
 } from './poster/posterConstants.js';
 import { usePosterAssets } from '../hooks/usePosterAssets.js';
 import { usePosterExport } from '../hooks/usePosterExport.js';
-import { usePosterPublish } from '../hooks/usePosterPublish.js';
+import { usePosterPublish, type PosterType } from '../hooks/usePosterPublish.js';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { WizardStepBar, WizardContent, WizardFooter } from './poster/PosterWizard.jsx';
 import PlatformPreviewPanel from './poster/PlatformPreviewPanel.jsx';
@@ -362,8 +362,11 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
     handleShareFacebook, handleDownloadAll, handleCopyLink, getBlob,
   } = usePosterExport({ exportWrapperRef, altExportWrapperRef, format, altFormat, event, trackExport });
 
+  // Dériver le type d'affiche selon le contexte d'ouverture du studio
+  const posterType: PosterType = resultMode ? 'result' : (convocationPlayers?.length ? 'convocation' : 'announce');
+
   const { publishing, published, canPublish, handlePublish } = usePosterPublish({
-    getBlob, event, club, userId: currentUser?.id,
+    getBlob, event, club, userId: currentUser?.id, posterType,
     onError: (msg) => toast({ message: msg, type: 'error' }),
   });
 
@@ -901,7 +904,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             downloading, exportingAll, sharing, sharingIG, linkCopied,
             handleDownload, handleDownloadAll, handleShareWhatsApp, handleShareIG,
             handleShareFacebook, handleCopyLink, setExportOpen,
-            canPublish, publishing, published,
+            canPublish, publishing, published, posterType,
             handlePublish: () => handlePublish().then(ok => { if (ok) toast({ message: 'Affiche publiée au club !' }); }),
           }} />}
         </AnimatePresence>
