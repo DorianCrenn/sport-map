@@ -27,12 +27,13 @@ interface SelectedEvent {
 }
 
 interface FeedRidesProps {
-  clubIds:          string[];
-  teamFilters?:     string[];
-  isCoachOrManager: boolean;
-  isClubAdmin:      boolean;
-  isAdmin:          boolean;
-  isCommunicant:    boolean;
+  clubIds:            string[];
+  teamFilters?:       string[];
+  isCoachOrManager:   boolean;
+  isClubAdmin:        boolean;
+  isAdmin:            boolean;
+  isCommunicant:      boolean;
+  isPlayerOrGuardian: boolean;
 }
 
 export default function FeedRides({
@@ -42,14 +43,19 @@ export default function FeedRides({
   isClubAdmin,
   isAdmin,
   isCommunicant,
+  isPlayerOrGuardian,
 }: FeedRidesProps) {
   const { items, loading } = useFeedRides(clubIds, teamFilters);
   const [selectedEvent, setSelectedEvent] = useState<SelectedEvent | null>(null);
   const [relancingId,   setRelancingId]   = useState<string | null>(null);
   const [relancedIds,   setRelancedIds]   = useState<Set<string>>(new Set());
 
-  // Staff-only = can see & relancer, but NOT create/join rides
-  const isStaffOnly = (isClubAdmin || isAdmin || isCommunicant) && !isCoachOrManager;
+  // Peut rejoindre/proposer : joueur, parent, coach
+  const canJoin     = isCoachOrManager || isPlayerOrGuardian;
+  // Peut relancer l'équipe : staff (admin, communicant) et coach
+  const canRelancer = (isClubAdmin || isAdmin || isCommunicant) || isCoachOrManager;
+  // Badge "Vue staff" : staff pur sans rôle joueur/coach
+  const isStaffOnly = (isClubAdmin || isAdmin || isCommunicant) && !isCoachOrManager && !isPlayerOrGuardian;
 
   async function handleRelancer(eventId: string, clubId: string, adversaire: string) {
     if (relancingId) return;
@@ -162,11 +168,11 @@ export default function FeedRides({
                   )}
                 </div>
 
-                {/* CTA — staff only: Relancer seul / coach: les deux / autre: Rejoindre seul */}
+                {/* CTA — selon rôle : Rejoindre (joueur/parent/coach) + Relancer (staff/coach) */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flexShrink: 0 }}>
 
-                  {/* Rejoindre / Proposer — visible pour coach + utilisateurs non-staff */}
-                  {!isStaffOnly && (
+                  {/* Rejoindre / Proposer — joueur, parent, coach */}
+                  {canJoin && (
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedEvent({
@@ -189,17 +195,17 @@ export default function FeedRides({
                     </motion.button>
                   )}
 
-                  {/* Relancer — visible pour staff ET coach */}
-                  {(isStaffOnly || isCoachOrManager) && (
+                  {/* Relancer — staff et coach */}
+                  {canRelancer && (
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => !isRelanced && handleRelancer(match.eventId, match.clubId, match.adversaire)}
                       disabled={isSending || isRelanced}
                       style={{
-                        padding: isStaffOnly ? '7px 12px' : '5px 12px',
+                        padding: canJoin ? '5px 12px' : '7px 12px',
                         borderRadius: 10, border: 'none',
                         cursor: isSending || isRelanced ? 'default' : 'pointer',
-                        fontSize: isStaffOnly ? 11 : 10, fontWeight: 700,
+                        fontSize: canJoin ? 10 : 11, fontWeight: 700,
                         backgroundColor: isRelanced
                           ? 'rgba(34,217,106,0.12)'
                           : 'rgba(59,130,246,0.12)',

@@ -55,6 +55,17 @@ export default function ActualitesPage({
     return Object.values(map);
   }, [managedClubs]);
 
+  const [isPlayerOrGuardian, setIsPlayerOrGuardian] = useState(false);
+  useEffect(() => {
+    if (!currentUser?.id || !feedClubIds.length || demo) return;
+    Promise.all([
+      supabase.from('club_players').select('id').eq('user_id', currentUser.id).in('club_id', feedClubIds).limit(1),
+      supabase.from('player_guardians').select('player_id').eq('user_id', currentUser.id).limit(1),
+    ]).then(([{ data: players }, { data: guardians }]) => {
+      setIsPlayerOrGuardian((players?.length ?? 0) > 0 || (guardians?.length ?? 0) > 0);
+    });
+  }, [currentUser?.id, feedClubIds.join(','), demo]);
+
   const [studioConfig,     setStudioConfig]     = useState<Record<string, any> | null>(null);
   const [convocationEvent, setConvocationEvent] = useState<Record<string, any> | null>(null);
 
@@ -215,8 +226,8 @@ export default function ActualitesPage({
       {/* ══ Derniers résultats ═══════════════════════════════════════════════ */}
       {!isNewUser && <FeedRecentResults clubIds={feedClubIds} />}
 
-      {/* ══ Covoiturages ═════════════════════════════════════════════════════ */}
-      {!isNewUser && (
+      {/* ══ Covoiturages — staff, joueurs et parents uniquement ═════════════ */}
+      {!isNewUser && (isCoachOrManager || isClubAdmin || isAdmin || isCommunicant || isPlayerOrGuardian) && (
         <FeedRides
           clubIds={feedClubIds}
           teamFilters={teamFilters ?? []}
@@ -224,6 +235,7 @@ export default function ActualitesPage({
           isClubAdmin={isClubAdmin}
           isAdmin={isAdmin}
           isCommunicant={isCommunicant}
+          isPlayerOrGuardian={isPlayerOrGuardian}
         />
       )}
 
