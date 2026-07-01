@@ -13,6 +13,7 @@ import PlanningTimeline          from '../components/planning/PlanningTimeline.j
 import DiscoveryClubs            from '../components/home/DiscoveryClubs.js';
 import FeedAnnouncements         from '../components/home/FeedAnnouncements.js';
 import FeedRecentResults         from '../components/home/FeedRecentResults.js';
+import FeedRides                 from '../components/home/FeedRides.js';
 
 
 const PosterStudio             = lazy(() => import('../components/PosterStudio.jsx'));
@@ -213,6 +214,18 @@ export default function ActualitesPage({
 
       {/* ══ Derniers résultats ═══════════════════════════════════════════════ */}
       {!isNewUser && <FeedRecentResults clubIds={feedClubIds} />}
+
+      {/* ══ Covoiturages ═════════════════════════════════════════════════════ */}
+      {!isNewUser && (
+        <FeedRides
+          clubIds={feedClubIds}
+          teamFilters={teamFilters ?? []}
+          isCoachOrManager={isCoachOrManager}
+          isClubAdmin={isClubAdmin}
+          isAdmin={isAdmin}
+          isCommunicant={isCommunicant}
+        />
+      )}
 
       {/* ══ Annonces clubs ═══════════════════════════════════════════════════ */}
       {!isNewUser && (
