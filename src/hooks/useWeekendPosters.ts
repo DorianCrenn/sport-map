@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useManagedClubs } from './useManagedClubs.js';
-import { supabase, isDemoMode } from '../lib/supabase.js';
+import { supabase } from '../lib/supabase.js';
 import type { WeekendMatch, PosterData } from '../types/sportlink.js';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -94,10 +94,9 @@ function getNextSevenDaysRange(): { start: Date; end: Date } {
  */
 export function useWeekendPosters(): WeekendMatch[] {
   const { managedClubs, teamFilters } = useManagedClubs() as { managedClubs: { id: string; name: string; sport?: string; city?: string; logo_url?: string; logoUrl?: string }[]; teamFilters: string[] };
-  const [matches, setMatches] = useState<WeekendMatch[]>(() => isDemoMode() ? getMockWeekendMatches() : []);
+  const [matches, setMatches] = useState<WeekendMatch[]>([]);
 
   useEffect(() => {
-    if (isDemoMode()) { setMatches(getMockWeekendMatches()); return; }
     if (!managedClubs?.length) { setMatches([]); return; }
     let cancelled = false;
 
@@ -112,7 +111,7 @@ export function useWeekendPosters(): WeekendMatch[] {
       .in('club_id', clubIds)
       .gte('date', startIso)
       .lte('date', endIso)
-      .in('event_type', ['match', 'friendly'])
+      .in('event_type', ['match', 'friendly', 'championship', 'cup'])
       .order('date')
       .then(({ data, error }) => {
         if (cancelled || error || !data) return;
