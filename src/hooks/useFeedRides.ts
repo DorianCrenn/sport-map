@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase, isDemoMode } from '../lib/supabase.js';
+import { supabase } from '../lib/supabase.js';
 
 export interface MatchWithRides {
   eventId:        string;
@@ -20,7 +20,7 @@ export function useFeedRides(clubIds: string[], teamFilters: string[] = []) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!clubIds.length || isDemoMode()) { setLoading(false); return; }
+    if (!clubIds.length) { setLoading(false); return; }
     let cancelled = false;
 
     const today = new Date().toISOString().slice(0, 10);
@@ -33,7 +33,7 @@ export function useFeedRides(clubIds: string[], teamFilters: string[] = []) {
         .in('club_id', clubIds)
         .gte('date', today)
         .lte('date', end)
-        .in('event_type', ['match', 'friendly'])
+        .in('event_type', ['match', 'friendly', 'championship', 'cup'])
         .order('date')
         .limit(20) as { data: any[] | null };
 

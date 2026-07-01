@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { supabase, isDemoMode } from '../../lib/supabase.js';
+import { supabase } from '../../lib/supabase.js';
 
 const SPORT_EMOJI: Record<string, string> = {
   Football: '⚽', Basketball: '🏀', Rugby: '🏉', Handball: '🤾',
@@ -35,7 +35,7 @@ export default function FeedRecentResults({ clubIds }: FeedRecentResultsProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!clubIds.length || isDemoMode()) { setLoading(false); return; }
+    if (!clubIds.length) { setLoading(false); return; }
     let cancelled = false;
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -47,7 +47,7 @@ export default function FeedRecentResults({ clubIds }: FeedRecentResultsProps) {
       .in('club_id', clubIds)
       .gte('date', sevenDaysAgo)
       .lte('date', today)
-      .in('event_type', ['match', 'friendly'])
+      .in('event_type', ['match', 'friendly', 'championship', 'cup'])
       .order('date', { ascending: false })
       .limit(8)
       .then(async ({ data: events }) => {

@@ -178,8 +178,31 @@ class DemoQueryBuilder {
         return this._handleUpsert(tables);
       }
 
-      // SELECT
-      return this._handleSelect(table);
+      // SELECT — with dynamic FK joins for known tables
+      const result = this._handleSelect(table);
+
+      // Re-join ride_requests from live table so mutations are immediately reflected
+      // and full passenger data (name, id, message…) is always available
+      if (this._table === 'rides' && result.data) {
+        const reqsByRide: Record<string, any[]> = {};
+        for (const req of (tables.ride_requests ?? [])) {
+          if (!reqsByRide[req.ride_id]) reqsByRide[req.ride_id] = [];
+          reqsByRide[req.ride_id].push(req);
+        }
+        if (Array.isArray(result.data)) {
+          result.data = result.data.map((r: any) => ({
+            ...r,
+            ride_requests: reqsByRide[r.id] ?? [],
+          }));
+        } else if (result.data) {
+          result.data = {
+            ...(result.data as any),
+            ride_requests: reqsByRide[(result.data as any).id] ?? [],
+          };
+        }
+      }
+
+      return result;
 
     } catch (err) {
       console.warn('[DemoClient] query error on', this._table, err.message);

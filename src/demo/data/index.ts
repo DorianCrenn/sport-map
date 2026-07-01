@@ -84,11 +84,66 @@ export function buildDemoTables() {
     return d.toISOString();
   }
 
+  // ── Profils pré-intégrés — le demoClient ne résout pas les FK joins ────────
+  const PROFILE_MAP: Record<string, { name: string; avatar_url: string | null }> = {
+    [DEMO_USER_ID]:       { name: 'Alexandre Martin',     avatar_url: null },
+    'fake-user-p02':      { name: 'Romain Quéméner',      avatar_url: null },
+    'fake-user-p03':      { name: 'Maxime Briand',         avatar_url: null },
+    'fake-user-p04':      { name: 'Kevin Le Goff',         avatar_url: null },
+    'fake-user-p05':      { name: 'Antonin Salaün',        avatar_url: null },
+    'fake-user-p06':      { name: 'Thomas Guyader',        avatar_url: null },
+    'fake-user-p07':      { name: 'Pierre Jaouen',         avatar_url: null },
+    'fake-user-p08':      { name: 'Lucas Morel',           avatar_url: null },
+    'fake-user-p09':      { name: 'Clément Hélas',         avatar_url: null },
+    'fake-user-p10':      { name: 'Baptiste Seznec',       avatar_url: null },
+    'fake-user-p11':      { name: 'Julien Prigent',        avatar_url: null },
+    'fake-user-p12':      { name: 'Florian Calvez',        avatar_url: null },
+    'fake-user-p13':      { name: 'Mathieu Dourdain',      avatar_url: null },
+    'fake-user-p14':      { name: 'Hugo Kervarrec',        avatar_url: null },
+    'fake-user-p15':      { name: 'Nathan Kermarrec',      avatar_url: null },
+    'fake-user-p16':      { name: 'Yann Le Guével',        avatar_url: null },
+    'fake-user-p17':      { name: 'Erwan Bodéré',          avatar_url: null },
+    'fake-user-p18':      { name: 'Matthieu Briec',        avatar_url: null },
+    'fake-user-p19':      { name: 'Gauthier Faou',         avatar_url: null },
+    'fake-user-u17-01':   { name: 'Théo Tanguy',           avatar_url: null },
+    'fake-user-u17-02':   { name: 'Liam Creach',           avatar_url: null },
+    'fake-user-u17-03':   { name: 'Mael Rolland',          avatar_url: null },
+    'fake-user-u17-04':   { name: 'Ewen Pors',             avatar_url: null },
+    'fake-user-u17-05':   { name: 'Noa Kerguelen',         avatar_url: null },
+    'fake-user-u17-06':   { name: 'Titouan Jézéquel',      avatar_url: null },
+    'fake-user-u17-07':   { name: 'Mathis Keriven',        avatar_url: null },
+    'fake-user-u17-08':   { name: 'Ilann Lefloch',         avatar_url: null },
+    'fake-user-res-01':   { name: 'Gaël Kerboas',          avatar_url: null },
+    'fake-user-res-02':   { name: 'Arnaud Coat',           avatar_url: null },
+    'fake-user-res-03':   { name: 'Loïc Brézulier',        avatar_url: null },
+    'fake-user-res-04':   { name: 'Simon Hélias',          avatar_url: null },
+    'fake-user-res-05':   { name: 'Tristan Gall',          avatar_url: null },
+    'fake-user-f-01':     { name: 'Camille Burel',         avatar_url: null },
+    'fake-user-f-02':     { name: 'Laura Pors',            avatar_url: null },
+    'fake-user-f-03':     { name: 'Enora Kervella',        avatar_url: null },
+    'fake-user-f-04':     { name: 'Marie-Anne Dourdain',   avatar_url: null },
+    'fake-parent-001':    { name: 'Catherine Creach',      avatar_url: null },
+    'fake-parent-002':    { name: 'Marc Tanguy',           avatar_url: null },
+    'fake-parent-003':    { name: 'Anne-Marie Kerguelen',  avatar_url: null },
+    'fake-parent-004':    { name: 'Ronan Jézéquel',        avatar_url: null },
+    'fake-parent-005':    { name: 'Isabelle Bodilis',      avatar_url: null },
+    'fake-parent-006':    { name: 'Stéphane Mével',        avatar_url: null },
+  };
+
   // Mutable copies — modifiable during sandbox mode
   const tables = {
     events:                [...demoEvents, ...extraEvents, ...franceEvents],
     clubs:                 [{ ...demoClubRow }, ...extraClubs, ...franceClubs],
-    profiles:              [{ ...DEMO_PROFILE_ROW }],
+    profiles: [
+      { ...DEMO_PROFILE_ROW },
+      // ── Parents fictifs — pour les lookups de profils directs ──────────────
+      { id: 'fake-parent-001', name: 'Catherine Creach',     role: 'user', avatar_url: null, created_at: NOW },
+      { id: 'fake-parent-002', name: 'Marc Tanguy',          role: 'user', avatar_url: null, created_at: NOW },
+      { id: 'fake-parent-003', name: 'Anne-Marie Kerguelen', role: 'user', avatar_url: null, created_at: NOW },
+      { id: 'fake-parent-004', name: 'Ronan Jézéquel',       role: 'user', avatar_url: null, created_at: NOW },
+      { id: 'fake-parent-005', name: 'Isabelle Bodilis',     role: 'user', avatar_url: null, created_at: NOW },
+      { id: 'fake-parent-006', name: 'Stéphane Mével',       role: 'user', avatar_url: null, created_at: NOW },
+    ],
     club_announcements:    [...demoAnnouncements, ...extraAnnouncements, ...franceAnnouncements],
     rides:                 [...demoRides],
     ride_requests:         [...demoRideRequests],
@@ -128,10 +183,17 @@ export function buildDemoTables() {
         created_at: NOW, updated_at: NOW,
       },
       {
-        // demo-event-016 (hier) — EN DIRECT (Équipe 1 gagne 2-1)
+        // demo-event-016 (hier) — match en cours : 2-1 → pupitre de score visible pour le coach
         id: 'demo-ms-016', event_id: 'demo-event-016', sport: 'Football',
         score_home: 2, score_away: 1, status: 'in_progress',
         score_detail: {}, man_of_match: null, validated_by: null, validated_at: null,
+        created_at: NOW, updated_at: NOW,
+      },
+      {
+        // demo-event-012 (J-7) — victoire 3-1
+        id: 'demo-ms-012', event_id: 'demo-event-012', sport: 'Football',
+        score_home: 3, score_away: 1, status: 'final',
+        score_detail: {}, man_of_match: 'Lucas Morel', validated_by: null, validated_at: null,
         created_at: NOW, updated_at: NOW,
       },
       {
@@ -361,10 +423,16 @@ export function buildDemoTables() {
     ],
     event_convocations:    [...demoConvocations],
 
-    // ── Tuteurs légaux — lie le demo user à 2 joueurs (profil Parent) ─────────
+    // ── Tuteurs légaux — demo user + 6 parents fictifs ───────────────────────
     player_guardians: [
-      { id: 'demo-pg-001', player_id: 'demo-player-038', user_id: DEMO_USER_ID, created_at: NOW },
-      { id: 'demo-pg-002', player_id: 'demo-player-041', user_id: DEMO_USER_ID, created_at: NOW },
+      { id: 'demo-pg-001', player_id: 'demo-player-038', user_id: DEMO_USER_ID,     created_at: NOW },
+      { id: 'demo-pg-002', player_id: 'demo-player-041', user_id: DEMO_USER_ID,     created_at: NOW },
+      { id: 'demo-pg-003', player_id: 'demo-player-038', user_id: 'fake-parent-001', created_at: NOW }, // Catherine Creach / Liam
+      { id: 'demo-pg-004', player_id: 'demo-player-037', user_id: 'fake-parent-002', created_at: NOW }, // Marc Tanguy / Théo
+      { id: 'demo-pg-005', player_id: 'demo-player-041', user_id: 'fake-parent-003', created_at: NOW }, // Anne-Marie / Noa
+      { id: 'demo-pg-006', player_id: 'demo-player-042', user_id: 'fake-parent-004', created_at: NOW }, // Ronan Jézéquel / Titouan
+      { id: 'demo-pg-007', player_id: 'demo-player-054', user_id: 'fake-parent-005', created_at: NOW }, // Isabelle Bodilis / Maël U15
+      { id: 'demo-pg-008', player_id: 'demo-player-057', user_id: 'fake-parent-006', created_at: NOW }, // Stéphane Mével / Luc U15
     ],
 
     club_challenges: [
@@ -438,6 +506,49 @@ export function buildDemoTables() {
       { id: 'demo-ta-045', session_id: 'demo-ts-004', user_id: 'fake-user-p05',   status: 'absent',   updated_at: NOW },
       { id: 'demo-ta-046', session_id: 'demo-ts-004', user_id: 'fake-user-p12',   status: 'absent',   updated_at: NOW },
       { id: 'demo-ta-047', session_id: 'demo-ts-004', user_id: 'fake-user-p13',   status: 'unsure',   updated_at: NOW },
+
+      // ── demo-ts-005 (U17, J+2) — joueurs + parents répondent ─────────────────
+      { id: 'demo-ta-048', session_id: 'demo-ts-005', user_id: 'fake-user-u17-03', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-049', session_id: 'demo-ts-005', user_id: 'fake-user-u17-04', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-050', session_id: 'demo-ts-005', user_id: 'fake-user-u17-07', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-051', session_id: 'demo-ts-005', user_id: 'fake-user-u17-08', status: 'absent',  updated_at: NOW },
+      // Parents répondant pour leurs enfants U17
+      { id: 'demo-ta-052', session_id: 'demo-ts-005', user_id: 'fake-parent-001', player_id: 'demo-player-038', responded_by: 'fake-parent-001', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-053', session_id: 'demo-ts-005', user_id: 'fake-parent-002', player_id: 'demo-player-037', responded_by: 'fake-parent-002', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-054', session_id: 'demo-ts-005', user_id: 'fake-parent-003', player_id: 'demo-player-041', responded_by: 'fake-parent-003', status: 'unsure',  updated_at: NOW },
+      { id: 'demo-ta-055', session_id: 'demo-ts-005', user_id: 'fake-parent-004', player_id: 'demo-player-042', responded_by: 'fake-parent-004', status: 'present', updated_at: NOW },
+
+      // ── demo-ts-006 (Équipe 1, J+4) ─────────────────────────────────────────
+      { id: 'demo-ta-056', session_id: 'demo-ts-006', user_id: 'fake-user-p02',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-057', session_id: 'demo-ts-006', user_id: 'fake-user-p03',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-058', session_id: 'demo-ts-006', user_id: 'fake-user-p04',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-059', session_id: 'demo-ts-006', user_id: 'fake-user-p05',  status: 'absent',  updated_at: NOW },
+      { id: 'demo-ta-060', session_id: 'demo-ts-006', user_id: 'fake-user-p06',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-061', session_id: 'demo-ts-006', user_id: 'fake-user-p07',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-062', session_id: 'demo-ts-006', user_id: 'fake-user-p09',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-063', session_id: 'demo-ts-006', user_id: 'fake-user-p11',  status: 'absent',  updated_at: NOW },
+      { id: 'demo-ta-064', session_id: 'demo-ts-006', user_id: 'fake-user-p13',  status: 'unsure',  updated_at: NOW },
+      { id: 'demo-ta-065', session_id: 'demo-ts-006', user_id: 'fake-user-p14',  status: 'present', updated_at: NOW },
+
+      // ── demo-ts-007 (Équipe F, J+4) ─────────────────────────────────────────
+      { id: 'demo-ta-066', session_id: 'demo-ts-007', user_id: 'fake-user-f-01', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-067', session_id: 'demo-ts-007', user_id: 'fake-user-f-02', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-068', session_id: 'demo-ts-007', user_id: 'fake-user-f-03', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-069', session_id: 'demo-ts-007', user_id: 'fake-user-f-04', status: 'absent',  updated_at: NOW },
+
+      // ── demo-ts-008 (Équipe 1, J+9) — quelques réponses anticipées ───────────
+      { id: 'demo-ta-070', session_id: 'demo-ts-008', user_id: 'fake-user-p02',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-071', session_id: 'demo-ts-008', user_id: 'fake-user-p04',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-072', session_id: 'demo-ts-008', user_id: 'fake-user-p07',  status: 'present', updated_at: NOW },
+      { id: 'demo-ta-073', session_id: 'demo-ts-008', user_id: 'fake-user-p09',  status: 'present', updated_at: NOW },
+
+      // ── demo-ts-009 (U17, J+11) — joueurs + parents pour blessure/prévision ──
+      { id: 'demo-ta-074', session_id: 'demo-ts-009', user_id: 'fake-user-u17-01', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-075', session_id: 'demo-ts-009', user_id: 'fake-user-u17-03', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-076', session_id: 'demo-ts-009', user_id: 'fake-user-u17-05', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-077', session_id: 'demo-ts-009', user_id: 'fake-user-u17-08', status: 'absent',  updated_at: NOW },
+      { id: 'demo-ta-078', session_id: 'demo-ts-009', user_id: 'fake-parent-001', player_id: 'demo-player-038', responded_by: 'fake-parent-001', status: 'present', updated_at: NOW },
+      { id: 'demo-ta-079', session_id: 'demo-ts-009', user_id: 'fake-parent-004', player_id: 'demo-player-042', responded_by: 'fake-parent-004', status: 'absent',  updated_at: NOW },
     ],
 
     // ── Présences matchs ────────────────────────────────────────────────────────
@@ -482,6 +593,39 @@ export function buildDemoTables() {
       },
     ],
   };
+
+  // ── Post-processing : embed FK joins (demoClient ne les résout pas) ──────────
+
+  // Profiles dans les présences
+  tables.training_attendance = tables.training_attendance.map(e => ({
+    ...e,
+    profiles: PROFILE_MAP[e.user_id] ?? null,
+  }));
+  tables.match_player_attendance = tables.match_player_attendance.map(e => ({
+    ...e,
+    profiles: PROFILE_MAP[e.user_id] ?? null,
+  }));
+
+  // Nom du club dans tous les événements
+  const clubNameById: Record<string, string> = {};
+  for (const c of tables.clubs) clubNameById[String(c.id)] = c.name;
+  tables.events = tables.events.map(e => ({
+    ...e,
+    clubs: { name: clubNameById[String(e.club_id)] ?? '' },
+  }));
+
+  // Passagers complets dans chaque ride (noms, statuts, messages…)
+  // Le demoClient re-joint dynamiquement à chaque requête — ceci sert uniquement
+  // au premier rendu synchrone avant le premier fetch.
+  const rideReqsByRide: Record<string, any[]> = {};
+  for (const req of tables.ride_requests) {
+    if (!rideReqsByRide[req.ride_id]) rideReqsByRide[req.ride_id] = [];
+    rideReqsByRide[req.ride_id].push(req);
+  }
+  tables.rides = tables.rides.map(r => ({
+    ...r,
+    ride_requests: rideReqsByRide[r.id] ?? [],
+  }));
 
   // Calcul des compteurs agrégés à partir des données brutes
   const taAgg = {};

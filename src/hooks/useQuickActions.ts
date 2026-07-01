@@ -46,7 +46,7 @@ export function useQuickActions({ currentUser, managedClubs, followedClubIds, is
         ? supabase.from('training_sessions').select('id, club_id, team_id, time, location, status').in('club_id', allManagedIds).eq('date', todayDate).eq('status', 'active').limit(1).maybeSingle()
         : Promise.resolve({ data: null }),
       allManagedIds.length
-        ? supabase.from('events').select('id, title, date, adversaire, home_or_away, team_name, club_id, score, event_type').in('club_id', allManagedIds).gte('date', from).lte('date', to).in('event_type', ['match', 'friendly']).order('date', { ascending: true })
+        ? supabase.from('events').select('id, title, date, adversaire, home_or_away, team_name, club_id, score, event_type').in('club_id', allManagedIds).gte('date', from).lte('date', to).in('event_type', ['match', 'friendly', 'championship', 'cup']).order('date', { ascending: true })
         : Promise.resolve({ data: [] }),
     ]) as [{ data: TrainingSession | null }, { data: EventRow[] | null }];
 
