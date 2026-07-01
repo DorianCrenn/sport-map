@@ -12,6 +12,7 @@ interface SeasonPlanningOptions {
   year?:            number;
   month?:           number;
   clubFilter?:      string | 'all';
+  teamFilter?:      string[];
 }
 
 interface MatchScore { status?: string; score_home?: number | null; score_away?: number | null; }
@@ -52,7 +53,7 @@ export interface SeasonItem {
   posters?:     { announce?: string | null; convocation?: string | null; result?: string | null } | null;
 }
 
-export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = [], managedClubs = [], year, month, clubFilter = 'all' }: SeasonPlanningOptions) {
+export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = [], managedClubs = [], year, month, clubFilter = 'all', teamFilter = [] }: SeasonPlanningOptions) {
   const [items,   setItems]   = useState<SeasonItem[]>([]);
   const [loading, setLoading] = useState(true);
   const matchEventIdsRef = useRef(new Set<string>());
@@ -204,11 +205,17 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       }
 
       matchEventIdsRef.current = new Set(matchItems.map(m => String(m.id)));
-      setItems(merged); setLoading(false);
+      const teamFiltered = teamFilter.length
+        ? merged.filter(item =>
+            item.type !== 'match' ||
+            teamFilter.some(f => item.team_name === f || item.category === f)
+          )
+        : merged;
+      setItems(teamFiltered); setLoading(false);
     }
     load().catch(err => { console.error('[SeasonPlanning] load error:', err); if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [userId, clubIdKey, managedKey, coachKey, commKey, firstDay, lastDay, clubFilter]);
+  }, [userId, clubIdKey, managedKey, coachKey, commKey, firstDay, lastDay, clubFilter, teamFilter.join(',')]);
 
   useEffect(() => {
     if (!userId) return;

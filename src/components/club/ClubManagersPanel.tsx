@@ -30,18 +30,19 @@ interface ClubManagersPanelProps {
   ownerName?: string | null;
   clubId: string | number;
   clubName?: string;
-  onAdd: (email: string, role: string) => Promise<boolean>;
+  onAdd: (email: string, role: string, teamFilter?: string) => Promise<boolean>;
   onRemove: (email: string) => void;
   onRoleChange?: (email: string, role: string) => void;
   onClose: () => void;
 }
 
 export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clubId, clubName, onAdd, onRemove, onRoleChange, onClose }: ClubManagersPanelProps) {
-  const [email,   setEmail]   = useState('');
-  const [role,    setRole]    = useState('manager');
-  const [error,   setError]   = useState('');
-  const [success, setSuccess] = useState('');
-  const [sending, setSending] = useState<string | boolean>(false);
+  const [email,      setEmail]      = useState('');
+  const [role,       setRole]       = useState('manager');
+  const [teamFilter, setTeamFilter] = useState('');
+  const [error,      setError]      = useState('');
+  const [success,    setSuccess]    = useState('');
+  const [sending,    setSending]    = useState<string | boolean>(false);
 
   async function sendInviteEmail(normalizedEmail: string) {
     try {
@@ -64,9 +65,10 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
     if (!normalized) return;
     if (!normalized.includes('@')) { setError('Email invalide'); return; }
     if (normalized === ownerEmail?.toLowerCase()) { setError("C'est déjà le propriétaire du club"); return; }
-    const ok = await onAdd(normalized, role);
+    const ok = await onAdd(normalized, role, teamFilter.trim() || undefined);
     if (!ok) { setError('Cet email est déjà gestionnaire'); return; }
     setEmail('');
+    setTeamFilter('');
     setError('');
     sendInviteEmail(normalized);
     setSuccess(`Invitation envoyée à ${normalized} — rôle : ${roleMeta(role).label}`);
@@ -157,6 +159,20 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
         </div>
         <div style={{ fontSize: 10, color: roleMeta(role).color, marginBottom: 8, fontWeight: 600 }}>{roleMeta(role).desc}</div>
 
+        {role === 'coach' && (
+          <div style={{ marginBottom: 8 }}>
+            <input
+              type="text"
+              value={teamFilter}
+              onChange={e => setTeamFilter(e.target.value)}
+              placeholder="Équipe / catégorie (ex: Senior A, U17…)"
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 10, fontSize: 12, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
+            />
+            <p style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 4 }}>
+              Laisser vide pour accès à tous les matchs du club.
+            </p>
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 8 }}>
           <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }} placeholder="email@exemple.com" style={{ flex: 1, padding: '9px 12px', borderRadius: 10, fontSize: 12, border: `1px solid ${error ? '#ef4444' : 'var(--sl-border-s)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }} />
           <button onClick={handleAdd} disabled={!email.trim()} style={{ padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: '#0F1E3A', color: '#fff', fontSize: 12, fontWeight: 700, opacity: email.trim() ? 1 : 0.4 }}>Ajouter</button>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSeasonPlanning }  from '../../hooks/useSeasonPlanning.js';
 import TrainingPlanningCard   from './TrainingPlanningCard.jsx';
 import MatchPlanningCard      from './MatchPlanningCard.jsx';
-import PosterShowcase         from './PosterShowcase.jsx';
+
 
 const CompositionPoster = lazy(() => import('./CompositionPoster.jsx'));
 
@@ -55,6 +55,7 @@ interface PlanningTimelineProps {
   onConvocate?: (item: Record<string, any>) => void;
   onNavigateRides?: () => void;
   clubs?: Record<string, any>[];
+  teamFilter?: string[];
 }
 
 export default function PlanningTimeline({
@@ -69,6 +70,7 @@ export default function PlanningTimeline({
   onConvocate,
   onNavigateRides,
   clubs = [],
+  teamFilter = [],
 }: PlanningTimelineProps) {
   const [viewDate,   setViewDate]   = useState(() => new Date());
   const [filter,     setFilter]     = useState('all');
@@ -99,7 +101,7 @@ export default function PlanningTimeline({
   const showClubFilter = knownClubs.length > 1;
 
   const { items, loading, respond, updateMatchScore } = useSeasonPlanning({
-    userId: currentUser?.id, allClubIds, managedClubIds, managedClubs: managedClubs as any[], year, month, clubFilter,
+    userId: currentUser?.id, allClubIds, managedClubIds, managedClubs: managedClubs as any[], year, month, clubFilter, teamFilter,
   }) as any;
 
   // ── Auto-avance au prochain mois si le mois courant est vide (max 3 mois) ──
@@ -204,9 +206,6 @@ export default function PlanningTimeline({
               <span className="text-5xl mb-4">📅</span>
               <p className="text-sm font-bold text-[var(--sl-t2)]">Aucun événement ce mois-ci</p>
               <p className="text-xs text-[var(--sl-t3)] mt-1.5">{filter !== 'all' ? 'Essayez le filtre "Tout"' : 'Naviguez vers un autre mois'}</p>
-            </div>
-            <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 16 }}>
-              <PosterShowcase onOpenPoster={onOpenPoster ? () => onOpenPoster({}) : undefined} />
             </div>
           </div>
         ) : (

@@ -74,27 +74,14 @@ function getBgPreset(sport: string): string {
   return 'golden-hour';
 }
 
-/**
- * Calcule la plage samedi-dimanche du prochain week-end.
- * Si on est déjà samedi ou dimanche, on prend le week-end en cours.
- */
-function getWeekendRange(): { start: Date; end: Date } {
-  const now = new Date();
-  const day = now.getDay(); // 0=dimanche … 6=samedi
-
-  // Jours à ajouter pour atteindre le prochain samedi
-  // Si on est samedi (6) → 0, dimanche (0) → 6, lundi (1) → 5, etc.
-  const daysToSat = day === 6 ? 0 : day === 0 ? 6 : 6 - day;
-
-  const sat = new Date(now);
-  sat.setDate(now.getDate() + daysToSat);
-  sat.setHours(0, 0, 0, 0);
-
-  const sun = new Date(sat);
-  sun.setDate(sat.getDate() + 1);
-  sun.setHours(23, 59, 59, 999);
-
-  return { start: sat, end: sun };
+/** Retourne la plage aujourd'hui → J+6 (7 jours glissants). */
+function getNextSevenDaysRange(): { start: Date; end: Date } {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
 }
 
 // ── Hook principal ────────────────────────────────────────────────────────────
@@ -106,7 +93,7 @@ function getWeekendRange(): { start: Date; end: Date } {
  * Source : table Supabase `events` (filtrée par club_id + date + home_or_away)
  */
 export function useWeekendPosters(): WeekendMatch[] {
-  const { managedClubs } = useManagedClubs() as { managedClubs: { id: string; name: string; sport?: string; city?: string; logo_url?: string; logoUrl?: string }[] };
+  const { managedClubs, teamFilters } = useManagedClubs() as { managedClubs: { id: string; name: string; sport?: string; city?: string; logo_url?: string; logoUrl?: string }[]; teamFilters: string[] };
   const [matches, setMatches] = useState<WeekendMatch[]>([]);
 
   useEffect(() => {
@@ -114,17 +101,17 @@ export function useWeekendPosters(): WeekendMatch[] {
     let cancelled = false;
 
     const clubIds = managedClubs.map(c => String(c.id));
-    const { start, end } = getWeekendRange();
+    const { start, end } = getNextSevenDaysRange();
     const startIso = start.toISOString().slice(0, 10);
     const endIso   = end.toISOString().slice(0, 10);
 
     supabase
       .from('events')
-      .select('id, title, date, sport, venue, city, team_name, adversaire, home_or_away, club_id')
+      .select('id, title, date, sport, venue, city, team_name, category, adversaire, home_or_away, club_id')
       .in('club_id', clubIds)
       .gte('date', startIso)
       .lte('date', endIso)
-      .eq('home_or_away', 'home')
+      .in('event_type', ['match', 'friendly'])
       .order('date')
       .then(({ data, error }) => {
         if (cancelled || error || !data) return;
@@ -174,13 +161,19 @@ export function useWeekendPosters(): WeekendMatch[] {
           };
         });
 
-        setMatches(result);
+        const filtered = teamFilters.length
+          ? result.filter((m, i) => {
+              const ev = data[i];
+              return teamFilters.some(f => ev.team_name === f || ev.category === f);
+            })
+          : result;
+        setMatches(filtered);
       },
         () => { /* silently fail */ }
       );
 
     return () => { cancelled = true; };
-  }, [managedClubs]);
+  }, [managedClubs, teamFilters]);
 
   return matches;
 }
@@ -191,7 +184,7 @@ export function useWeekendPosters(): WeekendMatch[] {
  * @deprecated — DEV uniquement. Ne pas appeler en production.
  */
 export function getMockWeekendMatches(): WeekendMatch[] {
-  const { start } = getWeekendRange();
+  const { start } = getNextSevenDaysRange();
   const sat = new Date(start);
   const sun = new Date(start);
   sun.setDate(sat.getDate() + 1);

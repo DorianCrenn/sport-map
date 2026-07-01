@@ -10,6 +10,7 @@ export interface ManagerEntry {
   status:           string;
   user_id:          string | null;
   hasLinkedAccount: boolean;
+  team_filter?:     string | null;
 }
 
 type ValidRole = 'manager' | 'editor' | 'communicant' | 'coach';
@@ -26,6 +27,7 @@ export function useClubManagers(clubId: string | null | undefined) {
     added_at?: string;
     status?: string;
     user_id?: string | null;
+    team_filter?: string | null;
   }): ManagerEntry => ({
     email:            r.email,
     name:             r.name ?? '',
@@ -34,6 +36,7 @@ export function useClubManagers(clubId: string | null | undefined) {
     status:           r.status ?? 'active',
     user_id:          r.user_id ?? null,
     hasLinkedAccount: !!r.user_id,
+    team_filter:      r.team_filter ?? null,
   });
 
   useEffect(() => {
@@ -42,7 +45,7 @@ export function useClubManagers(clubId: string | null | undefined) {
 
     supabase
       .from('club_managers')
-      .select('email, name, role, added_at, status, user_id')
+      .select('email, name, role, added_at, status, user_id, team_filter')
       .eq('club_id', String(clubId))
       .order('added_at', { ascending: true })
       .then(({ data, error }: { data: any[] | null; error: { message: string } | null }) => {
@@ -76,7 +79,7 @@ export function useClubManagers(clubId: string | null | undefined) {
     return () => { cancelled = true; };
   }, [clubId]);
 
-  const addManager = useCallback(async (email: string, role: string = 'manager'): Promise<boolean> => {
+  const addManager = useCallback(async (email: string, role: string = 'manager', teamFilter?: string): Promise<boolean> => {
     const normalized = email.trim().toLowerCase();
     const validRole: ValidRole = VALID_ROLES.includes(role as ValidRole) ? (role as ValidRole) : 'manager';
     if (!EMAIL_RE.test(normalized)) return false;
@@ -94,12 +97,13 @@ export function useClubManagers(clubId: string | null | undefined) {
       status:           'active',
       user_id:          null,
       hasLinkedAccount: false,
+      team_filter:      teamFilter?.trim() || null,
     };
     setManagers(prev => [...prev, newEntry]);
 
     const { error } = await supabase
       .from('club_managers')
-      .insert({ club_id: String(clubId), email: normalized, name, role: validRole }) as { error: { message: string } | null };
+      .insert({ club_id: String(clubId), email: normalized, name, role: validRole, team_filter: teamFilter?.trim() || null }) as { error: { message: string } | null };
     if (error) {
       console.error('[Managers] add failed:', error.message);
       setManagers(prev => prev.filter(m => m.email !== normalized));

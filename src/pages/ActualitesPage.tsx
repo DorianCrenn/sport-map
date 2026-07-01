@@ -2,16 +2,15 @@ import { lazy, Suspense, useMemo, useCallback, useState, useEffect } from 'react
 import { Z } from '../constants/zIndex.js';
 import { useAuth }          from '../contexts/AuthContext.jsx';
 import { useManagedClubs }  from '../hooks/useManagedClubs.js';
+import WeekendPosters       from '../components/dashboard/WeekendPosters.jsx';
 import { useQuickActions }  from '../hooks/useQuickActions.js';
 import { useDemoFeed }      from '../hooks/useDemoFeed.js';
 import { isDemoMode, supabase } from '../lib/supabase.js';
 import LiveMultiplexSection  from '../components/home/LiveMultiplexSection.jsx';
 import HypeBar               from '../components/home/HypeBar.jsx';
-import StreakWidget           from '../components/home/StreakWidget.jsx';
 import PlanningTimeline      from '../components/planning/PlanningTimeline.jsx';
-import PosterFeatureStrip    from '../components/home/PosterFeatureStrip.jsx';
 import DiscoveryClubs        from '../components/home/DiscoveryClubs.jsx';
-import PosterShowcase        from '../components/planning/PosterShowcase.jsx';
+
 
 const PosterStudio             = lazy(() => import('../components/PosterStudio.jsx'));
 const EventFormStepConvocation = lazy(() => import('../components/event/EventFormStepConvocation.jsx'));
@@ -26,7 +25,7 @@ export default function ActualitesPage({
   onNavigate,
 }: ActualitesPageProps) {
   const { currentUser, isAdmin, isClubAdmin, loading: authLoading } = useAuth() as any;
-  const { managedClubs, isCoachOrManager, isCommunicant } = useManagedClubs() as any;
+  const { managedClubs, isCoachOrManager, isCommunicant, teamFilters } = useManagedClubs() as any;
   const demo = isDemoMode();
 
   const managedClubIds = useMemo(() => managedClubs.map((c: any) => String(c.id)), [managedClubs]);
@@ -53,6 +52,30 @@ export default function ActualitesPage({
 
   const [studioConfig,     setStudioConfig]     = useState<Record<string, any> | null>(null);
   const [convocationEvent, setConvocationEvent] = useState<Record<string, any> | null>(null);
+
+  const [hypeStats, setHypeStats] = useState({ totalToday: 0, upcomingThisWeek: 0 });
+  useEffect(() => {
+    if (!feedClubIds.length || demo) return;
+    let cancelled = false;
+    const today   = new Date().toISOString().slice(0, 10);
+    const weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate() + 6);
+    const weekEndStr = weekEnd.toISOString().slice(0, 10);
+    supabase
+      .from('events')
+      .select('id, date')
+      .in('club_id', feedClubIds)
+      .gte('date', today)
+      .lte('date', weekEndStr)
+      .in('event_type', ['match', 'friendly'])
+      .then(({ data }: { data: { id: string; date: string }[] | null }) => {
+        if (cancelled || !data) return;
+        setHypeStats({
+          totalToday:      data.filter(e => e.date?.startsWith(today)).length,
+          upcomingThisWeek: data.length,
+        });
+      });
+    return () => { cancelled = true; };
+  }, [feedClubIds.join(','), demo]);
 
   // En mode démo, fermer les overlays locaux quand DemoApp demande close-overlay
   useEffect(() => {
@@ -138,11 +161,6 @@ export default function ActualitesPage({
           {/* Discovery clubs */}
           <DiscoveryClubs onNavigate={onNavigate} />
 
-          {/* Poster showcase */}
-          <div style={{ borderTop: '1px solid var(--sl-border)', paddingTop: 20 }}>
-            <PosterShowcase onOpenPoster={handleOpenPoster ? () => handleOpenPoster({ event: null, score: null, mode: 'create' }) : undefined} />
-          </div>
-
           {/* CTA "Tous les clubs" */}
           <button
             onClick={() => onNavigate?.('clubs')}
@@ -161,21 +179,26 @@ export default function ActualitesPage({
       {!isNewUser && (
         <HypeBar
           liveCount={effectiveLiveMatches.length}
+          totalToday={hypeStats.totalToday}
+          upcomingThisWeek={hypeStats.upcomingThisWeek}
+          clubCount={feedClubIds.length}
         />
       )}
 
-      {/* ══ Streak quotidien ════════════════════════════════════════════════ */}
-      {!isNewUser && currentUser && (
-        <div style={{ padding: '10px 16px 0' }}>
-          <StreakWidget />
+      {/* ══ Affiches du week-end — staff uniquement ══════════════════════════ */}
+      {!isNewUser && (isCoachOrManager || isCommunicant || isClubAdmin || isAdmin) && (
+        <div style={{ paddingTop: 8 }}>
+          <WeekendPosters
+            title="Tes affiches à venir"
+            onOpenInStudio={(match: any) =>
+              handleOpenPoster({
+                event: { id: match.id, club_id: match.clubId, title: match.homeTeam.name, sport: match.sport, date: match.date.toISOString(), adversaire: match.awayTeam.name, venue: match.venue },
+                score: null,
+                mode: 'create',
+              })
+            }
+          />
         </div>
-      )}
-
-      {/* ══ Studio d'affiches — strip toujours visible ═══════════════════════ */}
-      {!isNewUser && (
-        <PosterFeatureStrip
-          onOpen={handleOpenPoster ? () => handleOpenPoster({ event: null, score: null, mode: 'create' }) : undefined}
-        />
       )}
 
       {/* ══ Multiplex EN DIRECT ══════════════════════════════════════════════ */}
@@ -192,6 +215,7 @@ export default function ActualitesPage({
           isAdmin={isAdmin}
           followedClubIds={feedClubIds}
           clubs={allKnownClubs}
+          teamFilter={teamFilters ?? []}
           onOpenPoster={handleOpenPoster}
           onConvocate={(event: any) => setConvocationEvent(event)}
           onNavigateRides={() => onNavigate?.('rides')}

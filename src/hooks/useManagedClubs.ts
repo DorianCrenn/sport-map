@@ -10,7 +10,7 @@ export interface ManagedClub extends SportLinkClub {
   managerRole: ManagerRole;
 }
 
-interface ManagerRow { club_id: string; role: string; }
+interface ManagerRow { club_id: string; role: string; team_filter?: string | null; }
 
 // Profils démo "visiteur" qui ne doivent pas hériter des clubs managés par l'email démo
 const NON_ADMIN_DEMO_PROFILES = ['parent', 'player', 'supporter'];
@@ -34,7 +34,7 @@ export function useManagedClubs() {
     setManagersLoading(true);
     supabase
       .from('club_managers')
-      .select('club_id, role')
+      .select('club_id, role, team_filter')
       .eq('email', currentUser.email.toLowerCase())
       .eq('status', 'active')
       .then(({ data }: { data: ManagerRow[] | null }) => {
@@ -52,6 +52,11 @@ export function useManagedClubs() {
     for (const r of managerRows) map[String(r.club_id)] = r.role;
     return map;
   }, [managerRows]);
+
+  const teamFilters = useMemo(
+    () => managerRows.map(r => r.team_filter).filter((f): f is string => !!f),
+    [managerRows],
+  );
 
   const managedClubs = useMemo<ManagedClub[]>(() => {
     if (isDemoNonAdmin) return [];
@@ -85,5 +90,5 @@ export function useManagedClubs() {
   const isCoachOrManager = useMemo(() => managedClubs.some(c => c.managerRole !== 'communicant'), [managedClubs]);
   const isCommunicant    = useMemo(() => managedClubs.some(c => c.managerRole === 'communicant'), [managedClubs]);
 
-  return { managedClubs, isCoachOrManager, isCommunicant, loading: clubsLoading || managersLoading };
+  return { managedClubs, isCoachOrManager, isCommunicant, teamFilters, loading: clubsLoading || managersLoading };
 }
