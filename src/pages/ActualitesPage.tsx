@@ -1,15 +1,18 @@
 import { lazy, Suspense, useMemo, useCallback, useState, useEffect } from 'react';
 import { Z } from '../constants/zIndex.js';
-import { useAuth }          from '../contexts/AuthContext.jsx';
-import { useManagedClubs }  from '../hooks/useManagedClubs.js';
-import WeekendPosters       from '../components/dashboard/WeekendPosters.jsx';
-import { useQuickActions }  from '../hooks/useQuickActions.js';
-import { useDemoFeed }      from '../hooks/useDemoFeed.js';
-import { isDemoMode, supabase } from '../lib/supabase.js';
-import LiveMultiplexSection  from '../components/home/LiveMultiplexSection.jsx';
-import HypeBar               from '../components/home/HypeBar.jsx';
-import PlanningTimeline      from '../components/planning/PlanningTimeline.jsx';
-import DiscoveryClubs        from '../components/home/DiscoveryClubs.jsx';
+import { useAuth }               from '../contexts/AuthContext.jsx';
+import { useManagedClubs }       from '../hooks/useManagedClubs.js';
+import { useMyAnnouncements }    from '../hooks/useMyAnnouncements.js';
+import WeekendPosters            from '../components/dashboard/WeekendPosters.jsx';
+import { useQuickActions }       from '../hooks/useQuickActions.js';
+import { useDemoFeed }           from '../hooks/useDemoFeed.js';
+import { isDemoMode, supabase }  from '../lib/supabase.js';
+import LiveMultiplexSection      from '../components/home/LiveMultiplexSection.jsx';
+import HypeBar                   from '../components/home/HypeBar.jsx';
+import PlanningTimeline          from '../components/planning/PlanningTimeline.jsx';
+import DiscoveryClubs            from '../components/home/DiscoveryClubs.js';
+import FeedAnnouncements         from '../components/home/FeedAnnouncements.js';
+import FeedRecentResults         from '../components/home/FeedRecentResults.js';
 
 
 const PosterStudio             = lazy(() => import('../components/PosterStudio.jsx'));
@@ -26,6 +29,7 @@ export default function ActualitesPage({
 }: ActualitesPageProps) {
   const { currentUser, isAdmin, isClubAdmin, loading: authLoading } = useAuth() as any;
   const { managedClubs, isCoachOrManager, isCommunicant, teamFilters } = useManagedClubs() as any;
+  const { announcements, readIds, markRead } = useMyAnnouncements() as any;
   const demo = isDemoMode();
 
   const managedClubIds = useMemo(() => managedClubs.map((c: any) => String(c.id)), [managedClubs]);
@@ -159,7 +163,10 @@ export default function ActualitesPage({
           </div>
 
           {/* Discovery clubs */}
-          <DiscoveryClubs onNavigate={onNavigate} />
+          <DiscoveryClubs
+            onNavigate={onNavigate}
+            userSport={currentUser?.favoriteSports?.[0]}
+          />
 
           {/* CTA "Tous les clubs" */}
           <button
@@ -203,6 +210,18 @@ export default function ActualitesPage({
 
       {/* ══ Multiplex EN DIRECT ══════════════════════════════════════════════ */}
       {!isNewUser && <LiveMultiplexSection liveMatches={effectiveLiveMatches} />}
+
+      {/* ══ Derniers résultats ═══════════════════════════════════════════════ */}
+      {!isNewUser && <FeedRecentResults clubIds={feedClubIds} />}
+
+      {/* ══ Annonces clubs ═══════════════════════════════════════════════════ */}
+      {!isNewUser && (
+        <FeedAnnouncements
+          announcements={announcements ?? []}
+          readIds={readIds ?? new Set()}
+          onRead={markRead}
+        />
+      )}
 
       {/* ══ Planning de la Saison ════════════════════════════════════════════ */}
       {!isNewUser && (

@@ -34,7 +34,6 @@ function ClubRow({ club, onNavigate }: { club: Club; onNavigate?: (page: string)
         border: '1px solid var(--sl-border)',
       }}
     >
-      {/* Logo */}
       <div style={{
         width: 40, height: 40, borderRadius: 10, flexShrink: 0,
         backgroundColor: 'rgba(34,217,106,0.12)',
@@ -74,28 +73,54 @@ function ClubRow({ club, onNavigate }: { club: Club; onNavigate?: (page: string)
 }
 
 interface DiscoveryClubsProps {
-  onNavigate?: (page: string) => void;
+  onNavigate?:  (page: string) => void;
+  userSport?:   string;
 }
 
-export default function DiscoveryClubs({ onNavigate }: DiscoveryClubsProps) {
-  const [clubs, setClubs]   = useState<Club[]>([]);
+export default function DiscoveryClubs({ onNavigate, userSport }: DiscoveryClubsProps) {
+  const [clubs,   setClubs]   = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasSportMatch, setHasSportMatch] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    supabase
-      .from('clubs')
-      .select('id, name, sport, city, logo_url')
-      .order('created_at', { ascending: false })
-      .limit(4)
-      .then(({ data }: { data: Club[] | null }) => {
-        if (mounted) {
-          setClubs(data ?? []);
-          setLoading(false);
-        }
-      });
+
+    async function load() {
+      let result: Club[] = [];
+
+      // 1. Si un sport favori est connu, chercher d'abord les clubs de ce sport
+      if (userSport) {
+        const { data } = await supabase
+          .from('clubs')
+          .select('id, name, sport, city, logo_url')
+          .eq('sport', userSport)
+          .order('created_at', { ascending: false })
+          .limit(4) as { data: Club[] | null };
+        result = data ?? [];
+      }
+
+      // 2. Compléter avec des clubs récents si on n'a pas assez
+      if (result.length < 4) {
+        const existingIds = new Set(result.map(c => c.id));
+        const { data: fallback } = await supabase
+          .from('clubs')
+          .select('id, name, sport, city, logo_url')
+          .order('created_at', { ascending: false })
+          .limit(8) as { data: Club[] | null };
+        const extras = (fallback ?? []).filter(c => !existingIds.has(c.id));
+        result = [...result, ...extras].slice(0, 4);
+      }
+
+      if (mounted) {
+        setClubs(result);
+        setHasSportMatch(!!userSport && result.some(c => c.sport === userSport));
+        setLoading(false);
+      }
+    }
+
+    load();
     return () => { mounted = false; };
-  }, []);
+  }, [userSport]);
 
   if (loading) {
     return (
@@ -110,7 +135,12 @@ export default function DiscoveryClubs({ onNavigate }: DiscoveryClubsProps) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)' }}>Clubs à suivre</span>
+        <div>
+          <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)' }}>Clubs à suivre</span>
+          {hasSportMatch && userSport && (
+            <span style={{ fontSize: 10, color: 'var(--sl-t3)', marginLeft: 6 }}>· {userSport}</span>
+          )}
+        </div>
         <button
           onClick={() => onNavigate?.('clubs')}
           style={{ fontSize: 11, fontWeight: 600, color: '#22d96a', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 4px', minHeight: 44 }}
