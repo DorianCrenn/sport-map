@@ -23,9 +23,9 @@ interface PresenceButtonsProps {
 }
 
 export default function PresenceButtons({ myStatus, onRespond, disabled = false, size = 'md' }: PresenceButtonsProps) {
-  const py   = size === 'sm' ? 'py-1.5' : 'py-2';
-  const text = size === 'sm' ? 'text-[10px]' : 'text-xs';
-  const gap  = size === 'sm' ? 'gap-1' : 'gap-1.5';
+  const py        = size === 'sm' ? 'py-2'      : 'py-2.5';
+  const iconSize  = size === 'sm' ? 'text-sm'   : 'text-base';
+  const labelSize = size === 'sm' ? 'text-[9px]' : 'text-[10px]';
 
   return (
     <div className="flex gap-2">
@@ -38,7 +38,8 @@ export default function PresenceButtons({ myStatus, onRespond, disabled = false,
             onClick={() => !disabled && myStatus !== s.key && onRespond(s.key)}
             disabled={disabled}
             aria-pressed={isActive}
-            className={`flex-1 flex items-center justify-center ${gap} rounded-xl ${py} ${text} font-bold tracking-wide transition-all select-none`}
+            aria-label={s.label}
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl ${py} font-bold transition-all select-none`}
             style={{
               background: isActive
                 ? s.activeBg
@@ -49,8 +50,8 @@ export default function PresenceButtons({ myStatus, onRespond, disabled = false,
               cursor:  disabled ? 'default' : myStatus === s.key ? 'default' : 'pointer',
             }}
           >
-            <span className="font-black">{s.icon}</span>
-            <span>{s.label}</span>
+            <span className={`font-black ${iconSize}`}>{s.icon}</span>
+            <span className={`${labelSize} leading-none`}>{s.label}</span>
           </motion.button>
         );
       })}

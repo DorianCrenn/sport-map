@@ -279,7 +279,7 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
             <div className="mb-3">
               <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">Présence</p>
               <button onClick={() => setShowList(true)} className="w-full cursor-pointer hover:bg-[var(--sl-hover)] rounded-xl bg-[var(--sl-surface)] px-3 py-2 transition-colors">
-                <div className="flex gap-4 text-xs items-center">
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs items-center">
                   {(item.presentCount ?? 0) > 0 && <div className="flex items-center gap-1.5"><span className="font-semibold text-[var(--sl-t3)]">Présent</span><span className="font-black text-emerald-400">{item.presentCount}</span></div>}
                   {(item.absentCount ?? 0) > 0 && <div className="flex items-center gap-1.5"><span className="font-semibold text-[var(--sl-t3)]">Absent</span><span className="font-black text-red-400">{item.absentCount}</span></div>}
                   {(item.unsureCount ?? 0) > 0 && <div className="flex items-center gap-1.5"><span className="font-semibold text-[var(--sl-t3)]">Incertain</span><span className="font-black text-slate-400">{item.unsureCount}</span></div>}

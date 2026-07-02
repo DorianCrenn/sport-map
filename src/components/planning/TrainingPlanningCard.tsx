@@ -78,7 +78,7 @@ export default function TrainingPlanningCard({ item, userId, isStaff, onOpenRide
                 onClick={isStaff ? () => setShowList(true) : undefined}
                 className={`w-full ${isStaff ? 'cursor-pointer hover:bg-[var(--sl-hover)]' : 'cursor-default'} rounded-xl bg-[var(--sl-surface)] px-3 py-2 transition-colors`}
               >
-                <div className="flex gap-4 text-xs">
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
                   {(item.presentCount ?? 0) > 0 && (
                     <div className="flex items-center gap-1.5">
                       <span className="font-semibold text-[var(--sl-t3)]">Présent</span>
