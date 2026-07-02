@@ -13,6 +13,14 @@ interface CreateRideData { departureLocation: string; departureLat?: number | nu
 function mapRequest(row: RideRequestRow): RideRequest { return { id: row.id, rideId: row.ride_id, passengerId: row.passenger_id, passengerName: row.passenger_name ?? '', message: row.message ?? '', status: row.status, createdAt: row.created_at }; }
 function mapRide(row: RideRow): Ride { const requests = (row.ride_requests ?? []).map(mapRequest); const accepted = requests.filter(r => r.status === 'accepted'); return { id: row.id, eventId: row.event_id, driverId: row.driver_id, driverName: row.driver_name ?? '', departureLocation: row.departure_location, departureLat: row.departure_lat, departureLng: row.departure_lng, departureTime: row.departure_time, availableSeats: row.available_seats, acceptedEquipment: row.accepted_equipment ?? [], detourFlexibility: row.detour_flexibility ?? 'none', notes: row.notes ?? '', status: row.status, createdAt: row.created_at, requests, takenSeats: accepted.length, availableSeatsLeft: Math.max(0, row.available_seats - accepted.length), pendingCount: requests.filter(r => r.status === 'pending').length }; }
 
+function demoRidesKey(eventId: string) { return `sl-demo-rides-${eventId}`; }
+function loadDemoRides(eventId: string): Ride[] {
+  try { return JSON.parse(localStorage.getItem(demoRidesKey(eventId)) ?? '[]'); } catch { return []; }
+}
+function saveDemoRides(eventId: string, rides: Ride[]) {
+  try { localStorage.setItem(demoRidesKey(eventId), JSON.stringify(rides)); } catch { /* noop */ }
+}
+
 export function useRides(eventId: string | null | undefined) {
   const { currentUser } = useAuth();
   const [rides,   setRides]   = useState<Ride[]>([]);
@@ -20,6 +28,11 @@ export function useRides(eventId: string | null | undefined) {
 
   const fetchRides = useCallback(async () => {
     if (!eventId) return;
+    if (isDemoMode()) {
+      setRides(loadDemoRides(String(eventId)));
+      setLoading(false);
+      return;
+    }
     const cutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     const { data, error } = await supabase.from('rides').select('*, ride_requests(*)').eq('event_id', String(eventId)).gte('departure_time', cutoff).order('departure_time', { ascending: true }) as { data: RideRow[] | null; error: { message: string } | null };
     if (error) dispatchError('Impossible de charger les covoiturages.');
@@ -29,6 +42,7 @@ export function useRides(eventId: string | null | undefined) {
 
   useEffect(() => {
     if (!eventId) { setLoading(false); return; }
+    if (isDemoMode()) { fetchRides(); return; }
     fetchRides();
     const key = Math.random().toString(36).slice(2, 6);
     const evId = String(eventId);
@@ -44,11 +58,38 @@ export function useRides(eventId: string | null | undefined) {
   }, [eventId, fetchRides]);
 
   const createRide = useCallback(async (data: CreateRideData): Promise<Ride> => {
+    if (isDemoMode()) {
+      const evId = String(eventId);
+      const fakeRide: Ride = {
+        id:                `demo-ride-${Date.now()}`,
+        eventId:           evId,
+        driverId:          currentUser?.id ?? 'demo-driver',
+        driverName:        (currentUser as any)?.name ?? 'Moi',
+        departureLocation: data.departureLocation,
+        departureLat:      data.departureLat ?? null,
+        departureLng:      data.departureLng ?? null,
+        departureTime:     data.departureTime ?? null,
+        availableSeats:    data.availableSeats ?? 3,
+        acceptedEquipment: data.acceptedEquipment ?? [],
+        detourFlexibility: data.detourFlexibility ?? 'none',
+        notes:             data.notes ? sanitizeText(data.notes) : '',
+        status:            'active',
+        createdAt:         new Date().toISOString(),
+        requests:          [],
+        takenSeats:        0,
+        availableSeatsLeft: data.availableSeats ?? 3,
+        pendingCount:      0,
+      };
+      const updated = [...loadDemoRides(evId), fakeRide];
+      saveDemoRides(evId, updated);
+      setRides(updated);
+      window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'carpool-requested' } }));
+      return fakeRide;
+    }
     if (!currentUser) throw new Error('not authenticated');
     const { data: saved, error } = await supabase.from('rides').insert({ event_id: String(eventId), driver_id: currentUser.id, driver_name: (currentUser as any).name ?? '', departure_location: data.departureLocation, departure_lat: data.departureLat ?? null, departure_lng: data.departureLng ?? null, departure_time: data.departureTime ?? null, available_seats: data.availableSeats ?? 3, accepted_equipment: data.acceptedEquipment ?? [], detour_flexibility: data.detourFlexibility ?? 'none', notes: data.notes ? sanitizeText(data.notes) : null, status: 'active' }).select().single() as { data: RideRow | null; error: { message: string } | null };
     if (error) throw error;
     await fetchRides();
-    if (isDemoMode()) window.dispatchEvent(new CustomEvent('sl-demo-action', { detail: { type: 'carpool-requested' } }));
     window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'ride_created' } }));
     return mapRide({ ...saved!, ride_requests: [] });
   }, [currentUser, eventId, fetchRides]);
