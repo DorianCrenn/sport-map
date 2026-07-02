@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRides } from '../../hooks/useRides.js';
+import { isDemoMode } from '../../lib/supabase.js';
 import CreateRideModal from '../rides/CreateRideModal.jsx';
 
 interface CarpoolEvent {
@@ -36,7 +37,7 @@ export default function CarpoolSection({ eventId, myStatus, onOpenRides, event }
   };
 
   async function handleSave(data: any) {
-    await createRide(data);
+    if (!isDemoMode()) await createRide(data);
     setShowCreate(false);
   }
 
