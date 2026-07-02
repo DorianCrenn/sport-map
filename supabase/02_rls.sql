@@ -188,6 +188,7 @@ CREATE POLICY "pages_delete_owner"
 -- ── club_managers ─────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS "managers_select_owner_or_admin" ON public.club_managers;
+DROP POLICY IF EXISTS "managers_select_own_or_owner"   ON public.club_managers;
 DROP POLICY IF EXISTS "managers_insert_owner"          ON public.club_managers;
 DROP POLICY IF EXISTS "managers_update_owner"          ON public.club_managers;
 DROP POLICY IF EXISTS "managers_delete_owner"          ON public.club_managers;
@@ -195,14 +196,20 @@ DROP POLICY IF EXISTS "club_managers_select"           ON public.club_managers;
 DROP POLICY IF EXISTS "club_managers_insert"           ON public.club_managers;
 DROP POLICY IF EXISTS "club_managers_delete"           ON public.club_managers;
 
-CREATE POLICY "managers_select_owner_or_admin"
+-- GRANT requis pour que PostgREST évalue la RLS (sans ça → 403 avant même la policy)
+GRANT SELECT ON public.club_managers TO authenticated;
+
+-- Le manager voit sa propre ligne (via email) OU le propriétaire voit ses managers OU admin
+CREATE POLICY "managers_select_own_or_owner"
   ON public.club_managers FOR SELECT
   USING (
-    EXISTS (
+    public.sl_email_is_current_user(email)
+    OR EXISTS (
       SELECT 1 FROM public.clubs
       WHERE clubs.id::text = club_managers.club_id
         AND clubs.user_id = auth.uid()
-    ) OR public.sl_is_admin()
+    )
+    OR public.sl_is_admin()
   );
 
 CREATE POLICY "managers_insert_owner"

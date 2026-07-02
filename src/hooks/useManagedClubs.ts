@@ -3,6 +3,7 @@ import { supabase, isDemoMode } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.js';
 import { useClubs } from './useClubs.js';
 import type { SportLinkClub } from '../types/sportlink.js';
+import { demoClubRow } from '../demo/data/club.js';
 
 type ManagerRole = 'owner' | 'manager' | 'editor' | 'communicant';
 
@@ -61,14 +62,47 @@ export function useManagedClubs() {
   const managedClubs = useMemo<ManagedClub[]>(() => {
     if (isDemoNonAdmin) return [];
 
-    // En mode démo avec profil admin, retourner le club démo directement (pas de currentUser réel)
+    // En mode démo avec profil admin, construire le club démo directement depuis demoClubRow
+    // (sans passer par userClubs qui est async → évite la race condition au premier render)
     if (isDemoMode() && demoProfile && ADMIN_DEMO_PROFILES.includes(demoProfile)) {
-      const demoClub = userClubs.find(c => String(c.id) === DEMO_CLUB_ID);
-      if (demoClub) {
-        const managerRole: ManagerRole = demoProfile === 'communication' ? 'communicant' : 'manager';
-        return [{ ...demoClub, managerRole }];
-      }
-      return [];
+      const managerRole: ManagerRole = demoProfile === 'communication' ? 'communicant' : 'manager';
+      return [{
+        id:              DEMO_CLUB_ID,
+        name:            demoClubRow.name,
+        sport:           demoClubRow.sport,
+        city:            demoClubRow.city,
+        description:     demoClubRow.description,
+        logoUrl:         demoClubRow.logo_url,
+        logo:            demoClubRow.logo_url,
+        website:         demoClubRow.website,
+        phone:           demoClubRow.phone,
+        email:           demoClubRow.email,
+        categories:      demoClubRow.categories as any,
+        userId:          demoClubRow.user_id,
+        status:          demoClubRow.status as any,
+        verificationNote: demoClubRow.verification_note,
+        verifiedAt:      demoClubRow.verified_at,
+        sigle:           demoClubRow.sigle,
+        slogan:          demoClubRow.slogan,
+        foundingYear:    demoClubRow.founding_year,
+        primaryColor:    demoClubRow.primary_color,
+        bannerUrl:       demoClubRow.banner_url,
+        venue:           demoClubRow.venue,
+        address:         demoClubRow.address,
+        postalCode:      demoClubRow.postal_code,
+        region:          demoClubRow.region,
+        lat:             demoClubRow.lat,
+        lng:             demoClubRow.lng,
+        managerName:     demoClubRow.manager_name,
+        managerFunction: demoClubRow.manager_function,
+        managerPhone:    demoClubRow.manager_phone,
+        memberCount:     demoClubRow.member_count,
+        level:           demoClubRow.level,
+        facebook:        demoClubRow.facebook,
+        instagram:       demoClubRow.instagram,
+        tiktok:          demoClubRow.tiktok,
+        managerRole,
+      }];
     }
 
     const ids = new Set(Object.keys(roleByClubId));

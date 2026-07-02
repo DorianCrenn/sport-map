@@ -2,6 +2,17 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { sanitizeText } from '../lib/sanitize.js';
 import { supabase } from '../lib/supabase.js';
 
+async function fetchProfileNames(userIds: string[]): Promise<Record<string, { name: string; avatar_url: string | null }>> {
+  if (!userIds.length) return {};
+  const { data } = await supabase
+    .from('public_profiles')
+    .select('id, name, avatar_url')
+    .in('id', userIds) as { data: { id: string; name: string; avatar_url: string | null }[] | null };
+  const map: Record<string, { name: string; avatar_url: string | null }> = {};
+  for (const p of data ?? []) map[p.id] = { name: p.name, avatar_url: p.avatar_url };
+  return map;
+}
+
 type AttStatus = 'present' | 'absent' | 'unsure';
 type DBRow = Record<string, unknown>;
 
@@ -20,27 +31,38 @@ export function useTrainingAttendance(sessionId: string | null | undefined, user
     if (!sessionId) return;
     let cancelled = false;
 
-    supabase.from('training_attendance').select('id, user_id, player_id, status, updated_at, profiles(name, avatar_url)').eq('session_id', sessionId)
-      .then(({ data }: any) => {
-        if (cancelled) return;
-        const list = data ?? [];
-        setAttendance(list);
-        setCounts({ present: list.filter(a => a.status === 'present').length, absent: list.filter(a => a.status === 'absent').length, unsure: list.filter(a => a.status === 'unsure').length });
-        if (userId) { const mine = list.find(a => a.user_id === userId); setMyStatus(mine?.status ?? null); }
-      });
+    async function loadAttendance() {
+      const { data: rows } = await supabase
+        .from('training_attendance')
+        .select('id, user_id, player_id, status, updated_at')
+        .eq('session_id', sessionId) as { data: Omit<AttEntry, 'profiles'>[] | null };
+      if (cancelled) return;
+      const base = rows ?? [];
+      const profileMap = await fetchProfileNames([...new Set(base.map(a => a.user_id))]);
+      const list: AttEntry[] = base.map(a => ({ ...a, profiles: profileMap[a.user_id] ?? null }));
+      setAttendance(list);
+      setCounts({ present: list.filter(a => a.status === 'present').length, absent: list.filter(a => a.status === 'absent').length, unsure: list.filter(a => a.status === 'unsure').length });
+      if (userId) { const mine = list.find(a => a.user_id === userId); setMyStatus(mine?.status ?? null); }
+    }
+    loadAttendance();
 
-    supabase.from('training_messages').select('id, content, type, created_at, profiles(name, avatar_url)').eq('session_id', sessionId).order('created_at', { ascending: true })
-      .then(({ data }: any) => { if (!cancelled) setMessages(data ?? []); });
+    async function loadMessages() {
+      const { data: rows } = await supabase
+        .from('training_messages')
+        .select('id, content, type, created_at, author_id')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true }) as { data: (Omit<TrainingMessage, 'profiles'> & { author_id?: string })[] | null };
+      if (cancelled) return;
+      const base = rows ?? [];
+      const authorIds = [...new Set(base.map(r => r.author_id).filter(Boolean) as string[])];
+      const profileMap = await fetchProfileNames(authorIds);
+      setMessages(base.map(r => ({ ...r, profiles: r.author_id ? (profileMap[r.author_id] ?? null) : null })));
+    }
+    loadMessages();
 
     const channel = supabase.channel(`training-${sessionId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'training_attendance', filter: `session_id=eq.${sessionId}` }, (_p: DBRow) => {
-        supabase.from('training_attendance').select('id, user_id, player_id, status, updated_at, profiles(name, avatar_url)').eq('session_id', sessionId)
-          .then(({ data }: any) => {
-            const list = data ?? [];
-            setAttendance(list);
-            setCounts({ present: list.filter(a => a.status === 'present').length, absent: list.filter(a => a.status === 'absent').length, unsure: list.filter(a => a.status === 'unsure').length });
-            if (userId) setMyStatus(list.find(a => a.user_id === userId)?.status ?? null);
-          });
+        loadAttendance();
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'training_messages', filter: `session_id=eq.${sessionId}` }, (payload: { new: TrainingMessage }) => {
         setMessages(prev => [...prev, payload.new]);

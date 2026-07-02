@@ -31,6 +31,17 @@ const DEMO_LIVE_ATTENDANCE: AttendanceEntry[] = [
   { event_id: 'demo-live-match', user_id: 'demo-p-15', status: 'unsure',  updated_at: '', profiles: { name: 'Lucas Morel',      avatar_url: null } },
 ];
 
+async function fetchProfileNames(userIds: string[]): Promise<Record<string, { name: string; avatar_url: string | null }>> {
+  if (!userIds.length) return {};
+  const { data } = await supabase
+    .from('public_profiles')
+    .select('id, name, avatar_url')
+    .in('id', userIds) as { data: { id: string; name: string; avatar_url: string | null }[] | null };
+  const map: Record<string, { name: string; avatar_url: string | null }> = {};
+  for (const p of data ?? []) map[p.id] = { name: p.name, avatar_url: p.avatar_url };
+  return map;
+}
+
 export function useMatchAttendance(eventId: string | null | undefined, userId: string | null = null) {
   const [attendance, setAttendance] = useState<AttendanceEntry[]>([]);
   const [counts,     setCounts]     = useState<AttendanceCounts>({ present: 0, absent: 0, unsure: 0 });
@@ -48,12 +59,14 @@ export function useMatchAttendance(eventId: string | null | undefined, userId: s
     let cancelled = false;
 
     async function fetchAll() {
-      const { data } = await supabase
+      const { data: rows } = await supabase
         .from('match_player_attendance')
-        .select('event_id, user_id, status, updated_at, profiles(name, avatar_url)')
-        .eq('event_id', eventId) as { data: AttendanceEntry[] | null };
+        .select('event_id, user_id, status, updated_at')
+        .eq('event_id', eventId) as { data: Omit<AttendanceEntry, 'profiles'>[] | null };
       if (cancelled) return;
-      const list = data ?? [];
+      const base = rows ?? [];
+      const profileMap = await fetchProfileNames([...new Set(base.map(a => a.user_id))]);
+      const list: AttendanceEntry[] = base.map(a => ({ ...a, profiles: profileMap[a.user_id] ?? null }));
       setAttendance(list);
       setCounts({ present: list.filter(a => a.status === 'present').length, absent: list.filter(a => a.status === 'absent').length, unsure: list.filter(a => a.status === 'unsure').length });
       if (userId) setMyStatus(list.find(a => a.user_id === userId)?.status ?? null);
