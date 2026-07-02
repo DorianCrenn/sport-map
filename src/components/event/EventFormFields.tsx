@@ -294,7 +294,7 @@ interface EventTypeRadioProps {
 
 export function EventTypeRadio({ value, onChange }: EventTypeRadioProps) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
       {(EVENT_TYPES as { value: string; icon: string; label: string; color: string }[]).map(type => {
         const selected = value === type.value;
         return (

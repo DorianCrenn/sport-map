@@ -45,4 +45,5 @@ export const EVENT_TYPES = [
   { value: 'cup',          label: 'Coupe',        icon: '🥈', color: '#f97316' },
   { value: 'friendly',     label: 'Amical',        icon: '⚽', color: '#22C55E' },
   { value: 'tournament',   label: 'Tournoi',       icon: '🎖️', color: '#8b5cf6' },
+  { value: 'training',     label: 'Entraînement', icon: '🏃', color: '#10b981' },
 ];

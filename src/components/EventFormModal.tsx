@@ -76,6 +76,15 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
     ?? null;
   const useSmartMode = !!(isClubAdmin && myClub);
   const isEdit = !!event && !event?._isNew;
+
+  const teamOptions: string[] = (() => {
+    const club = myClub ?? null;
+    if (!club?.categories?.length) return [];
+    const cats = club.categories as any[];
+    const fromTeams = cats.flatMap((c: any) => c.teams?.map((t: any) => typeof t === 'string' ? t : (t?.name ?? '')) ?? []).filter(Boolean);
+    if (fromTeams.length) return fromTeams;
+    return cats.map((c: any) => typeof c === 'string' ? c : (c?.name ?? c?.label ?? '')).filter(Boolean);
+  })();
   const sportOptions = Object.values(allSports).filter((s: any) => !s.isArchived).map((s: any) => s.label);
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef);
@@ -165,6 +174,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdEvent, setCreatedEvent] = useState<Record<string, any> | null>(null);
+  const [trainingTeams, setTrainingTeams] = useState<string[]>(['all']);
 
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -235,9 +245,34 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
     });
   }
 
+  async function handleTrainingSubmit() {
+    const club = useSmartMode ? myClub : activeClub;
+    const clubId = String(club?.id ?? '');
+    if (!clubId) throw new Error('Aucun club associé à votre compte');
+    if (!form.date) throw new Error('La date est requise');
+    if (!form.time) throw new Error('L\'heure est requise');
+    if (isDemoMode()) { onClose(); return; }
+    const sessionBase = { club_id: clubId, date: form.date, time: form.time || null, location: sanitizeText(form.venue ?? '').trim() || null, status: 'active' };
+    const teams: (string | null)[] = trainingTeams.includes('all') || !trainingTeams.length ? [null] : trainingTeams;
+    const inserts = teams.map(team_id => ({ ...sessionBase, team_id: team_id ?? null }));
+    const { error } = await (supabase.from('training_sessions').insert(inserts) as any);
+    if (error) throw new Error((error as any).message ?? 'Erreur lors de la création');
+    window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'training_created' } }));
+    onClose();
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submitting) return;
+
+    if (form.eventType === 'training') {
+      setSubmitting(true);
+      setSubmitError(null);
+      try { await handleTrainingSubmit(); }
+      catch (err: any) { setSubmitError(err.message ?? 'Erreur lors de la création'); }
+      finally { setSubmitting(false); }
+      return;
+    }
 
     const { ok, errors } = (validate as any)(eventFormSchema, form);
     if (!ok) {
@@ -459,7 +494,35 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
 
             <div style={{ display: (!useSteps || step === 2) ? 'contents' : 'none' }}>
 
-            {useSmartMode && myClub ? (
+            {form.eventType === 'training' ? (
+              <Field label="Équipes / Catégories">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {(['Toutes les équipes', ...teamOptions] as string[]).map((label, i) => {
+                    const val = i === 0 ? 'all' : label;
+                    const sel = trainingTeams.includes(val);
+                    return (
+                      <button
+                        key={val} type="button"
+                        onClick={() => {
+                          if (val === 'all') { setTrainingTeams(['all']); return; }
+                          setTrainingTeams(prev => {
+                            const without = prev.filter(t => t !== 'all');
+                            const next = without.includes(val) ? without.filter(t => t !== val) : [...without, val];
+                            return next.length ? next : ['all'];
+                          });
+                        }}
+                        style={{ padding: '8px 14px', borderRadius: 10, cursor: 'pointer', border: `1.5px solid ${sel ? '#10b981' : 'var(--sl-border)'}`, backgroundColor: sel ? 'rgba(16,185,129,0.12)' : 'var(--sl-surface)', color: sel ? '#10b981' : 'var(--sl-t2)', fontSize: 12, fontWeight: sel ? 700 : 500, transition: 'all 0.12s' }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {teamOptions.length === 0 && (
+                  <p style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 6 }}>Ajoutez des catégories à votre club pour les sélectionner ici.</p>
+                )}
+              </Field>
+            ) : useSmartMode && myClub ? (
               <>
                 {form.eventType !== 'tournament' && (
                   <>
@@ -678,7 +741,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               </Field>
             </div>
 
-            {!isEdit && (
+            {!isEdit && form.eventType !== 'training' && (
               <div style={{ borderRadius: 14, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
                 <button
                   type="button"
@@ -722,36 +785,48 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               </div>
             )}
 
-            <Field label="Ville *">
-              <CityAutocomplete
-                value={form.cityName} onChange={(v: string) => set('cityName', v)}
-                onSelect={(c: any) => { set('cityName', c.nom); set('cityLat', c.lat); set('cityLng', c.lng); }}
-                placeholder="ex. Brest"
-                inputStyle={inputStyle}
-              />
+            {form.eventType !== 'training' && (
+              <Field label="Ville *">
+                <CityAutocomplete
+                  value={form.cityName} onChange={(v: string) => set('cityName', v)}
+                  onSelect={(c: any) => { set('cityName', c.nom); set('cityLat', c.lat); set('cityLng', c.lng); }}
+                  placeholder="ex. Brest"
+                  inputStyle={inputStyle}
+                />
+              </Field>
+            )}
+
+            <Field label={form.eventType === 'training' ? 'Lieu (optionnel)' : 'Stade / Salle / Lieu'}>
+              {form.eventType === 'training' ? (
+                <input
+                  type="text"
+                  value={form.venue}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('venue', e.target.value)}
+                  placeholder="Gymnase municipal, Terrain annexe…"
+                  style={inputStyle}
+                />
+              ) : (
+                <VenueAutocomplete
+                  value={form.venue}
+                  onChange={(v: string) => set('venue', v)}
+                  cityLat={form.cityLat}
+                  cityLng={form.cityLng}
+                  cityName={form.cityName}
+                  onSelect={({ name, city, lat, lng }: any) => {
+                    set('venue', name);
+                    if (city && !form.cityName) set('cityName', city);
+                    if (lat && lng && (form.cityLat === BREST.lat && form.cityLng === BREST.lng)) {
+                      set('cityLat', lat);
+                      set('cityLng', lng);
+                    }
+                  }}
+                  placeholder="Stade municipal, Salle omnisports…"
+                  style={inputStyle}
+                />
+              )}
             </Field>
 
-            <Field label="Stade / Salle / Lieu">
-              <VenueAutocomplete
-                value={form.venue}
-                onChange={(v: string) => set('venue', v)}
-                cityLat={form.cityLat}
-                cityLng={form.cityLng}
-                cityName={form.cityName}
-                onSelect={({ name, city, lat, lng }: any) => {
-                  set('venue', name);
-                  if (city && !form.cityName) set('cityName', city);
-                  if (lat && lng && (form.cityLat === BREST.lat && form.cityLng === BREST.lng)) {
-                    set('cityLat', lat);
-                    set('cityLng', lng);
-                  }
-                }}
-                placeholder="Stade municipal, Salle omnisports…"
-                style={inputStyle}
-              />
-            </Field>
-
-            <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>Description <HelpTooltip content="Informations complémentaires visibles par tous : convocation, tenue à porter, consignes pratiques, lieu de rendez-vous exact…" /></span>}>
+            {form.eventType !== 'training' && <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>Description <HelpTooltip content="Informations complémentaires visibles par tous : convocation, tenue à porter, consignes pratiques, lieu de rendez-vous exact…" /></span>}>
               <textarea
                 value={form.description}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => set('description', e.target.value)}
@@ -765,7 +840,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                   {form.description?.length ?? 0}/2000
                 </span>
               )}
-            </Field>
+            </Field>}
 
             </div>
 
@@ -814,7 +889,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                   disabled={submitting}
                   style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, boxShadow: submitting ? 'none' : '0 4px 12px rgba(34,217,106,0.3)' }}
                 >
-                  {submitting ? 'Enregistrement…' : isEdit ? 'Enregistrer' : 'Créer l\'événement'}
+                  {submitting ? 'Enregistrement…' : isEdit ? 'Enregistrer' : form.eventType === 'training' ? '🏃 Créer l\'entraînement' : 'Créer l\'événement'}
                 </button>
               )}
             </div>
