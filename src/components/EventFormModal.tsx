@@ -252,9 +252,25 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
     if (!form.date) throw new Error('La date est requise');
     if (!form.time) throw new Error('L\'heure est requise');
     if (isDemoMode()) { onClose(); return; }
-    const sessionBase = { club_id: clubId, date: form.date, time: form.time || null, location: sanitizeText(form.venue ?? '').trim() || null, status: 'active' };
+
+    const dates: string[] = [];
+    if (!isEdit && form.recurrenceEnabled && form.recurrenceUntil) {
+      const step = form.recurrenceFreq === 'biweekly' ? 14 : 7;
+      const until = new Date(form.recurrenceUntil + 'T23:59:59');
+      let cur = new Date(form.date);
+      while (cur <= until && dates.length < 52) {
+        dates.push(cur.toISOString().slice(0, 10));
+        cur = new Date(cur.getTime() + step * 86400000);
+      }
+    } else {
+      dates.push(form.date);
+    }
+
     const teams: (string | null)[] = trainingTeams.includes('all') || !trainingTeams.length ? [null] : trainingTeams;
-    const inserts = teams.map(team_id => ({ ...sessionBase, team_id: team_id ?? null }));
+    const location = sanitizeText(form.venue ?? '').trim() || null;
+    const inserts = dates.flatMap(date =>
+      teams.map(team_id => ({ club_id: clubId, date, time: form.time || null, location, status: 'active', team_id: team_id ?? null }))
+    );
     const { error } = await (supabase.from('training_sessions').insert(inserts) as any);
     if (error) throw new Error((error as any).message ?? 'Erreur lors de la création');
     window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'training_created' } }));
@@ -741,7 +757,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
               </Field>
             </div>
 
-            {!isEdit && form.eventType !== 'training' && (
+            {!isEdit && (
               <div style={{ borderRadius: 14, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
                 <button
                   type="button"
