@@ -53,6 +53,8 @@ export interface SeasonItem {
   isCommClub?:  boolean;
   isOwnerClub?: boolean;    // président / créateur du club
   posters?:     { announce?: string | null; convocation?: string | null; result?: string | null } | null;
+  // training-only: sessions groupées par équipe (même date/heure/lieu)
+  teams?: { sessionId: string; teamId: string | null; teamName: string; presentCount: number; absentCount: number; unsureCount: number; myStatus: string | null }[];
 }
 
 export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = [], managedClubs = [], year, month, clubFilter = 'all', teamFilter = [] }: SeasonPlanningOptions) {
@@ -161,18 +163,46 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
       });
 
       const directClubTeamSet = new Set((directEntries ?? []).map(e => `${e.club_id}|${e.team_id ?? ''}`));
-      const trainingItems: SeasonItem[] = sessions.map(s => {
+      const trainingItemsRaw: SeasonItem[] = sessions.map(s => {
         const cnt         = trainCntMap[s.id] ?? {};
         const entry       = allEntries.find(e => String(e.team_id) === String(s.team_id) && String(e.club_id) === String(s.club_id));
-        // Détection guardian : entrée trouvée mais pas dans les joueurs directs
         const childEntry  = childEntries.find(e => String((e as any).club_id) === String(s.club_id) && String((e as any).team_id) === String(s.team_id));
         const isGuardian  = !!childEntry && !directClubTeamSet.has(`${s.club_id}|${s.team_id ?? ''}`);
         const childPlayerId   = isGuardian ? ((childEntry as any).id as string | undefined) : undefined;
         const childPlayerName = isGuardian ? (childEntry?.name ?? undefined) : undefined;
-        // Status : propre si joueur, statut de l'enfant si parent
         const childStatus = childPlayerId ? (childAttMap[s.id]?.[childPlayerId] ?? null) : null;
         const myStatus    = isGuardian ? childStatus : (trainStatusMap[s.id] ?? null);
         return { id: s.id, type: 'training', date: s.date, time: s.time ?? '', title: entry?.name ? `Entraînement ${entry.name}` : 'Entraînement', location: s.location ?? '', club_id: s.club_id, status: s.status, team_id: s.team_id, myStatus, presentCount: cnt.present_count ?? 0, absentCount: cnt.absent_count ?? 0, unsureCount: cnt.unsure_count ?? 0, isStaffClub: managedSet.has(String(s.club_id)), isPlayerClub: playerClubSet.has(String(s.club_id)), isGuardian, childPlayerName, childPlayerId, isSupporter: false };
+      });
+
+      // Grouper les sessions avec même (club_id, date, time, location) en une seule carte
+      const groupMap = new Map<string, SeasonItem[]>();
+      for (const item of trainingItemsRaw) {
+        const key = `${item.club_id}|${item.date}|${item.time ?? ''}|${item.location ?? ''}`;
+        if (!groupMap.has(key)) groupMap.set(key, []);
+        groupMap.get(key)!.push(item);
+      }
+      const trainingItems: SeasonItem[] = [...groupMap.values()].map(group => {
+        if (group.length === 1) return group[0];
+        const first = group[0];
+        const teams = group.map(s => ({
+          sessionId:    String(s.id),
+          teamId:       s.team_id ?? null,
+          teamName:     s.title.replace('Entraînement ', '').trim() || (s.team_id ?? 'Toutes'),
+          presentCount: s.presentCount,
+          absentCount:  s.absentCount,
+          unsureCount:  s.unsureCount,
+          myStatus:     s.myStatus ?? null,
+        }));
+        return {
+          ...first,
+          title:        'Entraînement',
+          presentCount: group.reduce((sum, s) => sum + s.presentCount, 0),
+          absentCount:  group.reduce((sum, s) => sum + s.absentCount,  0),
+          unsureCount:  group.reduce((sum, s) => sum + s.unsureCount,  0),
+          myStatus:     group.find(s => s.myStatus)?.myStatus ?? null,
+          teams,
+        };
       });
       const matchItems = events.map(ev => {
         const id = String(ev.id); const cnt = matchCntMap[id] ?? {}; const convocs = convocMap[id] ?? null; const matchScore = matchScoreMap[id] ?? null;
@@ -221,6 +251,23 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
             isGuardian:   false,
             isSupporter:  false,
             posters:      null,
+          });
+        }
+
+        // Entraînement multi-équipes démo
+        if (coachIds.length > 0 && !merged.some(m => m.type === 'training' && (m.teams?.length ?? 0) > 1)) {
+          const d = new Date(); d.setDate(d.getDate() + 2);
+          const dateStr = d.toISOString().slice(0, 10);
+          merged.push({
+            id: 'demo-training-multi', type: 'training', date: dateStr, time: '18:30',
+            title: 'Entraînement', location: 'Gymnase municipal de Brest', club_id: coachIds[0],
+            status: 'active', team_id: null, myStatus: null,
+            presentCount: 25, absentCount: 5, unsureCount: 2,
+            isStaffClub: true, isPlayerClub: false, isGuardian: false, isSupporter: false,
+            teams: [
+              { sessionId: 'demo-ts-seniors', teamId: 'seniors', teamName: 'Seniors A', presentCount: 14, absentCount: 2, unsureCount: 1, myStatus: null },
+              { sessionId: 'demo-ts-u17',     teamId: 'u17',     teamName: 'U17',       presentCount: 11, absentCount: 3, unsureCount: 1, myStatus: null },
+            ],
           });
         }
       }

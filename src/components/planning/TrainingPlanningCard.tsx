@@ -6,6 +6,8 @@ import AttendanceListSheet from './AttendanceListSheet.jsx';
 
 const ACCENT = '#8b5cf6';
 
+interface TeamRow { sessionId: string; teamId: string | null; teamName: string; presentCount: number; absentCount: number; unsureCount: number; myStatus: string | null; }
+
 interface TrainingItem {
   id: string | number;
   type: string;
@@ -24,6 +26,7 @@ interface TrainingItem {
   childPlayerId?: string;
   myStatus?: string | null;
   onRespond?: (type: string, id: string | number, status: string, playerId?: string | null) => void;
+  teams?: TeamRow[];
 }
 
 interface TrainingPlanningCardProps {
@@ -34,7 +37,7 @@ interface TrainingPlanningCardProps {
 }
 
 export default function TrainingPlanningCard({ item, userId, isStaff, onOpenRides }: TrainingPlanningCardProps) {
-  const [showList, setShowList] = useState(false);
+  const [showListSessionId, setShowListSessionId] = useState<string | null>(null);
 
   return (
     <>
@@ -71,37 +74,43 @@ export default function TrainingPlanningCard({ item, userId, isStaff, onOpenRide
             <p className="text-xs text-[var(--sl-t3)] mb-3">{item.location}</p>
           )}
 
-          {((item.presentCount ?? 0) > 0 || (item.absentCount ?? 0) > 0 || (item.unsureCount ?? 0) > 0) && (
+          {isStaff && item.teams && item.teams.length > 1 ? (
+            <div className="mb-3">
+              <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">Présence par équipe</p>
+              <div className="flex flex-col gap-1.5">
+                {item.teams.map(team => (
+                  <button
+                    key={team.sessionId}
+                    onClick={() => setShowListSessionId(team.sessionId)}
+                    className="w-full cursor-pointer rounded-xl bg-[var(--sl-surface)] px-3 py-2 hover:bg-[var(--sl-hover)] transition-colors text-left"
+                  >
+                    <p className="text-[10px] font-black text-[var(--sl-t2)] mb-1">{team.teamName}</p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                      {team.presentCount > 0 && <div className="flex items-center gap-1.5"><span className="font-semibold text-[var(--sl-t3)]">Présent</span><span className="font-black text-emerald-400">{team.presentCount}</span></div>}
+                      {team.absentCount  > 0 && <div className="flex items-center gap-1.5"><span className="font-semibold text-[var(--sl-t3)]">Absent</span><span className="font-black text-red-400">{team.absentCount}</span></div>}
+                      {team.unsureCount  > 0 && <div className="flex items-center gap-1.5"><span className="font-semibold text-[var(--sl-t3)]">Incertain</span><span className="font-black text-slate-400">{team.unsureCount}</span></div>}
+                      <span className="ml-auto text-[var(--sl-t3)] text-[10px]">›</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : ((item.presentCount ?? 0) > 0 || (item.absentCount ?? 0) > 0 || (item.unsureCount ?? 0) > 0) ? (
             <div className="mb-3">
               <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">Présence</p>
               <button
-                onClick={isStaff ? () => setShowList(true) : undefined}
+                onClick={isStaff ? () => setShowListSessionId(String(item.id)) : undefined}
                 className={`w-full ${isStaff ? 'cursor-pointer hover:bg-[var(--sl-hover)]' : 'cursor-default'} rounded-xl bg-[var(--sl-surface)] px-3 py-2 transition-colors`}
               >
                 <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                  {(item.presentCount ?? 0) > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-[var(--sl-t3)]">Présent</span>
-                      <span className="font-black text-emerald-400">{item.presentCount}</span>
-                    </div>
-                  )}
-                  {(item.absentCount ?? 0) > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-[var(--sl-t3)]">Absent</span>
-                      <span className="font-black text-red-400">{item.absentCount}</span>
-                    </div>
-                  )}
-                  {(item.unsureCount ?? 0) > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-[var(--sl-t3)]">Incertain</span>
-                      <span className="font-black text-slate-400">{item.unsureCount}</span>
-                    </div>
-                  )}
+                  {(item.presentCount ?? 0) > 0 && <div className="flex items-center gap-1.5"><span className="font-semibold text-[var(--sl-t3)]">Présent</span><span className="font-black text-emerald-400">{item.presentCount}</span></div>}
+                  {(item.absentCount  ?? 0) > 0 && <div className="flex items-center gap-1.5"><span className="font-semibold text-[var(--sl-t3)]">Absent</span><span className="font-black text-red-400">{item.absentCount}</span></div>}
+                  {(item.unsureCount  ?? 0) > 0 && <div className="flex items-center gap-1.5"><span className="font-semibold text-[var(--sl-t3)]">Incertain</span><span className="font-black text-slate-400">{item.unsureCount}</span></div>}
                   {isStaff && <span className="ml-auto text-[var(--sl-t3)] text-[10px]">›</span>}
                 </div>
               </button>
             </div>
-          )}
+          ) : null}
 
           {(item.isPlayerClub || item.isGuardian) && (
             <div>
@@ -132,10 +141,10 @@ export default function TrainingPlanningCard({ item, userId, isStaff, onOpenRide
       </motion.div>
 
       <AttendanceListSheet
-        open={showList}
-        onClose={() => setShowList(false)}
+        open={!!showListSessionId}
+        onClose={() => setShowListSessionId(null)}
         type="training"
-        id={item.id}
+        id={showListSessionId ?? item.id}
         userId={userId}
       />
     </>
