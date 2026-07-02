@@ -13,15 +13,17 @@ interface CarpoolEvent {
 interface CarpoolSectionProps {
   eventId:      string | number;
   myStatus?:    string | null;
+  isStaff?:     boolean;
   onOpenRides?: () => void;
   event?:       CarpoolEvent;
 }
 
-export default function CarpoolSection({ eventId, myStatus, onOpenRides, event }: CarpoolSectionProps) {
-  const { rides, loading, createRide } = useRides(myStatus === 'present' ? String(eventId) : null) as any;
+export default function CarpoolSection({ eventId, myStatus, isStaff, onOpenRides, event }: CarpoolSectionProps) {
+  const active = isStaff || myStatus === 'present';
+  const { rides, loading, createRide } = useRides(active ? String(eventId) : null) as any;
   const [showCreate, setShowCreate] = useState(false);
 
-  if (myStatus !== 'present') return null;
+  if (!active) return null;
 
   const activeRides  = (rides as any[]).filter((r: any) => r.status !== 'cancelled');
   const totalSeats   = activeRides.reduce((s: number, r: any) => s + r.availableSeatsLeft, 0);

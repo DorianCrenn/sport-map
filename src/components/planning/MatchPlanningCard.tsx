@@ -438,8 +438,8 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
           </AnimatePresence>
 
           <AnimatePresence>
-            {item.myStatus === 'present' && (
-              <CarpoolSection eventId={item.id} myStatus={item.myStatus} onOpenRides={onOpenRides} event={item as any} />
+            {(item.isStaffClub || item.myStatus === 'present') && (
+              <CarpoolSection eventId={item.id} myStatus={item.myStatus} isStaff={item.isStaffClub} onOpenRides={onOpenRides} event={item as any} />
             )}
           </AnimatePresence>
         </div>
