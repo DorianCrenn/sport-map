@@ -1,6 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase }          from '../../lib/supabase.js';
+import { supabase, isDemoMode } from '../../lib/supabase.js';
 import { useToast }          from '../../contexts/ToastContext.jsx';
 import PresenceButtons       from './PresenceButtons.jsx';
 import CarpoolSection        from './CarpoolSection.jsx';
@@ -193,12 +193,14 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
   const handleStartLive = useCallback(async () => {
     setLaunching(true);
     try {
-      const { data: existing } = await supabase.from('match_scores').select('id').eq('event_id', item.id).maybeSingle();
-      const payload = { event_id: item.id, status: 'in_progress', score_home: 0, score_away: 0, sport: item.sport ?? 'Football' };
-      const { error } = existing
-        ? await supabase.from('match_scores').update({ status: 'in_progress' }).eq('event_id', item.id)
-        : await supabase.from('match_scores').insert(payload);
-      if (error) throw error;
+      if (!isDemoMode()) {
+        const { data: existing } = await supabase.from('match_scores').select('id').eq('event_id', item.id).maybeSingle();
+        const payload = { event_id: item.id, status: 'in_progress', score_home: 0, score_away: 0, sport: item.sport ?? 'Football' };
+        const { error } = existing
+          ? await supabase.from('match_scores').update({ status: 'in_progress' }).eq('event_id', item.id)
+          : await supabase.from('match_scores').insert(payload);
+        if (error) throw error;
+      }
       setLocalMatchScore({ status: 'in_progress', score_home: 0, score_away: 0 });
     } catch {
       toast({ message: 'Impossible de démarrer le live' });
@@ -289,15 +291,6 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
             </div>
           )}
 
-          {isStaff && item.convocs && item.convocs.total > 0 && (
-            <button onClick={() => setShowList(true)} className="w-full text-left mb-3 px-3 py-2 rounded-xl bg-[var(--sl-surface)] hover:bg-[var(--sl-hover)] transition-colors">
-              <span className="text-xs text-[var(--sl-t3)]">
-                <span className="font-black text-emerald-400">{item.convocs.accepted}</span> confirmés
-                {(item.convocs.pending ?? 0) > 0 && <> · <span className="font-black text-amber-400">{item.convocs.pending}</span> en attente</>}
-                <span className="ml-2 text-[var(--sl-t3)]">›</span>
-              </span>
-            </button>
-          )}
 
           {item.isSupporter && (item.convocs?.accepted ?? 0) > 0 && (
             <button

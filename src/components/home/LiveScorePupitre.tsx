@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { supabase } from '../../lib/supabase.js';
+import { supabase, isDemoMode } from '../../lib/supabase.js';
 import { useToast } from '../../contexts/ToastContext.jsx';
 
 interface LiveScorePupitreProps {
@@ -19,6 +19,7 @@ export default function LiveScorePupitre({ event, matchScore, onFinished }: Live
   const awayTeam = event?.adversaire || 'Visiteur';
 
   const update = useCallback(async (newHome: number, newAway: number, prevHome: number, prevAway: number) => {
+    if (isDemoMode()) return;
     const { error } = await supabase
       .from('match_scores')
       .update({ score_home: newHome, score_away: newAway })
@@ -38,11 +39,13 @@ export default function LiveScorePupitre({ event, matchScore, onFinished }: Live
   async function handleFinish() {
     setEnding(true);
     try {
-      const { error } = await supabase
-        .from('match_scores')
-        .update({ status: 'final', score_home: scoreHome, score_away: scoreAway })
-        .eq('event_id', event.id);
-      if (error) throw error;
+      if (!isDemoMode()) {
+        const { error } = await supabase
+          .from('match_scores')
+          .update({ status: 'final', score_home: scoreHome, score_away: scoreAway })
+          .eq('event_id', event.id);
+        if (error) throw error;
+      }
       onFinished?.({ home: scoreHome, away: scoreAway });
     } catch {
       toast({ message: 'Impossible de clôturer le match' });
@@ -58,32 +61,24 @@ export default function LiveScorePupitre({ event, matchScore, onFinished }: Live
       className="rounded-xl border border-red-500/30 bg-red-500/5 p-4"
       data-demo="live-score-pupitre"
     >
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <span className="text-[12px] font-bold text-[var(--sl-t1)] flex-1 truncate text-right">{homeTeam}</span>
-        <div className="flex items-center gap-3 shrink-0">
-          <span className="text-[32px] font-black text-[var(--sl-t1)] tabular-nums w-8 text-center">{scoreHome}</span>
-          <span className="text-[18px] font-bold text-[var(--sl-t3)]">–</span>
-          <span className="text-[32px] font-black text-[var(--sl-t1)] tabular-nums w-8 text-center">{scoreAway}</span>
-        </div>
-        <span className="text-[12px] font-bold text-[var(--sl-t1)] flex-1 truncate text-left">{awayTeam}</span>
+      <div className="flex justify-between mb-3">
+        <span className="text-[11px] font-bold text-[var(--sl-t1)] truncate max-w-[45%]">{homeTeam}</span>
+        <span className="text-[11px] font-bold text-[var(--sl-t1)] truncate max-w-[45%] text-right">{awayTeam}</span>
       </div>
 
-      <div className="flex gap-3 mb-3">
-        <div className="flex-1 flex gap-1.5">
-          <button onClick={incrementHome} className="flex-1 py-3 rounded-xl bg-[var(--sl-green)] text-black text-[15px] font-black active:scale-95 transition-transform">
-            +1 {homeTeam.split(' ')[0]}
-          </button>
-          <button onClick={decrementHome} disabled={scoreHome === 0} aria-label="Enlever 1 but domicile" className="w-11 py-3 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)] text-[17px] font-black border border-[var(--sl-border)] active:scale-95 transition-transform disabled:opacity-30 disabled:cursor-not-allowed">
-            −
-          </button>
+      <div className="grid grid-cols-[1fr_2rem_1fr] items-center gap-3 mb-4">
+        <div className="flex flex-col items-center gap-1.5">
+          <button onClick={incrementHome} className="w-full py-2.5 rounded-xl bg-[var(--sl-green)] text-black text-[15px] font-black active:scale-95 transition-transform">+1</button>
+          <span className="text-[32px] font-black text-[var(--sl-t1)] tabular-nums">{scoreHome}</span>
+          <button onClick={decrementHome} disabled={scoreHome === 0} aria-label="Enlever 1 but domicile" className="w-full py-2 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)] text-[17px] font-black border border-[var(--sl-border)] active:scale-95 transition-transform disabled:opacity-30 disabled:cursor-not-allowed">−</button>
         </div>
-        <div className="flex-1 flex gap-1.5">
-          <button onClick={incrementAway} className="flex-1 py-3 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t1)] text-[15px] font-black border border-[var(--sl-border)] active:scale-95 transition-transform">
-            +1 {awayTeam.split(' ')[0]}
-          </button>
-          <button onClick={decrementAway} disabled={scoreAway === 0} aria-label="Enlever 1 but visiteur" className="w-11 py-3 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)] text-[17px] font-black border border-[var(--sl-border)] active:scale-95 transition-transform disabled:opacity-30 disabled:cursor-not-allowed">
-            −
-          </button>
+
+        <span className="text-[18px] font-bold text-[var(--sl-t3)] text-center">–</span>
+
+        <div className="flex flex-col items-center gap-1.5">
+          <button onClick={incrementAway} className="w-full py-2.5 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t1)] text-[15px] font-black border border-[var(--sl-border)] active:scale-95 transition-transform">+1</button>
+          <span className="text-[32px] font-black text-[var(--sl-t1)] tabular-nums">{scoreAway}</span>
+          <button onClick={decrementAway} disabled={scoreAway === 0} aria-label="Enlever 1 but visiteur" className="w-full py-2 rounded-xl bg-[var(--sl-card-hi)] text-[var(--sl-t2)] text-[17px] font-black border border-[var(--sl-border)] active:scale-95 transition-transform disabled:opacity-30 disabled:cursor-not-allowed">−</button>
         </div>
       </div>
 

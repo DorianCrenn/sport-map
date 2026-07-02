@@ -207,7 +207,7 @@ export function useSeasonPlanning({ userId, allClubIds = [], managedClubIds = []
             level: 'D3 Régionale',
             cup_type: '',
             score: null,
-            matchScore: { status: 'in_progress', score_home: 2, score_away: 1 },
+            matchScore: (() => { const h = new Date().getHours(); return (h >= 14 && h < 17) ? { status: 'in_progress', score_home: 2, score_away: 1 } : null; })(),
             myStatus: null,
             presentCount: 12,
             absentCount: 2,
