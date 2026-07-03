@@ -4,6 +4,7 @@ import { useAuth }               from '../contexts/AuthContext.jsx';
 import { useManagedClubs }       from '../hooks/useManagedClubs.js';
 import { useMyAnnouncements }    from '../hooks/useMyAnnouncements.js';
 import WeekendPosters            from '../components/dashboard/WeekendPosters.jsx';
+import { getMockWeekendMatches } from '../hooks/useWeekendPosters.js';
 import { useQuickActions }       from '../hooks/useQuickActions.js';
 import { useDemoFeed }           from '../hooks/useDemoFeed.js';
 import { isDemoMode, supabase }  from '../lib/supabase.js';
@@ -198,6 +199,7 @@ export default function ActualitesPage({
         <div style={{ paddingTop: 8 }}>
           <WeekendPosters
             title="Tes affiches à venir"
+            matches={demo ? getMockWeekendMatches() : undefined}
             onOpenInStudio={(match: any) =>
               handleOpenPoster({
                 event: { id: match.id, club_id: match.clubId, title: match.homeTeam.name, sport: match.sport, date: match.date.toISOString(), adversaire: match.awayTeam.name, venue: match.venue },
