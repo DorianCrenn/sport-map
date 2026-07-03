@@ -253,7 +253,8 @@ export default function ActualitesPage({
               const emoji = sportEmoji[match.sport] ?? '🏆';
               const dayLabel = match.date.toLocaleDateString('fr-FR', { weekday: 'short' });
               const timeLabel = match.date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-              const accent = match.posterData?.accentColor ?? 'var(--sl-accent)';
+              const clubColor = managedClubs.find((c: any) => String(c.id) === match.clubId)?.primaryColor ?? null;
+              const accent = clubColor ?? match.posterData?.accentColor ?? 'var(--sl-accent)';
               return (
                 <button
                   key={match.id}
