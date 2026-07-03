@@ -1,9 +1,11 @@
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSeasonPlanning }  from '../../hooks/useSeasonPlanning.js';
-import { useFeedRides }       from '../../hooks/useFeedRides.js';
-import TrainingPlanningCard   from './TrainingPlanningCard.jsx';
-import MatchPlanningCard      from './MatchPlanningCard.jsx';
+import { useSeasonPlanning }      from '../../hooks/useSeasonPlanning.js';
+import { useFeedRides }           from '../../hooks/useFeedRides.js';
+import type { MyAnnouncement }    from '../../hooks/useMyAnnouncements.js';
+import TrainingPlanningCard       from './TrainingPlanningCard.jsx';
+import MatchPlanningCard          from './MatchPlanningCard.jsx';
+import AnnouncementPlanningCard   from './AnnouncementPlanningCard.jsx';
 
 
 const CompositionPoster = lazy(() => import('./CompositionPoster.jsx'));
@@ -57,6 +59,9 @@ interface PlanningTimelineProps {
   onNavigateRides?: () => void;
   clubs?: Record<string, any>[];
   teamFilter?: string[];
+  announcements?: MyAnnouncement[];
+  readIds?: Set<string>;
+  onMarkRead?: (id: string) => void;
 }
 
 export default function PlanningTimeline({
@@ -72,6 +77,9 @@ export default function PlanningTimeline({
   onNavigateRides,
   clubs = [],
   teamFilter = [],
+  announcements = [],
+  readIds,
+  onMarkRead,
 }: PlanningTimelineProps) {
   const [viewDate,   setViewDate]   = useState(() => new Date());
   const [filter,     setFilter]     = useState('all');
@@ -134,10 +142,24 @@ export default function PlanningTimeline({
   }, []);
 
   const filteredItems: Record<string, any>[] = useMemo(() => {
-    if (filter === 'match')    return items.filter((i: any) => i.type === 'match');
-    if (filter === 'training') return items.filter((i: any) => i.type === 'training');
-    return items;
-  }, [items, filter]);
+    const planningItems =
+      filter === 'match'    ? items.filter((i: any) => i.type === 'match') :
+      filter === 'training' ? items.filter((i: any) => i.type === 'training') :
+      items;
+
+    // Annonces du mois courant — apparaissent dans tous les onglets
+    const monthStr = `${year}-${String(month).padStart(2, '0')}`;
+    const annItems = announcements
+      .filter(ann => (ann.scheduledFor ?? ann.createdAt).slice(0, 7) === monthStr)
+      .map(ann => ({
+        ...ann,
+        annType: ann.type,   // type d'annonce (urgent, info, event…)
+        type: 'announcement',
+        date: (ann.scheduledFor ?? ann.createdAt).slice(0, 10),
+      }));
+
+    return [...planningItems, ...annItems];
+  }, [items, filter, announcements, year, month]);
 
   const groups: [string, Record<string, any>[]][] = useMemo(() => {
     const map: Record<string, Record<string, any>[]> = {};
@@ -225,6 +247,14 @@ export default function PlanningTimeline({
                   <DateBubble dateStr={date} />
                   <div className="space-y-3 pl-[68px]">
                     {groupItems.map(item => {
+                      if (item.type === 'announcement') return (
+                        <AnnouncementPlanningCard
+                          key={`ann-${item.id}`}
+                          announcement={{ ...item, type: item.annType }}
+                          isRead={readIds?.has(item.id) ?? false}
+                          onMarkRead={onMarkRead}
+                        />
+                      );
                       const club = getClub(item.club_id);
                       return item.type === 'training' ? (
                         <TrainingPlanningCard key={item.id} item={{ ...item, ...withRespond(item) } as any} userId={currentUser?.id} isStaff={item.isStaffClub} onOpenRides={onNavigateRides} />

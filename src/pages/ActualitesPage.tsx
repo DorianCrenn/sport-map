@@ -11,7 +11,6 @@ import LiveMultiplexSection      from '../components/home/LiveMultiplexSection.j
 import HypeBar                   from '../components/home/HypeBar.jsx';
 import PlanningTimeline          from '../components/planning/PlanningTimeline.jsx';
 import DiscoveryClubs            from '../components/home/DiscoveryClubs.js';
-import FeedAnnouncements         from '../components/home/FeedAnnouncements.js';
 import FeedRecentResults         from '../components/home/FeedRecentResults.js';
 
 
@@ -347,16 +346,7 @@ export default function ActualitesPage({
       {!isNewUser && <FeedRecentResults clubIds={feedClubIds} />}
 
 
-      {/* ══ Annonces clubs ═══════════════════════════════════════════════════ */}
-      {!isNewUser && (
-        <FeedAnnouncements
-          announcements={announcements ?? []}
-          readIds={readIds ?? new Set()}
-          onRead={markRead}
-        />
-      )}
-
-      {/* ══ Planning de la Saison ════════════════════════════════════════════ */}
+      {/* ══ Planning de la Saison (inclut les annonces) ═════════════════════ */}
       {!isNewUser && (
         <PlanningTimeline
           currentUser={currentUser}
@@ -371,6 +361,9 @@ export default function ActualitesPage({
           onOpenPoster={handleOpenPoster}
           onConvocate={(event: any) => setConvocationEvent(event)}
           onNavigateRides={() => onNavigate?.('rides')}
+          announcements={announcements ?? []}
+          readIds={readIds ?? new Set()}
+          onMarkRead={markRead}
         />
       )}
 
