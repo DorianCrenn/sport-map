@@ -195,47 +195,81 @@ export default function ActualitesPage({
         />
       )}
 
-      {/* ══ Affiches du week-end — bannière compacte (staff + communicant) ═══ */}
+      {/* ══ Affiches du week-end — scroll horizontal (staff + communicant) ═══ */}
       {!isNewUser && (isCoachOrManager || isCommunicant || isClubAdmin || isAdmin) && weekendMatches.length > 0 && (
-        <div style={{ padding: '8px 16px 0' }}>
-          <button
-            onClick={() => handleOpenPoster({
-              event: {
-                id: weekendMatches[0].id,
-                club_id: weekendMatches[0].clubId,
-                title: weekendMatches[0].homeTeam.name,
-                sport: weekendMatches[0].sport,
-                date: weekendMatches[0].date.toISOString(),
-                adversaire: weekendMatches[0].awayTeam.name,
-                venue: weekendMatches[0].venue,
-              },
-              score: null,
-              mode: 'create',
-            })}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-              padding: '12px 14px', borderRadius: 14,
-              backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
-              cursor: 'pointer', textAlign: 'left',
-            }}
-          >
-            <div style={{
-              width: 42, height: 42, borderRadius: 11, flexShrink: 0,
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #22d96a 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
-            }}>🎨</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.01em' }}>
-                Affiches du week-end
-              </p>
-              <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--sl-t3)' }}>
-                {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''} · Prêtes à créer
-              </p>
+        <div style={{ padding: '8px 0 0' }}>
+          {/* En-tête */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #22d96a 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
+              }}>🎨</div>
+              <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)' }}>Affiches du week-end</span>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sl-accent)" strokeWidth="2.5" strokeLinecap="round">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
+            <span style={{
+              fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)',
+              backgroundColor: 'var(--sl-surface)', padding: '2px 8px', borderRadius: 20,
+            }}>
+              {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          {/* Cartes horizontales */}
+          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '0 16px 4px', scrollbarWidth: 'none' }}>
+            {weekendMatches.map((match: any) => {
+              const sportEmoji: Record<string, string> = { football: '⚽', basket: '🏀', handball: '🤾', rugby: '🏉' };
+              const emoji = sportEmoji[match.sport] ?? '🏆';
+              const dayLabel = match.date.toLocaleDateString('fr-FR', { weekday: 'short' });
+              const timeLabel = match.date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+              return (
+                <button
+                  key={match.id}
+                  onClick={() => handleOpenPoster({
+                    event: {
+                      id: match.id,
+                      club_id: match.clubId,
+                      title: match.homeTeam.name,
+                      sport: match.sport,
+                      date: match.date.toISOString(),
+                      adversaire: match.awayTeam.name,
+                      venue: match.venue,
+                    },
+                    score: null,
+                    mode: 'create',
+                  })}
+                  style={{
+                    flexShrink: 0, width: 140,
+                    display: 'flex', flexDirection: 'column', gap: 6,
+                    padding: '10px 12px', borderRadius: 14,
+                    backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+                    cursor: 'pointer', textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 20 }}>{emoji}</span>
+                    <span style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 600 }}>
+                      {dayLabel} {timeLabel}
+                    </span>
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: 11, fontWeight: 800, color: 'var(--sl-t1)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {match.homeTeam.name}
+                    </p>
+                    <p style={{ margin: 0, fontSize: 10, color: 'var(--sl-t3)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      vs {match.awayTeam.name}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-accent)' }}>Créer</span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sl-accent)" strokeWidth="3" strokeLinecap="round">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
