@@ -3,8 +3,7 @@ import { Z } from '../constants/zIndex.js';
 import { useAuth }               from '../contexts/AuthContext.jsx';
 import { useManagedClubs }       from '../hooks/useManagedClubs.js';
 import { useMyAnnouncements }    from '../hooks/useMyAnnouncements.js';
-import WeekendPosters            from '../components/dashboard/WeekendPosters.jsx';
-import { getMockWeekendMatches } from '../hooks/useWeekendPosters.js';
+import { useWeekendPosters, getMockWeekendMatches } from '../hooks/useWeekendPosters.js';
 import { useQuickActions }       from '../hooks/useQuickActions.js';
 import { useDemoFeed }           from '../hooks/useDemoFeed.js';
 import { isDemoMode, supabase }  from '../lib/supabase.js';
@@ -48,6 +47,8 @@ export default function ActualitesPage({
     isCommunicant,
   }) as any;
   const effectiveLiveMatches = demo ? demoLiveMatches : quickActions.liveMatches;
+  const liveWeekendMatches   = useWeekendPosters();
+  const weekendMatches       = demo ? getMockWeekendMatches() : liveWeekendMatches;
 
   const allKnownClubs = useMemo(() => {
     const map: Record<string, any> = {};
@@ -194,20 +195,47 @@ export default function ActualitesPage({
         />
       )}
 
-      {/* ══ Affiches du week-end — staff uniquement ══════════════════════════ */}
-      {!isNewUser && (isCoachOrManager || isCommunicant || isClubAdmin || isAdmin) && (
-        <div style={{ paddingTop: 8 }}>
-          <WeekendPosters
-            title="Tes affiches à venir"
-            matches={demo ? getMockWeekendMatches() : undefined}
-            onOpenInStudio={(match: any) =>
-              handleOpenPoster({
-                event: { id: match.id, club_id: match.clubId, title: match.homeTeam.name, sport: match.sport, date: match.date.toISOString(), adversaire: match.awayTeam.name, venue: match.venue },
-                score: null,
-                mode: 'create',
-              })
-            }
-          />
+      {/* ══ Affiches du week-end — bannière compacte (staff + communicant) ═══ */}
+      {!isNewUser && (isCoachOrManager || isCommunicant || isClubAdmin || isAdmin) && weekendMatches.length > 0 && (
+        <div style={{ padding: '8px 16px 0' }}>
+          <button
+            onClick={() => handleOpenPoster({
+              event: {
+                id: weekendMatches[0].id,
+                club_id: weekendMatches[0].clubId,
+                title: weekendMatches[0].homeTeam.name,
+                sport: weekendMatches[0].sport,
+                date: weekendMatches[0].date.toISOString(),
+                adversaire: weekendMatches[0].awayTeam.name,
+                venue: weekendMatches[0].venue,
+              },
+              score: null,
+              mode: 'create',
+            })}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+              padding: '12px 14px', borderRadius: 14,
+              backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+              cursor: 'pointer', textAlign: 'left',
+            }}
+          >
+            <div style={{
+              width: 42, height: 42, borderRadius: 11, flexShrink: 0,
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #22d96a 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+            }}>🎨</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.01em' }}>
+                Affiches du week-end
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--sl-t3)' }}>
+                {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''} · Prêtes à créer
+              </p>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sl-accent)" strokeWidth="2.5" strokeLinecap="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
         </div>
       )}
 
