@@ -59,6 +59,7 @@ export default function ActualitesPage({
 
   const [studioConfig,     setStudioConfig]     = useState<Record<string, any> | null>(null);
   const [convocationEvent, setConvocationEvent] = useState<Record<string, any> | null>(null);
+  const [posterStatuses,   setPosterStatuses]   = useState<Record<string, 'draft' | 'saved'>>({});
 
   const [hypeStats, setHypeStats] = useState({ totalToday: 0, upcomingThisWeek: 0 });
   useEffect(() => {
@@ -83,6 +84,36 @@ export default function ActualitesPage({
       });
     return () => { cancelled = true; };
   }, [feedClubIds.join(','), demo]);
+
+  // Statuts affiches pour les matchs du week-end (draft / saved / absent)
+  useEffect(() => {
+    const ids = weekendMatches.map((m: any) => m.id);
+    if (!ids.length) return;
+    if (demo) {
+      // Mock : 1re affiche sauvegardée, 2e en brouillon
+      setPosterStatuses({ [ids[0]]: 'saved', [ids[1]]: 'draft' });
+      return;
+    }
+    if (!currentUser?.id) return;
+    let cancelled = false;
+    supabase
+      .from('posters')
+      .select('event_id, status')
+      .in('event_id', ids)
+      .eq('user_id', currentUser.id)
+      .then(({ data }: { data: { event_id: string; status: string }[] | null }) => {
+        if (cancelled || !data) return;
+        const map: Record<string, 'draft' | 'saved'> = {};
+        data.forEach((p: any) => { map[p.event_id] = p.status as 'draft' | 'saved'; });
+        setPosterStatuses(map);
+      });
+    return () => { cancelled = true; };
+  }, [weekendMatches.map((m: any) => m.id).join(','), demo, currentUser?.id]);
+
+  const sortedWeekendMatches = useMemo(
+    () => [...weekendMatches].sort((a: any, b: any) => a.date.getTime() - b.date.getTime()),
+    [weekendMatches],
+  );
 
   // En mode démo, fermer les overlays locaux quand DemoApp demande close-overlay
   useEffect(() => {
@@ -217,7 +248,7 @@ export default function ActualitesPage({
           </div>
           {/* Cartes horizontales */}
           <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '0 16px 4px', scrollbarWidth: 'none' }}>
-            {weekendMatches.map((match: any) => {
+            {sortedWeekendMatches.map((match: any) => {
               const sportEmoji: Record<string, string> = { football: '⚽', basket: '🏀', handball: '🤾', rugby: '🏉' };
               const emoji = sportEmoji[match.sport] ?? '🏆';
               const dayLabel = match.date.toLocaleDateString('fr-FR', { weekday: 'short' });
@@ -282,13 +313,25 @@ export default function ActualitesPage({
                       </p>
                     )}
                   </div>
-                  {/* Ligne 4 : CTA */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: accent }}>Créer</span>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="3" strokeLinecap="round">
-                      <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                  </div>
+                  {/* Ligne 4 : statut (créée / brouillon / à créer) */}
+                  {posterStatuses[match.id] === 'saved' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 10 }}>✅</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#16a34a' }}>Créée</span>
+                    </div>
+                  ) : posterStatuses[match.id] === 'draft' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 10 }}>📝</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#EA580C' }}>Brouillon</span>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: accent }}>Créer</span>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="3" strokeLinecap="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                      </svg>
+                    </div>
+                  )}
                 </button>
               );
             })}
