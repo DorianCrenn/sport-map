@@ -222,6 +222,7 @@ export default function ActualitesPage({
               const emoji = sportEmoji[match.sport] ?? '🏆';
               const dayLabel = match.date.toLocaleDateString('fr-FR', { weekday: 'short' });
               const timeLabel = match.date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+              const accent = match.posterData?.accentColor ?? 'var(--sl-accent)';
               return (
                 <button
                   key={match.id}
@@ -239,30 +240,52 @@ export default function ActualitesPage({
                     mode: 'create',
                   })}
                   style={{
-                    flexShrink: 0, width: 140,
-                    display: 'flex', flexDirection: 'column', gap: 6,
+                    flexShrink: 0, width: 150,
+                    display: 'flex', flexDirection: 'column', gap: 5,
                     padding: '10px 12px', borderRadius: 14,
-                    backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
+                    background: `linear-gradient(155deg, ${accent}22 0%, var(--sl-card) 65%)`,
+                    border: `1px solid ${accent}44`,
                     cursor: 'pointer', textAlign: 'left',
                   }}
                 >
+                  {/* Ligne 1 : emoji + jour/heure */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: 20 }}>{emoji}</span>
                     <span style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 600 }}>
                       {dayLabel} {timeLabel}
                     </span>
                   </div>
+                  {/* Ligne 2 : équipes */}
                   <div>
                     <p style={{ margin: 0, fontSize: 11, fontWeight: 800, color: 'var(--sl-t1)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {match.homeTeam.name}
                     </p>
-                    <p style={{ margin: 0, fontSize: 10, color: 'var(--sl-t3)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p style={{ margin: 0, fontSize: 10, color: 'var(--sl-t2)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       vs {match.awayTeam.name}
                     </p>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-accent)' }}>Créer</span>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sl-accent)" strokeWidth="3" strokeLinecap="round">
+                  {/* Ligne 3 : catégorie + championnat */}
+                  <div style={{ borderTop: `1px solid ${accent}30`, paddingTop: 5 }}>
+                    {match.category && (
+                      <span style={{
+                        display: 'inline-block', fontSize: 9, fontWeight: 800,
+                        color: accent, backgroundColor: `${accent}20`,
+                        padding: '1px 6px', borderRadius: 6, marginBottom: 3,
+                        letterSpacing: '0.04em', textTransform: 'uppercase',
+                      }}>
+                        {match.category}
+                      </span>
+                    )}
+                    {match.competition && (
+                      <p style={{ margin: 0, fontSize: 9, color: 'var(--sl-t3)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {match.competition}
+                      </p>
+                    )}
+                  </div>
+                  {/* Ligne 4 : CTA */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: accent }}>Créer</span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="3" strokeLinecap="round">
                       <polyline points="9 18 15 12 9 6"/>
                     </svg>
                   </div>
