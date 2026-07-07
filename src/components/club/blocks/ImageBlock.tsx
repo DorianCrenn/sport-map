@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useToast } from '../../../contexts/ToastContext.jsx';
 
 const FIT_OPTIONS = [
   { value: 'cover',   label: 'Remplir' },
@@ -21,12 +22,13 @@ interface ImageBlockProps {
 export default function ImageBlock({ data, isEditing, onUpdate }: ImageBlockProps) {
   const { src = '', caption = '', fit = 'cover', ratio = '16/9' } = data;
   const fileRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 4 * 1024 * 1024) {
-      alert('Image trop lourde (max 4 Mo). Utilisez plutôt une URL.');
+      toast({ message: 'Image trop lourde (max 4 Mo). Utilisez plutôt une URL.', type: 'error' });
       return;
     }
     const reader = new FileReader();

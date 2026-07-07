@@ -1,6 +1,7 @@
 import { useState, useEffect, type JSX, type FormEvent, type MouseEvent, type ChangeEvent, type CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useToast } from '../contexts/ToastContext.jsx';
 import { useClubs } from '../hooks/useClubs.js';
 import { useSports } from '../hooks/useSports.js';
 import { supabase } from '../lib/supabase.js';
@@ -180,6 +181,7 @@ interface ClubStats {
 
 export default function AdminPage({ onNavigate }: AdminPageProps) {
   const { isAdmin, currentUser } = useAuth() as any;
+  const { toast } = useToast();
   const { verifyClub, rejectClub, requestClubInfo, suspendClub } = useClubs() as any;
   const { allSports, customSports, deletedDefaults, addSport, updateSport, deleteSport, restoreSport, toggleArchive } = useSports() as any;
 
@@ -291,7 +293,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
       setAdminNote('');
     } catch (err: any) {
       console.error('[AdminPage] club action failed:', err.message);
-      alert(`Erreur : ${err.message}`);
+      toast({ message: `Erreur : ${err.message}`, type: 'error' });
     } finally {
       setActionLoading(false);
     }

@@ -4,6 +4,7 @@ import { useAndroidBack } from '../../hooks/useAndroidBack.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSports } from '../../hooks/useSports.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useToast } from '../../contexts/ToastContext.jsx';
 import CityAutocomplete from '../CityAutocomplete.jsx';
 import SportIcon from '../SportIcon.jsx';
 import { supabase } from '../../lib/supabase.js';
@@ -132,6 +133,7 @@ interface ClubCreationWizardProps {
 export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWizardProps) {
   const { allSports: SPORTS } = useSports() as any;
   const { currentUser } = useAuth() as any;
+  const { toast } = useToast();
 
   const panelRef = useRef<HTMLDivElement>(null);
   useFocusTrap(panelRef);
@@ -191,7 +193,7 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { alert('Image trop grande (max 2 Mo)'); return; }
+    if (file.size > 2 * 1024 * 1024) { toast({ message: 'Image trop grande (max 2 Mo)', type: 'error' }); return; }
     setLogoUploading(true);
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const path = `clubs/new-${currentUser?.id ?? 'anon'}/${Date.now()}-logo.${ext}`;
