@@ -3,7 +3,9 @@ import { renderHook, waitFor } from '@testing-library/react';
 
 const { mockFrom } = vi.hoisted(() => ({ mockFrom: vi.fn() }));
 
-vi.mock('../../lib/supabase.js', () => ({ supabase: { from: mockFrom } }));
+vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {}, supabase: { from: mockFrom } }));
 vi.mock('../../lib/errorBus.js',  () => ({ dispatchError: vi.fn() }));
 
 import { makeQuery } from '../../test/mocks/supabase.js';

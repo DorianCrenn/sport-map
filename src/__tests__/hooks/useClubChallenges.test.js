@@ -45,6 +45,8 @@ const mockFrom = {
 };
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     from: vi.fn(() => mockFrom),
   },

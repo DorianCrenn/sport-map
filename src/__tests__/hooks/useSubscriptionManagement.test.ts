@@ -19,6 +19,8 @@ vi.mock('../../lib/supabase.js', () => {
     maybeSingle: vi.fn().mockResolvedValue({ data: SUB, error: null }),
   };
   return {
+    isDemoMode: () => false,
+    setDemoMode: () => {},
     supabase: {
       // getSession retourne { data: { session: ... }, error: null } — shape supabase-js
       auth: { getSession: vi.fn().mockResolvedValue({ data: { session: { access_token: 'tok_test' } }, error: null }) },

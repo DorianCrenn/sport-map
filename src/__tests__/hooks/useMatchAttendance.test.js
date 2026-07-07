@@ -15,6 +15,8 @@ const fakeChannel = {
 };
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     from:          mockFrom,
     channel:       mockChannel,
@@ -36,6 +38,7 @@ function makeQuery(result = { data: [], error: null }) {
   return {
     select: vi.fn().mockReturnThis(),
     eq:     vi.fn().mockReturnThis(),
+    in:     vi.fn().mockReturnThis(),
     upsert: vi.fn().mockResolvedValue({ data: null, error: null }),
     then:   (fn) => Promise.resolve(result).then(fn),
   };

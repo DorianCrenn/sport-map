@@ -11,6 +11,8 @@ const mockFunctionsInvoke = vi.hoisted(() => vi.fn());
 const mockGetSession = vi.hoisted(() => vi.fn());
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     from: mockFrom,
     channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),

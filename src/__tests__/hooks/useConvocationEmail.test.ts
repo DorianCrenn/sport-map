@@ -4,6 +4,8 @@ import { renderHook, act } from '@testing-library/react';
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     auth: {
       getSession: vi.fn().mockResolvedValue({

@@ -19,7 +19,9 @@ const { mockFrom, mockInsert, mockLimit } = vi.hoisted(() => {
   return { mockFrom, mockInsert, mockLimit };
 });
 
-vi.mock('../../lib/supabase.js', () => ({ supabase: { from: mockFrom } }));
+vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {}, supabase: { from: mockFrom } }));
 vi.mock('../../contexts/AuthContext.jsx', () => ({
   useAuth: vi.fn(() => ({ currentUser: { id: 'user-1', clubId: 'club-1' } })),
 }));

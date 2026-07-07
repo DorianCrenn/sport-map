@@ -20,6 +20,8 @@ vi.mock('../../contexts/AuthContext.jsx', () => ({
 }));
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     storage: {
       from: vi.fn(() => ({

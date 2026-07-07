@@ -5,6 +5,8 @@ import { describe, it, expect, vi } from 'vitest';
 
 // Mock supabase
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),

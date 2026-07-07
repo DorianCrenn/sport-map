@@ -34,6 +34,8 @@ vi.mock('../../hooks/useSports.js', () => ({
 }));
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     from: () => ({
       select: () => ({

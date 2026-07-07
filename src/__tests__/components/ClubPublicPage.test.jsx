@@ -6,6 +6,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 const { mockFrom } = vi.hoisted(() => ({ mockFrom: vi.fn() }));
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: { from: mockFrom },
 }));
 

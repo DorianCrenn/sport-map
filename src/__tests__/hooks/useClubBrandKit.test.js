@@ -8,6 +8,8 @@ const { mockFrom } = vi.hoisted(() => ({
 }));
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: { from: mockFrom },
 }));
 

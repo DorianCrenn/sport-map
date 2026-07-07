@@ -20,6 +20,8 @@ const mockToken = {
 };
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     from: () => ({
       select: () => ({

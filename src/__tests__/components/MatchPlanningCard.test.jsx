@@ -45,7 +45,7 @@ vi.mock('../../lib/supabase.js', () => {
   const update   = vi.fn().mockResolvedValue({ error: null });
   const insert   = vi.fn().mockResolvedValue({ error: null });
   const from     = vi.fn(() => ({ select, update, insert }));
-  return { supabase: { from } };
+  return { supabase: { from }, isDemoMode: () => false, setDemoMode: () => {} };
 });
 
 vi.mock('../../components/home/LiveScorePupitre.jsx', () => ({

@@ -22,6 +22,8 @@ vi.mock('../../lib/pushNotifications.js', () => ({
 }));
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: { auth: { getUser: mockGetUser } },
 }));
 

@@ -50,6 +50,11 @@ vi.mock('../../hooks/useMyConvocations.js', () => ({ useMyConvocations: () => ({
 vi.mock('../../hooks/useQuickActions.js',   () => ({ useQuickActions:   () => ({ actions: [], hasActions: false, liveMatches: [] }) }));
 vi.mock('../../hooks/useDemoFeed.js',       () => ({ useDemoFeed:       () => ({ demoConvocations: [], setDemoConvocations: vi.fn(), demoLiveMatches: [] }) }));
 vi.mock('../../hooks/useClubs.js',          () => ({ useClubs:          () => ({ userClubs: [], loading: false }) }));
+vi.mock('../../hooks/useMyAnnouncements.js', () => ({ useMyAnnouncements: () => ({ announcements: [], readIds: new Set(), markRead: vi.fn() }) }));
+vi.mock('../../hooks/useWeekendPosters.js', () => ({ useWeekendPosters: () => [], getMockWeekendMatches: () => [] }));
+vi.mock('../../components/home/HypeBar.jsx',          () => ({ default: () => null }));
+vi.mock('../../components/home/DiscoveryClubs.js',    () => ({ default: () => null }));
+vi.mock('../../components/home/FeedRecentResults.js', () => ({ default: () => null }));
 
 // PlanningTimeline remplace ClubFeed en Zone 3
 vi.mock('../../components/planning/PlanningTimeline.jsx', () => ({

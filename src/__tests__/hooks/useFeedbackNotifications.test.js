@@ -10,6 +10,8 @@ const { mockFrom } = vi.hoisted(() => ({ mockFrom: vi.fn() }));
 const { mockUseAuth } = vi.hoisted(() => ({ mockUseAuth: vi.fn() }));
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: { from: mockFrom },
 }));
 

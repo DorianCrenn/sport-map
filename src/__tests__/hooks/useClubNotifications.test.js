@@ -10,6 +10,8 @@ const mockFrom = vi.hoisted(() => vi.fn());
 const mockChannel = vi.hoisted(() => vi.fn());
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     from: mockFrom,
     channel: mockChannel,

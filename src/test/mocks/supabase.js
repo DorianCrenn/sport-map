@@ -57,6 +57,10 @@ export const mockFrom          = vi.fn(() => makeQuery());
 export const mockChannel       = vi.fn(() => makeChannel());
 export const mockRemoveChannel = vi.fn().mockResolvedValue(undefined);
 
+/** Mode démo — désactivé par défaut dans les tests (valeur réelle au démarrage). */
+export const isDemoMode  = vi.fn(() => false);
+export const setDemoMode = vi.fn();
+
 export const supabase = {
   from:          mockFrom,
   channel:       mockChannel,

@@ -104,7 +104,7 @@ describe('TrainingPlanningCard — joueur (isPlayerClub=true)', () => {
     render(<TrainingPlanningCard item={makeItem({ isPlayerClub: true, onRespond })} userId="u-1" />);
     const section = screen.getByText('Joueur').parentElement;
     fireEvent.click(within(section).getByText('Présent'));
-    expect(onRespond).toHaveBeenCalledWith('training', 'ts-1', 'present');
+    expect(onRespond).toHaveBeenCalledWith('training', 'ts-1', 'present', undefined);
   });
 });
 

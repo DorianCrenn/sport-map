@@ -39,6 +39,8 @@ vi.mock('../../lib/supabase.js', () => {
   }
 
   return {
+    isDemoMode: () => false,
+    setDemoMode: () => {},
     supabase: {
       from: (table) => makeChain(() => ({
         data: table === 'convocation_reply_tokens' ? convocDataRef.current : [],

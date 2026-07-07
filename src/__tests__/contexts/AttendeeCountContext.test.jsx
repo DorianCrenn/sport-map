@@ -26,6 +26,8 @@ const { mockChannel, mockFrom, mockSubscribe, mockOn, mockRemoveChannel, capture
 });
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     from: mockFrom,
     channel: mockChannel,

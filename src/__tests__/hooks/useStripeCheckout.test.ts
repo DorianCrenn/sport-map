@@ -3,6 +3,8 @@ import { renderHook, act } from '@testing-library/react';
 import { useStripeCheckout } from '../../hooks/useStripeCheckout.js';
 
 vi.mock('../../lib/supabase.js', () => ({
+  isDemoMode: () => false,
+  setDemoMode: () => {},
   supabase: {
     auth: { getSession: vi.fn().mockResolvedValue({ data: { session: { access_token: 'tok-abc' } } }) },
   },
