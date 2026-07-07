@@ -32,8 +32,15 @@ export function useQuickActions({ currentUser, managedClubs, followedClubIds, is
   const [loading,       setLoading]       = useState(true);
   const eventClubMapRef = useRef<Record<string, string>>({});
 
-  const allManagedIds = useMemo(() => managedClubs.map(c => String(c.id)), [managedClubs]);
-  const followedSet   = useMemo(() => new Set((followedClubIds ?? []).map(String)), [followedClubIds]);
+  // Stabilité par CONTENU (pas par référence) : un appelant qui passe des
+  // tableaux inline (managedClubs={[]}) créerait de nouvelles refs à chaque
+  // rendu → memos/callback instables → boucle d'effet (re-fetch infini).
+  const managedIdsKey = managedClubs.map(c => String(c.id)).join(',');
+  const followedKey   = (followedClubIds ?? []).map(String).join(',');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const allManagedIds = useMemo(() => managedClubs.map(c => String(c.id)), [managedIdsKey]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const followedSet   = useMemo(() => new Set((followedClubIds ?? []).map(String)), [followedKey]);
 
   const load = useCallback(async () => {
     if (!currentUser?.id) { setTodayTraining(null); setCoachMatches([]); setLiveMatches([]); setLoading(false); return; }
@@ -95,7 +102,10 @@ export function useQuickActions({ currentUser, managedClubs, followedClubIds, is
       .map(e => ({ event: e, matchScore: liveScoreMap[e.id] ?? null, clubLogo: clubLogoMap[String(e.club_id)] ?? null }));
     setLiveMatches(builtLive);
     setLoading(false);
-  }, [currentUser?.id, allManagedIds, followedClubIds, followedSet, isCoachOrManager, isCommunicant]);
+  // Deps par contenu (managedIdsKey/followedKey) → load stable tant que le
+  // contenu ne change pas, même si les refs des tableaux changent.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id, managedIdsKey, followedKey, isCoachOrManager, isCommunicant]);
 
   useEffect(() => { load(); }, [load]);
 

@@ -82,10 +82,11 @@ beforeEach(() => {
 describe('useQuickActions', () => {
   it('sans utilisateur connecté → tout vide, loading false, aucune requête', async () => {
     mockFrom.mockImplementation(() => ({}));
-    // Références stables : des [] inline créeraient de nouvelles refs à chaque
-    // rendu → useMemo/useCallback instables → boucle d'effet.
-    const opts = { currentUser: null, managedClubs: [], followedClubIds: [], isCoachOrManager: false, isCommunicant: false };
-    const { result } = renderHook(() => useQuickActions(opts));
+    // Robustesse : tableaux INLINE (nouvelle ref à chaque rendu). Avant le fix
+    // de stabilité par contenu, ça bouclait à l'infini (re-fetch en boucle).
+    const { result } = renderHook(() => useQuickActions({
+      currentUser: null, managedClubs: [], followedClubIds: [], isCoachOrManager: false, isCommunicant: false,
+    }));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.coachMatches).toEqual([]);
     expect(result.current.liveMatches).toEqual([]);

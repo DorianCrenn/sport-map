@@ -25,10 +25,11 @@ describe('useWeekendPosters', () => {
     expect(result.current).toEqual([]);
   });
 
-  it('reste stable ([]) sans boucle de rendu avec managedClubs vide', async () => {
-    mockUseManagedClubs.mockReturnValue({ managedClubs: [], teamFilters: [] });
+  it('robustesse : refs instables de managedClubs ne bouclent pas', async () => {
+    // Nouvelle ref à chaque rendu (comme useManagedClubs peut le faire) → avant
+    // le fix de stabilité par contenu, setMatches([]) bouclait à l'infini.
+    mockUseManagedClubs.mockImplementation(() => ({ managedClubs: [], teamFilters: [] }));
     const { result } = renderHook(() => useWeekendPosters());
-    // Régression : un [] instable provoquait une boucle setMatches → re-render.
     await waitFor(() => expect(result.current).toEqual([]));
     expect(Array.isArray(result.current)).toBe(true);
   });

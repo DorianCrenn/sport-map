@@ -96,6 +96,12 @@ export function useWeekendPosters(): WeekendMatch[] {
   const { managedClubs, teamFilters } = useManagedClubs() as { managedClubs: { id: string; name: string; sport?: string; city?: string; logo_url?: string; logoUrl?: string }[]; teamFilters: string[] };
   const [matches, setMatches] = useState<WeekendMatch[]>([]);
 
+  // Stabilité par contenu : useManagedClubs peut renvoyer des refs instables ;
+  // sans ça, l'effet se relancerait à chaque rendu (setMatches([]) → boucle,
+  // à l'origine du hang d'ActualitesPage).
+  const managedKey    = managedClubs.map(c => String(c.id)).join(',');
+  const teamFilterKey = (teamFilters ?? []).join(',');
+
   useEffect(() => {
     if (!managedClubs?.length) { setMatches([]); return; }
     let cancelled = false;
@@ -173,7 +179,8 @@ export function useWeekendPosters(): WeekendMatch[] {
       );
 
     return () => { cancelled = true; };
-  }, [managedClubs, teamFilters]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [managedKey, teamFilterKey]);
 
   return matches;
 }
