@@ -56,7 +56,7 @@ export function useTrainingAttendance(sessionId: string | null | undefined, user
       const base = rows ?? [];
       const authorIds = [...new Set(base.map(r => r.author_id).filter(Boolean) as string[])];
       const profileMap = await fetchProfileNames(authorIds);
-      setMessages(base.map(r => ({ ...r, profiles: r.author_id ? (profileMap[r.author_id] ?? null) : null })));
+      setMessages(base.map(r => ({ ...r, profiles: r.author_id ? (profileMap[r.author_id] ?? null) : null })) as TrainingMessage[]);
     }
     loadMessages();
 

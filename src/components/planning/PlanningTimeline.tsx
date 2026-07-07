@@ -250,7 +250,7 @@ export default function PlanningTimeline({
                       if (item.type === 'announcement') return (
                         <AnnouncementPlanningCard
                           key={`ann-${item.id}`}
-                          announcement={{ ...item, type: item.annType }}
+                          announcement={{ ...item, type: item.annType } as MyAnnouncement}
                           isRead={readIds?.has(item.id) ?? false}
                           onMarkRead={onMarkRead}
                         />
