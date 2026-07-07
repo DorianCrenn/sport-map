@@ -33,19 +33,29 @@ import UserLeaderboard from '../../components/UserLeaderboard.jsx';
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('UserLeaderboard — loading', () => {
-  it('affiche des skeletons pendant le chargement', () => {
+describe('UserLeaderboard — divulgation progressive', () => {
+  it('masqué pendant le chargement (pas de flash)', () => {
     mockUseUserLeaderboard.mockReturnValue({ ranking: [], loading: true });
-    render(<UserLeaderboard />);
-    expect(screen.getByLabelText(/chargement du classement/i)).toBeInTheDocument();
+    const { container } = render(<UserLeaderboard />);
+    expect(container.firstChild).toBeNull();
   });
-});
 
-describe('UserLeaderboard — classement vide', () => {
-  it('affiche un message si le classement est vide', () => {
+  it('masqué si le classement est vide', () => {
     mockUseUserLeaderboard.mockReturnValue({ ranking: [], loading: false });
-    render(<UserLeaderboard />);
-    expect(screen.getByText(/aucun membre/i)).toBeInTheDocument();
+    const { container } = render(<UserLeaderboard />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('masqué en dessous du seuil (2 participants)', () => {
+    mockUseUserLeaderboard.mockReturnValue({
+      loading: false,
+      ranking: [
+        { id: 'u-1', name: 'Alice Dupont', xp: 1200, avatar_url: null },
+        { id: 'u-2', name: 'Bob Martin',  xp: 900,  avatar_url: null },
+      ],
+    });
+    const { container } = render(<UserLeaderboard />);
+    expect(container.firstChild).toBeNull();
   });
 });
 

@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useActiveClubs } from '../hooks/useActiveClubs.js';
 import SportIcon from './SportIcon.jsx';
+import { shouldShowLeaderboard } from '../lib/progressiveDisclosure.js';
 import { SkeletonLeaderboardRow } from './Skeleton.jsx';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
@@ -37,6 +38,8 @@ function LeaderboardRow({ entry, rank, index }: RowProps) {
 function ClubLeaderboard() {
   const { ranking, loading } = useActiveClubs({ limit: 10 });
   const month = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  // Divulgation progressive : masqué tant qu'il n'y a pas assez de clubs classés.
+  if (loading || !shouldShowLeaderboard(ranking.length)) return null;
   return (
     <div style={{ borderRadius: 16, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid var(--sl-border)', background: 'linear-gradient(135deg, var(--sl-card) 0%, rgba(34,217,106,0.05) 100%)' }}>

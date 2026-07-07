@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useUserLeaderboard } from '../hooks/useUserLeaderboard.js';
 import { getLevel } from '../hooks/useBadges.js';
+import { shouldShowLeaderboard } from '../lib/progressiveDisclosure.js';
 import { Skeleton } from './Skeleton.jsx';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
@@ -39,6 +40,9 @@ function UserRow({ user, rank, index }: RowProps) {
 
 function UserLeaderboard() {
   const { ranking, loading } = useUserLeaderboard({ limit: 10 });
+  // Divulgation progressive : masqué tant qu'il n'y a pas assez de participants
+  // (un classement à 1-2 personnes fait « vide »). Réapparaît dès le volume atteint.
+  if (loading || !shouldShowLeaderboard(ranking.length)) return null;
   return (
     <div style={{ borderRadius: 16, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid var(--sl-border)', background: 'linear-gradient(135deg, var(--sl-card) 0%, rgba(139,92,246,0.05) 100%)' }}>
