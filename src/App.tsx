@@ -46,6 +46,8 @@ import HelpFab from './components/HelpFab.jsx';
 const HelpPage      = lazy(() => import('./pages/HelpPage.jsx'));
 const FeedbackModal = lazy(() => import('./components/FeedbackModal.jsx'));
 import { useRideNotifications } from './hooks/useRideNotifications.js';
+import { useRouter } from './hooks/useRouter.js';
+import { parseDeepLink, type Tab } from './lib/navRoutes.js';
 import { useMyAnnouncements } from './hooks/useMyAnnouncements.js';
 import { useManagedClubs } from './hooks/useManagedClubs.js';
 import { useAttendeeCountActions } from './contexts/AttendeeCountContext.jsx';
@@ -114,30 +116,18 @@ function UpdateBanner() {
   );
 }
 
-const TAB_ORDER = ['home', 'map', 'favoris', 'clubs', 'profil', 'admin', 'mon-club'] as const;
-
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs, followClub, isFollowingClub } = useAuth() as any;
   const { isCoachOrManager } = useManagedClubs();
   const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent() as any;
   const { track } = useAnalytics(consent) as any;
-  const tabDirRef = useRef(1);
 
-  const [activeTab, _setActiveTab] = useState<string>(() => {
-    const stored = sessionStorage.getItem('sl-tab') || 'home';
-    if (stored === 'news' || stored === 'mon-club') return 'home';
-    return stored;
-  });
+  // Navigation par onglets — source de vérité unique (voir hooks/useRouter.ts).
+  const { tab: activeTab, tabDir, go: routerGo } = useRouter();
   const setActiveTab = useCallback((tab: string) => {
-    _setActiveTab(prev => {
-      const prevIdx = TAB_ORDER.indexOf(prev);
-      const nextIdx = TAB_ORDER.indexOf(tab);
-      tabDirRef.current = nextIdx >= prevIdx ? 1 : -1;
-      return tab;
-    });
-    sessionStorage.setItem('sl-tab', tab);
+    routerGo(tab as Tab);
     track('page_view', { tab });
-  }, [track]);
+  }, [routerGo, track]);
   const [activeDepartment] = useState<string>('finistere');
   const [showAuth,     setShowAuth]     = useState(false);
   const [authInitMode, setAuthInitMode] = useState<string>('login');
@@ -273,33 +263,32 @@ function AppInner() {
   }, []);
 
   useEffect(() => {
-    const clubMatch         = window.location.hash.match(/^#club\/(.+)$/);
-    const joinMatch         = window.location.hash.match(/^#join\/(.+)$/);
-    const convocMatch       = window.location.hash.match(/^#convoc-reply\/([a-f0-9]+)/);
-    const eventMatch        = window.location.hash.match(/^#event\/(.+)$/);
-    const userMatch         = window.location.hash.match(/^#user\/(.+)$/);
-    const legalMatch        = window.location.hash.match(/^#legal(?:\/(\w+))?$/);
-    const subscriptionMatch = window.location.hash.match(/^#subscription\/(.+)$/);
-    const registerMatch     = window.location.hash === '#register';
-    if (eventMatch) pendingEventDeepLink.current = eventMatch[1];
-    if (userMatch) setPublicUserId(userMatch[1]);
-    if (legalMatch) {
-      setLegalSection(legalMatch[1] || 'mentions');
+    // Deep-links parsés via navRoutes (source de vérité unique). Les side-effects
+    // ci-dessous restent identiques — seul le parsing est centralisé.
+    const link   = parseDeepLink(window.location.hash);
+    const join   = link?.kind === 'join'        ? link : null;
+    const convoc = link?.kind === 'convocReply' ? link : null;
+    const club   = link?.kind === 'club'        ? link : null;
+
+    if (link?.kind === 'event') pendingEventDeepLink.current = link.id;
+    if (link?.kind === 'user') setPublicUserId(link.id);
+    if (link?.kind === 'legal') {
+      setLegalSection(link.section);
       window.history.replaceState(null, '', window.location.pathname);
     }
-    if (subscriptionMatch) {
-      setSubscriptionClubId(subscriptionMatch[1]);
+    if (link?.kind === 'subscription') {
+      setSubscriptionClubId(link.clubId);
       setShowSubscription(true);
       window.history.replaceState(null, '', window.location.pathname);
     }
-    if (registerMatch) {
+    if (link?.kind === 'register') {
       setAuthInitMode('register');
       setShowAuth(true);
       window.history.replaceState(null, '', window.location.pathname);
     }
 
-    if (joinMatch) {
-      const id = joinMatch[1];
+    if (join) {
+      const id = join.id;
       // Ouvrir la page club ET auto-suivre si connecté
       window.history.replaceState(null, '', `#club/${id}`);
       supabase.from('clubs').select('*').eq('id', id).maybeSingle()
@@ -317,11 +306,10 @@ function AppInner() {
         });
     }
 
-    if (convocMatch) {
-      const token = convocMatch[1];
+    if (convoc) {
+      const token = convoc.token;
       // Auto-enregistrer la réponse si query param ?s=... présent, sinon afficher le panneau
-      const urlParams = new URLSearchParams(window.location.hash.split('?')[1] ?? '');
-      const status = urlParams.get('s');
+      const status = convoc.status;
       if (status && ['accepted', 'declined', 'unavailable'].includes(status)) {
         supabase.from('convocation_reply_tokens')
           .update({ reply_status: status, replied_at: new Date().toISOString() })
@@ -349,8 +337,8 @@ function AppInner() {
       }
     }
 
-    if (clubMatch) {
-      const id = clubMatch[1];
+    if (club) {
+      const id = club.id;
       pendingDeepLink.current = id;
 
       // Ouvrir immédiatement avec les données statiques si disponibles (UX offline + test)
@@ -554,12 +542,12 @@ function AppInner() {
       ) ?? userClubs[0] ?? null;
       if (myClub) {
         setSelectedSearchClub(myClub);
-        _setActiveTab('mon-club');
+        routerGo('mon-club');
         // Pas de pendingClubAction : "Ma page club" ouvre la page publique, pas le dashboard
       } else if (eventsLoading || userClubs.length === 0) {
         // Clubs pas encore chargés — stocker l'intent, résolu dans l'effet ci-dessous
         pendingMonClubActionRef.current = null;
-        _setActiveTab('mon-club');
+        routerGo('mon-club');
       } else {
         setActiveTab('clubs');
       }
@@ -624,7 +612,7 @@ function AppInner() {
 
     if (myClub) {
       setSelectedSearchClub(myClub);
-      _setActiveTab('mon-club');
+      routerGo('mon-club');
       setPendingClubAction(actionId);
       return true;
     }
@@ -654,7 +642,6 @@ function AppInner() {
     } else {
       toast({ message: 'Bienvenue sur SportLink ! Explore les clubs et événements autour de toi.', type: 'info' });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isClubAdmin, setActiveTab, toast]);
 
   if (loading) return (
@@ -723,13 +710,13 @@ function AppInner() {
       )}
 
       <main id="main-content" style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', zIndex: 1 }}>
-        <AnimatePresence initial={false} mode="wait" custom={tabDirRef}>
+        <AnimatePresence initial={false} mode="wait" custom={tabDir}>
           <motion.div
             key={activeTab}
-            custom={tabDirRef}
-            initial={{ opacity: 0, x: tabDirRef.current * 28 }}
+            custom={tabDir}
+            initial={{ opacity: 0, x: tabDir * 28 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: tabDirRef.current * -20 }}
+            exit={{ opacity: 0, x: tabDir * -20 }}
             transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 0.9 }}
             style={{ position: 'absolute', inset: 0 }}
           >
