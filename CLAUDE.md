@@ -15,7 +15,7 @@
 **Ce que fait l'app :**
 - Carte interactive d'événements sportifs géolocalisés (matchs, tournois)
 - Pages clubs personnalisables (mini-sites officiels)
-- Générateur d'affiches sportives IA (PosterStudio) — 37 templates
+- Générateur d'affiches sportives IA (PosterStudio) — 40 templates
 - Covoiturage événementiel intégré
 - Système communautaire : favoris, annonces, réactions, commentaires, badges XP
 - **Analytics** — tracking comportemental avec consentement RGPD, dashboard admin (KPIs, graphiques, funnels)
@@ -37,15 +37,21 @@
 | Tests | Vitest + Testing Library (couverture partielle) |
 | PWA | vite-plugin-pwa + Workbox |
 | Déploiement | Vercel |
-| TypeScript | NON — JavaScript pur |
+| TypeScript | OUI — migration en `.ts`/`.tsx` (lib, contexts, hooks, components, pages). Quelques `.jsx`/`.js` résiduels. |
 
-**Variables d'env (`.env.local`) :**
+**Variables d'env client (`.env.local`) — voir `.env.example` :**
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
-VITE_VAPID_PUBLIC_KEY=        # push notifications
-VITE_REMOVEBG_API_KEY=        # détourage joueurs
-VITE_ANTHROPIC_API_KEY=       # analyse DNA visuel
+VITE_VAPID_PUBLIC_KEY=        # push notifications (clé publique)
+VITE_APP_URL=                # og:image, sitemap, partages
+VITE_SENTRY_DSN=             # monitoring erreurs (optionnel)
+```
+**Secrets SERVEUR uniquement (Supabase Edge Functions Secrets) — jamais côté client :**
+```
+STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET   # paiements
+FAL_API_KEY                                # génération d'images IA (fallback Pollinations si absent)
+VAPID_PRIVATE_KEY                          # push
 ```
 
 ---
@@ -61,17 +67,18 @@ AuthProvider          → currentUser, isAdmin, isClubAdmin, followedClubs
         AppInner
 ```
 
-### Navigation (tabs, pas de router)
+### Navigation (tabs, pas de router — géré dans `App.tsx` via `activeTab`)
 ```
-home     → HomePage.jsx
-map      → MapPage.jsx         (carte principale)
-favoris  → FavorisPage.jsx
-news     → NewsPage.jsx
-clubs    → ClubsPage.jsx
-profil   → ProfilPage.jsx
-admin    → AdminPage.jsx (lazy, isAdmin only)
+home     → ActualitesPage.tsx  (agenda/feed ; ex-"news", NewsPage n'existe plus)
+map      → MapPage.tsx         (carte principale)
+favoris  → FavorisPage.tsx
+clubs    → ClubsPage.tsx
+profil   → ProfilPage.tsx
+mon-club → ClubPageView (overlay du club géré)
+admin    → AdminPage.tsx (lazy, isAdmin only) + adminSubView pour les sous-pages
 ```
 Persistance de l'onglet actif : `sessionStorage('sl-tab')`.
+⚠️ `App.tsx` fait ~1135 lignes — pas de vrai routeur, source récurrente de bugs de nav.
 
 ### Deep linking hash-based
 - `#club/:id` → ouvre ClubPageView en overlay
@@ -99,6 +106,8 @@ window.dispatchEvent(new CustomEvent('sl-analytics', { detail: { type: 'event_cr
 ---
 
 ## 4. Structure des fichiers
+
+> ⚠️ **Extensions périmées ci-dessous** : l'arbre date d'avant la migration TypeScript. Presque tout est désormais en `.tsx`/`.ts` (ex. `App.tsx`, `AuthContext.tsx`, `EventCard.tsx`). `NewsPage.jsx` → **`ActualitesPage.tsx`**. L'app compte aujourd'hui **~22 pages**, **~101 hooks**, **~206 composants**. Vérifie les vrais fichiers avant de te fier à cet arbre (illustratif).
 
 ```
 src/
@@ -164,7 +173,7 @@ src/
 │       ├── posterUtils.js         # blockStyle(), scaledTitle(), venueFs()
 │       ├── Tpl*.jsx               # 24 templates matchs
 │       └── TplTr*.jsx             # 10 templates tournois + 3 spéciaux
-├── hooks/                         # 63 hooks (tous named exports)
+├── hooks/                         # ~101 hooks (tous named exports)
 │   ├── useAnalytics.js            # track(eventType, props) — vérifie consent + isDemoMode
 │   ├── useAnalyticsConsent.js     # Consentement RGPD (localStorage + DB profiles.analytics_consent)
 │   ├── useAdminAnalytics.js       # Requêtes dashboard admin (KPIs, courbes, funnel, templates)
@@ -398,7 +407,7 @@ Générés via **Pollinations.ai Flux** (`576×1024` px = ratio 9:16 exact).
 ## 8. Conventions de code
 
 ### Patterns à respecter
-- **Pas de TypeScript** — JS pur uniquement
+- **TypeScript** — nouveau code en `.ts`/`.tsx` (lib, contexts, hooks, components, pages migrés). Ne pas réintroduire de `.jsx` pour du nouveau code.
 - **Pas de commentaires** sauf si le "pourquoi" est non évident
 - **Hooks = named exports** (`export function useXxx()`, jamais `export default`)
 - **Composants = default export** (`export default function MonComposant()`)
