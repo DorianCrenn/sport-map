@@ -72,6 +72,14 @@ describe('useRouter — deep-links', () => {
     expect(window.location.hash).toBe('#event/7');
   });
 
+  it('replaceOverlay écrit le hash sans ajouter d\'entrée d\'historique', () => {
+    const { result } = renderHook(() => useRouter());
+    const before = window.history.length;
+    act(() => result.current.replaceOverlay({ kind: 'club', id: 'c42' }));
+    expect(window.location.hash).toBe('#club/c42');
+    expect(window.history.length).toBe(before); // replaceState → pas de nouvelle entrée
+  });
+
   it('clearHash retire le fragment', () => {
     setHash('#user/u1');
     const { result } = renderHook(() => useRouter());

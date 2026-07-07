@@ -44,12 +44,20 @@ export function useRouter() {
   const readInitialDeepLink = useCallback((): DeepLink | null =>
     parseDeepLink(typeof window !== 'undefined' ? window.location.hash : ''), []);
 
-  // Retire le fragment de hash sans recharger (fin d'un deep-link consommé).
+  // Retire le fragment de hash (fin d'un deep-link consommé). Remplace l'entrée
+  // courante (pas de nouvelle entrée d'historique) — équivaut au
+  // `replaceState(null, '', pathname)` historique dispersé dans App.tsx.
   const clearHash = useCallback(() => {
-    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    window.history.replaceState(null, '', window.location.pathname);
   }, []);
 
-  // Ouvre un overlay en poussant son hash dans l'historique (back natif OK).
+  // Écrit le hash d'un overlay EN REMPLAÇANT l'entrée courante (replaceState) —
+  // pour refléter l'overlay ouvert sans ajouter d'entrée d'historique.
+  const replaceOverlay = useCallback((link: DeepLink) => {
+    window.history.replaceState(null, '', deepLinkToHash(link));
+  }, []);
+
+  // Ouvre un overlay en POUSSANT son hash dans l'historique (back natif OK).
   const pushOverlay = useCallback((link: DeepLink) => {
     window.history.pushState(null, '', deepLinkToHash(link));
   }, []);
@@ -66,5 +74,5 @@ export function useRouter() {
     };
   }, []);
 
-  return { tab, tabDir: tabDirRef.current, go, readInitialDeepLink, clearHash, pushOverlay, onDeepLink };
+  return { tab, tabDir: tabDirRef.current, go, readInitialDeepLink, clearHash, replaceOverlay, pushOverlay, onDeepLink };
 }

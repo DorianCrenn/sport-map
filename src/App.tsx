@@ -123,7 +123,7 @@ function AppInner() {
   const { track } = useAnalytics(consent) as any;
 
   // Navigation par onglets — source de vérité unique (voir hooks/useRouter.ts).
-  const { tab: activeTab, tabDir, go: routerGo } = useRouter();
+  const { tab: activeTab, tabDir, go: routerGo, clearHash, replaceOverlay } = useRouter();
   const setActiveTab = useCallback((tab: string) => {
     routerGo(tab as Tab);
     track('page_view', { tab });
@@ -274,23 +274,23 @@ function AppInner() {
     if (link?.kind === 'user') setPublicUserId(link.id);
     if (link?.kind === 'legal') {
       setLegalSection(link.section);
-      window.history.replaceState(null, '', window.location.pathname);
+      clearHash();
     }
     if (link?.kind === 'subscription') {
       setSubscriptionClubId(link.clubId);
       setShowSubscription(true);
-      window.history.replaceState(null, '', window.location.pathname);
+      clearHash();
     }
     if (link?.kind === 'register') {
       setAuthInitMode('register');
       setShowAuth(true);
-      window.history.replaceState(null, '', window.location.pathname);
+      clearHash();
     }
 
     if (join) {
       const id = join.id;
       // Ouvrir la page club ET auto-suivre si connecté
-      window.history.replaceState(null, '', `#club/${id}`);
+      replaceOverlay({ kind: 'club', id });
       supabase.from('clubs').select('*').eq('id', id).maybeSingle()
         .then(({ data }: any) => {
           if (!data) { toast({ message: 'Lien d\'invitation invalide', type: 'error' }); return; }
@@ -315,7 +315,7 @@ function AppInner() {
           .update({ reply_status: status, replied_at: new Date().toISOString() })
           .eq('token', token)
           .then(({ error }: any) => {
-            window.history.replaceState(null, '', window.location.pathname);
+            clearHash();
             if (!error) {
               const labels: Record<string, string> = { accepted: 'Présence confirmée ✅', declined: 'Absence signalée ❌', unavailable: 'Réponse enregistrée 🤔' };
               toast({ message: labels[status] ?? 'Réponse enregistrée' });
@@ -333,7 +333,7 @@ function AppInner() {
           });
       } else {
         setConvocReplyToken(token);
-        window.history.replaceState(null, '', window.location.pathname);
+        clearHash();
       }
     }
 
@@ -361,7 +361,7 @@ function AppInner() {
           if (!data) {
             if (!staticFallback) {
               toast({ message: 'Club introuvable ou lien invalide', type: 'error' });
-              window.history.replaceState(null, '', window.location.pathname);
+              clearHash();
             }
             return;
           }
@@ -404,24 +404,24 @@ function AppInner() {
     if (event) {
       setFocusEventId(event.id);
       setActiveTab('map');
-      window.history.replaceState(null, '', window.location.pathname);
+      clearHash();
       pendingEventDeepLink.current = null;
     } else {
       toast({ message: 'Événement introuvable ou supprimé', type: 'error' });
-      window.history.replaceState(null, '', window.location.pathname);
+      clearHash();
       pendingEventDeepLink.current = null;
     }
   }, [allEvents]);
 
   useEffect(() => {
     if (selectedSearchClub) {
-      window.history.replaceState(null, '', `#club/${selectedSearchClub.id}`);
+      replaceOverlay({ kind: 'club', id: selectedSearchClub.id });
       document.title = `${selectedSearchClub.name} — SportLink`;
     } else {
-      window.history.replaceState(null, '', window.location.pathname);
+      clearHash();
       document.title = 'SportLink — Le sport près de toi';
     }
-  }, [selectedSearchClub]);
+  }, [selectedSearchClub, clearHash, replaceOverlay]);
 
   const prevUserIdRef = useRef<string | null>(null);
   useEffect(() => {
@@ -808,7 +808,7 @@ function AppInner() {
                 userId={publicUserId}
                 onClose={() => {
                   setPublicUserId(null);
-                  window.history.replaceState(null, '', window.location.pathname);
+                  clearHash();
                 }}
               />
             </Suspense>
@@ -946,7 +946,7 @@ function AppInner() {
               initialTab={legalSection}
               onClose={() => {
                 setLegalSection(null);
-                window.history.replaceState(null, '', window.location.pathname);
+                clearHash();
               }}
             />
           )}
