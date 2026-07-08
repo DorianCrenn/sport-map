@@ -67,6 +67,12 @@ describe('navRoutes — parseDeepLink', () => {
     expect(parseDeepLink('#join/club-9')).toEqual({ kind: 'join', id: 'club-9' });
   });
 
+  it('parse #join-player/:token (distinct de #join)', () => {
+    expect(parseDeepLink('#join-player/deadbeef01')).toEqual({ kind: 'joinPlayer', token: 'deadbeef01' });
+    // ne doit PAS être capté comme un #join classique
+    expect(parseDeepLink('#join-player/deadbeef01').kind).toBe('joinPlayer');
+  });
+
   it('parse #event/:id', () => {
     expect(parseDeepLink('#event/42')).toEqual({ kind: 'event', id: '42' });
   });

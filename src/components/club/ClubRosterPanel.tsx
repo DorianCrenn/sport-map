@@ -3,6 +3,8 @@ import { AnimatePresence } from 'framer-motion';
 import { useClubPlayers } from '../../hooks/useClubPlayers.js';
 import QuickAddTeamModal from './QuickAddTeamModal.jsx';
 import { useCanDo } from '../../hooks/useCanDo.js';
+import { supabase } from '../../lib/supabase.js';
+import { useToast } from '../../contexts/ToastContext.jsx';
 
 const POSITIONS = ['Gardien', 'Défenseur', 'Milieu', 'Attaquant'];
 const EMPTY_FORM = { name: '', number: '', position: 'Milieu', photo_url: '', email: '', team_id: '' };
@@ -30,7 +32,25 @@ interface ClubRosterPanelProps {
 export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub }: ClubRosterPanelProps) {
   const { players, loading, claims, addPlayer, removePlayer, approveClaim, rejectClaim } = useClubPlayers(String(clubId)) as any;
   const { can, isSimulating } = useCanDo() as any;
+  const { toast } = useToast() as any;
   const canManage = isSimulating ? can('teams', 'create') : true;
+  const [inviting, setInviting] = useState(false);
+
+  const invitable = (players as any[]).filter(p => p.email && !p.user_id);
+  async function handleInviteAll() {
+    if (!invitable.length || inviting) return;
+    setInviting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('invite-club-players', { body: { clubId: String(clubId) } });
+      if (error) throw error;
+      const sent = (data as any)?.sent ?? 0;
+      toast({ message: sent > 0 ? `${sent} invitation${sent > 1 ? 's' : ''} envoyée${sent > 1 ? 's' : ''} par email ✉️` : 'Aucune invitation à envoyer.', type: sent > 0 ? 'success' : 'info' });
+    } catch (err: any) {
+      toast({ message: err?.message || 'Envoi impossible — réessayez.', type: 'error' });
+    } finally {
+      setInviting(false);
+    }
+  }
   const [form, setForm]         = useState({ ...EMPTY_FORM });
   const [adding, setAdding]     = useState(false);
   const [saving, setSaving]     = useState(false);
@@ -119,6 +139,12 @@ export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub
             ))}
           </div>
         </div>
+      )}
+
+      {canManage && invitable.length > 0 && (
+        <button onClick={handleInviteAll} disabled={inviting} className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold text-white disabled:opacity-50 transition-colors" style={{ backgroundColor: 'var(--sl-green)' }}>
+          ✉️ {inviting ? 'Envoi…' : `Inviter ${invitable.length} joueur${invitable.length > 1 ? 's' : ''} par email`}
+        </button>
       )}
 
       <div className="flex gap-1.5 flex-wrap items-center">

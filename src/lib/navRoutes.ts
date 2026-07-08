@@ -17,6 +17,7 @@ export const TAB_ORDER: Tab[] = ['home', 'map', 'favoris', 'clubs', 'profil', 'a
 export type DeepLink =
   | { kind: 'club';         id: string }
   | { kind: 'join';         id: string }
+  | { kind: 'joinPlayer';   token: string }
   | { kind: 'convocReply';  token: string; status: string | null }
   | { kind: 'event';        id: string }
   | { kind: 'user';         id: string }
@@ -45,6 +46,9 @@ export function tabDirection(prev: string, next: string): 1 | -1 {
 export function parseDeepLink(hash: string): DeepLink | null {
   const clubMatch = hash.match(/^#club\/(.+)$/);
   if (clubMatch) return { kind: 'club', id: clubMatch[1] };
+
+  const joinPlayerMatch = hash.match(/^#join-player\/([a-f0-9]+)/);
+  if (joinPlayerMatch) return { kind: 'joinPlayer', token: joinPlayerMatch[1] };
 
   const joinMatch = hash.match(/^#join\/(.+)$/);
   if (joinMatch) return { kind: 'join', id: joinMatch[1] };
@@ -77,6 +81,7 @@ export function deepLinkToHash(link: DeepLink): string {
   switch (link.kind) {
     case 'club':         return `#club/${link.id}`;
     case 'join':         return `#join/${link.id}`;
+    case 'joinPlayer':   return `#join-player/${link.token}`;
     case 'convocReply':  return link.status ? `#convoc-reply/${link.token}?s=${link.status}` : `#convoc-reply/${link.token}`;
     case 'event':        return `#event/${link.id}`;
     case 'user':         return `#user/${link.id}`;

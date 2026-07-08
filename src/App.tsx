@@ -227,6 +227,19 @@ function AppInner() {
   const [focusEventId, setFocusEventId] = useState<string | number | null>(null);
   const pendingDeepLink = useRef<string | null>(null);
 
+  // Invitation joueur (email club → auto-rattachement de la fiche). Voir
+  // migration player_invite_tokens + RPC accept_player_invite.
+  const acceptPlayerInvite = useCallback(async (token: string) => {
+    try {
+      const { data, error } = await supabase.rpc('accept_player_invite', { p_token: token }) as any;
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      toast({ message: row?.out_club_name ? `Tu es rattaché(e) à ${row.out_club_name} ! 🎉` : 'Rattachement effectué !' });
+    } catch (err: any) {
+      toast({ message: err?.message || 'Invitation invalide ou expirée', type: 'error' });
+    }
+  }, [toast]);
+
   const allEvents = useMemo(
     () => [...(userEvents ?? []), ...(clubMatchEvents ?? [])],
     [userEvents, clubMatchEvents]
@@ -285,6 +298,18 @@ function AppInner() {
       setAuthInitMode('register');
       setShowAuth(true);
       clearHash();
+    }
+    if (link?.kind === 'joinPlayer') {
+      const token = link.token;
+      clearHash();
+      if (currentUser) {
+        acceptPlayerInvite(token);
+      } else {
+        // Stocker pour auto-rattachement après connexion/inscription
+        sessionStorage.setItem('sl-pending-player-invite', token);
+        setAuthInitMode('register');
+        setShowAuth(true);
+      }
     }
 
     if (join) {
@@ -464,6 +489,15 @@ function AppInner() {
         });
     }
   }, [currentUser?.id]);
+
+  // Auto-rattachement joueur après connexion si invitation #join-player scannée avant login
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const pendingInvite = sessionStorage.getItem('sl-pending-player-invite');
+    if (!pendingInvite) return;
+    sessionStorage.removeItem('sl-pending-player-invite');
+    acceptPlayerInvite(pendingInvite);
+  }, [currentUser?.id, acceptPlayerInvite]);
   useEffect(() => {
     if (newBadges.length > 0 && currentUser && !hasShownBadge.current) {
       hasShownBadge.current = true;
