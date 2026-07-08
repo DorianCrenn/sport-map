@@ -36,8 +36,34 @@ export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub
   const [saving, setSaving]     = useState(false);
   const [filterTeam, setFilter] = useState('all');
   const [showAddTeam, setShowAddTeam] = useState(false);
+  const [bulkOpen, setBulkOpen]   = useState(false);
+  const [bulkText, setBulkText]   = useState('');
+  const [bulkSaving, setBulkSaving] = useState(false);
 
   function setField(k: string, v: string) { setForm(f => ({ ...f, [k]: v })); }
+
+  // Ajout en masse : une ligne par joueur. Formats acceptés (séparateur , ; ou tab) :
+  //   "Prénom Nom" · "Prénom Nom, 10" · "Prénom Nom, 10, email@club.fr" (ordre libre).
+  async function handleBulkAdd() {
+    const lines = bulkText.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) return;
+    setBulkSaving(true);
+    for (const line of lines) {
+      const parts = line.split(/[,;\t]/).map(p => p.trim()).filter(Boolean);
+      const name = parts[0];
+      if (!name) continue;
+      let number: number | null = null;
+      let email: string | null = null;
+      for (const p of parts.slice(1)) {
+        if (!email && p.includes('@')) email = p;
+        else if (number === null && /^\d{1,2}$/.test(p)) number = parseInt(p, 10);
+      }
+      await addPlayer({ name, number, position: null, photo_url: null, email, team_id: form.team_id || (filterTeam !== 'all' ? filterTeam : null) });
+    }
+    setBulkSaving(false);
+    setBulkText('');
+    setBulkOpen(false);
+  }
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -154,10 +180,25 @@ export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub
             <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50" style={{ backgroundColor: '#0F1E3A' }}>{saving ? 'Ajout…' : 'Ajouter'}</button>
           </div>
         </form>
+      ) : bulkOpen ? (
+        <div className="rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50 p-4 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-blue-600">Coller une liste de joueurs</p>
+          <p className="text-[11px] text-gray-500 leading-snug">Une ligne par joueur. Ex : <code>Alice Martin, 10, alice@club.fr</code> — le n° et l'email sont optionnels.</p>
+          <textarea value={bulkText} onChange={e => setBulkText(e.target.value)} rows={6} placeholder={"Alice Martin, 10\nBob Durand, 7, bob@club.fr\nChloé Petit"} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-400 bg-white font-mono" />
+          <div className="flex gap-2">
+            <button type="button" onClick={() => { setBulkOpen(false); setBulkText(''); }} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 bg-white">Annuler</button>
+            <button type="button" onClick={handleBulkAdd} disabled={bulkSaving || !bulkText.trim()} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50" style={{ backgroundColor: '#0F1E3A' }}>{bulkSaving ? 'Ajout…' : 'Ajouter la liste'}</button>
+          </div>
+        </div>
       ) : canManage ? (
-        <button onClick={() => setAdding(true)} className="flex items-center gap-2 w-full py-3 justify-center rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-colors font-semibold">
-          + Ajouter un joueur
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => setAdding(true)} className="flex items-center gap-2 py-3 justify-center rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-colors font-semibold">
+            + Ajouter un joueur
+          </button>
+          <button onClick={() => setBulkOpen(true)} className="flex items-center gap-2 py-3 justify-center rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-colors font-semibold">
+            📋 Coller une liste
+          </button>
+        </div>
       ) : null}
     </div>
   );

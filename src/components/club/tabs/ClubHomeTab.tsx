@@ -93,9 +93,12 @@ export default function ClubHomeTab({
         <ClubSetupChecklist
           club={club} blocks={blocks}
           events={effectiveEvents.filter(e => String(e.clubId) === String(club.id))}
+          hasConvocations={effectiveEvents.some(e => String(e.clubId) === String(club.id) && ((e.convocation_count ?? e.convocations ?? 0) > 0))}
           onDismiss={onDismissChecklist}
           onEditPage={onEditPage}
           onCreateEvent={onCreateEvent}
+          onManageRoster={() => onTabChange?.('effectif')}
+          onGoToMatches={() => onTabChange?.('matchs')}
           onSendAnnouncement={onSendAnnouncement}
           accentColor={accentColor}
         />
@@ -206,27 +209,33 @@ interface ChecklistItem {
   actionLabel?: string | null;
 }
 
-function ClubSetupChecklist({ club, blocks, events, onDismiss, onEditPage, onCreateEvent, onSendAnnouncement, accentColor }: {
+function ClubSetupChecklist({ club, blocks, events, hasConvocations, onDismiss, onEditPage, onCreateEvent, onManageRoster, onGoToMatches }: {
   club: Record<string, any>;
   blocks: Record<string, any>[];
   events: Record<string, any>[];
+  hasConvocations?: boolean;
   onDismiss?: () => void;
   onEditPage?: () => void;
   onCreateEvent?: () => void;
+  onManageRoster?: () => void;
+  onGoToMatches?: () => void;
   onSendAnnouncement?: () => void;
   accentColor?: string;
 }) {
   const hasBlocks = blocks.length > 0;
   const hasEvents = events.length > 0;
-  const hasMembers = (club.members ?? 0) > 0;
-  const done = [hasBlocks, hasEvents, hasMembers].filter(Boolean).length;
-  const pct = Math.round((done / 3) * 100);
+  const hasRoster = (club.members ?? club.players ?? 0) > 0;
 
+  // Feuille de route club-first : l'effectif et la convocation d'abord (cœur du
+  // métier), la page ensuite. Chaque étape ouvre directement l'action.
   const items: ChecklistItem[] = [
-    { done: hasBlocks, label: 'Personnaliser la page', action: onEditPage, actionLabel: '✏️ Modifier' },
-    { done: hasEvents, label: 'Créer un événement', action: onCreateEvent, actionLabel: '📅 Événement' },
-    { done: hasMembers, label: 'Inviter des membres', action: null, actionLabel: null },
+    { done: hasRoster,         label: 'Ajouter ton effectif',   action: onManageRoster, actionLabel: '👥 Effectif' },
+    { done: hasEvents,         label: 'Créer ton 1ᵉʳ match',     action: onCreateEvent,  actionLabel: '📅 Match' },
+    { done: !!hasConvocations, label: 'Convoquer tes joueurs',  action: onGoToMatches,  actionLabel: '📋 Convoquer' },
+    { done: hasBlocks,         label: 'Personnaliser la page',  action: onEditPage,     actionLabel: '✏️ Page' },
   ];
+  const done = items.filter(i => i.done).length;
+  const pct = Math.round((done / items.length) * 100);
 
   return (
     <motion.div
@@ -234,7 +243,7 @@ function ClubSetupChecklist({ club, blocks, events, onDismiss, onEditPage, onCre
       style={{ marginBottom: 14, borderRadius: 14, border: '1px solid rgba(99,102,241,0.25)', backgroundColor: 'rgba(99,102,241,0.06)', overflow: 'hidden' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px 6px' }}>
-        <span style={{ fontSize: 11, fontWeight: 800, color: '#6366f1' }}>✅ Configuration — {done}/3</span>
+        <span style={{ fontSize: 11, fontWeight: 800, color: '#6366f1' }}>✅ Configuration — {done}/{items.length}</span>
         <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t3)', padding: '6px 8px', minHeight: 32, display: 'flex', alignItems: 'center' }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

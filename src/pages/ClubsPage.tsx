@@ -42,6 +42,15 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
     return () => onClubOverlayChange?.(false);
   }, [selectedClub, onClubOverlayChange]);
 
+  // Intent posé par l'onboarding ("Créer votre club") → ouvre le wizard direct
+  // au lieu de laisser le coach chercher le bouton sur l'onglet Clubs.
+  useEffect(() => {
+    if (currentUser && sessionStorage.getItem('sl-open-club-wizard')) {
+      sessionStorage.removeItem('sl-open-club-wizard');
+      setFormClub(true);
+    }
+  }, [currentUser]);
+
   const allClubs: Record<string, any>[] = userClubs;
   const favoriteSports: string[] = currentUser?.favoriteSports || [];
   const inFavoritesMode = favoriteSports.length > 0 && !showAllSports;
