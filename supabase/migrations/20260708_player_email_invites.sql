@@ -24,10 +24,12 @@ CREATE INDEX IF NOT EXISTS idx_player_invite_club ON player_invite_tokens (club_
 ALTER TABLE player_invite_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Les managers du club (et admins) gèrent leurs invitations.
+-- sl_is_club_manager_for(text, text[]) : club_id en texte + rôles autorisés.
+DROP POLICY IF EXISTS player_invite_admin ON player_invite_tokens;
 CREATE POLICY player_invite_admin ON player_invite_tokens
   FOR ALL TO authenticated
-  USING (sl_is_admin() OR sl_is_club_manager_for(club_id))
-  WITH CHECK (sl_is_admin() OR sl_is_club_manager_for(club_id));
+  USING (sl_is_admin() OR sl_is_club_manager_for(club_id::text, ARRAY['owner','manager','editor']))
+  WITH CHECK (sl_is_admin() OR sl_is_club_manager_for(club_id::text, ARRAY['owner','manager','editor']));
 
 -- ── RPC d'acceptation ────────────────────────────────────────────────────────
 -- L'utilisateur connecté échange un token valide contre le rattachement de sa
