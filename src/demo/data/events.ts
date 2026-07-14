@@ -251,7 +251,7 @@ export const demoEvents = [
 
   // ── MATCH D'HIER — sans score (démo saisie résultat) ────────────────────────
   {
-    id: 'demo-event-016', title: 'FC SportLink Démo @ CA Brest Métropole',
+    id: 'demo-event-046', title: 'FC SportLink Démo @ CA Brest Métropole',
     sport: 'Football', date: past(1, 15),
     lat: 48.4050, lng: -4.4800, city: 'Brest', venue: 'Stade du Ponant',
     event_type: 'championship', team_name: 'Équipe 1', category: 'Seniors',
