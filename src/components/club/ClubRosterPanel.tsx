@@ -44,7 +44,17 @@ export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub
       const { data, error } = await supabase.functions.invoke('invite-club-players', { body: { clubId: String(clubId) } });
       if (error) throw error;
       const sent = (data as any)?.sent ?? 0;
-      toast({ message: sent > 0 ? `${sent} invitation${sent > 1 ? 's' : ''} envoyée${sent > 1 ? 's' : ''} par email ✉️` : 'Aucune invitation à envoyer.', type: sent > 0 ? 'success' : 'info' });
+      const total = (data as any)?.total ?? 0;
+      const failed = (data as any)?.failures?.length ?? Math.max(0, total - sent);
+      if (sent > 0 && failed === 0) {
+        toast({ message: `${sent} invitation${sent > 1 ? 's' : ''} envoyée${sent > 1 ? 's' : ''} par email ✉️`, type: 'success' });
+      } else if (sent > 0 && failed > 0) {
+        toast({ message: `${sent}/${total} invitations envoyées — ${failed} en échec.`, type: 'info' });
+      } else if (total > 0) {
+        toast({ message: `Envoi échoué — domaine d'expédition à vérifier.`, type: 'error' });
+      } else {
+        toast({ message: 'Aucune invitation à envoyer.', type: 'info' });
+      }
     } catch (err: any) {
       toast({ message: err?.message || 'Envoi impossible — réessayez.', type: 'error' });
     } finally {
