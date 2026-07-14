@@ -21,6 +21,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:preview": "playwright test --project='Desktop Chrome 1440' --project='iPhone SE'",
     "test:visual": "playwright test e2e/visual/visual.spec.js --project='Desktop Chrome 1440'",
+    "test:e2e:smoke": "playwright test e2e/app/smoke-no-crash.spec.js --project='Desktop Chrome 1440'",
     "test:visual:update": "playwright test e2e/visual/visual.spec.js --project='Desktop Chrome 1440' --update-snapshots",
     "test:all": "npm run lint && npm run test:coverage && npm run test:e2e",
     "pwa:screenshots": "node scripts/generate-pwa-screenshots.js",

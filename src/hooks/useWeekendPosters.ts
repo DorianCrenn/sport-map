@@ -130,9 +130,11 @@ export function useWeekendPosters(): WeekendMatch[] {
           const accentColor = getAccent(sport);
           const bgPresetId  = getBgPreset(sport);
 
-          const matchDate = new Date(
-            `${ev.date}T${ev.date.length === 10 ? '15:00:00' : ''}`
-          );
+          // Date seule ("2026-07-20") → ajoute l'heure ; date+heure → telle quelle.
+          // (avant : on ajoutait toujours un "T" → date invalide si l'heure était
+          //  déjà là → RangeError "Invalid time value" dans le .toISOString() plus bas)
+          let matchDate = new Date(ev.date.length === 10 ? `${ev.date}T15:00:00` : ev.date);
+          if (isNaN(matchDate.getTime())) matchDate = new Date();
           const time = ev.date.length > 10 ? ev.date.slice(11, 16) : '15:00';
 
           const posterData: PosterData = {
