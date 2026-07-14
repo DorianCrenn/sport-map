@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase.js';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { useEventConvocations } from '../../hooks/useEventConvocations.js';
 import { useConvocationEmail } from '../../hooks/useConvocationEmail.js';
+import { convocationEmailResult } from './convocationEmailResult.js';
 
 interface Player {
   id: string | number;
@@ -81,6 +82,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
   const [emailSending, setEmailSending] = useState(false);
   const [emailSent, setEmailSent]       = useState(false);
   const [emailCount, setEmailCount]     = useState(0);
+  const [emailResult, setEmailResult]   = useState<{ sent: number; total: number } | null>(null);
 
   const { currentUser } = useAuth() as any;
   const { sendConvocations } = useEventConvocations(event?.id) as any;
@@ -176,9 +178,9 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
       }))
       .filter(ep => ep.convocationId);
 
-    if (!emailPlayers.length) { setEmailSending(false); setEmailSent(true); return; }
+    if (!emailPlayers.length) { setEmailSending(false); setEmailResult({ sent: 0, total: 0 }); setEmailSent(true); return; }
 
-    await sendEmails({
+    const { sentCount } = await sendEmails({
       eventId: String(event.id),
       clubId: event.clubId ?? event.club_id,
       clubName: event.clubName ?? event.club_name ?? 'Mon club',
@@ -191,6 +193,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
     });
 
     setEmailSending(false);
+    setEmailResult({ sent: sentCount, total: emailPlayers.length });
     setEmailSent(true);
   }
 
@@ -228,12 +231,21 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
           </div>
         )}
 
-        {emailSent && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '10px 14px', width: '100%', maxWidth: 320 }}>
-            <span style={{ fontSize: 16 }}>✅</span>
-            <p style={{ fontSize: 13, color: '#16a34a', margin: 0, fontWeight: 600 }}>Emails envoyés avec succès !</p>
-          </div>
-        )}
+        {emailSent && (() => {
+          const { severity, icon, message } = convocationEmailResult(emailResult ?? { sent: 0, total: 0 });
+          const palette = {
+            success: { c: '#16a34a', bg: 'rgba(34,197,94,0.1)', b: 'rgba(34,197,94,0.3)' },
+            error:   { c: '#dc2626', bg: 'rgba(220,38,38,0.1)', b: 'rgba(220,38,38,0.3)' },
+            warning: { c: '#d97706', bg: 'rgba(217,119,6,0.1)', b: 'rgba(217,119,6,0.3)' },
+            neutral: { c: '#64748b', bg: 'rgba(100,116,139,0.1)', b: 'rgba(100,116,139,0.3)' },
+          }[severity];
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: palette.bg, border: `1px solid ${palette.b}`, borderRadius: 12, padding: '10px 14px', width: '100%', maxWidth: 320 }}>
+              <span style={{ fontSize: 16 }}>{icon}</span>
+              <p style={{ fontSize: 13, color: palette.c, margin: 0, fontWeight: 600 }}>{message}</p>
+            </div>
+          );
+        })()}
 
         <button
           onClick={onDone}
