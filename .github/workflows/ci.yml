@@ -40,6 +40,9 @@ jobs:
           # Variables factices — les tests mockent Supabase, pas besoin de vraies clés
           VITE_SUPABASE_URL: https://mock.supabase.co
           VITE_SUPABASE_ANON_KEY: mock-anon-key
+          # Clé VAPID factice (format base64url valide) — sinon subscribeToPush
+          # court-circuite en `return null` et les tests qui attendent un throw échouent
+          VITE_VAPID_PUBLIC_KEY: BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8
 
       - name: Couverture de code
         if: github.ref == 'refs/heads/main'
@@ -47,6 +50,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: https://mock.supabase.co
           VITE_SUPABASE_ANON_KEY: mock-anon-key
+          VITE_VAPID_PUBLIC_KEY: BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8
 
       - name: Upload coverage report
         if: github.ref == 'refs/heads/main'
