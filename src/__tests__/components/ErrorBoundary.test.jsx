@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import * as Sentry from '@sentry/react';
 import ErrorBoundary from '../../components/ErrorBoundary.jsx';
+
+vi.mock('@sentry/react', () => ({ captureException: vi.fn() }));
 
 // Supprime les logs React d'erreur dans la console pendant les tests
 beforeEach(() => {
@@ -80,6 +83,14 @@ describe('ErrorBoundary', () => {
     render(<ErrorBoundary><Broken /></ErrorBoundary>);
     expect(console.error).toHaveBeenCalledWith(
       '[ErrorBoundary]', 'page', expect.any(Error), expect.any(String)
+    );
+  });
+
+  it('remonte le crash à Sentry avec le nom de la boundary en tag', () => {
+    render(<ErrorBoundary name="Carte"><Broken /></ErrorBoundary>);
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ tags: { boundary: 'Carte' } })
     );
   });
 

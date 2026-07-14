@@ -1,4 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
+import * as Sentry from '@sentry/react';
 
 interface Props { children: ReactNode; name?: string; onReport?: (info: { type: string; title: string; description: string; category: string }) => void; }
 interface State { error: Error | null; }
@@ -9,7 +10,14 @@ export default class ErrorBoundary extends Component<Props, State> {
   static getDerivedStateFromError(error: Error): State { return { error }; }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[ErrorBoundary]', this.props.name ?? 'page', error, info.componentStack);
+    const boundary = this.props.name ?? 'page';
+    console.error('[ErrorBoundary]', boundary, error, info.componentStack);
+    // Remontée automatique à Sentry (no-op si VITE_SENTRY_DSN absent).
+    // Sans ça, un crash non signalé manuellement par l'utilisateur reste invisible.
+    Sentry.captureException(error, {
+      tags: { boundary },
+      extra: { componentStack: info.componentStack },
+    });
   }
 
   render() {

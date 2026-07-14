@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
+import * as Sentry from '@sentry/react';
 import { supabase, setDemoMode, isDemoMode } from './lib/supabase.js';
 import { STATIC_CLUBS } from './data/clubs.js';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
@@ -140,6 +141,18 @@ function AppInner() {
   const lastDemoCreatedEventRef = useRef<Record<string, any> | null>(null);
 
   const { toast } = useToast() as any;
+
+  // Contexte utilisateur pour Sentry → savoir QUI a rencontré un crash (triage).
+  // No-op si Sentry non initialisé (DSN absent).
+  useEffect(() => {
+    if (currentUser?.id) {
+      Sentry.setUser({ id: String(currentUser.id), email: currentUser.email, username: currentUser.name });
+      Sentry.setTag('role', isAdmin ? 'admin' : isClubAdmin ? 'club_admin' : 'user');
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [currentUser?.id, currentUser?.email, currentUser?.name, isAdmin, isClubAdmin]);
+
   useErrorBus((msg: string) => {
     toast({
       message: msg,
