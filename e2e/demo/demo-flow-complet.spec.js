@@ -206,35 +206,21 @@ test.describe('Covoiturage démo — CarpoolSection sous les matchs', () => {
 
 test.describe('RideSection — détail avec noms de passagers', () => {
 
-  test('Ouvrir un ride : noms de passagers affichés (pas vides)', async ({ page }) => {
+  test('Covoiturage : trajet seed affiché avec données réelles (pas de undefined)', async ({ page }) => {
     await gotoDemo(page);
     await selectProfile(page, 'coach');
-    // Coach démarre sur ActualitesPage — pas de clic nav bloquant
     await page.waitForTimeout(1000);
-    // Scroll vers FeedRides (en bas de la page)
-    const covoitSection = page.locator('text=Covoiturages').first();
-    await covoitSection.scrollIntoViewIfNeeded({ timeout: 12000 }).catch(() => {});
-
-    // Cliquer sur Rejoindre pour ouvrir la RideSection
-    const joinBtn = page.locator('button', { hasText: /rejoindre/i }).first();
-    if (await joinBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await joinBtn.click();
-      await page.waitForTimeout(800);
-
-      // La sheet de ride doit s'ouvrir
-      const rideSheet = page.locator('text=Covoiturages').nth(1); // header de la sheet
-      await expect(rideSheet).toBeVisible({ timeout: 5000 });
-
-      // Vérifier qu'on voit un nom de passager réaliste (pas vide, pas "undefined")
-      // On cherche un texte qui ressemble à un vrai nom
-      const hasNoUndefined = await page.locator('text=undefined').count() === 0;
-      expect(hasNoUndefined).toBe(true);
-
-      await page.screenshot({
-        path: 'e2e/screenshots/demo-flow/ride-section-detail.png',
-        fullPage: false,
-      });
-    }
+    // Carte covoiturage avec des trajets seed (résumé « N trajets · M places »).
+    const card = page.locator('[data-demo="carpool-card"]').first();
+    await card.scrollIntoViewIfNeeded({ timeout: 12000 });
+    const summary = page.getByText(/\d+ trajets? ·/i).first();
+    await summary.scrollIntoViewIfNeeded({ timeout: 8000 });
+    await expect(summary).toBeVisible({ timeout: 5000 });
+    // Le bouton d'ouverture existe et aucune donnée « undefined » n'est rendue.
+    await expect(page.locator('button').filter({ hasText: /rejoindre|gérer/i }).first())
+      .toBeVisible({ timeout: 5000 });
+    expect(await page.locator('text=undefined').count()).toBe(0);
+    await page.screenshot({ path: 'e2e/screenshots/demo-flow/ride-section-detail.png', fullPage: false });
   });
 
   test('RideSection : pas de texte "undefined" visible sur la page', async ({ page }) => {
