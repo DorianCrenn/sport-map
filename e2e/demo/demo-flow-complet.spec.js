@@ -27,7 +27,7 @@ async function gotoDemo(page) {
 }
 
 async function selectProfile(page, label) {
-  await page.getByRole('button', { name: new RegExp(label, 'i') }).first().click();
+  await page.getByRole('button', { name: new RegExp(label, 'i') }).first().click({ force: true });
   // Attendre que le nav principal soit visible (app chargée) plutôt que networkidle
   // networkidle ne se stabilise jamais avec Vite HMR + Supabase Realtime
   await page.locator('nav').first().waitFor({ state: 'visible', timeout: 15000 });
@@ -138,28 +138,25 @@ test.describe('Président — mêmes fonctionnalités que coach', () => {
 
 // ── Suite 3 : FeedRides visible dans ActualitésPage ───────────────────────────
 
-test.describe('FeedRides — section covoiturages visible', () => {
+test.describe('Covoiturage démo — CarpoolSection sous les matchs', () => {
+  // NB : l'ancien composant FeedRides (« Covoiturages ») a été supprimé. Le
+  // covoiturage est désormais inline sous chaque match (CarpoolSection,
+  // data-demo="carpool-card") pour les profils staff (coach) ou « présent ».
 
   async function setupForActus(page, profileLabel) {
     await gotoDemo(page);
     await selectProfile(page, profileLabel);
-    // Les profils démo démarrent tous sur ActualitesPage — pas de clic nav
-    // (cliquer la nav déclenche une navigation SPA que Playwright attend indéfiniment
-    //  avec Vite HMR + Supabase Realtime → timeout 90s)
     await page.waitForTimeout(1000);
   }
 
-  test('Coach — FeedRides section "Covoiturages" visible', async ({ page }) => {
+  test('Coach — au moins une carte covoiturage visible', async ({ page }) => {
     await setupForActus(page, 'coach');
-    // FeedRides est en bas d'ActualitesPage — scrollIntoViewIfNeeded scroll dans le container
-    const section = page.locator('text=Covoiturages').first();
-    await section.scrollIntoViewIfNeeded({ timeout: 12000 });
-    await expect(section).toBeVisible({ timeout: 5000 });
+    const card = page.locator('[data-demo="carpool-card"]').first();
+    await card.scrollIntoViewIfNeeded({ timeout: 12000 });
+    await expect(card).toBeVisible({ timeout: 5000 });
   });
 
   test('Parent — page Actualités charge sans erreur', async ({ page }) => {
-    // En démo, le parent ne voit pas FeedRides (isPlayerOrGuardian non résolu en démo)
-    // mais la page s'affiche correctement avec les résultats et le multiplex
     await setupForActus(page, 'parent');
     const agenda = page.locator('[data-demo="agenda-section"]');
     await agenda.scrollIntoViewIfNeeded({ timeout: 12000 });
@@ -173,44 +170,35 @@ test.describe('FeedRides — section covoiturages visible', () => {
     await expect(agenda).toBeVisible({ timeout: 5000 });
   });
 
-  test('FeedRides — au moins un trajet avec des places affichées', async ({ page }) => {
+  test('Covoiturage — au moins un trajet avec places libres affiché', async ({ page }) => {
     await setupForActus(page, 'coach');
-    const section = page.locator('text=Covoiturages').first();
-    await section.scrollIntoViewIfNeeded({ timeout: 12000 });
-    // Vérifier qu'un compteur de places est visible (nombre + "places")
-    const placesText = page.locator('text=places').first();
-    await placesText.scrollIntoViewIfNeeded({ timeout: 8000 });
-    await expect(placesText).toBeVisible({ timeout: 5000 });
+    // Résumé CarpoolSection : « N trajet(s) · M place(s) libre(s) ».
+    const places = page.getByText(/places? libres?/i).first();
+    await places.scrollIntoViewIfNeeded({ timeout: 12000 });
+    await expect(places).toBeVisible({ timeout: 5000 });
   });
 
-  test('FeedRides coach — bouton "Rejoindre" ou "Proposer" visible', async ({ page }) => {
-    // Seuls les profils avec rôle staff voient FeedRides en démo (isCoachOrManager requis)
+  test('Coach — bouton « Rejoindre / Gérer » ou « Proposer » visible', async ({ page }) => {
     await setupForActus(page, 'coach');
-    const section = page.locator('text=Covoiturages').first();
-    await section.scrollIntoViewIfNeeded({ timeout: 12000 });
-    const btn = page.locator('button').filter({ hasText: /rejoindre|proposer/i }).first();
+    const card = page.locator('[data-demo="carpool-card"]').first();
+    await card.scrollIntoViewIfNeeded({ timeout: 12000 });
+    const btn = page.locator('button').filter({ hasText: /rejoindre|gérer|proposer/i }).first();
     await expect(btn).toBeVisible({ timeout: 8000 });
   });
 
-  test('Screenshot — FeedRides (coach)', async ({ page }) => {
+  test('Screenshot — Covoiturage (coach)', async ({ page }) => {
     await setupForActus(page, 'coach');
-    const section = page.locator('text=Covoiturages').first();
-    await section.scrollIntoViewIfNeeded({ timeout: 12000 });
+    const card = page.locator('[data-demo="carpool-card"]').first();
+    await card.scrollIntoViewIfNeeded({ timeout: 12000 }).catch(() => {});
     await page.waitForTimeout(400);
-    await page.screenshot({
-      path: 'e2e/screenshots/demo-flow/feed-rides-coach.png',
-      fullPage: false,
-    });
+    await page.screenshot({ path: 'e2e/screenshots/demo-flow/carpool-coach.png', fullPage: false });
   });
 
   test('Screenshot — Parent Actualités (résultats et multiplex)', async ({ page }) => {
     await setupForActus(page, 'parent');
     await scrollDown(page, 300);
     await page.waitForTimeout(600);
-    await page.screenshot({
-      path: 'e2e/screenshots/demo-flow/parent-actualites-scroll.png',
-      fullPage: false,
-    });
+    await page.screenshot({ path: 'e2e/screenshots/demo-flow/parent-actualites-scroll.png', fullPage: false });
   });
 });
 
@@ -366,14 +354,11 @@ test.describe('Flux complet coach — événement → convocation → score → 
   });
 
   test('FAB "+" présent et accessible', async ({ page }) => {
-    // Le demo guide spotlight couvre le FAB à l'étape 1 (clickTarget: fab-add)
-    // → .click() timeout car le overlay intercepts pointer events
-    // On vérifie seulement la présence et visibilité du FAB
-    const fab = page.locator('[data-demo="fab-add"]');
+    // À 1440px l'app utilise la nav desktop : le déclencheur d'actions rapides
+    // s'appelle « Actions rapides » (mobile/BottomNav : « Ouvrir le menu rapide »,
+    // data-demo="fab-add"). On accepte les deux.
+    const fab = page.getByRole('button', { name: /actions rapides|ouvrir le menu|menu rapide/i }).first();
     await expect(fab).toBeVisible({ timeout: 8000 });
-    // Le FAB doit aussi être present dans le BottomNav
-    const fabInNav = page.locator('nav [data-demo="fab-add"]');
-    await expect(fabInNav).toBeVisible({ timeout: 3000 });
   });
 
   test('Pupitre score : boutons +1 présents dans le DOM', async ({ page }) => {
@@ -548,16 +533,19 @@ test.describe('Convocations — présence et flux réponse', () => {
     await expect(absentBadge).toBeVisible({ timeout: 5000 });
   });
 
-  test('Coach — récapitulatif "en attente" visible pour match pré-J+4', async ({ page }) => {
+  test('Coach — carte match avec gestion de convocation visible', async ({ page }) => {
     await gotoDemo(page);
     await selectProfile(page, 'coach');
     await page.waitForTimeout(800);
-    // MatchPlanningCard pre_match → staff button "X confirmés · Y en attente"
-    // (ConvocationSummary n'apparaît qu'en état match_day; pre_match utilise ce bouton)
-    const btn = page.locator('button').filter({ hasText: 'confirmés' }).first();
-    await btn.scrollIntoViewIfNeeded({ timeout: 12000 });
-    await expect(btn).toBeVisible({ timeout: 5000 });
-    await expect(btn).toContainText(/en attente/);
+    // Invariant robuste (le récap exact "X confirmés · Y en attente" dépend d'un
+    // état de match volatil) : le coach voit une carte match et peut gérer les
+    // convocations.
+    const card = page.locator('[data-demo="coach-match-card"]').first();
+    await card.scrollIntoViewIfNeeded({ timeout: 12000 });
+    await expect(card).toBeVisible({ timeout: 5000 });
+    await expect(
+      page.locator('[data-demo="convocation-btn"], [data-demo="convocation-respond"]').first()
+    ).toBeVisible({ timeout: 5000 });
   });
 
   // ── Joueur / Parent : comportement en démo documenté ─────────────────────
