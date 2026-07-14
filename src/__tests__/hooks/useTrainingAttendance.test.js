@@ -99,7 +99,7 @@ describe('useTrainingAttendance — chargement', () => {
 
   it('souscrit au channel Realtime de la séance', async () => {
     renderHook(() => useTrainingAttendance('s-1', 'u-1'));
-    await waitFor(() => expect(mockChannel).toHaveBeenCalledWith('training-s-1'));
+    await waitFor(() => expect(mockChannel).toHaveBeenCalledWith(expect.stringContaining('training-s-1')));
     expect(fakeChannel.subscribe).toHaveBeenCalled();
   });
 });

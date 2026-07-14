@@ -152,7 +152,7 @@ describe('AttendeeCountContext — mises à jour Realtime partielles (PERF-004)'
 
   it('souscrit au bon channel Realtime', async () => {
     renderHook(() => useAttendeeCount('evt-1'), { wrapper });
-    await waitFor(() => expect(mockChannel).toHaveBeenCalledWith('attendee-count-changes'));
+    await waitFor(() => expect(mockChannel).toHaveBeenCalledWith(expect.stringContaining('attendee-count-changes')));
   });
 
   it('nettoie le channel au démontage', async () => {

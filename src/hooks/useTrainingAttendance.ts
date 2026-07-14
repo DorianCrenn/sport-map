@@ -60,7 +60,7 @@ export function useTrainingAttendance(sessionId: string | null | undefined, user
     }
     loadMessages();
 
-    const channel = supabase.channel(`training-${sessionId}`)
+    const channel = supabase.channel(`training-${sessionId}-${Math.random().toString(36).slice(2, 8)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'training_attendance', filter: `session_id=eq.${sessionId}` }, (_p: DBRow) => {
         loadAttendance();
       })

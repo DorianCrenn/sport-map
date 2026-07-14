@@ -111,7 +111,7 @@ export function useQuickActions({ currentUser, managedClubs, followedClubIds, is
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    const channel = supabase.channel(`quick-actions-scores-${currentUser.id}`)
+    const channel = supabase.channel(`quick-actions-scores-${currentUser.id}-${Math.random().toString(36).slice(2, 8)}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'match_scores' }, ({ new: row }: { new: DBRow }) => {
         const clubId = String(eventClubMapRef.current[row.event_id as string] ?? '');
         if (allManagedIds.includes(clubId)) setCoachMatches(prev => prev.map(m => m.event.id === row.event_id ? { ...m, matchScore: row as unknown as MatchScoreRow } : m));
@@ -132,7 +132,7 @@ export function useQuickActions({ currentUser, managedClubs, followedClubIds, is
 
   useEffect(() => {
     if (!currentUser?.id || !isCoachOrManager) return;
-    const convocChannel = supabase.channel(`quick-actions-convocs-${currentUser.id}`)
+    const convocChannel = supabase.channel(`quick-actions-convocs-${currentUser.id}-${Math.random().toString(36).slice(2, 8)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_convocations' }, () => { load(); })
       .subscribe();
     return () => { supabase.removeChannel(convocChannel); };

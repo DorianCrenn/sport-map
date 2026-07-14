@@ -36,7 +36,7 @@ export function useEventReactions(eventId: string | null | undefined) {
     load();
 
     const channel = supabase
-      .channel(`reactions-${eventId}`)
+      .channel(`reactions-${eventId}-${Math.random().toString(36).slice(2, 8)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_reactions', filter: `event_id=eq.${eventId}` },
         (payload: { eventType: string; new?: { emoji?: Emoji }; old?: { emoji?: Emoji } }) => {
           const emoji = payload.new?.emoji ?? payload.old?.emoji;

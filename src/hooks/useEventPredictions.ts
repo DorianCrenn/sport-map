@@ -38,7 +38,7 @@ export function useEventPredictions(eventId: string | null | undefined, eventDat
     load();
 
     const channel = supabase
-      .channel(`predictions-${eventId}`)
+      .channel(`predictions-${eventId}-${Math.random().toString(36).slice(2, 8)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_predictions', filter: `event_id=eq.${eventId}` },
         (payload: { eventType: string; old?: { prediction?: PredictionChoice }; new?: { prediction?: PredictionChoice } }) => {
           const prev_choice = payload.old?.prediction;

@@ -74,7 +74,7 @@ export function useMatchAttendance(eventId: string | null | undefined, userId: s
 
     fetchAll();
 
-    const channel = supabase.channel(`match-att-${eventId}`)
+    const channel = supabase.channel(`match-att-${eventId}-${Math.random().toString(36).slice(2, 8)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'match_player_attendance', filter: `event_id=eq.${eventId}` },
         () => fetchAll())
       .subscribe();

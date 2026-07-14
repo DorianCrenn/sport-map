@@ -90,7 +90,7 @@ describe('useMatchAttendance — chargement', () => {
 
   it('souscrit au channel Realtime', async () => {
     renderHook(() => useMatchAttendance('ev-1', 'u-1'));
-    await waitFor(() => expect(mockChannel).toHaveBeenCalledWith('match-att-ev-1'));
+    await waitFor(() => expect(mockChannel).toHaveBeenCalledWith(expect.stringContaining('match-att-ev-1')));
     expect(fakeChannel.on).toHaveBeenCalled();
     expect(fakeChannel.subscribe).toHaveBeenCalled();
   });

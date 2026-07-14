@@ -59,7 +59,7 @@ export function useNextTraining(clubId: string | null | undefined, userId: strin
     supabase.from('training_attendance').select('id, user_id, status').eq('session_id', session.id)
       .then(({ data }: { data: { id: string; user_id: string; status: AttStatus }[] | null }) => { if (!cancelled) applyList(data ?? []); });
 
-    const channel = supabase.channel(`next-training-${session.id}`)
+    const channel = supabase.channel(`next-training-${session.id}-${Math.random().toString(36).slice(2, 8)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'training_attendance', filter: `session_id=eq.${session.id}` },
         (_p: DBRow) => {
           supabase.from('training_attendance').select('id, user_id, status').eq('session_id', session.id)

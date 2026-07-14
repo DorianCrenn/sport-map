@@ -65,7 +65,7 @@ export function AttendeeCountProvider({ children }: { children: ReactNode }) {
     }
 
     const channel = supabase
-      .channel('attendee-count-changes')
+      .channel(`attendee-count-changes-${Math.random().toString(36).slice(2, 8)}`)
       .on('postgres_changes', pgConfig as any, (payload) => {
         const row = (payload.new as { event_id?: string })?.event_id
           ? (payload.new as { event_id: string })
