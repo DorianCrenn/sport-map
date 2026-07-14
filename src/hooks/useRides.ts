@@ -3,6 +3,7 @@ import { supabase, isDemoMode } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.js';
 import { dispatchError } from '../lib/errorBus.js';
 import { sanitizeText } from '../lib/sanitize.js';
+import { demoRides, demoRideRequests } from '../demo/data/rides.js';
 
 interface RideRequestRow { id: string; ride_id: string; passenger_id?: string | null; passenger_name?: string; message?: string | null; status: string; created_at: string; }
 interface RideRow { id: string; event_id: string; driver_id?: string; driver_name?: string; departure_location?: string; departure_lat?: number | null; departure_lng?: number | null; departure_time?: string | null; available_seats: number; accepted_equipment?: string[]; detour_flexibility?: string; notes?: string; status: string; created_at: string; ride_requests?: RideRequestRow[]; }
@@ -14,8 +15,21 @@ function mapRequest(row: RideRequestRow): RideRequest { return { id: row.id, rid
 function mapRide(row: RideRow): Ride { const requests = (row.ride_requests ?? []).map(mapRequest); const accepted = requests.filter(r => r.status === 'accepted'); return { id: row.id, eventId: row.event_id, driverId: row.driver_id, driverName: row.driver_name ?? '', departureLocation: row.departure_location, departureLat: row.departure_lat, departureLng: row.departure_lng, departureTime: row.departure_time, availableSeats: row.available_seats, acceptedEquipment: row.accepted_equipment ?? [], detourFlexibility: row.detour_flexibility ?? 'none', notes: row.notes ?? '', status: row.status, createdAt: row.created_at, requests, takenSeats: accepted.length, availableSeatsLeft: Math.max(0, row.available_seats - accepted.length), pendingCount: requests.filter(r => r.status === 'pending').length }; }
 
 function demoRidesKey(eventId: string) { return `sl-demo-rides-${eventId}`; }
+// Seed depuis les données démo (rides.ts) : useRides ne lisait que le localStorage,
+// donc les trajets seed n'apparaissaient jamais (covoiturage démo vide). On les
+// mappe à la forme Ride et on les persiste au 1er chargement pour que createRide
+// vienne s'y ajouter ensuite.
+function seedDemoRides(eventId: string): Ride[] {
+  return demoRides
+    .filter((r: any) => r.event_id === eventId && r.status !== 'cancelled')
+    .map((r: any) => mapRide({ ...r, ride_requests: demoRideRequests.filter((req: any) => req.ride_id === r.id) } as RideRow));
+}
 function loadDemoRides(eventId: string): Ride[] {
-  try { return JSON.parse(localStorage.getItem(demoRidesKey(eventId)) ?? '[]'); } catch { return []; }
+  const raw = localStorage.getItem(demoRidesKey(eventId));
+  if (raw !== null) { try { return JSON.parse(raw); } catch { /* réamorce ci-dessous */ } }
+  const seed = seedDemoRides(eventId);
+  saveDemoRides(eventId, seed);
+  return seed;
 }
 function saveDemoRides(eventId: string, rides: Ride[]) {
   try { localStorage.setItem(demoRidesKey(eventId), JSON.stringify(rides)); } catch { /* noop */ }
