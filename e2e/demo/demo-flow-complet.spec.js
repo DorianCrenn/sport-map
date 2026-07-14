@@ -34,20 +34,6 @@ async function selectProfile(page, label) {
   await page.waitForTimeout(800);
 }
 
-async function goToTab(page, tabName) {
-  // Clic sur le BottomNav
-  const tabButton = page.locator(`[data-demo="tab-${tabName}"], nav button`).filter({
-    hasText: new RegExp(tabName === 'news' ? 'actua' : tabName, 'i'),
-  });
-  if (await tabButton.count() > 0) {
-    await tabButton.first().click();
-  } else {
-    // Fallback : clic direct sur le lien de navigation visible
-    await page.locator('nav').getByRole('button').filter({ hasText: new RegExp(tabName === 'news' ? 'actua' : tabName, 'i') }).first().click();
-  }
-  await page.waitForTimeout(600);
-}
-
 async function scrollDown(page, px = 300) {
   // La page SPA utilise un container overflow-y-auto, pas le window
   await page.evaluate((amount) => {
