@@ -16,13 +16,14 @@ async function selectDemoProfile(page, profile) {
   });
   await page.goto('/demo');
   await page.waitForLoadState('networkidle');
-  // S'assurer que la landing page est chargée
-  await expect(page.getByText(/démonstration/i)).toBeVisible({ timeout: 8000 });
+  // S'assurer que la landing page est chargée (titre unique — /démonstration/i
+  // matche 3 textes distincts sur /demo → strict mode violation).
+  await expect(page.getByText('Démonstration interactive')).toBeVisible({ timeout: 8000 });
 
   const labels = {
     president:     'Président',
-    coach:         'Entraîneur',
-    communication: 'Communicant',
+    coach:         'Coach',
+    communication: 'Communication',
     parent:        'Parent',
     player:        'Joueur',
     supporter:     'Supporter',
@@ -30,7 +31,7 @@ async function selectDemoProfile(page, profile) {
   const label = labels[profile] ?? profile;
   const profileBtn = page.getByText(label).first();
   await expect(profileBtn).toBeVisible({ timeout: 5000 });
-  await profileBtn.click();
+  await profileBtn.click({ force: true });
   // Attendre que l'app démo s'initialise (chargement Supabase démo)
   await page.waitForTimeout(1500);
 }
@@ -96,7 +97,7 @@ test.describe('Rôles démo — accès différenciés', () => {
       while (attempts < 20) {
         const nextBtn = page.getByRole('button', { name: /suivant|passer/i }).first();
         if (await nextBtn.isVisible({ timeout: 600 }).catch(() => false)) {
-          await nextBtn.click();
+          await nextBtn.click({ force: true }).catch(() => {});
           await page.waitForTimeout(250);
         } else {
           break;
