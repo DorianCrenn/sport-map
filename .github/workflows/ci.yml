@@ -35,6 +35,9 @@ jobs:
       - name: Lint (ESLint)
         run: npm run lint
 
+      - name: Typecheck (tsc --noEmit)
+        run: npm run typecheck
+
       - name: Tests unitaires
         run: npm run test
         env:
@@ -117,6 +120,13 @@ jobs:
       - name: Build Vite (pour preview)
         run: npm run build
         env:
+          VITE_SUPABASE_URL: https://mock.supabase.co
+          VITE_SUPABASE_ANON_KEY: mock-anon-key
+
+      - name: Smoke anti-crash (E2E) — fail-fast
+        run: npm run test:e2e:smoke
+        env:
+          CI: true
           VITE_SUPABASE_URL: https://mock.supabase.co
           VITE_SUPABASE_ANON_KEY: mock-anon-key
 
