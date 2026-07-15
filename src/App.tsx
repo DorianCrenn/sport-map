@@ -23,6 +23,12 @@ import ReminderBanner from './components/ReminderBanner.jsx';
 import BottomNav from './components/BottomNav.jsx';
 const ClubPageView   = lazy(() => import('./components/club/ClubPageView.jsx'));
 const UserPublicView = lazy(() => import('./components/UserPublicView.jsx'));
+const DevModalsHarness = lazy(() => import('./dev/DevModalsHarness.jsx'));
+// Capturé au chargement du module (avant que le routeur ne nettoie l'URL).
+const DEV_MODALS_NAME = (import.meta.env.DEV && typeof window !== 'undefined')
+  ? new URLSearchParams(window.location.search).get('devmodals')
+  : null;
+const DEV_MODALS_HARNESS = DEV_MODALS_NAME !== null;
 import HomeScreen from './pages/HomeScreen.tsx';
 const MapPage = lazy(() => import('./pages/MapPage.jsx'));
 const FavorisPage = lazy(() => import('./pages/FavorisPage.jsx'));
@@ -690,6 +696,12 @@ function AppInner() {
       toast({ message: 'Bienvenue sur SportLink ! Explore les clubs et événements autour de toi.', type: 'info' });
     }
   }, [isClubAdmin, setActiveTab, toast]);
+
+  // Harnais DEV pour tester les modales en isolation (?devmodals=NomModale).
+  // Intention capturée au chargement du module (le routeur nettoie l'URL ensuite).
+  if (DEV_MODALS_HARNESS) {
+    return <Suspense fallback={null}><DevModalsHarness initial={DEV_MODALS_NAME} /></Suspense>;
+  }
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-bg)', gap: 24 }}>

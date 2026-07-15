@@ -108,6 +108,7 @@ export default function ConvocReplyPanel({ token, onClose }: ConvocReplyPanelPro
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
+        role="dialog" aria-modal="true" aria-label="Répondre à la convocation"
         initial={{ y: 80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 380, damping: 32 }}

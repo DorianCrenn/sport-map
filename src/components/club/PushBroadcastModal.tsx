@@ -48,6 +48,7 @@ export default function PushBroadcastModal({ clubId, clubName, teams = [], upcom
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
+        role="dialog" aria-modal="true" aria-label="Notification push"
         initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 320, damping: 32 }}
         style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', padding: '20px 20px calc(28px + env(safe-area-inset-bottom, 0px))', maxHeight: '90vh', overflowY: 'auto' }}
