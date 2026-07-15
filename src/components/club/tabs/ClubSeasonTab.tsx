@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { usePlayerSeasonStats, type PlayerSeasonStat } from '../../../hooks/usePlayerStats.js';
 import { useClubStats } from '../../../hooks/useClubStats.js';
 import { rankBy, type Metric } from './seasonRanking.js';
+
+const SeasonPoster = lazy(() => import('../SeasonPoster.js'));
 
 const METRICS: { id: Metric; label: string; icon: string }[] = [
   { id: 'goals',    label: 'Buteurs',  icon: '⚽' },
@@ -24,6 +26,7 @@ interface ClubSeasonTabProps {
 export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', canEdit, allTeams = [] }: ClubSeasonTabProps) {
   const { stats, loading } = usePlayerSeasonStats(String(club.id));
   const [metric, setMetric] = useState<Metric>('goals');
+  const [showPoster, setShowPoster] = useState(false);
   // undefined = pas encore choisi → défaut = 1re équipe ayant des données ; null = « Toutes »
   const [teamFilter, setTeamFilter] = useState<string | null | undefined>(undefined);
 
@@ -111,6 +114,34 @@ export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', c
           <button onClick={() => setTeamFilter(null)} style={teamChip(effectiveFilter === null, accentColor)}>Toutes</button>
           <div style={{ flexShrink: 0, width: 4 }} />
         </div>
+      )}
+
+      {/* Créer une affiche partageable */}
+      <button
+        onClick={() => setShowPoster(true)}
+        style={{
+          width: '100%', marginBottom: 14, padding: '11px', borderRadius: 'var(--sl-radius-lg)',
+          border: `1px solid ${accentColor}`, background: 'transparent', color: accentColor,
+          fontSize: 13, fontWeight: 800, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}
+      >
+        📸 Créer une affiche
+      </button>
+
+      {showPoster && (
+        <Suspense fallback={null}>
+          <SeasonPoster
+            club={club}
+            teamName={teamName}
+            accentColor={accentColor}
+            players={teamStats}
+            bilan={bilan}
+            form={form}
+            motm={motmList}
+            onClose={() => setShowPoster(false)}
+          />
+        </Suspense>
       )}
 
       {/* Bilan V/N/D + forme */}
