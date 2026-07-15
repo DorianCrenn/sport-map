@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
@@ -14,8 +14,9 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
+const authState = vi.hoisted(() => ({ current: { currentUser: null, isAdmin: false, isClubAdmin: false } }));
 vi.mock('../../contexts/AuthContext.jsx', () => ({
-  useAuth: () => ({ currentUser: null, isAdmin: false, isClubAdmin: false }),
+  useAuth: () => authState.current,
 }));
 
 vi.mock('../../contexts/FavoritesContext.jsx', () => ({
@@ -159,5 +160,32 @@ describe('EventCard — rendu minimal', () => {
   it('affiche le sport via SportIcon', () => {
     renderCard(makeEvent());
     expect(screen.getByTestId('sport-icon')).toBeDefined();
+  });
+});
+
+// ── Permissions : modifier/supprimer réservés au propriétaire (ou admin) ───────
+describe('EventCard — permissions d\'édition (propriétaire uniquement)', () => {
+  afterEach(() => { authState.current = { currentUser: null, isAdmin: false, isClubAdmin: false }; });
+
+  const ownedEvent = makeEvent({ eventType: 'friendly', source: 'user', userId: 'owner-1' });
+
+  it('le propriétaire voit Modifier / Supprimer', () => {
+    authState.current = { currentUser: { id: 'owner-1' }, isAdmin: false, isClubAdmin: false };
+    renderCard(ownedEvent, { isSelected: true });
+    expect(screen.getByLabelText("Modifier l'événement")).toBeDefined();
+    expect(screen.getByLabelText("Supprimer l'événement")).toBeDefined();
+  });
+
+  it("un autre utilisateur ne voit PAS Modifier / Supprimer (bug historique creatorId)", () => {
+    authState.current = { currentUser: { id: 'someone-else' }, isAdmin: false, isClubAdmin: false };
+    renderCard(ownedEvent, { isSelected: true });
+    expect(screen.queryByLabelText("Modifier l'événement")).toBeNull();
+    expect(screen.queryByLabelText("Supprimer l'événement")).toBeNull();
+  });
+
+  it('un admin voit Modifier / Supprimer sur l\'événement d\'un autre', () => {
+    authState.current = { currentUser: { id: 'admin-x' }, isAdmin: true, isClubAdmin: false };
+    renderCard(ownedEvent, { isSelected: true });
+    expect(screen.getByLabelText("Modifier l'événement")).toBeDefined();
   });
 });

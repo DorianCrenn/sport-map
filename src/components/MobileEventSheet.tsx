@@ -96,7 +96,9 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
   const attending = isAttending(event.id) as boolean;
   const isPast = new Date(event.date) < new Date();
   const isFinished = isEventPast(event); // terminé (statut final) ou jour passé → présence figée
-  const canEditThis = event.source === 'user' && (!event.creatorId || event.creatorId === currentUser?.id || isAdmin);
+  // Propriétaire (userId) ou admin. Bug historique : testait `creatorId` (jamais
+  // mappé) → `!creatorId` toujours vrai → actions visibles pour tout le monde.
+  const canEditThis = event.source === 'user' && (event.userId === currentUser?.id || isAdmin);
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });

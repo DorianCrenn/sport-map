@@ -548,7 +548,11 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const isUserEvent = event.source === 'user';
-  const canEditThis = isUserEvent && (!event.creatorId || event.creatorId === currentUser?.id || isAdmin);
+  // Propriétaire (userId = créateur) ou admin uniquement. Bug historique : le
+  // code testait `creatorId`, un champ jamais mappé (le mapper expose `userId`),
+  // donc `!creatorId` était toujours vrai → tout le monde voyait modifier/
+  // supprimer/score sur les événements des autres.
+  const canEditThis = isUserEvent && (event.userId === currentUser?.id || isAdmin);
   const isPast = dateObj < new Date();
   const hasStandings = !!event.standings;
   const showPoints = event.standings?.home?.points != null;
