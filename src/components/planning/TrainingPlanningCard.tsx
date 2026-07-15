@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PresenceButtons     from './PresenceButtons.jsx';
 import CarpoolSection      from './CarpoolSection.jsx';
 import AttendanceListSheet from './AttendanceListSheet.jsx';
+import { isEventPast }     from '../../lib/eventTime.js';
 
 const ACCENT = '#8b5cf6';
 
@@ -38,6 +39,7 @@ interface TrainingPlanningCardProps {
 
 export default function TrainingPlanningCard({ item, userId, isStaff, onOpenRides }: TrainingPlanningCardProps) {
   const [showListSessionId, setShowListSessionId] = useState<string | null>(null);
+  const past = isEventPast(item as any); // entraînement passé → présence figée, covoit masqué
 
   return (
     <>
@@ -127,13 +129,14 @@ export default function TrainingPlanningCard({ item, userId, isStaff, onOpenRide
                   status,
                   item.isGuardian ? item.childPlayerId : undefined,
                 )}
+                disabled={past}
                 size="sm"
               />
             </div>
           )}
 
           <AnimatePresence>
-            {(item.isStaffClub || item.myStatus === 'present') && (
+            {!past && (item.isStaffClub || item.myStatus === 'present') && (
               <CarpoolSection eventId={item.id} myStatus={item.myStatus} isStaff={item.isStaffClub} onOpenRides={onOpenRides} event={item as any} />
             )}
           </AnimatePresence>

@@ -14,6 +14,7 @@ import SportIcon from './SportIcon.jsx';
 const PosterStudio = lazy(() => import('./PosterStudio.jsx'));
 import RideSection from './rides/RideSection.jsx';
 import EventPhotoGallery from './EventPhotoGallery.jsx';
+import { isEventPast } from '../lib/eventTime.js';
 import ScoreEntryContainer from './score/ScoreEntryContainer.jsx';
 import EventPredictions from './EventPredictions.jsx';
 
@@ -94,6 +95,7 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
   const fav = isFavorite(event.id) as boolean;
   const attending = isAttending(event.id) as boolean;
   const isPast = new Date(event.date) < new Date();
+  const isFinished = isEventPast(event); // terminé (statut final) ou jour passé → présence figée
   const canEditThis = event.source === 'user' && (!event.creatorId || event.creatorId === currentUser?.id || isAdmin);
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -209,7 +211,7 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
 
         {/* Social actions */}
         <div style={{ display: 'grid', gridTemplateColumns: event.clubId ? '1fr 1fr auto' : '1fr 1fr', gap: 8, marginBottom: 12 }}>
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => toggleAttend(event.id)} style={{ padding: '12px 0', borderRadius: 12, cursor: 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: attending ? 'var(--sl-green-dim)' : 'var(--sl-surface)', color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, transition: 'all 0.15s' }}>
+          <motion.button whileTap={isFinished ? undefined : { scale: 0.95 }} disabled={isFinished} onClick={() => !isFinished && toggleAttend(event.id)} style={{ padding: '12px 0', borderRadius: 12, cursor: isFinished ? 'default' : 'pointer', opacity: isFinished ? 0.5 : 1, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: attending ? 'var(--sl-green-dim)' : 'var(--sl-surface)', color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, transition: 'all 0.15s' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill={attending ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             {attending ? "J'y serai ✓" : "J'y serai"}
             {attendeeCount > 0 && <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 999, backgroundColor: attending ? 'rgba(255,255,255,0.2)' : 'var(--sl-green-dim)', color: attending ? 'white' : 'var(--sl-green)' }}>{attendeeCount}</span>}

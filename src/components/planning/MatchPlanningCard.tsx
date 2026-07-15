@@ -189,6 +189,8 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const isPast   = (item.date ?? '') < todayStr;
+  // « Terminé » = jour passé OU score final saisi. Coupe présence + covoiturage.
+  const finished = isPast || cardState === 'post_done';
 
   const handleStartLive = useCallback(async () => {
     setLaunching(true);
@@ -324,7 +326,7 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
               <p className="text-[9px] font-black tracking-[0.14em] uppercase text-[var(--sl-t3)] mb-1.5">
                 {isGuardian ? 'Présence de mon enfant' : 'Ma présence'}
               </p>
-              <PresenceButtons myStatus={item.myStatus} onRespond={status => item.onRespond?.('match', item.id, status)} disabled={isPast} size="sm" />
+              <PresenceButtons myStatus={item.myStatus} onRespond={status => item.onRespond?.('match', item.id, status)} disabled={finished} size="sm" />
             </div>
           )}
 
@@ -438,7 +440,7 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
           </AnimatePresence>
 
           <AnimatePresence>
-            {(item.isStaffClub || item.myStatus === 'present') && (
+            {!finished && (item.isStaffClub || item.myStatus === 'present') && (
               <CarpoolSection eventId={item.id} myStatus={item.myStatus} isStaff={item.isStaffClub} onOpenRides={onOpenRides} event={item as any} />
             )}
           </AnimatePresence>

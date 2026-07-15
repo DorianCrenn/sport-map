@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { useRides } from '../../hooks/useRides.js';
 import { useClubFeatures } from '../../hooks/useClubFeatures.js';
+import { isEventPast } from '../../lib/eventTime.js';
 import PlanGate from '../ui/PlanGate.jsx';
 import UpgradePrompt from '../ui/UpgradePrompt.jsx';
 import PlansMiniModal from '../ui/PlansMiniModal.jsx';
@@ -23,6 +24,9 @@ export default function RideSection({ event, snapPoint }: RideSectionProps) {
   const { rides, loading, createRide, cancelRide, requestRide, cancelRequest, acceptRequest, refuseRequest } = useRides(event.id) as any;
   const [showCreate,  setShowCreate]  = useState(false);
   const [joiningRide, setJoiningRide] = useState<Record<string, any> | null>(null);
+
+  // Covoiturage masqué dès que l'événement est terminé ou passé.
+  if (isEventPast(event)) return null;
 
   const activeRides = (rides as any[]).filter((r: any) => r.status !== 'cancelled');
   const totalSeats  = activeRides.reduce((s: number, r: any) => s + r.availableSeatsLeft, 0);

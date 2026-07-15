@@ -20,6 +20,7 @@ import { generateEventDescription, openWhatsAppShare, openFacebookShare, openIns
 import SportIcon from './SportIcon.jsx';
 import { getSportPattern } from '../lib/sportTextures.js';
 import { hapticSuccess, hapticLight } from '../lib/haptic.js';
+import { isEventPast } from '../lib/eventTime.js';
 import { IconMegaphone, IconTrophy, IconZap } from './icons.js';
 const PosterStudio = lazy(() => import('./PosterStudio.jsx'));
 import PosterShareBtn from './PosterShareBtn.jsx';
@@ -205,20 +206,23 @@ function ShareBtn({ event }: { event: Record<string, any> }) {
 function AttendBtn({ event }: { event: Record<string, any> }) {
   const { isAttending, toggle } = useAttendanceContext() as any;
   const attending = isAttending(event.id) as boolean;
+  const past = isEventPast(event); // terminé/passé → présence figée (visible mais inactive)
   const { toast } = useToast() as any;
   function handleClick(e: React.MouseEvent) {
     e.stopPropagation();
+    if (past) return;
     toggle(event.id);
     if (!attending) hapticSuccess(); else hapticLight();
     (toast as (opts: any) => void)({ message: attending ? 'Inscription retirée' : "Tu y seras ! 🎉" });
   }
   return (
     <motion.button
-      whileTap={attending ? { scale: 0.88 } : { scale: [1, 1.18, 0.94, 1.06, 1] }}
+      whileTap={past ? undefined : attending ? { scale: 0.88 } : { scale: [1, 1.18, 0.94, 1.06, 1] }}
       transition={{ duration: attending ? 0.1 : 0.38 }}
-      whileHover={{ scale: 1.04 }}
+      whileHover={past ? undefined : { scale: 1.04 }}
       onClick={handleClick}
-      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 9, cursor: 'pointer', minHeight: 36, color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: attending ? 'var(--sl-green-dim)' : 'transparent', transition: 'color 0.15s, border-color 0.15s, background-color 0.15s', fontWeight: attending ? 700 : 500 }}>
+      disabled={past}
+      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 9, cursor: past ? 'default' : 'pointer', opacity: past ? 0.5 : 1, minHeight: 36, color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: attending ? 'var(--sl-green-dim)' : 'transparent', transition: 'color 0.15s, border-color 0.15s, background-color 0.15s', fontWeight: attending ? 700 : 500 }}>
       <svg width="11" height="11" viewBox="0 0 24 24" fill={attending ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       {attending ? "J'y serai ✓" : "J'y serai"}
     </motion.button>
