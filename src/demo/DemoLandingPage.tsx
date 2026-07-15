@@ -88,7 +88,7 @@ export default function DemoLandingPage({ onSelect }) {
         display:        'flex',
         flexDirection:  'column',
         alignItems:     'center',
-        justifyContent: 'flex-start',
+        justifyContent: 'safe center', // centré verticalement si ça tient, sinon aligné en haut (scroll)
         padding:        '24px 16px 40px',
         overflowY:      'auto',
       }}
