@@ -45,6 +45,10 @@ export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', c
     [stats, effectiveFilter],
   );
 
+  // En vue « Toutes », on affiche l'équipe de chaque joueur (sinon l'info est perdue).
+  const teamNameById = useMemo(() => new Map(allTeams.map(t => [t.id, t.name])), [allTeams]);
+  const showRowTeam = effectiveFilter === null && showTeamBar;
+
   // Bilan V/N/D (vue club_stats) — agrégé pour l'équipe sélectionnée (ou tout le club).
   const { stats: clubStats, form5, topMotm, topMotmByTeam } = useClubStats(String(club.id));
   const teamName = teamsWithData.find(t => t.id === effectiveFilter)?.name ?? null;
@@ -105,13 +109,13 @@ export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', c
       {/* Sélecteur d'équipe (clubs multi-équipes) */}
       {showTeamBar && (
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 14, paddingBottom: 2 } as React.CSSProperties}>
+          <button onClick={() => setTeamFilter(null)} style={teamChip(effectiveFilter === null, accentColor)}>Toutes</button>
           {teamsWithData.map(t => {
             const active = effectiveFilter === t.id;
             return (
               <button key={t.id} onClick={() => setTeamFilter(t.id)} style={teamChip(active, accentColor)}>{t.name}</button>
             );
           })}
-          <button onClick={() => setTeamFilter(null)} style={teamChip(effectiveFilter === null, accentColor)}>Toutes</button>
           <div style={{ flexShrink: 0, width: 4 }} />
         </div>
       )}
@@ -197,7 +201,8 @@ export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', c
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {ranked.map((p, i) => (
-            <SeasonRow key={p.playerId} player={p} rank={i} metric={metric} accentColor={accentColor} />
+            <SeasonRow key={p.playerId} player={p} rank={i} metric={metric} accentColor={accentColor}
+              teamLabel={showRowTeam ? (teamNameById.get(p.teamId ?? '') ?? null) : null} />
           ))}
         </div>
       )}
@@ -290,8 +295,8 @@ function teamChip(active: boolean, accentColor: string): React.CSSProperties {
   };
 }
 
-function SeasonRow({ player, rank, metric, accentColor }: {
-  player: PlayerSeasonStat; rank: number; metric: Metric; accentColor: string;
+function SeasonRow({ player, rank, metric, accentColor, teamLabel }: {
+  player: PlayerSeasonStat; rank: number; metric: Metric; accentColor: string; teamLabel?: string | null;
 }) {
   const top3 = rank < 3;
   return (
@@ -314,8 +319,17 @@ function SeasonRow({ player, rank, metric, accentColor }: {
         <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {player.playerName}
         </div>
-        {player.position && (
-          <div style={{ fontSize: 10.5, color: 'var(--sl-t3)', fontWeight: 600 }}>{player.position}</div>
+        {(teamLabel || player.position) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+            {teamLabel && (
+              <span style={{ fontSize: 9.5, fontWeight: 800, color: accentColor, backgroundColor: `${accentColor}18`, padding: '1px 7px', borderRadius: 'var(--sl-radius-full)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                {teamLabel}
+              </span>
+            )}
+            {player.position && (
+              <span style={{ fontSize: 10.5, color: 'var(--sl-t3)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{player.position}</span>
+            )}
+          </div>
         )}
       </div>
 
