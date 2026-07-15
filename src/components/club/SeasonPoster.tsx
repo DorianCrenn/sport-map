@@ -8,6 +8,7 @@ import type { PlayerSeasonStat } from '../../hooks/usePlayerStats.js';
 type Bilan = { played: number; wins: number; draws: number; losses: number; gf: number; ga: number };
 type Motm = { name: string; count: number };
 type PosterType = 'scorers' | 'bilan' | 'motm';
+type Format = 'post' | 'story' | 'square';
 
 const TYPES: { id: PosterType; label: string }[] = [
   { id: 'scorers', label: '⚽ Buteurs' },
@@ -15,10 +16,18 @@ const TYPES: { id: PosterType; label: string }[] = [
   { id: 'motm',    label: '⭐ Homme du match' },
 ];
 
+const FORMATS: { id: Format; label: string; w: number; h: number; rows: number }[] = [
+  { id: 'post',   label: 'Publication', w: 360, h: 450, rows: 5 }, // 4:5
+  { id: 'story',  label: 'Story',       w: 360, h: 640, rows: 7 }, // 9:16
+  { id: 'square', label: 'Carré',       w: 360, h: 360, rows: 3 }, // 1:1
+];
+
 const MEDALS = ['🥇', '🥈', '🥉'];
 
 // Modal plein écran : doit recouvrir aussi le calque démo (bandeau z:10000, guide z:10001)
 const DEMO_OVERLAY_Z = 10050;
+
+const isHex = (c: unknown): c is string => typeof c === 'string' && /^#[0-9a-fA-F]{6}$/.test(c);
 
 interface SeasonPosterProps {
   club: Record<string, any>;
@@ -32,10 +41,10 @@ interface SeasonPosterProps {
 }
 
 export default function SeasonPoster({ club, teamName, accentColor, players, bilan, form, motm, onClose }: SeasonPosterProps) {
-  // Couleur concrète pour l'export (évite les var() CSS dans html-to-image)
-  const accent = (accentColor && !accentColor.startsWith('var('))
-    ? accentColor
-    : (club?.theme?.primary ?? club?.primaryColor ?? '#22d96a');
+  // Couleur du club par défaut (concrète — évite les var() CSS dans html-to-image)
+  const clubAccent = isHex(accentColor) ? accentColor
+    : (isHex(club?.theme?.primary) ? club.theme.primary
+    : isHex(club?.primary_color) ? club.primary_color : '#22c55e');
 
   const available: PosterType[] = useMemo(() => {
     const t: PosterType[] = [];
@@ -45,7 +54,16 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
     return t.length ? t : ['scorers'];
   }, [players, bilan.played, motm.length]);
 
-  const [type, setType]         = useState<PosterType>(available[0]);
+  const palette = useMemo(() => {
+    const raw = [clubAccent, club?.primary_color, club?.theme?.primary, club?.theme?.accent, club?.colors?.accent,
+      '#22c55e', '#2563eb', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#ec4899'];
+    const seen = new Set<string>();
+    return raw.filter(c => isHex(c) && !seen.has(c.toLowerCase()) && seen.add(c.toLowerCase())) as string[];
+  }, [clubAccent, club]);
+
+  const [type, setType]     = useState<PosterType>(available[0]);
+  const [format, setFormat] = useState<Format>('post');
+  const [accent, setAccent] = useState<string>(clubAccent);
   const [exporting, setExporting] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +73,8 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
     return () => document.removeEventListener('keydown', h);
   }, [onClose]);
 
-  const scorers = useMemo(() => rankBy(players, 'goals').slice(0, 5), [players]);
+  const dim = FORMATS.find(f => f.id === format)!;
+  const scorers = useMemo(() => rankBy(players, 'goals').slice(0, dim.rows), [players, dim.rows]);
   const logoUrl = club?.logoUrl ?? club?.logo_url ?? null;
   const subtitle = teamName ?? club?.name ?? '';
 
@@ -65,13 +84,13 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
     try {
       const dataUrl = await toPng(posterRef.current, { pixelRatio: 3, cacheBust: true });
       const link = document.createElement('a');
-      link.download = `saison-${type}-${(teamName ?? 'club').toLowerCase().replace(/\s+/g, '-')}.png`;
+      link.download = `saison-${type}-${format}-${(teamName ?? 'club').toLowerCase().replace(/\s+/g, '-')}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error('[SeasonPoster] export failed:', err);
     } finally { setExporting(false); }
-  }, [type, teamName]);
+  }, [type, format, teamName]);
 
   return createPortal(
     <AnimatePresence>
@@ -86,7 +105,8 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
           </button>
         </div>
 
-        <div className="flex justify-center gap-2 py-2 bg-black/60 flex-shrink-0 flex-wrap px-3">
+        {/* Type */}
+        <div className="flex justify-center gap-2 pt-2 bg-black/60 flex-shrink-0 flex-wrap px-3">
           {TYPES.filter(t => available.includes(t.id)).map(t => (
             <button key={t.id} onClick={() => setType(t.id)} className="text-[11px] font-bold px-3 py-1.5 rounded-full"
               style={type === t.id ? { background: accent, color: '#000' } : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
@@ -95,9 +115,31 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
           ))}
         </div>
 
+        {/* Format + couleur */}
+        <div className="bg-black/60 flex-shrink-0 px-3 py-2 flex flex-col items-center gap-2">
+          <div className="flex gap-2">
+            {FORMATS.map(f => (
+              <button key={f.id} onClick={() => setFormat(f.id)} className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+                style={format === f.id ? { background: accent, color: '#000' } : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+            {palette.map(c => (
+              <button key={c} onClick={() => setAccent(c)} aria-label={`Couleur ${c}`}
+                style={{ width: 22, height: 22, borderRadius: '50%', background: c, cursor: 'pointer', border: accent.toLowerCase() === c.toLowerCase() ? '2px solid #fff' : '2px solid rgba(255,255,255,0.15)' }} />
+            ))}
+            <label title="Couleur personnalisée" style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', cursor: 'pointer', position: 'relative', display: 'inline-block', background: 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' }}>
+              <input type="color" value={accent} onChange={e => setAccent(e.target.value)} style={{ position: 'absolute', inset: -4, opacity: 0, cursor: 'pointer' }} />
+            </label>
+          </div>
+        </div>
+
         <div className="flex-1 overflow-y-auto flex items-start justify-center p-4">
           <div ref={posterRef} style={{
-            width: 360, minHeight: 460, flexShrink: 0, position: 'relative', overflow: 'hidden',
+            width: dim.w, height: dim.h, flexShrink: 0, position: 'relative', overflow: 'hidden',
+            display: 'flex', flexDirection: 'column',
             background: 'linear-gradient(160deg, #0b1220 0%, #13233f 55%, #0b1220 100%)',
             borderRadius: 22, fontFamily: "'Inter', sans-serif",
           }}>
@@ -105,7 +147,7 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
             <div style={{ position: 'absolute', top: -70, right: -60, width: 240, height: 240, borderRadius: '50%', background: accent, opacity: 0.22, filter: 'blur(8px)' }} />
 
             {/* En-tête club */}
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 8px' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 8px', flexShrink: 0 }}>
               {logoUrl
                 ? <img src={logoUrl} alt="" crossOrigin="anonymous" style={{ width: 46, height: 46, objectFit: 'contain', borderRadius: 12, background: 'rgba(255,255,255,0.08)' }} />
                 : <div style={{ width: 46, height: 46, borderRadius: 12, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: 18 }}>{(club?.name ?? 'FC')[0]}</div>}
@@ -115,13 +157,13 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
               </div>
             </div>
 
-            <div style={{ position: 'relative', padding: '4px 20px 20px' }}>
+            <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 20px' }}>
               {type === 'scorers' && <ScorersPoster scorers={scorers} accent={accent} />}
               {type === 'bilan'   && <BilanPoster bilan={bilan} form={form} accent={accent} />}
-              {type === 'motm'    && <MotmPoster motm={motm} accent={accent} />}
+              {type === 'motm'    && <MotmPoster motm={motm.slice(0, dim.rows)} accent={accent} />}
             </div>
 
-            <div style={{ position: 'relative', textAlign: 'center', color: 'rgba(255,255,255,0.28)', fontSize: 8.5, paddingBottom: 12, letterSpacing: '0.12em', fontWeight: 700 }}>
+            <div style={{ position: 'relative', textAlign: 'center', color: 'rgba(255,255,255,0.28)', fontSize: 8.5, paddingBottom: 12, letterSpacing: '0.12em', fontWeight: 700, flexShrink: 0 }}>
               {club?.name ?? 'SportLink'} · SPORTLINK
             </div>
           </div>
@@ -134,7 +176,7 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
 
 function SectionTitle({ children, accent }: { children: React.ReactNode; accent: string }) {
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${accent}22`, border: `1px solid ${accent}55`, color: '#fff', fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', padding: '5px 12px', borderRadius: 999, marginBottom: 14 }}>
+    <div style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: 6, background: `${accent}22`, border: `1px solid ${accent}55`, color: '#fff', fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', padding: '5px 12px', borderRadius: 999, marginBottom: 14 }}>
       {children}
     </div>
   );
