@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRides } from '../../hooks/useRides.js';
 import { isEventPast } from '../../lib/eventTime.js';
+import { useMyClubMemberships } from '../../hooks/useMyClubMemberships.js';
 import CreateRideModal from '../rides/CreateRideModal.jsx';
 
 interface CarpoolEvent {
@@ -20,9 +21,15 @@ interface CarpoolSectionProps {
 }
 
 export default function CarpoolSection({ eventId, myStatus, isStaff, onOpenRides, event }: CarpoolSectionProps) {
-  // Covoiturage masqué dès que l'événement est terminé (score saisi) ou passé.
-  const past = isEventPast(event as any);
-  const active = (isStaff || myStatus === 'present') && !past;
+  // Covoiturage réservé à la communauté du club de l'événement (joueur/famille/
+  // staff), et masqué dès que l'événement est terminé ou passé. Aligné sur la
+  // carte (RideSection). `isStaff`/`myStatus` restent acceptés mais ne
+  // conditionnent plus la visibilité.
+  const memberClubIds = useMyClubMemberships();
+  const past   = isEventPast(event as any);
+  const clubId = (event as any)?.clubId ?? (event as any)?.club_id;
+  const isMember = clubId != null && memberClubIds.has(String(clubId));
+  const active = (isMember || isStaff) && !past;
   const { rides, loading, createRide } = useRides(active ? String(eventId) : null) as any;
   const [showCreate, setShowCreate] = useState(false);
 

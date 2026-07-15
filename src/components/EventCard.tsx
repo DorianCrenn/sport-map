@@ -21,6 +21,7 @@ import SportIcon from './SportIcon.jsx';
 import { getSportPattern } from '../lib/sportTextures.js';
 import { hapticSuccess, hapticLight } from '../lib/haptic.js';
 import { isEventPast } from '../lib/eventTime.js';
+import { useMyClubMemberships } from '../hooks/useMyClubMemberships.js';
 import { IconMegaphone, IconTrophy, IconZap } from './icons.js';
 const PosterStudio = lazy(() => import('./PosterStudio.jsx'));
 import PosterShareBtn from './PosterShareBtn.jsx';
@@ -414,11 +415,13 @@ interface TournamentCardContentProps {
   onDelete: () => void;
   onDuplicate?: (event: Record<string, any>) => void;
   setShowPoster: (v: boolean) => void;
+  canCreatePoster: boolean;
+  posterUrl: string | null;
   attendeeCount: number;
   status: string;
 }
 
-function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelete, onDuplicate, setShowPoster, attendeeCount, status }: TournamentCardContentProps) {
+function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelete, onDuplicate, setShowPoster, canCreatePoster, posterUrl, attendeeCount, status }: TournamentCardContentProps) {
   const cats = event.tournamentCategories
     ? (event.tournamentCategories as string).split(',').map((s: string) => s.trim()).filter(Boolean)
     : [];
@@ -499,10 +502,16 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
               <NavBtn event={event} />
               <ShareBtn event={event} />
               <ICSBtn event={event} />
-              <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} title="Créer une affiche" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              </button>
-              <PosterShareBtn event={event} />
+              {canCreatePoster ? (
+                <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} title="Créer une affiche" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </button>
+              ) : posterUrl ? (
+                <button onClick={(e) => { e.stopPropagation(); window.open(posterUrl, '_blank', 'noopener'); }} title="Voir l'affiche" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              ) : null}
+              {canCreatePoster && <PosterShareBtn event={event} />}
             </div>
             <EventReactions eventId={String(event.id)} />
             <EventComments eventId={String(event.id)} />
@@ -553,6 +562,12 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
   // donc `!creatorId` était toujours vrai → tout le monde voyait modifier/
   // supprimer/score sur les événements des autres.
   const canEditThis = isUserEvent && (event.userId === currentUser?.id || isAdmin);
+  // Créer une affiche = propriétaire, admin, ou membre du club de l'événement
+  // (staff/joueur/famille). Les autres peuvent seulement VOIR l'affiche publiée.
+  const memberClubIds = useMyClubMemberships();
+  const canCreatePoster = isAdmin || event.userId === currentUser?.id
+    || (!!event.clubId && memberClubIds.has(String(event.clubId)));
+  const posterUrl: string | null = event.poster_url ?? null;
   const isPast = dateObj < new Date();
   const hasStandings = !!event.standings;
   const showPoints = event.standings?.home?.points != null;
@@ -603,6 +618,8 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
               onDelete={() => setConfirmDelete(true)}
               onDuplicate={onDuplicate}
               setShowPoster={setShowPoster}
+              canCreatePoster={canCreatePoster}
+              posterUrl={posterUrl}
               attendeeCount={attendeeCount}
               status={status}
             />
@@ -685,11 +702,18 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
                       <NavBtn event={event} />
                       <ShareBtn event={event} />
                       <ICSBtn event={event} />
-                      <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} aria-label="Créer une affiche" title="Créer une affiche" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 11px', borderRadius: 9, cursor: 'pointer', color: accentColor, border: `1px solid ${accentColor}30`, backgroundColor: `${accentColor}10`, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        Créer l'affiche
-                      </button>
-                      <PosterShareBtn event={event} />
+                      {canCreatePoster ? (
+                        <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} aria-label="Créer une affiche" title="Créer une affiche" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 11px', borderRadius: 9, cursor: 'pointer', color: accentColor, border: `1px solid ${accentColor}30`, backgroundColor: `${accentColor}10`, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                          Créer l'affiche
+                        </button>
+                      ) : posterUrl ? (
+                        <button onClick={(e) => { e.stopPropagation(); window.open(posterUrl, '_blank', 'noopener'); }} aria-label="Voir l'affiche" title="Voir l'affiche" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 11px', borderRadius: 9, cursor: 'pointer', color: accentColor, border: `1px solid ${accentColor}30`, backgroundColor: `${accentColor}10`, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          Voir l'affiche
+                        </button>
+                      ) : null}
+                      {canCreatePoster && <PosterShareBtn event={event} />}
                     </div>
 
                     {canEditThis && isPast && onUpdateEvent && (

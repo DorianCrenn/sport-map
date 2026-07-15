@@ -15,6 +15,7 @@ const PosterStudio = lazy(() => import('./PosterStudio.jsx'));
 import RideSection from './rides/RideSection.jsx';
 import EventPhotoGallery from './EventPhotoGallery.jsx';
 import { isEventPast } from '../lib/eventTime.js';
+import { useMyClubMemberships } from '../hooks/useMyClubMemberships.js';
 import ScoreEntryContainer from './score/ScoreEntryContainer.jsx';
 import EventPredictions from './EventPredictions.jsx';
 
@@ -99,6 +100,11 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
   // Propriétaire (userId) ou admin. Bug historique : testait `creatorId` (jamais
   // mappé) → `!creatorId` toujours vrai → actions visibles pour tout le monde.
   const canEditThis = event.source === 'user' && (event.userId === currentUser?.id || isAdmin);
+  // Créer une affiche = propriétaire, admin, ou membre du club de l'événement.
+  // Les autres peuvent seulement voir l'affiche publiée (si dispo).
+  const memberClubIds = useMyClubMemberships();
+  const canCreatePoster = isAdmin || event.userId === currentUser?.id || (!!event.clubId && memberClubIds.has(String(event.clubId)));
+  const posterUrl = event.poster_url ?? null;
   const dateObj = new Date(event.date);
   const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -248,9 +254,15 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   Calendrier
                 </button>
-                <button onClick={() => setShowPoster(true)} aria-label="Créer une affiche" style={{ width: 44, padding: '12px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', color: 'var(--sl-t2)', flexShrink: 0 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                </button>
+                {canCreatePoster ? (
+                  <button onClick={() => setShowPoster(true)} aria-label="Créer une affiche" style={{ width: 44, padding: '12px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', color: 'var(--sl-t2)', flexShrink: 0 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </button>
+                ) : posterUrl ? (
+                  <button onClick={() => window.open(posterUrl, '_blank', 'noopener')} aria-label="Voir l'affiche" style={{ width: 44, padding: '12px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', color: 'var(--sl-t2)', flexShrink: 0 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                ) : null}
               </div>
 
               {event.description && <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--sl-t2)', borderTop: '1px solid var(--sl-border)', paddingTop: 14, marginBottom: 14 }}>{event.description}</p>}

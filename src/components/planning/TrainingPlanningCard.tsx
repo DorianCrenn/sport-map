@@ -136,7 +136,7 @@ export default function TrainingPlanningCard({ item, userId, isStaff, onOpenRide
           )}
 
           <AnimatePresence>
-            {!past && (item.isStaffClub || item.myStatus === 'present') && (
+            {!past && (item.isStaffClub || item.isPlayerClub || item.isGuardian) && (
               <CarpoolSection eventId={item.id} myStatus={item.myStatus} isStaff={item.isStaffClub} onOpenRides={onOpenRides} event={item as any} />
             )}
           </AnimatePresence>

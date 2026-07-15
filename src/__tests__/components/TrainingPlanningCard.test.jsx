@@ -28,6 +28,7 @@ vi.mock('../../hooks/useTrainingAttendance.js', () => ({
 vi.mock('../../hooks/useRides.js', () => ({
   useRides: () => ({ rides: [], loading: false }),
 }));
+vi.mock('../../hooks/useMyClubMemberships.js', () => ({ useMyClubMemberships: () => ({ has: () => true }) }));
 
 import TrainingPlanningCard from '../../components/planning/TrainingPlanningCard.jsx';
 
