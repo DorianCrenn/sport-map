@@ -69,13 +69,15 @@ export default function ModalFrame({ open, onClose, variant = 'sheet', zIndex = 
     <AnimatePresence>
       {open && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex, display: 'flex', backgroundColor: 'rgba(0,0,0,0.65)', ...v.align }} onClick={e => { if (e.target === e.currentTarget) onClose?.(); }} role="dialog" aria-modal="true" aria-labelledby={labelledBy}>
-          <motion.div ref={firstFocusRef as any} {...(v.panel as any)} style={{ backgroundColor: 'var(--sl-card)', padding: variant === 'sheet' ? '0' : '24px', ...v.panel.style, ...panelStyle, transform: variant === 'sheet' && sheetDy > 0 ? `translateY(${sheetDy}px)` : undefined, transition: sheetDy > 0 ? 'none' : undefined }} onClick={e => e.stopPropagation()}>
+          <motion.div ref={firstFocusRef as any} {...(v.panel as any)} style={{ backgroundColor: 'var(--sl-card)', padding: variant === 'sheet' ? '0' : '24px', display: 'flex', flexDirection: 'column', maxHeight: variant === 'sheet' ? '92dvh' : '88dvh', overflow: 'hidden', ...v.panel.style, ...panelStyle, transform: variant === 'sheet' && sheetDy > 0 ? `translateY(${sheetDy}px)` : undefined, transition: sheetDy > 0 ? 'none' : undefined }} onClick={e => e.stopPropagation()}>
             {variant === 'sheet' && (
               <div role="button" tabIndex={-1} onMouseDown={handleDragHandleDown} onTouchStart={handleDragHandleDown} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onClose?.()} aria-label="Glisser pour fermer" style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px', cursor: 'grab', touchAction: 'none', flexShrink: 0 }}>
                 <div style={{ width: 36, height: 4, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
               </div>
             )}
-            <div style={{ padding: '4px 24px 24px' }}>{children}</div>
+            {/* Contenu scrollable : le panneau est contraint en hauteur (maxHeight),
+                le contenu défile à l'intérieur au lieu de déborder hors écran. */}
+            <div style={{ padding: '4px 24px 24px', overflowY: 'auto', flex: 1, minHeight: 0, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>{children}</div>
           </motion.div>
         </motion.div>
       )}

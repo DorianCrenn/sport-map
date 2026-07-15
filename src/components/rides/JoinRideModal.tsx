@@ -56,7 +56,7 @@ export default function JoinRideModal({ ride, onSave, onClose }: JoinRideModalPr
         role="dialog" aria-modal="true" aria-label="Rejoindre ce trajet"
         initial={{ scale: 0.94, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.94, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 460, damping: 36 }}
-        style={{ width: '100%', maxWidth: 400, borderRadius: 22, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}
+        style={{ width: '100%', maxWidth: 400, borderRadius: 22, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', maxHeight: '88dvh', overflowY: 'auto', overflowX: 'hidden', overscrollBehavior: 'contain' }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ padding: '20px 20px 14px' }}>

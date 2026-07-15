@@ -111,14 +111,14 @@ export default function ConvocReplyPanel({ token, onClose }: ConvocReplyPanelPro
         initial={{ y: 80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-        style={{ background: 'var(--sl-bg)', borderRadius: '20px 20px 16px 16px', width: '100%', maxWidth: 440, overflow: 'hidden', boxShadow: '0 -4px 32px rgba(0,0,0,0.25)' }}
+        style={{ background: 'var(--sl-bg)', borderRadius: '20px 20px 16px 16px', width: '100%', maxWidth: 440, overflow: 'hidden', boxShadow: '0 -4px 32px rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column', maxHeight: '90dvh' }}
       >
         {/* Handle */}
-        <div style={{ padding: '10px 0 0', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ padding: '10px 0 0', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--sl-border)' }} />
         </div>
 
-        <div style={{ padding: '12px 20px 24px' }}>
+        <div style={{ padding: '12px 20px 24px', overflowY: 'auto', flex: 1, minHeight: 0, overscrollBehavior: 'contain' }}>
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--sl-t3)', fontSize: 13, padding: '20px 0' }}>Chargement…</p>
           ) : expired ? (
