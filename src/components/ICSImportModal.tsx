@@ -87,7 +87,7 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
   const inputStyle = { width: '100%', boxSizing: 'border-box' as const, padding: '10px 12px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, outline: 'none' };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 300, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 'var(--sl-z-modal)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div

@@ -118,6 +118,20 @@
   --sl-radius-3xl:  16px;
   --sl-radius-4xl:  20px;
   --sl-radius-full: 9999px;
+
+  /* Z-index scale — couches d'empilement GLOBALES (overlays app-level).
+     Ne PAS utiliser pour l'empilement local d'un composant (contexte propre). */
+  --sl-z-base:      0;      /* contenu normal */
+  --sl-z-raised:    10;     /* éléments légèrement surélevés */
+  --sl-z-sticky:    100;    /* barres sticky dans une page */
+  --sl-z-banner:    500;    /* bannières globales (simulateur, offline) */
+  --sl-z-header:    1000;   /* header app */
+  --sl-z-nav:       1010;   /* bottom nav + FAB */
+  --sl-z-sheet:     1100;   /* sheets / overlays plein écran au-dessus de la nav */
+  --sl-z-modal:     2000;   /* modales standard */
+  --sl-z-modal-top: 3000;   /* modale au-dessus d'une modale (paiement, plans) */
+  --sl-z-toast:     4000;   /* toasts */
+  --sl-z-tooltip:   9999;   /* tooltips — toujours au sommet */
 }
 
 /* ═══════════════════════════════════════════════════════════

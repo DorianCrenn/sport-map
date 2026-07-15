@@ -101,7 +101,7 @@ export default function MatchStatsModal({ event, clubId, onClose }: MatchStatsMo
   const statLabelStyle = { fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)', letterSpacing: '0.06em', textTransform: 'uppercase' as const, textAlign: 'center' as const };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 300, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 'var(--sl-z-modal)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div

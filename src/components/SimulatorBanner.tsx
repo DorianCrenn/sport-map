@@ -7,7 +7,7 @@ export default function SimulatorBanner() {
   const [expanded, setExpanded] = useState(false);
 
   if (!isActive && !expanded) return (
-    <button onClick={() => setExpanded(true)} style={{ position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))', right: 16, zIndex: 500, padding: '8px 14px', borderRadius: 'var(--sl-radius-4xl)', border: '1px solid rgba(139,92,246,0.4)', backgroundColor: 'rgba(139,92,246,0.12)', color: '#8b5cf6', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+    <button onClick={() => setExpanded(true)} style={{ position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))', right: 16, zIndex: 'var(--sl-z-banner)', padding: '8px 14px', borderRadius: 'var(--sl-radius-4xl)', border: '1px solid rgba(139,92,246,0.4)', backgroundColor: 'rgba(139,92,246,0.12)', color: '#8b5cf6', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Simuler
     </button>
@@ -15,7 +15,7 @@ export default function SimulatorBanner() {
 
   return (
     <AnimatePresence>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} style={{ position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))', left: 0, right: 0, zIndex: 500, backgroundColor: isActive ? 'rgba(139,92,246,0.97)' : 'var(--sl-card)', borderTop: `2px solid ${isActive ? '#8b5cf6' : 'var(--sl-border)'}`, padding: 12 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} style={{ position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))', left: 0, right: 0, zIndex: 'var(--sl-z-banner)', backgroundColor: isActive ? 'rgba(139,92,246,0.97)' : 'var(--sl-card)', borderTop: `2px solid ${isActive ? '#8b5cf6' : 'var(--sl-border)'}`, padding: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: expanded ? 12 : 0 }}>
           <span style={{ fontSize: 14, fontWeight: 800, color: isActive ? '#fff' : 'var(--sl-t1)' }}>👁️ Simulateur de vue</span>
           {isActive && (

@@ -131,7 +131,7 @@ export default function Header({
       padding: '0 16px', minHeight: 62,
       background: 'var(--sl-header-bg)',
       boxShadow: 'var(--sl-header-shadow)',
-      position: 'relative', zIndex: 1000,
+      position: 'relative', zIndex: 'var(--sl-z-header)',
       backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
     }}>
       {/* Logo */}

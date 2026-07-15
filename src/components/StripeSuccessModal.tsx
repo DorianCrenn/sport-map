@@ -72,7 +72,7 @@ function Confetti() {
   })), []);
 
   return (
-    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 3102 }}>
+    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 'calc(var(--sl-z-modal-top) + 2)' }}>
       {pieces.map(p => (
         <motion.div
           key={p.id}
@@ -128,7 +128,7 @@ export default function StripeSuccessModal({ plan, onClose, onViewSub }: StripeS
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 3100 }}
+            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 'var(--sl-z-modal-top)' }}
           />
 
           {/* Modal */}
@@ -141,7 +141,7 @@ export default function StripeSuccessModal({ plan, onClose, onViewSub }: StripeS
             style={{
               position: 'fixed',
               inset: 0,
-              zIndex: 3101,
+              zIndex: 'calc(var(--sl-z-modal-top) + 1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

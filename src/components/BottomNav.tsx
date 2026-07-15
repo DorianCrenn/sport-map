@@ -71,8 +71,8 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
       <AnimatePresence>
         {fabOpen && !overlayOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setFabOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 1001 }} />
-            <motion.div initial={{ opacity: 0, scale: 0.92, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 8 }} transition={{ type: 'spring', stiffness: 420, damping: 34 }} style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 82px)', left: isClubAdminOnly ? 'calc(50% - 148px)' : 'calc(50% - 124px)', width: isClubAdminOnly ? 296 : 248, zIndex: 1002, backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-4xl)', border: '1px solid var(--sl-border-s)', boxShadow: 'var(--sl-shadow-xl)', overflow: 'hidden' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setFabOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 'var(--sl-z-nav)' }} />
+            <motion.div initial={{ opacity: 0, scale: 0.92, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 8 }} transition={{ type: 'spring', stiffness: 420, damping: 34 }} style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 82px)', left: isClubAdminOnly ? 'calc(50% - 148px)' : 'calc(50% - 124px)', width: isClubAdminOnly ? 296 : 248, zIndex: 'calc(var(--sl-z-nav) + 1)', backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-4xl)', border: '1px solid var(--sl-border-s)', boxShadow: 'var(--sl-shadow-xl)', overflow: 'hidden' }}>
               {!fabWelcomeSeen && (
                 <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--sl-border)', marginBottom: 2 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>

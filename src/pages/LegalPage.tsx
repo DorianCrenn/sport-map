@@ -204,7 +204,7 @@ export default function LegalPage({ initialTab = 'mentions', onClose }: LegalPag
       exit={{ opacity: 0, y: 32 }}
       transition={{ type: 'spring', stiffness: 340, damping: 34 }}
       style={{
-        position: 'fixed', inset: 0, zIndex: 2000,
+        position: 'fixed', inset: 0, zIndex: 'var(--sl-z-modal)',
         backgroundColor: 'var(--sl-bg)',
         display: 'flex', flexDirection: 'column',
         overflowY: 'auto',

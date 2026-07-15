@@ -28,8 +28,8 @@ export default function PlansMiniModal({ open, onClose, currentPlanId, nextPlanI
     <AnimatePresence>
       {open && (
         <>
-          <motion.div key="plans-modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.55)', zIndex: 2100 }} onClick={onClose} />
-          <motion.div key="plans-modal-drawer" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 320, damping: 36 }} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '92dvh', zIndex: 2101, backgroundColor: 'var(--sl-bg)', borderRadius: '20px 20px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <motion.div key="plans-modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.55)', zIndex: 'var(--sl-z-modal-top)' }} onClick={onClose} />
+          <motion.div key="plans-modal-drawer" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 320, damping: 36 }} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '92dvh', zIndex: 'calc(var(--sl-z-modal-top) + 1)', backgroundColor: 'var(--sl-bg)', borderRadius: '20px 20px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--sl-t1)' }}>Plans d'abonnement</div>

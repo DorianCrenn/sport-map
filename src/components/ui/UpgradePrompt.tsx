@@ -24,8 +24,8 @@ export default function UpgradePrompt({ open, onClose, currentPlanId = 'free', f
     <AnimatePresence>
       {open && (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 2000 }} onClick={onClose} />
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ type: 'spring', damping: 28, stiffness: 320 }} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', zIndex: 2001, backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', padding: '24px 20px', paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))', boxShadow: '0 -8px 40px rgba(0,0,0,0.25)' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 'var(--sl-z-modal)' }} onClick={onClose} />
+          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ type: 'spring', damping: 28, stiffness: 320 }} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', zIndex: 'calc(var(--sl-z-modal) + 1)', backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', padding: '24px 20px', paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))', boxShadow: '0 -8px 40px rgba(0,0,0,0.25)' }}>
             <div style={{ width: 36, height: 4, borderRadius: 'var(--sl-radius-xs)', backgroundColor: 'var(--sl-border)', margin: '0 auto 20px' }} />
             <div>
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
