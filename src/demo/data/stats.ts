@@ -83,12 +83,18 @@ function categoryOf(pos) {
 const GOAL_MAX   = { gk: 0, df: 3, mf: 6, am: 11, wg: 10, fw: 17 };
 const ASSIST_MAX = { gk: 0, df: 3, mf: 7, am: 10, wg: 9,  fw: 6  };
 
+// Généré pour toutes les équipes qui ont assez de joueurs (pour démontrer le
+// filtre par équipe). Le seed intègre l'équipe → stats stables et distinctes.
+const teamCounts = demoPlayers.reduce((acc, pl) => {
+  acc[pl.team_name] = (acc[pl.team_name] ?? 0) + 1; return acc;
+}, {} as Record<string, number>);
+
 export const demoSeasonStats = demoPlayers
-  .filter(pl => pl.team_name === 'Équipe 1')
-  .map(pl => {
+  .filter(pl => (teamCounts[pl.team_name] ?? 0) >= 7)
+  .map((pl, i) => {
     const cat = categoryOf(pl.position);
-    const s   = (pl.number ?? 0) + 1;
-    const matchesTotal  = 16 + Math.floor(rnd(s) * 6);                                            // 16–21
+    const s   = (pl.number ?? 0) + i * 0.31 + 1;
+    const matchesTotal  = 14 + Math.floor(rnd(s) * 8);                                            // 14–21
     const matchesPlayed = Math.min(matchesTotal, Math.round(matchesTotal * (0.5 + rnd(s + 10) * 0.5)));
     return {
       playerId:      pl.id,
@@ -96,6 +102,7 @@ export const demoSeasonStats = demoPlayers
       playerName:    pl.name,
       jerseyNumber:  pl.number,
       position:      pl.position,
+      teamId:        pl.team_id,
       matchesTotal,
       matchesPlayed,
       totalGoals:    Math.floor(rnd(s + 20) * (GOAL_MAX[cat]   + 1)),

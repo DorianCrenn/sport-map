@@ -20,6 +20,7 @@ export interface PlayerSeasonStat {
   playerName:    string;
   jerseyNumber?: number | null;
   position?:     string | null;
+  teamId?:       string | null;
   matchesTotal:  number;
   matchesPlayed: number;
   totalGoals:    number;
@@ -116,26 +117,33 @@ export function usePlayerSeasonStats(clubId: string | null) {
       return;
     }
     setLoading(true);
-    supabase
-      .from('player_season_stats')
-      .select('*')
-      .eq('club_id', clubId)
-      .then(({ data }) => {
-        setStats((data ?? []).map((r: any) => ({
-          playerId:      r.player_id,
-          clubId:        r.club_id,
-          playerName:    r.player_name ?? '?',
-          jerseyNumber:  r.jersey_number,
-          position:      r.position,
-          matchesTotal:  Number(r.matches_total ?? 0),
-          matchesPlayed: Number(r.matches_played ?? 0),
-          totalGoals:    Number(r.total_goals ?? 0),
-          totalAssists:  Number(r.total_assists ?? 0),
-          totalYellow:   Number(r.total_yellow ?? 0),
-          totalRed:      Number(r.total_red ?? 0),
-        })));
-        setLoading(false);
-      });
+    let cancelled = false;
+    (async () => {
+      // La vue player_season_stats n'expose pas l'équipe → on la joint côté client
+      // (club_players.team_id) pour permettre le filtrage par équipe dans l'UI.
+      const [{ data }, { data: players }] = await Promise.all([
+        supabase.from('player_season_stats').select('*').eq('club_id', clubId),
+        supabase.from('club_players').select('id, team_id').eq('club_id', clubId),
+      ]);
+      if (cancelled) return;
+      const teamById = new Map((players ?? []).map((p: any) => [p.id, p.team_id]));
+      setStats((data ?? []).map((r: any) => ({
+        playerId:      r.player_id,
+        clubId:        r.club_id,
+        playerName:    r.player_name ?? '?',
+        jerseyNumber:  r.jersey_number,
+        position:      r.position,
+        teamId:        teamById.get(r.player_id) ?? null,
+        matchesTotal:  Number(r.matches_total ?? 0),
+        matchesPlayed: Number(r.matches_played ?? 0),
+        totalGoals:    Number(r.total_goals ?? 0),
+        totalAssists:  Number(r.total_assists ?? 0),
+        totalYellow:   Number(r.total_yellow ?? 0),
+        totalRed:      Number(r.total_red ?? 0),
+      })));
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
   }, [clubId]);
 
   return { stats, loading };

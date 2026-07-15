@@ -420,7 +420,7 @@ export default function ClubPageView({
         )}
 
         {activeTab === 'saison' && (
-          <ClubSeasonTab club={club} accentColor={accentColor} canEdit={canEdit} />
+          <ClubSeasonTab club={club} accentColor={accentColor} canEdit={canEdit} allTeams={allTeams} />
         )}
 
         {activeTab === 'effectif' && (
