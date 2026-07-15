@@ -23,6 +23,15 @@ const FORMATS: { id: Format; label: string; w: number; h: number; rows: number }
   { id: 'square', label: 'Carré',       w: 360, h: 360, rows: 3 }, // 1:1
 ];
 
+type Bg = 'halos' | 'rayures' | 'spot' | 'bande' | 'epure';
+const BGS: { id: Bg; label: string }[] = [
+  { id: 'halos',   label: 'Halos' },
+  { id: 'rayures', label: 'Rayures' },
+  { id: 'spot',    label: 'Spot' },
+  { id: 'bande',   label: 'Bande' },
+  { id: 'epure',   label: 'Épuré' },
+];
+
 const MEDALS = ['🥇', '🥈', '🥉'];
 
 // Modal plein écran : doit recouvrir aussi le calque démo (bandeau z:10000, guide z:10001)
@@ -64,6 +73,7 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
 
   const [type, setType]     = useState<PosterType>(available[0]);
   const [format, setFormat] = useState<Format>('post');
+  const [bg, setBg]         = useState<Bg>('halos');
   const [accent, setAccent] = useState<string>(clubAccent);
   const [exporting, setExporting] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
@@ -126,6 +136,14 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
               </button>
             ))}
           </div>
+          <div className="flex gap-2 flex-wrap justify-center">
+            {BGS.map(b => (
+              <button key={b.id} onClick={() => setBg(b.id)} className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+                style={bg === b.id ? { background: accent, color: '#000' } : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+                {b.label}
+              </button>
+            ))}
+          </div>
           <div className="flex items-center gap-1.5 flex-wrap justify-center">
             {palette.map(c => (
               <button key={c} onClick={() => setAccent(c)} aria-label={`Couleur ${c}`}
@@ -144,8 +162,8 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
             background: 'linear-gradient(160deg, #0b1220 0%, #13233f 55%, #0b1220 100%)',
             borderRadius: 22, fontFamily: "'Inter', sans-serif",
           }}>
-            {/* Glow accent */}
-            <div style={{ position: 'absolute', top: -70, right: -60, width: 240, height: 240, borderRadius: '50%', background: accent, opacity: 0.22, filter: 'blur(8px)' }} />
+            {/* Fond décoratif */}
+            <PosterBg bg={bg} accent={accent} />
 
             {/* En-tête club */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 8px', flexShrink: 0 }}>
@@ -172,6 +190,40 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
       </motion.div>
     </AnimatePresence>,
     document.body,
+  );
+}
+
+function PosterBg({ bg, accent }: { bg: Bg; accent: string }) {
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {bg === 'epure' && (
+        <div style={{ position: 'absolute', top: '-25%', left: '50%', transform: 'translateX(-50%)', width: 320, height: 320, borderRadius: '50%', background: accent, opacity: 0.13, filter: 'blur(14px)' }} />
+      )}
+
+      {bg === 'halos' && <>
+        <div style={{ position: 'absolute', top: -90, right: -70, width: 280, height: 280, borderRadius: '50%', background: accent, opacity: 0.22, filter: 'blur(10px)' }} />
+        <div style={{ position: 'absolute', bottom: -100, left: -80, width: 250, height: 250, borderRadius: '50%', background: accent, opacity: 0.11, filter: 'blur(10px)' }} />
+      </>}
+
+      {bg === 'rayures' && <>
+        <div style={{ position: 'absolute', top: -80, right: -60, width: 240, height: 240, borderRadius: '50%', background: accent, opacity: 0.16, filter: 'blur(10px)' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(45deg, ${accent}0f 0 2px, transparent 2px 16px)` }} />
+      </>}
+
+      {bg === 'spot' && <>
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 70% 55% at 50% -8%, ${accent}40, transparent 65%)` }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 90% 60% at 50% 115%, rgba(0,0,0,0.55), transparent 60%)' }} />
+      </>}
+
+      {bg === 'bande' && <>
+        <div style={{ position: 'absolute', top: -80, right: -60, width: 230, height: 230, borderRadius: '50%', background: accent, opacity: 0.15, filter: 'blur(10px)' }} />
+        <div style={{ position: 'absolute', top: '18%', left: '-20%', width: '140%', height: 120, background: `linear-gradient(90deg, transparent, ${accent}33, transparent)`, transform: 'rotate(-22deg)' }} />
+        <div style={{ position: 'absolute', top: '46%', left: '-20%', width: '140%', height: 60, background: `linear-gradient(90deg, transparent, ${accent}1a, transparent)`, transform: 'rotate(-22deg)' }} />
+      </>}
+
+      {/* Liseré accent en bas (commun) */}
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 4, background: `linear-gradient(90deg, ${accent}, ${accent}44)` }} />
+    </div>
   );
 }
 
