@@ -295,6 +295,22 @@ function teamChip(active: boolean, accentColor: string): React.CSSProperties {
   };
 }
 
+function JerseyBadge({ number, accent }: { number: number; accent: string }) {
+  return (
+    <div style={{ position: 'relative', width: 28, height: 28, flexShrink: 0 }} aria-label={`Maillot n°${number}`}>
+      <svg viewBox="0 0 24 24" width="28" height="28" style={{ display: 'block' }} aria-hidden="true">
+        <path
+          d="M9 3.4 C9 4.5 10.2 5.2 12 5.2 C13.8 5.2 15 4.5 15 3.4 L18.6 5 L21.2 8.6 L18 11.1 L16.6 9.9 L16.6 20 C16.6 20.8 16 21.4 15.1 21.4 L8.9 21.4 C8 21.4 7.4 20.8 7.4 20 L7.4 9.9 L6 11.1 L2.8 8.6 L5.4 5 Z"
+          fill={`${accent}22`} stroke={accent} strokeWidth="1.3" strokeLinejoin="round"
+        />
+      </svg>
+      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 4, fontSize: number > 9 ? 8.5 : 10, fontWeight: 900, color: accent }}>
+        {number}
+      </span>
+    </div>
+  );
+}
+
 function SeasonRow({ player, rank, metric, accentColor, teamLabel }: {
   player: PlayerSeasonStat; rank: number; metric: Metric; accentColor: string; teamLabel?: string | null;
 }) {
@@ -309,11 +325,7 @@ function SeasonRow({ player, rank, metric, accentColor, teamLabel }: {
         {top3 ? MEDALS[rank] : rank + 1}
       </div>
 
-      {player.jerseyNumber != null && (
-        <div style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 'var(--sl-radius-sm)', backgroundColor: `${accentColor}18`, color: accentColor, fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {player.jerseyNumber}
-        </div>
-      )}
+      {player.jerseyNumber != null && <JerseyBadge number={player.jerseyNumber} accent={accentColor} />}
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
