@@ -43,8 +43,9 @@ export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', c
   );
 
   // Bilan V/N/D (vue club_stats) — agrégé pour l'équipe sélectionnée (ou tout le club).
-  const { stats: clubStats, form5 } = useClubStats(String(club.id));
+  const { stats: clubStats, form5, topMotm, topMotmByTeam } = useClubStats(String(club.id));
   const teamName = teamsWithData.find(t => t.id === effectiveFilter)?.name ?? null;
+  const motmList = teamName ? (topMotmByTeam[teamName] ?? []) : topMotm;
   const bilan = useMemo(() => {
     const rows = (clubStats as any[]).filter(r => !teamName || r.team_name === teamName);
     return rows.reduce((a, r) => ({
@@ -169,6 +170,31 @@ export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', c
           ))}
         </div>
       )}
+
+      {/* Homme du match */}
+      {motmList.length > 0 && <MotmSection list={motmList} accentColor={accentColor} />}
+    </div>
+  );
+}
+
+function MotmSection({ list, accentColor }: { list: { name: string; count: number }[]; accentColor: string }) {
+  return (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span>⭐</span> Homme du match
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {list.map((m, i) => {
+          const top3 = i < 3;
+          return (
+            <div key={m.name + i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-card)', border: `1px solid ${top3 ? `${accentColor}55` : 'var(--sl-border)'}` }}>
+              <div style={{ width: 26, textAlign: 'center', fontSize: top3 ? 18 : 13, fontWeight: 900, color: top3 ? undefined : 'var(--sl-t3)', flexShrink: 0 }}>{top3 ? MEDALS[i] : i + 1}</div>
+              <div style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+              <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 800, color: accentColor }}>⭐ ×{m.count}</div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

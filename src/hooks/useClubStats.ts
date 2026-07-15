@@ -8,6 +8,7 @@ interface UseClubStatsResult {
   stats: ClubStatRow[];
   form5: Record<string, ('W' | 'D' | 'L')[]>;
   topMotm: MotmEntry[];
+  topMotmByTeam: Record<string, MotmEntry[]>;
   loading: boolean;
 }
 
@@ -15,6 +16,7 @@ export function useClubStats(clubId: string | null | undefined): UseClubStatsRes
   const [stats, setStats]     = useState<ClubStatRow[]>([]);
   const [form5, setForm5]     = useState<Record<string, ('W' | 'D' | 'L')[]>>({});
   const [topMotm, setTopMotm] = useState<MotmEntry[]>([]);
+  const [topMotmByTeam, setTopMotmByTeam] = useState<Record<string, MotmEntry[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,10 +24,11 @@ export function useClubStats(clubId: string | null | undefined): UseClubStatsRes
     let cancelled = false;
 
     if (isDemoMode()) {
-      import('../demo/data/stats.js').then(({ demoClubStats, demoForm5 }) => {
+      import('../demo/data/stats.js').then(({ demoClubStats, demoForm5, demoTopMotmByTeam }) => {
         if (cancelled) return;
         setStats(demoClubStats as ClubStatRow[]);
         setForm5(demoForm5 as Record<string, ('W' | 'D' | 'L')[]>);
+        setTopMotmByTeam(demoTopMotmByTeam as Record<string, MotmEntry[]>);
         setTopMotm([]);
         setLoading(false);
       });
@@ -35,7 +38,7 @@ export function useClubStats(clubId: string | null | undefined): UseClubStatsRes
     Promise.all([
       supabase.from('club_stats').select('*').eq('club_id', String(clubId)),
       supabase.from('events').select('team_name, home_or_away, score, date').eq('club_id', String(clubId)).not('score', 'is', null).order('date', { ascending: false }).limit(50),
-      supabase.from('events').select('man_of_match').eq('club_id', String(clubId)).not('man_of_match', 'is', null).not('man_of_match', 'eq', ''),
+      supabase.from('events').select('man_of_match, team_name').eq('club_id', String(clubId)).not('man_of_match', 'is', null).not('man_of_match', 'eq', ''),
     ]).then(([statsRes, recentRes, motmRes]) => {
       if (cancelled) return;
 
@@ -57,15 +60,18 @@ export function useClubStats(clubId: string | null | undefined): UseClubStatsRes
       setForm5(recentByTeam);
 
       const motmCount: Record<string, number> = {};
-      for (const e of (motmRes.data ?? []) as { man_of_match?: string }[]) {
+      const motmByTeam: Record<string, Record<string, number>> = {};
+      for (const e of (motmRes.data ?? []) as { man_of_match?: string; team_name?: string }[]) {
         const name = e.man_of_match?.trim();
-        if (name) motmCount[name] = (motmCount[name] ?? 0) + 1;
+        if (!name) continue;
+        motmCount[name] = (motmCount[name] ?? 0) + 1;
+        const t = e.team_name ?? '';
+        (motmByTeam[t] ??= {})[name] = (motmByTeam[t][name] ?? 0) + 1;
       }
-      const sorted = Object.entries(motmCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([name, count]) => ({ name, count }));
-      setTopMotm(sorted);
+      const top = (counts: Record<string, number>): MotmEntry[] =>
+        Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
+      setTopMotm(top(motmCount));
+      setTopMotmByTeam(Object.fromEntries(Object.entries(motmByTeam).map(([t, c]) => [t, top(c)])));
 
       setLoading(false);
     });
@@ -73,5 +79,5 @@ export function useClubStats(clubId: string | null | undefined): UseClubStatsRes
     return () => { cancelled = true; };
   }, [clubId]);
 
-  return { stats, form5, topMotm, loading };
+  return { stats, form5, topMotm, topMotmByTeam, loading };
 }

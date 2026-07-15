@@ -137,3 +137,15 @@ export const demoForm5 = Object.fromEntries(SEASON_TEAMS.map((team, i) => {
   });
   return [team, seq];
 }));
+
+// Homme du match par équipe — dérivé des meilleurs contributeurs (buts + passes).
+export const demoTopMotmByTeam = Object.fromEntries(SEASON_TEAMS.map(team => {
+  const ranked = demoSeasonStats
+    .filter(p => p.teamId === team)
+    .sort((a, b) => (b.totalGoals + b.totalAssists) - (a.totalGoals + a.totalAssists))
+    .slice(0, 5);
+  const list = ranked
+    .map((p, i) => ({ name: p.playerName, count: Math.max(1, 5 - i) }))
+    .filter(e => e.count > 0);
+  return [team, list];
+}));
