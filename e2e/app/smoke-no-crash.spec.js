@@ -11,12 +11,17 @@ import { test, expect } from '@playwright/test';
 const CRASH_TEXT = 'Une erreur est survenue';
 // Erreurs de CODE (bugs) — on ignore le bruit réseau/annulations.
 const CODE_ERROR = /RangeError|TypeError|ReferenceError|Invalid time value|is not a function|Cannot read/i;
+// Bruit réseau (Supabase mock injoignable en test) : "TypeError: Failed to fetch"
+// matche CODE_ERROR mais n'est PAS un bug applicatif → à exclure.
+const NETWORK_NOISE = /Failed to fetch|NetworkError|Load failed|fetch failed|net::ERR|AbortError/i;
+
+const isCodeBug = (msg) => CODE_ERROR.test(msg) && !NETWORK_NOISE.test(msg);
 
 /** Attache un collecteur d'erreurs JS non catchées à la page. */
 function trackErrors(page) {
   const errors = [];
-  page.on('pageerror', (e) => { if (CODE_ERROR.test(e.message)) errors.push(e.message); });
-  page.on('console', (m) => { if (m.type() === 'error' && CODE_ERROR.test(m.text())) errors.push(m.text()); });
+  page.on('pageerror', (e) => { if (isCodeBug(e.message)) errors.push(e.message); });
+  page.on('console', (m) => { if (m.type() === 'error' && isCodeBug(m.text())) errors.push(m.text()); });
   return errors;
 }
 
