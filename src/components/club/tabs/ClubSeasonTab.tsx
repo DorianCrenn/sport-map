@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { usePlayerSeasonStats, type PlayerSeasonStat } from '../../../hooks/usePlayerStats.js';
+import { useClubStats } from '../../../hooks/useClubStats.js';
 import { rankBy, type Metric } from './seasonRanking.js';
 
 const METRICS: { id: Metric; label: string; icon: string }[] = [
@@ -40,6 +41,22 @@ export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', c
     () => (effectiveFilter ? stats.filter(p => p.teamId === effectiveFilter) : stats),
     [stats, effectiveFilter],
   );
+
+  // Bilan V/N/D (vue club_stats) — agrégé pour l'équipe sélectionnée (ou tout le club).
+  const { stats: clubStats, form5 } = useClubStats(String(club.id));
+  const teamName = teamsWithData.find(t => t.id === effectiveFilter)?.name ?? null;
+  const bilan = useMemo(() => {
+    const rows = (clubStats as any[]).filter(r => !teamName || r.team_name === teamName);
+    return rows.reduce((a, r) => ({
+      played: a.played + Number(r.played ?? 0),
+      wins:   a.wins   + Number(r.wins ?? 0),
+      draws:  a.draws  + Number(r.draws ?? 0),
+      losses: a.losses + Number(r.losses ?? 0),
+      gf:     a.gf     + Number(r.goals_for ?? 0),
+      ga:     a.ga     + Number(r.goals_against ?? 0),
+    }), { played: 0, wins: 0, draws: 0, losses: 0, gf: 0, ga: 0 });
+  }, [clubStats, teamName]);
+  const form = teamName ? (form5[teamName] ?? []) : [];
 
   const summary = useMemo(() => ({
     goals:   teamStats.reduce((s, p) => s + p.totalGoals, 0),
@@ -94,6 +111,9 @@ export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', c
           <div style={{ flexShrink: 0, width: 4 }} />
         </div>
       )}
+
+      {/* Bilan V/N/D + forme */}
+      {bilan.played > 0 && <SeasonBilan bilan={bilan} form={form} />}
 
       {/* Récap */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 16 }}>
@@ -150,6 +170,56 @@ export default function ClubSeasonTab({ club, accentColor = 'var(--sl-green)', c
         </div>
       )}
     </div>
+  );
+}
+
+interface Bilan { played: number; wins: number; draws: number; losses: number; gf: number; ga: number }
+
+function SeasonBilan({ bilan, form }: { bilan: Bilan; form: ('W' | 'D' | 'L')[] }) {
+  const diff = bilan.gf - bilan.ga;
+  return (
+    <div style={{ padding: 14, borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--sl-t2)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          Bilan · {bilan.played} matchs
+        </span>
+        {form.length > 0 && (
+          <div style={{ display: 'flex', gap: 4 }}>
+            {form.map((r, i) => <FormChip key={i} r={r} />)}
+          </div>
+        )}
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+        {[
+          { n: bilan.wins,   label: 'Victoires', color: 'var(--sl-green)' },
+          { n: bilan.draws,  label: 'Nuls',      color: '#f59e0b' },
+          { n: bilan.losses, label: 'Défaites',  color: 'var(--sl-error)' },
+        ].map(x => (
+          <div key={x.label} style={{ flex: 1, textAlign: 'center', padding: '9px 4px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-card-hi)' }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: x.color, lineHeight: 1 }}>{x.n}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', marginTop: 3 }}>{x.label}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)' }}>
+        ⚽ {bilan.gf} marqués · {bilan.ga} encaissés{' '}
+        <span style={{ color: diff >= 0 ? 'var(--sl-green)' : 'var(--sl-error)', fontWeight: 800 }}>
+          ({diff >= 0 ? '+' : ''}{diff})
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function FormChip({ r }: { r: 'W' | 'D' | 'L' }) {
+  const map: Record<string, [string, string]> = {
+    W: ['var(--sl-green)', 'V'], D: ['#f59e0b', 'N'], L: ['var(--sl-error)', 'D'],
+  };
+  const [bg, label] = map[r] ?? map.D;
+  return (
+    <span style={{ width: 18, height: 18, borderRadius: 'var(--sl-radius-xs)', backgroundColor: bg, color: '#fff', fontSize: 10, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {label}
+    </span>
   );
 }
 

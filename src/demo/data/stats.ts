@@ -111,3 +111,29 @@ export const demoSeasonStats = demoPlayers
       totalRed:      rnd(s + 50) > 0.88 ? 1 : 0,
     };
   });
+
+// ── Bilan V/N/D démo par équipe (onglet Saison — en-tête) ────────────────────
+const SEASON_TEAMS = [...new Set(
+  demoPlayers.filter(pl => (teamCounts[pl.team_name] ?? 0) >= 7).map(pl => pl.team_name),
+)];
+
+export const demoClubStats = SEASON_TEAMS.map((team, i) => {
+  const played = 18 + Math.floor(rnd(i * 7 + 1) * 6);                 // 18–23
+  const wins   = Math.floor(played * (0.4 + rnd(i * 7 + 2) * 0.4));
+  const losses = Math.floor((played - wins) * (0.3 + rnd(i * 7 + 3) * 0.4));
+  const draws  = Math.max(0, played - wins - losses);
+  return {
+    club_id: DEMO_CLUB_ID, team_name: team, home_or_away: 'home',
+    played, wins, draws, losses,
+    goals_for:     wins * 2 + draws + Math.floor(rnd(i * 7 + 4) * 10),
+    goals_against: losses * 2 + draws + Math.floor(rnd(i * 7 + 5) * 8),
+  };
+});
+
+export const demoForm5 = Object.fromEntries(SEASON_TEAMS.map((team, i) => {
+  const seq = Array.from({ length: 5 }, (_, j) => {
+    const r = rnd(i * 11 + j + 1);
+    return r > 0.55 ? 'W' : r > 0.3 ? 'D' : 'L';
+  });
+  return [team, seq];
+}));

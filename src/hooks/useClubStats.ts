@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 
 interface ClubStatRow { [key: string]: unknown; }
 interface MotmEntry { name: string; count: number; }
@@ -20,6 +20,17 @@ export function useClubStats(clubId: string | null | undefined): UseClubStatsRes
   useEffect(() => {
     if (!clubId) { setLoading(false); return; }
     let cancelled = false;
+
+    if (isDemoMode()) {
+      import('../demo/data/stats.js').then(({ demoClubStats, demoForm5 }) => {
+        if (cancelled) return;
+        setStats(demoClubStats as ClubStatRow[]);
+        setForm5(demoForm5 as Record<string, ('W' | 'D' | 'L')[]>);
+        setTopMotm([]);
+        setLoading(false);
+      });
+      return () => { cancelled = true; };
+    }
 
     Promise.all([
       supabase.from('club_stats').select('*').eq('club_id', String(clubId)),
