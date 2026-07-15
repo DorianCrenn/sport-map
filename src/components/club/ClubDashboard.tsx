@@ -155,11 +155,13 @@ function TrainingsSection({ clubId }: { clubId: string | number }) {
 
 function AnnouncementsSection({ club }: { club: Record<string, any> }) {
   const { announcements, loading, sendAnnouncement, deleteAnnouncement } = useClubAnnouncements(club.id) as any;
-  const { can, isSimulating } = useCanDo() as any;
+  const { can } = useCanDo() as any;
   const [showModal, setShowModal] = useState(false);
   const [success, setSuccess]     = useState(false);
-  const canCreate = isSimulating ? can('announcements', 'create') : true;
-  const canDelete = isSimulating ? can('announcements', 'delete') : true;
+  // RBAC réel : la matrice (permission_matrix) décide. En démo / si la matrice
+  // n'est pas chargée, useCanDo renvoie true (permissif) → pas de lockout.
+  const canCreate = can('announcements', 'create');
+  const canDelete = can('announcements', 'delete');
 
   const published = announcements.filter((a: any) => !a.scheduledFor || new Date(a.scheduledFor) <= new Date());
 

@@ -105,6 +105,27 @@ describe('useMyRole', () => {
     await waitFor(() => expect(result.current.detectedRole).toBe('club_manager'));
   });
 
+  it('club_admin si club_managers.role="owner" (n\'était pas géré → supporter avant)', async () => {
+    mockUser();
+    mockSupabaseRoles({ mgrRole: 'owner' });
+    const { result } = renderHook(() => useMyRole());
+    await waitFor(() => expect(result.current.detectedRole).toBe('club_admin'));
+  });
+
+  it('communicant si club_managers.role="communicant"', async () => {
+    mockUser();
+    mockSupabaseRoles({ mgrRole: 'communicant' });
+    const { result } = renderHook(() => useMyRole());
+    await waitFor(() => expect(result.current.detectedRole).toBe('communicant'));
+  });
+
+  it('club_manager si club_managers.role="editor"', async () => {
+    mockUser();
+    mockSupabaseRoles({ mgrRole: 'editor' });
+    const { result } = renderHook(() => useMyRole());
+    await waitFor(() => expect(result.current.detectedRole).toBe('club_manager'));
+  });
+
   it('player si club_players non vide', async () => {
     mockUser();
     mockSupabaseRoles({ hasPlayer: true });

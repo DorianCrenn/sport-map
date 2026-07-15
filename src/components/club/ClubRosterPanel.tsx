@@ -31,9 +31,11 @@ interface ClubRosterPanelProps {
 
 export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub }: ClubRosterPanelProps) {
   const { players, loading, claims, addPlayer, removePlayer, approveClaim, rejectClaim } = useClubPlayers(String(clubId)) as any;
-  const { can, isSimulating } = useCanDo() as any;
+  const { can } = useCanDo() as any;
   const { toast } = useToast() as any;
-  const canManage = isSimulating ? can('teams', 'create') : true;
+  // RBAC réel : seuls coach/manager/owner (pas communicant) gèrent l'effectif.
+  // useCanDo est permissif si la matrice n'est pas chargée (démo, cold start).
+  const canManage = can('teams', 'create');
   const [inviting, setInviting] = useState(false);
 
   const invitable = (players as any[]).filter(p => p.email && !p.user_id);

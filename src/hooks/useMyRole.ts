@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthSafe } from '../contexts/AuthContext.js';
 import { supabase } from '../lib/supabase.js';
 
-type MetaRole = 'visitor' | 'admin' | 'club_admin' | 'club_manager' | 'coach' | 'player' | 'parent' | 'supporter';
+type MetaRole = 'visitor' | 'admin' | 'club_admin' | 'club_manager' | 'coach' | 'communicant' | 'player' | 'parent' | 'supporter';
 
 function getSimRole(): MetaRole | null {
   try {
@@ -41,10 +41,14 @@ export function useMyRole(): UseMyRoleResult {
     ]).then(([mgr, player, guardian]) => {
       if (cancelled) return;
       const mgrRole = (mgr.data as { role?: string }[] | null)?.[0]?.role;
-      if (mgrRole === 'manager' || mgrRole === 'editor') {
+      if (mgrRole === 'owner') {
+        setDetectedRole('club_admin');           // propriétaire = droits club complets
+      } else if (mgrRole === 'manager' || mgrRole === 'editor') {
         setDetectedRole('club_manager');
       } else if (mgrRole === 'coach') {
         setDetectedRole('coach');
+      } else if (mgrRole === 'communicant') {
+        setDetectedRole('communicant');          // communication uniquement (annonces)
       } else if ((player.data?.length ?? 0) > 0) {
         setDetectedRole('player');
       } else if ((guardian.data?.length ?? 0) > 0) {
