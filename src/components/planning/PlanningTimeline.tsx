@@ -247,7 +247,7 @@ export default function PlanningTimeline({
                   <DateBubble dateStr={date} />
                   {/* Un seul événement → pleine largeur ; plusieurs le même jour →
                       grille 2 colonnes sur grand écran (mobile reste 1 colonne). */}
-                  <div className={`pl-[68px] ${groupItems.length > 1 ? 'grid grid-cols-1 lg:grid-cols-2 gap-3 items-start' : 'space-y-3'}`}>
+                  <div className={`pl-[68px] ${groupItems.length > 1 ? 'grid grid-cols-1 lg:grid-cols-2 gap-3 items-start' : 'space-y-3 lg:max-w-[620px]'}`}>
                     {groupItems.map(item => {
                       if (item.type === 'announcement') return (
                         <AnnouncementPlanningCard

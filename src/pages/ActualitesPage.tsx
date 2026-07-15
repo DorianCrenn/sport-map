@@ -163,6 +163,9 @@ export default function ActualitesPage({
       className="flex flex-col h-full bg-[var(--sl-bg)] overflow-y-auto overscroll-contain"
       data-demo="agenda-section"
     >
+      {/* Colonne de contenu : pleine largeur sur mobile, largeur max centrée
+          sur grand écran (évite le feed étiré sur tout l'écran). */}
+      <div className="w-full lg:max-w-[1000px] lg:self-center">
       {/* ══ Empty state — nouveau compte sans club suivi ═══════════════════ */}
       {isNewUser && (
         <div style={{ padding: '32px 20px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -366,6 +369,8 @@ export default function ActualitesPage({
           onMarkRead={markRead}
         />
       )}
+
+      </div>{/* fin colonne de contenu */}
 
       {/* Modale convocation (depuis cartes match) */}
       {convocationEvent && (
