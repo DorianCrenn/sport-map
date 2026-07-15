@@ -32,6 +32,14 @@ describe('isEventPast', () => {
     expect(isEventPast({ date: iso(1), status: 'upcoming' })).toBe(false);
   });
 
+  it('couvre tout le set des statuts terminés (dont français + trim)', () => {
+    for (const s of ['finished', 'done', 'post_done', 'canceled', 'terminé', 'termine']) {
+      expect(isEventPast({ date: iso(5), status: s })).toBe(true);
+    }
+    // insensible à la casse + espaces superflus
+    expect(isEventPast({ date: iso(5), status: '  Terminé ' })).toBe(true);
+  });
+
   it('lit matchStatus / match_status en repli', () => {
     expect(isEventPast({ date: iso(1), matchStatus: 'final' })).toBe(true);
     expect(isEventPast({ date: iso(1), match_status: 'done' })).toBe(true);
