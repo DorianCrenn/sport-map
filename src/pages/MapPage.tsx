@@ -59,7 +59,6 @@ export default function MapPage({
     onInitialFilterApplied?.();
   }, [initialSportFilter]); // eslint-disable-line react-hooks/exhaustive-deps
   const [dateRangeFilter, setDateRangeFilter] = useState<any>(null);
-  const [nearbyFilter, setNearbyFilter] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<any>(null);
   const [mapBounds, setMapBounds] = useState<any>(null);
   const [modalEvent, setModalEvent] = useState<any>(undefined);
@@ -108,15 +107,6 @@ export default function MapPage({
     } catch { /* JSON malformé — silencieux */ }
   }, [currentUser?.id, (currentUser as any)?.homeCity]);
 
-  function handleNearbyToggle() {
-    if (!nearbyFilter) {
-      requestGeo();
-      setNearbyFilter(true);
-    } else {
-      setNearbyFilter(false);
-    }
-  }
-
   function handleRecentrer() {
     if (userCoords) {
       setFlyTarget({ coords: userCoords, zoom: 13 });
@@ -124,8 +114,6 @@ export default function MapPage({
       requestGeo();
     }
   }
-
-  const nearbyCoords = nearbyFilter && userCoords ? userCoords : null;
 
   const sportScope = useMemo(() => {
     const favs = currentUser?.favoriteSports || [];
@@ -136,15 +124,17 @@ export default function MapPage({
     sport: sportFilter,
     dateRange: dateRangeFilter,
     departmentId: activeDepartment,
-    nearbyCoords,
     sportScope,
     cityFilter,
   }) as any[];
 
   const displayEvents = useMemo(() => {
     if (!upcomingOnly) return filteredEvents;
-    const now = new Date();
-    return filteredEvents.filter((e: any) => new Date(e.date) >= now);
+    // Comparer au jour (pas à l'instant) : un événement qui a lieu aujourd'hui
+    // doit rester visible toute la journée. `new Date('YYYY-MM-DD') >= now`
+    // l'excluait dès midi (date parsée à minuit UTC).
+    const todayStr = new Date().toISOString().slice(0, 10);
+    return filteredEvents.filter((e: any) => String(e.date ?? '').slice(0, 10) >= todayStr);
   }, [filteredEvents, upcomingOnly]);
 
   const selectedEvent = useMemo(
@@ -200,7 +190,6 @@ export default function MapPage({
       const evt = allEvents.find((e: any) => e.id === focusEventId);
       setSportFilter(null);
       setDateRangeFilter(null);
-      setNearbyFilter(false);
       setUpcomingOnly(false);
       setShowAllSports(true);
       if (evt?.lat && evt?.lng) {
@@ -216,7 +205,6 @@ export default function MapPage({
       const created = await onAddEvent(formData);
       setSportFilter(null);
       setDateRangeFilter(null);
-      setNearbyFilter(false);
       setUpcomingOnly(false);
       setShowAllSports(true);
       if (created.lat && created.lng) {
@@ -249,12 +237,8 @@ export default function MapPage({
   return (
     <div className="flex flex-col h-full relative">
       <SportFilterBar
-        {...({} as any)}
         active={sportFilter}
         onChange={setSportFilter}
-        nearbyActive={nearbyFilter}
-        onNearbyToggle={handleNearbyToggle}
-        geoLoading={geoLoading}
         showAllSports={showAllSports}
         onShowAllSports={() => { setShowAllSports(true); setSportFilter(null); }}
         onHideSomeSports={() => { setShowAllSports(false); setSportFilter(null); }}
@@ -265,8 +249,9 @@ export default function MapPage({
       <AnimatePresence>
         {ahaSport && (() => {
           const sport = SPORTS[ahaSport];
+          const todayStr = new Date().toISOString().slice(0, 10);
           const weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate() + 7);
-          const count = allEvents.filter((e: any) => e.sport === ahaSport && new Date(e.date) >= new Date() && new Date(e.date) <= weekEnd).length;
+          const count = allEvents.filter((e: any) => e.sport === ahaSport && String(e.date ?? '').slice(0, 10) >= todayStr && new Date(e.date) <= weekEnd).length;
           return (
             <motion.div
               key="aha-card"
@@ -346,7 +331,6 @@ export default function MapPage({
               onResetFilters={() => {
                 setSportFilter(null);
                 setDateRangeFilter(null);
-                setNearbyFilter(false);
                 setUpcomingOnly(true);
                 setShowAllSports(true);
               }}

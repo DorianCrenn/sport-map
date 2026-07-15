@@ -20,19 +20,18 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function makeUserMarker(): L.DivIcon {
-  return L.divIcon({
-    html: `
+// Icône statique → créée une seule fois (évitait un divIcon par render).
+const USER_MARKER_ICON: L.DivIcon = L.divIcon({
+  html: `
       <div style="position:relative;width:20px;height:20px">
         <div class="geo-ring" style="position:absolute;inset:-4px;background:#3b82f6;border-radius:50%;opacity:0.45;"></div>
         <div style="position:absolute;inset:0;background:#3b82f6;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(59,130,246,0.5);"></div>
       </div>
     `,
-    className: '',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-  });
-}
+  className: '',
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+});
 
 interface MapControllerProps {
   activeDepartment: string;
@@ -89,7 +88,6 @@ function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, use
   const { allSports } = useSports() as any;
   const { isFavorite } = useFavoritesContext() as any;
   const dept = (DEPARTMENTS as any)[activeDepartment] ?? (DEPARTMENTS as any).finistere;
-  const userMarkerIcon = makeUserMarker();
 
   function clusterIcon(cluster: any) {
     const count = cluster.getChildCount();
@@ -111,7 +109,7 @@ function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, use
             <Marker key={event.id} position={[event.lat, event.lng]} icon={createSportMarker(event.sport, event.id === selectedEventId, isFavorite?.(event.id), allSports)} eventHandlers={{ click: () => onMarkerClick(event.id) }} title={event.sport} />
           ))}
         </MarkerClusterGroup>
-        {userCoords && <Marker position={[userCoords.lat, userCoords.lng]} icon={userMarkerIcon} zIndexOffset={1000} />}
+        {userCoords && <Marker position={[userCoords.lat, userCoords.lng]} icon={USER_MARKER_ICON} zIndexOffset={1000} />}
       </MapContainer>
     </div>
   );
