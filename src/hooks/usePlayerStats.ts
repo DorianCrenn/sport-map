@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase.js';
+import { supabase, isDemoMode } from '../lib/supabase.js';
 
 export interface PlayerMatchStat {
   id?:            string;
@@ -107,6 +107,14 @@ export function usePlayerSeasonStats(clubId: string | null) {
 
   useEffect(() => {
     if (!clubId) { setStats([]); return; }
+    if (isDemoMode()) {
+      // Chargement paresseux pour ne pas embarquer les données démo dans le bundle principal
+      import('../demo/data/stats.js').then(({ demoSeasonStats }) => {
+        setStats(demoSeasonStats as PlayerSeasonStat[]);
+        setLoading(false);
+      });
+      return;
+    }
     setLoading(true);
     supabase
       .from('player_season_stats')

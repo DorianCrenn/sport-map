@@ -34,6 +34,7 @@ import ClubNewsTab from './tabs/ClubNewsTab.jsx';
 import ClubMatchesTab from './tabs/ClubMatchesTab.jsx';
 import ClubRosterTab from './tabs/ClubRosterTab.jsx';
 import ClubInfoTab from './tabs/ClubInfoTab.jsx';
+import ClubSeasonTab from './tabs/ClubSeasonTab.jsx';
 import { IconCopy, IconShare, IconPalette, IconCalendar, IconMail, IconEdit, IconZap, IconCheckCircle, IconStadium } from '../icons.js';
 
 const EventFormModal = lazy(() => import('../EventFormModal.jsx'));
@@ -43,6 +44,7 @@ const TABS = [
   { id: 'accueil',  label: 'Accueil' },
   { id: 'news',     label: 'Actualités' },
   { id: 'matchs',   label: 'Matchs' },
+  { id: 'saison',   label: 'Saison' },
   { id: 'effectif', label: 'Effectif' },
   { id: 'infos',    label: 'Infos' },
 ];
@@ -415,6 +417,10 @@ export default function ClubPageView({
             onCreateEvent={handleCreateClubEvent}
             liveScores={liveScores}
           />
+        )}
+
+        {activeTab === 'saison' && (
+          <ClubSeasonTab club={club} accentColor={accentColor} canEdit={canEdit} />
         )}
 
         {activeTab === 'effectif' && (

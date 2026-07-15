@@ -1,4 +1,5 @@
 import { DEMO_CLUB_ID } from './club.js';
+import { demoPlayers } from './players.js';
 
 export const demoStats = {
   clubId:   DEMO_CLUB_ID,
@@ -65,3 +66,41 @@ export const demoClubFollows = Array.from({ length: 342 }, (_, i) => ({
   teams:    'all',
   notif:    { match: true, news: true },
 }));
+
+// ── Stats de saison démo (onglet « Saison » du club) ─────────────────────────
+// Générées de façon DÉTERMINISTE (stables) depuis l'effectif Équipe 1, avec une
+// distribution réaliste par poste (attaquants marquent, gardiens non, etc.).
+function rnd(seed) { const x = Math.sin(seed * 127.1) * 43758.5453; return x - Math.floor(x); }
+function categoryOf(pos) {
+  const p = (pos || '').toLowerCase();
+  if (p.includes('gardien')) return 'gk';
+  if (p.includes('attaquant') || p.includes('avant') || p.includes('buteur')) return 'fw';
+  if (p.includes('ailier')) return 'wg';
+  if (p.includes('offensif')) return 'am';
+  if (p.includes('défenseur') || p.includes('latéral') || p.includes('lateral') || p.includes('arrière')) return 'df';
+  return 'mf';
+}
+const GOAL_MAX   = { gk: 0, df: 3, mf: 6, am: 11, wg: 10, fw: 17 };
+const ASSIST_MAX = { gk: 0, df: 3, mf: 7, am: 10, wg: 9,  fw: 6  };
+
+export const demoSeasonStats = demoPlayers
+  .filter(pl => pl.team_name === 'Équipe 1')
+  .map(pl => {
+    const cat = categoryOf(pl.position);
+    const s   = (pl.number ?? 0) + 1;
+    const matchesTotal  = 16 + Math.floor(rnd(s) * 6);                                            // 16–21
+    const matchesPlayed = Math.min(matchesTotal, Math.round(matchesTotal * (0.5 + rnd(s + 10) * 0.5)));
+    return {
+      playerId:      pl.id,
+      clubId:        DEMO_CLUB_ID,
+      playerName:    pl.name,
+      jerseyNumber:  pl.number,
+      position:      pl.position,
+      matchesTotal,
+      matchesPlayed,
+      totalGoals:    Math.floor(rnd(s + 20) * (GOAL_MAX[cat]   + 1)),
+      totalAssists:  Math.floor(rnd(s + 30) * (ASSIST_MAX[cat] + 1)),
+      totalYellow:   Math.floor(rnd(s + 40) * 5),
+      totalRed:      rnd(s + 50) > 0.88 ? 1 : 0,
+    };
+  });
