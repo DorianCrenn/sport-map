@@ -146,7 +146,7 @@ export default function Header({
       <div style={{ flex: 1, minWidth: 0 }} ref={searchRef}>
         {cityFilter ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 10, backgroundColor: 'rgba(34,217,106,0.18)', border: '1px solid rgba(34,217,106,0.35)', color: '#22d96a', fontSize: 12, fontWeight: 600 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(34,217,106,0.18)', border: '1px solid rgba(34,217,106,0.35)', color: '#22d96a', fontSize: 12, fontWeight: 600 }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {cityFilter}
               <button onClick={onClearCity} aria-label="Retirer le filtre ville" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', opacity: 0.7, display: 'flex', alignItems: 'center' }}>
@@ -172,7 +172,7 @@ export default function Header({
               onBlur={() => setInputFocused(false)}
               onKeyDown={handleKeyDown}
               placeholder="Ville, club, événement…"
-              style={{ width: '100%', paddingLeft: 36, paddingRight: 34, paddingTop: 9, paddingBottom: 9, borderRadius: 14, backgroundColor: inputFocused ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.07)', border: `1.5px solid ${inputFocused ? 'rgba(34,217,106,0.45)' : 'rgba(255,255,255,0.13)'}`, color: '#deeeff', fontSize: 13, fontWeight: 500, fontFamily: 'var(--sl-font-ui)', outline: 'none', boxSizing: 'border-box', boxShadow: inputFocused ? '0 0 0 3px rgba(34,217,106,0.12), 0 2px 12px rgba(0,0,0,0.3)' : '0 1px 4px rgba(0,0,0,0.25)', transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s' }}
+              style={{ width: '100%', paddingLeft: 36, paddingRight: 34, paddingTop: 9, paddingBottom: 9, borderRadius: 'var(--sl-radius-2xl)', backgroundColor: inputFocused ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.07)', border: `1.5px solid ${inputFocused ? 'rgba(34,217,106,0.45)' : 'rgba(255,255,255,0.13)'}`, color: '#deeeff', fontSize: 13, fontWeight: 500, fontFamily: 'var(--sl-font-ui)', outline: 'none', boxSizing: 'border-box', boxShadow: inputFocused ? '0 0 0 3px rgba(34,217,106,0.12), 0 2px 12px rgba(0,0,0,0.3)' : '0 1px 4px rgba(0,0,0,0.25)', transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s' }}
             />
             {query && (
               <button onClick={() => { setQuery(''); setSearchOpen(false); inputRef.current?.focus(); }} aria-label="Effacer la recherche" style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 44, height: 44, borderRadius: '50%', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -187,7 +187,7 @@ export default function Header({
         {/* Search dropdown */}
         <AnimatePresence>
           {searchOpen && (hasResults || showEmpty) && !cityFilter && (
-            <motion.div key="dropdown" role="listbox" aria-label="Résultats de recherche" initial={{ opacity: 0, y: -8, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.98 }} transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }} style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 12, right: 12, borderRadius: 18, backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow-xl)', border: '1px solid var(--sl-border)', zIndex: 200, overflow: 'hidden' }}>
+            <motion.div key="dropdown" role="listbox" aria-label="Résultats de recherche" initial={{ opacity: 0, y: -8, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.98 }} transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }} style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 12, right: 12, borderRadius: 'var(--sl-radius-3xl)', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow-xl)', border: '1px solid var(--sl-border)', zIndex: 200, overflow: 'hidden' }}>
               {showEmpty && (
                 <div style={{ padding: '22px 16px', textAlign: 'center' }}>
                   <div style={{ fontSize: 22, marginBottom: 8 }}>🔍</div>
@@ -204,7 +204,7 @@ export default function Header({
                       const ridx = cityOffset + ci;
                       const isHi = highlightIndex === ridx;
                       return (
-                        <ResultRow key={city} highlighted={isHi} onClick={() => selectCity(city)} onMouseEnter={() => setHighlightIndex(ridx)} icon={<div style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, backgroundColor: 'rgba(34,217,106,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>}>
+                        <ResultRow key={city} highlighted={isHi} onClick={() => selectCity(city)} onMouseEnter={() => setHighlightIndex(ridx)} icon={<div style={{ width: 30, height: 30, borderRadius: 'var(--sl-radius-md)', flexShrink: 0, backgroundColor: 'rgba(34,217,106,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>}>
                           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)' }}>{city}</span>
                         </ResultRow>
                       );
@@ -225,7 +225,7 @@ export default function Header({
                       const sportColor = (allSports[club.sport] as any)?.color ?? '#64748b';
                       const init = club.name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
                       return (
-                        <ResultRow key={club.id} highlighted={isHi} onClick={() => selectClub(club)} onMouseEnter={() => setHighlightIndex(ridx)} icon={<div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, backgroundColor: sportColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>{init}</div>}>
+                        <ResultRow key={club.id} highlighted={isHi} onClick={() => selectClub(club)} onMouseEnter={() => setHighlightIndex(ridx)} icon={<div style={{ width: 34, height: 34, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0, backgroundColor: sportColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>{init}</div>}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club.name}</div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
                             <span style={{ fontSize: 11, color: 'var(--sl-t2)' }}>{club.city}</span>
@@ -253,7 +253,7 @@ export default function Header({
                       const dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
                       const timeStr = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
                       return (
-                        <ResultRow key={event.id} highlighted={isHi} onClick={() => selectEvent(event)} onMouseEnter={() => setHighlightIndex(ridx)} icon={<div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, backgroundColor: `${sportColor}18`, border: `1.5px solid ${sportColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: sportColor }} /></div>}>
+                        <ResultRow key={event.id} highlighted={isHi} onClick={() => selectEvent(event)} onMouseEnter={() => setHighlightIndex(ridx)} icon={<div style={{ width: 34, height: 34, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0, backgroundColor: `${sportColor}18`, border: `1.5px solid ${sportColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: sportColor }} /></div>}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
                             <span style={{ fontSize: 11, color: 'var(--sl-t2)' }}>{dateStr} · {timeStr}</span>
@@ -280,7 +280,7 @@ export default function Header({
 
       {/* Dev role switcher — flex-shrink + no-wrap pour ne pas pousser les boutons header hors écran */}
       {setDevRole && currentUser && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 1, minWidth: 0, padding: '3px 6px', borderRadius: 12, backgroundColor: 'rgba(234,179,8,0.12)', border: '1px solid rgba(234,179,8,0.35)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 1, minWidth: 0, padding: '3px 6px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'rgba(234,179,8,0.12)', border: '1px solid rgba(234,179,8,0.35)' }}>
           <div style={{ display: 'flex', gap: 3, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {([
               { role: null, label: '👤 Réel' }, { role: 'user', label: 'User' },
@@ -288,7 +288,7 @@ export default function Header({
             ] as { role: string | null; label: string }[]).map(({ role, label }) => {
               const active = devRole === role;
               return (
-                <button key={String(role)} onClick={() => { setDevRole(role); if (role !== 'club_admin') setDevClubId(null); }} style={{ padding: '2px 7px', borderRadius: 10, fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none', transition: 'all 0.1s', backgroundColor: active ? '#eab308' : 'transparent', color: active ? '#000' : 'rgba(234,179,8,0.8)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <button key={String(role)} onClick={() => { setDevRole(role); if (role !== 'club_admin') setDevClubId(null); }} style={{ padding: '2px 7px', borderRadius: 'var(--sl-radius-lg)', fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none', transition: 'all 0.1s', backgroundColor: active ? '#eab308' : 'transparent', color: active ? '#000' : 'rgba(234,179,8,0.8)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {label}
                 </button>
               );
@@ -299,7 +299,7 @@ export default function Header({
               {clubs.slice(0, 6).map(club => {
                 const active = devClubId === String(club.id);
                 return (
-                  <button key={club.id} onClick={() => setDevClubId(active ? null : String(club.id))} title={club.name} style={{ padding: '1px 6px', borderRadius: 8, fontSize: 9, fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.1s', backgroundColor: active ? '#eab308' : 'rgba(234,179,8,0.2)', color: active ? '#000' : 'rgba(234,179,8,0.9)', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <button key={club.id} onClick={() => setDevClubId(active ? null : String(club.id))} title={club.name} style={{ padding: '1px 6px', borderRadius: 'var(--sl-radius-md)', fontSize: 9, fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.1s', backgroundColor: active ? '#eab308' : 'rgba(234,179,8,0.2)', color: active ? '#000' : 'rgba(234,179,8,0.9)', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {club.name}
                   </button>
                 );
@@ -317,7 +317,7 @@ export default function Header({
             <motion.span
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut', repeatDelay: 1 }}
-              style={{ position: 'absolute', top: -2, right: -2, minWidth: 15, height: 15, borderRadius: 8, padding: '0 3px', backgroundColor: '#22d96a', color: '#0a1628', fontSize: 8, fontWeight: 800, lineHeight: '15px', textAlign: 'center', border: '1.5px solid var(--sl-bg)', pointerEvents: 'none' }}
+              style={{ position: 'absolute', top: -2, right: -2, minWidth: 15, height: 15, borderRadius: 'var(--sl-radius-md)', padding: '0 3px', backgroundColor: '#22d96a', color: '#0a1628', fontSize: 8, fontWeight: 800, lineHeight: '15px', textAlign: 'center', border: '1.5px solid var(--sl-bg)', pointerEvents: 'none' }}
             >
               {announcementsUnreadCount > 9 ? '9+' : announcementsUnreadCount}
             </motion.span>
@@ -334,21 +334,21 @@ export default function Header({
               <motion.span
                 animate={{ scale: [1, 1.25, 1] }}
                 transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut', repeatDelay: 1.5 }}
-                style={{ position: 'absolute', top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, padding: '0 4px', backgroundColor: rideNotifCount > 0 && clubNotifUnread === 0 ? 'var(--sl-green)' : '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, lineHeight: '16px', textAlign: 'center', border: '2px solid var(--sl-bg)', pointerEvents: 'none', boxShadow: `0 0 8px ${rideNotifCount > 0 && clubNotifUnread === 0 ? 'rgba(34,217,106,0.6)' : 'rgba(239,68,68,0.6)'}` }}
+                style={{ position: 'absolute', top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 'var(--sl-radius-md)', padding: '0 4px', backgroundColor: rideNotifCount > 0 && clubNotifUnread === 0 ? 'var(--sl-green)' : '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, lineHeight: '16px', textAlign: 'center', border: '2px solid var(--sl-bg)', pointerEvents: 'none', boxShadow: `0 0 8px ${rideNotifCount > 0 && clubNotifUnread === 0 ? 'rgba(34,217,106,0.6)' : 'rgba(239,68,68,0.6)'}` }}
               >
                 {totalBadge > 9 ? '9+' : totalBadge}
               </motion.span>
             )}
           </motion.button>
         ) : (
-          <motion.button whileTap={{ scale: 0.94 }} whileHover={{ scale: 1.04, boxShadow: '0 4px 16px rgba(34,217,106,0.35)' }} onClick={() => onShowAuth?.()} style={{ padding: '7px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.03em' }}>
+          <motion.button whileTap={{ scale: 0.94 }} whileHover={{ scale: 1.04, boxShadow: '0 4px 16px rgba(34,217,106,0.35)' }} onClick={() => onShowAuth?.()} style={{ padding: '7px 16px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.03em' }}>
             Connexion
           </motion.button>
         )}
 
         <AnimatePresence>
           {profileOpen && currentUser && (
-            <motion.div key="profile-dropdown" initial={{ opacity: 0, scale: 0.94, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: -8 }} transition={{ duration: 0.14 }} style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 224, borderRadius: 16, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow-xl)', zIndex: 300, overflow: 'hidden' }}>
+            <motion.div key="profile-dropdown" initial={{ opacity: 0, scale: 0.94, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: -8 }} transition={{ duration: 0.14 }} style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 224, borderRadius: 'var(--sl-radius-3xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', boxShadow: 'var(--sl-shadow-xl)', zIndex: 300, overflow: 'hidden' }}>
               <div style={{ padding: '14px 14px 10px', borderBottom: '1px solid var(--sl-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 38, height: 38, borderRadius: '50%', backgroundColor: 'var(--sl-green)', color: '#fff', fontWeight: 800, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials}</div>
@@ -393,7 +393,7 @@ function Divider() {
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '1px 5px', borderRadius: 5, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)', fontFamily: 'Inter, monospace' }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '1px 5px', borderRadius: 'var(--sl-radius-xs)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)', fontFamily: 'Inter, monospace' }}>
       {children}
     </span>
   );
@@ -402,7 +402,7 @@ function Kbd({ children }: { children: React.ReactNode }) {
 interface ResultRowProps { children: React.ReactNode; icon?: React.ReactNode; highlighted: boolean; onClick: () => void; onMouseEnter: () => void; }
 function ResultRow({ children, icon, highlighted, onClick, onMouseEnter }: ResultRowProps) {
   return (
-    <button role="option" aria-selected={highlighted} onClick={onClick} onMouseEnter={onMouseEnter} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px', borderRadius: 11, border: 'none', cursor: 'pointer', textAlign: 'left', backgroundColor: highlighted ? 'var(--sl-hover)' : 'transparent', transition: 'background-color 0.08s', outline: highlighted ? '2px solid var(--sl-border)' : 'none', outlineOffset: -1 }}>
+    <button role="option" aria-selected={highlighted} onClick={onClick} onMouseEnter={onMouseEnter} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', textAlign: 'left', backgroundColor: highlighted ? 'var(--sl-hover)' : 'transparent', transition: 'background-color 0.08s', outline: highlighted ? '2px solid var(--sl-border)' : 'none', outlineOffset: -1 }}>
       {icon}
       <div style={{ minWidth: 0, flex: 1 }}>{children}</div>
       <svg style={{ flexShrink: 0, opacity: highlighted ? 1 : 0.35, transition: 'opacity 0.1s' }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t3)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -414,10 +414,10 @@ interface DropdownItemProps { icon?: React.ReactNode; label: string; onClick: ()
 function DropdownItem({ icon, label, onClick, labelColor, badge = 0 }: DropdownItemProps) {
   const [hover, setHover] = useState(false);
   return (
-    <button onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: hover ? 'var(--sl-hover)' : 'transparent', color: labelColor ?? 'var(--sl-t1)', fontSize: 13, fontWeight: 500, textAlign: 'left', transition: 'background-color 0.1s' }}>
+    <button onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: hover ? 'var(--sl-hover)' : 'transparent', color: labelColor ?? 'var(--sl-t1)', fontSize: 13, fontWeight: 500, textAlign: 'left', transition: 'background-color 0.1s' }}>
       <span style={{ color: labelColor ?? 'var(--sl-t2)', flexShrink: 0 }}>{icon}</span>
       <span style={{ flex: 1 }}>{label}</span>
-      {badge > 0 && <span style={{ minWidth: 18, height: 18, borderRadius: 999, padding: '0 5px', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{badge > 9 ? '9+' : badge}</span>}
+      {badge > 0 && <span style={{ minWidth: 18, height: 18, borderRadius: 'var(--sl-radius-full)', padding: '0 5px', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{badge > 9 ? '9+' : badge}</span>}
     </button>
   );
 }

@@ -26,12 +26,12 @@ function PlanCard({ plan, selected, onSelect }: { plan: { id: string; emoji: str
   return (
     <button
       onClick={() => onSelect(plan.id)}
-      style={{ flex: 1, minWidth: 80, borderRadius: 14, padding: '12px 10px', border: `2px solid ${selected ? cfg.accent : 'var(--sl-border)'}`, backgroundColor: selected ? `${cfg.accent}10` : 'var(--sl-card)', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', boxShadow: selected ? `0 0 12px ${cfg.glow}` : 'none' }}
+      style={{ flex: 1, minWidth: 80, borderRadius: 'var(--sl-radius-2xl)', padding: '12px 10px', border: `2px solid ${selected ? cfg.accent : 'var(--sl-border)'}`, backgroundColor: selected ? `${cfg.accent}10` : 'var(--sl-card)', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', boxShadow: selected ? `0 0 12px ${cfg.glow}` : 'none' }}
     >
       <div style={{ fontSize: 18, marginBottom: 4 }}>{plan.emoji}</div>
       <div style={{ fontSize: 12, fontWeight: 800, color: selected ? cfg.accent : 'var(--sl-t1)' }}>{cfg.label}</div>
       <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 2, lineHeight: 1.4 }}>{plan.desc}</div>
-      <div style={{ marginTop: 6, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, display: 'inline-block', backgroundColor: selected ? `${cfg.accent}20` : 'var(--sl-surface)', color: selected ? cfg.accent : 'var(--sl-t3)' }}>
+      <div style={{ marginTop: 6, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', display: 'inline-block', backgroundColor: selected ? `${cfg.accent}20` : 'var(--sl-surface)', color: selected ? cfg.accent : 'var(--sl-t3)' }}>
         {plan.price}
       </div>
     </button>
@@ -65,7 +65,7 @@ export function FeaturedSection({ club, upcomingEvents = [] }: { club: Record<st
   const cfg = (plan: string) => (PLAN_CONFIG as any)[plan];
 
   return (
-    <div style={{ borderRadius: 14, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-2xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}>⭐ Mise en avant</div>
@@ -74,7 +74,7 @@ export function FeaturedSection({ club, upcomingEvents = [] }: { club: Record<st
           </div>
         </div>
         {!showForm && futureEvents.length > 0 && (
-          <button onClick={() => setShowForm(true)} style={{ padding: '7px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: '#f59e0b', color: 'white', fontSize: 12, fontWeight: 700 }}>
+          <button onClick={() => setShowForm(true)} style={{ padding: '7px 12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: '#f59e0b', color: 'white', fontSize: 12, fontWeight: 700 }}>
             + Promouvoir
           </button>
         )}
@@ -93,7 +93,7 @@ export function FeaturedSection({ club, upcomingEvents = [] }: { club: Record<st
                     <span style={{ color: c.accent, fontWeight: 700 }}>{c.label}</span>{' · '}Jusqu'au {fmtDate(feat.ends_at)}
                   </div>
                 </div>
-                <button onClick={() => cancel(feat.id)} disabled={saving} style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 11, cursor: saving ? 'wait' : 'pointer', flexShrink: 0 }}>
+                <button onClick={() => cancel(feat.id)} disabled={saving} style={{ padding: '4px 10px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 11, cursor: saving ? 'wait' : 'pointer', flexShrink: 0 }}>
                   Retirer
                 </button>
               </div>
@@ -130,7 +130,7 @@ export function FeaturedSection({ club, upcomingEvents = [] }: { club: Record<st
                       <button
                         key={ev.id}
                         onClick={() => setSelectedEvent(ev.id)}
-                        style={{ padding: '10px 12px', borderRadius: 10, textAlign: 'left', border: `2px solid ${selectedEvent === ev.id ? '#f59e0b' : 'var(--sl-border)'}`, backgroundColor: selectedEvent === ev.id ? 'rgba(245,158,11,0.08)' : 'var(--sl-surface)', cursor: 'pointer' }}
+                        style={{ padding: '10px 12px', borderRadius: 'var(--sl-radius-lg)', textAlign: 'left', border: `2px solid ${selectedEvent === ev.id ? '#f59e0b' : 'var(--sl-border)'}`, backgroundColor: selectedEvent === ev.id ? 'rgba(245,158,11,0.08)' : 'var(--sl-surface)', cursor: 'pointer' }}
                       >
                         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)' }}>
                           {ev.homeTeam && ev.awayTeam ? `${ev.homeTeam} vs ${ev.awayTeam}` : (ev.title ?? 'Événement')}
@@ -153,13 +153,13 @@ export function FeaturedSection({ club, upcomingEvents = [] }: { club: Record<st
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => { setShowForm(false); setSelectedEvent(''); setSelectedPlan('starter'); }} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                <button onClick={() => { setShowForm(false); setSelectedEvent(''); setSelectedPlan('starter'); }} style={{ flex: 1, padding: '10px 0', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                   Annuler
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={!selectedEvent || submitting}
-                  style={{ flex: 2, padding: '10px 0', borderRadius: 10, border: 'none', backgroundColor: selectedEvent ? cfg(selectedPlan).accent : 'var(--sl-border)', color: selectedEvent ? 'white' : 'var(--sl-t3)', fontSize: 12, fontWeight: 700, cursor: !selectedEvent || submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, boxShadow: selectedEvent ? `0 4px 12px ${cfg(selectedPlan).glow}` : 'none', transition: 'all 0.15s' }}
+                  style={{ flex: 2, padding: '10px 0', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: selectedEvent ? cfg(selectedPlan).accent : 'var(--sl-border)', color: selectedEvent ? 'white' : 'var(--sl-t3)', fontSize: 12, fontWeight: 700, cursor: !selectedEvent || submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, boxShadow: selectedEvent ? `0 4px 12px ${cfg(selectedPlan).glow}` : 'none', transition: 'all 0.15s' }}
                 >
                   {submitting ? 'Publication…' : '⭐ Mettre en avant'}
                 </button>

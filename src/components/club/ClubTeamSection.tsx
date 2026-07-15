@@ -60,13 +60,13 @@ function TrainingCalendarGenerator({ sessions, club, team, onGenerate }: { sessi
 
   const count = countOccurrences();
   const inputSt: React.CSSProperties = {
-    width: '100%', boxSizing: 'border-box', borderRadius: 10, padding: '8px 10px', fontSize: 12,
+    width: '100%', boxSizing: 'border-box', borderRadius: 'var(--sl-radius-lg)', padding: '8px 10px', fontSize: 12,
     backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
     color: 'var(--sl-t1)', colorScheme: 'dark', outline: 'none',
   };
 
   return (
-    <div style={{ marginTop: 8, borderRadius: 14, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+    <div style={{ marginTop: 8, borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
       <button onClick={() => setOpen(o => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', backgroundColor: open ? 'rgba(59,130,246,0.08)' : 'var(--sl-surface)', border: 'none', cursor: 'pointer', color: open ? '#3b82f6' : 'var(--sl-t2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -94,7 +94,7 @@ function TrainingCalendarGenerator({ sessions, club, team, onGenerate }: { sessi
                   {count > 0 ? `${count} entraînement${count > 1 ? 's' : ''} seront créés` : 'Aucun créneau dans cette plage'}
                 </p>
               )}
-              <button disabled={count === 0} onClick={generate} style={{ padding: '9px 0', borderRadius: 10, border: 'none', fontSize: 12, fontWeight: 700, transition: 'all 0.15s', cursor: count > 0 ? 'pointer' : 'not-allowed', backgroundColor: count > 0 ? '#3b82f6' : 'var(--sl-border)', color: count > 0 ? '#fff' : 'var(--sl-t3)' }}>
+              <button disabled={count === 0} onClick={generate} style={{ padding: '9px 0', borderRadius: 'var(--sl-radius-lg)', border: 'none', fontSize: 12, fontWeight: 700, transition: 'all 0.15s', cursor: count > 0 ? 'pointer' : 'not-allowed', backgroundColor: count > 0 ? '#3b82f6' : 'var(--sl-border)', color: count > 0 ? '#fff' : 'var(--sl-t3)' }}>
                 {count > 0 ? `Créer ${count} entraînement${count > 1 ? 's' : ''}` : 'Sélectionnez une plage'}
               </button>
             </div>

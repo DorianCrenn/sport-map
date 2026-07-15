@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useClubPlayers } from '../../hooks/useClubPlayers.js';
 
 const inp: React.CSSProperties = {
-  padding: '7px 10px', borderRadius: 8, fontSize: 12,
+  padding: '7px 10px', borderRadius: 'var(--sl-radius-md)', fontSize: 12,
   border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)',
   color: 'var(--sl-t1)', outline: 'none', width: '100%', boxSizing: 'border-box',
 };
@@ -92,7 +92,7 @@ export default function PlayerSelector({ clubId, value, onChange, label = 'Joueu
       </div>
 
       {open && filtered.length > 0 && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border-s)', borderRadius: 10, boxShadow: 'var(--sl-shadow-xl)', overflow: 'hidden', marginTop: 2 }}>
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border-s)', borderRadius: 'var(--sl-radius-lg)', boxShadow: 'var(--sl-shadow-xl)', overflow: 'hidden', marginTop: 2 }}>
           {filtered.map(p => (
             <button key={p.id} onMouseDown={() => selectPlayer(p)} style={{ width: '100%', padding: '9px 12px', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

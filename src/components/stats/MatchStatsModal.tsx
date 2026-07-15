@@ -32,12 +32,12 @@ function StatCounter({ value, onChange, disabled }: { value: number; onChange: (
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       <button onClick={() => onChange(Math.max(0, value - 1))} disabled={disabled || value === 0}
-        style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer', fontSize: 16, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: disabled || value === 0 ? 0.4 : 1 }}>
+        style={{ width: 24, height: 24, borderRadius: 'var(--sl-radius-sm)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer', fontSize: 16, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: disabled || value === 0 ? 0.4 : 1 }}>
         −
       </button>
       <span style={{ fontSize: 14, fontWeight: 800, minWidth: 18, textAlign: 'center', color: value > 0 ? 'var(--sl-t1)' : 'var(--sl-t3)', fontVariantNumeric: 'tabular-nums' }}>{value}</span>
       <button onClick={() => onChange(value + 1)} disabled={disabled}
-        style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer', fontSize: 16, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.4 : 1 }}>
+        style={{ width: 24, height: 24, borderRadius: 'var(--sl-radius-sm)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer', fontSize: 16, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.4 : 1 }}>
         +
       </button>
     </div>
@@ -116,7 +116,7 @@ export default function MatchStatsModal({ event, clubId, onClose }: MatchStatsMo
               <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--sl-t1)' }}>Stats post-match</div>
               <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 240 }}>{event.title}</div>
             </div>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', cursor: 'pointer' }}>×</button>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', cursor: 'pointer' }}>×</button>
           </div>
         </div>
 
@@ -155,7 +155,7 @@ export default function MatchStatsModal({ event, clubId, onClose }: MatchStatsMo
         {/* Footer */}
         <div style={{ padding: '12px 16px calc(16px + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid var(--sl-border)', flexShrink: 0 }}>
           <button onClick={handleSave} disabled={saving || saved}
-            style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', backgroundColor: saved ? '#22C55E' : 'var(--sl-accent)', color: '#fff', fontSize: 14, fontWeight: 800, cursor: saving || saved ? 'default' : 'pointer' }}>
+            style={{ width: '100%', padding: '13px', borderRadius: 'var(--sl-radius-xl)', border: 'none', backgroundColor: saved ? '#22C55E' : 'var(--sl-accent)', color: '#fff', fontSize: 14, fontWeight: 800, cursor: saving || saved ? 'default' : 'pointer' }}>
             {saved ? '✅ Enregistré !' : saving ? '⏳ Enregistrement…' : `💾 Enregistrer les stats (${rows.length} joueurs)`}
           </button>
         </div>
@@ -176,7 +176,7 @@ function PlayerStatRow({ row, onChange }: { row: PlayerRow; onChange: (p: Partia
       </div>
 
       <select value={row.status} onChange={e => onChange({ status: e.target.value as PlayerRow['status'] })}
-        style={{ fontSize: 10, fontWeight: 600, padding: '4px 4px', borderRadius: 7, border: `1px solid ${isPresent ? 'rgba(34,197,94,0.4)' : 'var(--sl-border)'}`, backgroundColor: isPresent ? 'rgba(34,197,94,0.08)' : 'var(--sl-surface)', color: isPresent ? '#22c55e' : 'var(--sl-t2)', cursor: 'pointer' }}>
+        style={{ fontSize: 10, fontWeight: 600, padding: '4px 4px', borderRadius: 'var(--sl-radius-sm)', border: `1px solid ${isPresent ? 'rgba(34,197,94,0.4)' : 'var(--sl-border)'}`, backgroundColor: isPresent ? 'rgba(34,197,94,0.08)' : 'var(--sl-surface)', color: isPresent ? '#22c55e' : 'var(--sl-t2)', cursor: 'pointer' }}>
         {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
 

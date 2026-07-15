@@ -55,7 +55,7 @@ function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCar
     <motion.div
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-30px' }}
       transition={{ delay: index * 0.08, duration: 0.38, ease: 'easeOut' }}
-      style={{ position: 'relative', display: 'flex', flexDirection: 'column', borderRadius: 20, border: `2px solid ${isPopular ? color : 'var(--sl-border)'}`, backgroundColor: isPopular ? `${color}08` : 'var(--sl-card)', overflow: 'hidden', minWidth: 260, scrollSnapAlign: 'start', flexShrink: 0 }}
+      style={{ position: 'relative', display: 'flex', flexDirection: 'column', borderRadius: 'var(--sl-radius-4xl)', border: `2px solid ${isPopular ? color : 'var(--sl-border)'}`, backgroundColor: isPopular ? `${color}08` : 'var(--sl-card)', overflow: 'hidden', minWidth: 260, scrollSnapAlign: 'start', flexShrink: 0 }}
     >
       {isPopular && (
         <div style={{ position: 'absolute', top: 0, right: 0, backgroundColor: color, color: onColor, fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: '0 18px 0 10px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>⭐ Populaire</div>
@@ -99,7 +99,7 @@ function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCar
           <div style={{ height: 1, backgroundColor: 'var(--sl-border)', margin: '0 20px' }} />
           <div style={{ padding: '10px 20px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {quotaPills.map(({ label, value }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 8, backgroundColor: value === '∞' ? `${color}12` : 'var(--sl-surface)', border: `1px solid ${value === '∞' ? `${color}25` : 'var(--sl-border)'}` }}>
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 'var(--sl-radius-md)', backgroundColor: value === '∞' ? `${color}12` : 'var(--sl-surface)', border: `1px solid ${value === '∞' ? `${color}25` : 'var(--sl-border)'}` }}>
                 <span style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 500 }}>{label}</span>
                 <span style={{ fontSize: 11, fontWeight: 800, color: value === '∞' ? color : 'var(--sl-t2)' }}>{value}</span>
               </div>
@@ -108,7 +108,7 @@ function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCar
         </>
       )}
       <div style={{ padding: '12px 20px 20px' }}>
-        <motion.button whileTap={{ scale: 0.97 }} whileHover={{ y: -1 }} onClick={() => onCta(planId)} style={{ width: '100%', padding: '12px 0', borderRadius: 12, border: isPopular ? 'none' : `1.5px solid ${color}50`, backgroundColor: isPopular ? color : `${color}10`, color: isPopular ? onColor : color, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sl-font-brand)', boxShadow: isPopular ? `0 4px 16px ${color}35` : 'none', transition: 'all 0.12s' }}>
+        <motion.button whileTap={{ scale: 0.97 }} whileHover={{ y: -1 }} onClick={() => onCta(planId)} style={{ width: '100%', padding: '12px 0', borderRadius: 'var(--sl-radius-xl)', border: isPopular ? 'none' : `1.5px solid ${color}50`, backgroundColor: isPopular ? color : `${color}10`, color: isPopular ? onColor : color, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sl-font-brand)', boxShadow: isPopular ? `0 4px 16px ${color}35` : 'none', transition: 'all 0.12s' }}>
           {meta.cta_label}
         </motion.button>
       </div>
@@ -130,7 +130,7 @@ export default function PlansSection({ onCta }: PlansSectionProps) {
   return (
     <section style={{ padding: '48px 0 0' }}>
       <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }} style={{ textAlign: 'center', marginBottom: 32, padding: '0 20px' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 999, backgroundColor: 'rgba(34,217,106,0.10)', border: '1px solid rgba(34,217,106,0.20)', marginBottom: 14 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 'var(--sl-radius-full)', backgroundColor: 'rgba(34,217,106,0.10)', border: '1px solid rgba(34,217,106,0.20)', marginBottom: 14 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: '#22d96a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Plans &amp; Tarifs</span>
         </div>
         <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--sl-t1)', fontFamily: 'var(--sl-font-brand)', lineHeight: 1.2, margin: '0 0 10px' }}>Choisissez votre plan</h2>

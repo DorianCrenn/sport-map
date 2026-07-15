@@ -29,13 +29,13 @@ function ClubRow({ club, onNavigate }: { club: Club; onNavigate?: (page: string)
       animate={{ opacity: 1, x: 0 }}
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
-        padding: '10px 14px', borderRadius: 14,
+        padding: '10px 14px', borderRadius: 'var(--sl-radius-2xl)',
         backgroundColor: 'var(--sl-card)',
         border: '1px solid var(--sl-border)',
       }}
     >
       <div style={{
-        width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+        width: 40, height: 40, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0,
         backgroundColor: 'rgba(34,217,106,0.12)',
         border: '1px solid rgba(34,217,106,0.2)',
         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -59,7 +59,7 @@ function ClubRow({ club, onNavigate }: { club: Club; onNavigate?: (page: string)
         whileTap={{ scale: 0.93 }}
         onClick={handleFollow}
         style={{
-          flexShrink: 0, fontSize: 12, fontWeight: 700, borderRadius: 10,
+          flexShrink: 0, fontSize: 12, fontWeight: 700, borderRadius: 'var(--sl-radius-lg)',
           padding: '6px 14px', border: 'none', cursor: followed ? 'default' : 'pointer',
           backgroundColor: followed ? 'rgba(34,217,106,0.15)' : '#22d96a',
           color: followed ? '#22d96a' : '#fff',

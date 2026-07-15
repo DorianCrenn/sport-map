@@ -97,7 +97,7 @@ export default function PosterShareBtn({ event }: PosterShareBtnProps) {
         disabled={busy}
         aria-label="Partager l'affiche"
         title="Partager l'affiche"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, cursor: busy ? 'wait' : 'pointer', color: busy ? 'var(--sl-green)' : 'var(--sl-t3)', border: `1px solid ${busy ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: 'transparent', flexShrink: 0, opacity: busy ? 0.65 : 1, transition: 'all 0.15s' }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', cursor: busy ? 'wait' : 'pointer', color: busy ? 'var(--sl-green)' : 'var(--sl-t3)', border: `1px solid ${busy ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: 'transparent', flexShrink: 0, opacity: busy ? 0.65 : 1, transition: 'all 0.15s' }}
       >
         {busy
           ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -108,7 +108,7 @@ export default function PosterShareBtn({ event }: PosterShareBtnProps) {
       {phase === 'menu' && (
         <div
           ref={menuRef}
-          style={{ position: 'absolute', bottom: 44, right: 0, zIndex: 200, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 12, padding: 6, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 170, boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}
+          style={{ position: 'absolute', bottom: 44, right: 0, zIndex: 200, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 'var(--sl-radius-xl)', padding: 6, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 170, boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}
         >
           <ShareMenuItem icon="📥" label="Télécharger l'affiche" onClick={handleDownload} />
           <ShareMenuItem icon="🟢" label="Partager sur WhatsApp" onClick={handleWhatsApp} />
@@ -123,7 +123,7 @@ function ShareMenuItem({ icon, label, onClick }: { icon: string; label: string; 
   return (
     <button
       onClick={onClick}
-      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', width: '100%', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', transition: 'background 0.1s' }}
+      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 'var(--sl-radius-md)', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', width: '100%', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', transition: 'background 0.1s' }}
       onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--sl-surface)')}
       onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
     >

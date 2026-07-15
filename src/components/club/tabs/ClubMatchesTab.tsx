@@ -13,7 +13,7 @@ function ConvocBadge({ eventId }: { eventId: string | number }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 4,
-      fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+      fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-4xl)',
       backgroundColor: stats.pending > 0 ? 'rgba(245,158,11,0.12)' : 'rgba(34,197,94,0.12)',
       color: stats.pending > 0 ? '#f59e0b' : '#22c55e',
       border: `1px solid ${stats.pending > 0 ? 'rgba(245,158,11,0.3)' : 'rgba(34,197,94,0.3)'}`,
@@ -29,7 +29,7 @@ function ScoreBadge({ scoreHome, scoreAway, isHome, liveScore }: { scoreHome?: n
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
         <motion.span
           animate={{ opacity: [1, 0.35, 1] }} transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
-          style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.08em', color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)', padding: '1px 5px', borderRadius: 4 }}
+          style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.08em', color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)', padding: '1px 5px', borderRadius: 'var(--sl-radius-xs)' }}
         >
           🔴 EN DIRECT
         </motion.span>
@@ -60,7 +60,7 @@ function MatchRow({ event, canConvoque, onConvoque, liveScore }: { event: Record
   const isHome = event.homeOrAway !== 'away';
 
   return (
-    <div style={{ padding: '11px 14px', borderRadius: 12, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ padding: '11px 14px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{ flexShrink: 0, textAlign: 'center', minWidth: 36 }}>
         <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', lineHeight: 1 }}>{eventDate.getDate()}</div>
         <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--sl-t3)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
@@ -84,7 +84,7 @@ function MatchRow({ event, canConvoque, onConvoque, liveScore }: { event: Record
           <button
             onClick={() => onConvoque?.(event)}
             data-demo="convocations-tab"
-            style={{ fontSize: 9, fontWeight: 700, padding: '5px 10px', minHeight: 28, borderRadius: 7, cursor: 'pointer', backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#6366f1', whiteSpace: 'nowrap' }}
+            style={{ fontSize: 9, fontWeight: 700, padding: '5px 10px', minHeight: 28, borderRadius: 'var(--sl-radius-sm)', cursor: 'pointer', backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#6366f1', whiteSpace: 'nowrap' }}
           >
             Convoquer ›
           </button>
@@ -104,12 +104,12 @@ function StatsRow({ W, D, L, played }: { W: number; D: number; L: number; played
   return (
     <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
       {items.map(it => (
-        <div key={it.label} style={{ flex: 1, padding: '8px 0', borderRadius: 12, backgroundColor: it.bg, border: `1px solid ${it.color}30`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        <div key={it.label} style={{ flex: 1, padding: '8px 0', borderRadius: 'var(--sl-radius-xl)', backgroundColor: it.bg, border: `1px solid ${it.color}30`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
           <span style={{ fontSize: 18, fontWeight: 800, color: it.color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{it.value}</span>
           <span style={{ fontSize: 9, fontWeight: 700, color: it.color, letterSpacing: '0.08em' }}>{it.label}</span>
         </div>
       ))}
-      <div style={{ flex: 1, padding: '8px 0', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+      <div style={{ flex: 1, padding: '8px 0', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
         <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{played}</span>
         <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)', letterSpacing: '0.08em' }}>JOUÉS</span>
       </div>
@@ -158,7 +158,7 @@ export default function ClubMatchesTab({ effectiveEvents, club, accentColor, can
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>Matchs</h2>
         {canAddEvent && (
-          <button onClick={onCreateEvent} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 10, border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+          <button onClick={onCreateEvent} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
@@ -176,7 +176,7 @@ export default function ClubMatchesTab({ effectiveEvents, club, accentColor, can
           <div style={{ fontSize: 40, marginBottom: 12 }}>📅</div>
           <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>Aucun match programmé</div>
           {canAddEvent && (
-            <button onClick={onCreateEvent} style={{ marginTop: 12, padding: '10px 20px', borderRadius: 12, border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+            <button onClick={onCreateEvent} style={{ marginTop: 12, padding: '10px 20px', borderRadius: 'var(--sl-radius-xl)', border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
               + Créer un événement
             </button>
           )}
@@ -205,7 +205,7 @@ export default function ClubMatchesTab({ effectiveEvents, club, accentColor, can
       {convocEvent && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 10, backgroundColor: 'var(--sl-card)', borderRadius: 'inherit', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '12px 14px 0', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-            <button onClick={() => setConvocEvent(null)} style={{ width: 36, height: 36, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} aria-label="Retour">
+            <button onClick={() => setConvocEvent(null)} style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} aria-label="Retour">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--sl-t1)' }}>

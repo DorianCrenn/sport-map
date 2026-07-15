@@ -49,7 +49,7 @@ function FollowClubButton({ event, compact = false }: FollowClubButtonProps) {
 
   if (compact) {
     return (
-      <motion.button whileTap={{ scale: 0.95 }} onClick={() => following ? unfollowClub(event.clubId) : followClub(event.clubId, { teams: 'all', notif: { match: true, news: true } })} title={following ? `Ne plus suivre ${event.clubName ?? 'ce club'}` : `Suivre ${event.clubName ?? 'ce club'}`} style={{ padding: '12px 14px', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 12, fontWeight: 700, backgroundColor: following ? `${sportColor}15` : 'var(--sl-surface)', color: following ? sportColor : 'var(--sl-t2)', border: `1px solid ${following ? sportColor : 'var(--sl-border-s)'}`, transition: 'all 0.18s', whiteSpace: 'nowrap' }}>
+      <motion.button whileTap={{ scale: 0.95 }} onClick={() => following ? unfollowClub(event.clubId) : followClub(event.clubId, { teams: 'all', notif: { match: true, news: true } })} title={following ? `Ne plus suivre ${event.clubName ?? 'ce club'}` : `Suivre ${event.clubName ?? 'ce club'}`} style={{ padding: '12px 14px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 12, fontWeight: 700, backgroundColor: following ? `${sportColor}15` : 'var(--sl-surface)', color: following ? sportColor : 'var(--sl-t2)', border: `1px solid ${following ? sportColor : 'var(--sl-border-s)'}`, transition: 'all 0.18s', whiteSpace: 'nowrap' }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill={following ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         {following ? '✓' : 'Suivre'}
       </motion.button>
@@ -57,7 +57,7 @@ function FollowClubButton({ event, compact = false }: FollowClubButtonProps) {
   }
 
   return (
-    <motion.button whileTap={{ scale: 0.97 }} onClick={() => following ? unfollowClub(event.clubId) : followClub(event.clubId, { teams: 'all', notif: { match: true, news: true } })} style={{ width: '100%', padding: '11px 0', borderRadius: 12, cursor: 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: following ? `${sportColor}15` : 'var(--sl-surface)', color: following ? sportColor : 'var(--sl-t2)', border: `1px solid ${following ? sportColor : 'var(--sl-border-s)'}`, transition: 'all 0.18s', marginBottom: 8 }}>
+    <motion.button whileTap={{ scale: 0.97 }} onClick={() => following ? unfollowClub(event.clubId) : followClub(event.clubId, { teams: 'all', notif: { match: true, news: true } })} style={{ width: '100%', padding: '11px 0', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: following ? `${sportColor}15` : 'var(--sl-surface)', color: following ? sportColor : 'var(--sl-t2)', border: `1px solid ${following ? sportColor : 'var(--sl-border-s)'}`, transition: 'all 0.18s', marginBottom: 8 }}>
       <svg width="15" height="15" viewBox="0 0 24 24" fill={following ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       {following ? `Vous suivez ${event.clubName ?? 'ce club'} ✓` : `Suivre ${event.clubName ?? 'ce club'}`}
     </motion.button>
@@ -164,12 +164,12 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
       {/* Sticky header */}
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, padding: '0 12px', position: 'relative' }}>
         {snapPoint === 'full' ? (
-          <button onPointerDown={(e) => e.stopPropagation()} onClick={() => setSnapPoint('detail')} aria-label="Réduire" style={{ position: 'absolute', left: 8, top: 4, width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)' }}>
+          <button onPointerDown={(e) => e.stopPropagation()} onClick={() => setSnapPoint('detail')} aria-label="Réduire" style={{ position: 'absolute', left: 8, top: 4, width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
         ) : null}
-        <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
-        <button onPointerDown={(e) => e.stopPropagation()} onClick={onClose} aria-label="Fermer" style={{ position: 'absolute', right: 8, top: 4, width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+        <div style={{ width: 36, height: 3, borderRadius: 'var(--sl-radius-full)', backgroundColor: 'var(--sl-border-s)' }} />
+        <button onPointerDown={(e) => e.stopPropagation()} onClick={onClose} aria-label="Fermer" style={{ position: 'absolute', right: 8, top: 4, width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -181,14 +181,14 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
         {/* Top row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 8, color: '#fff', backgroundColor: sportColor }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 'var(--sl-radius-md)', color: '#fff', backgroundColor: sportColor }}>
               <SportIcon sport={event.sport} size={14} color="white" />
               {event.sport}
             </span>
-            {status !== 'upcoming' && <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 6, color: statusMeta.color, backgroundColor: statusMeta.bg }}>{statusMeta.label}</span>}
-            {typeMeta && <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, color: typeMeta.color, backgroundColor: `${typeMeta.color}20`, fontWeight: event.eventType === 'championship' ? 800 : 700, letterSpacing: event.eventType === 'championship' && event.level ? '0.05em' : 0 }}>{typeDisplay}</span>}
+            {status !== 'upcoming' && <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 'var(--sl-radius-sm)', color: statusMeta.color, backgroundColor: statusMeta.bg }}>{statusMeta.label}</span>}
+            {typeMeta && <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 'var(--sl-radius-sm)', color: typeMeta.color, backgroundColor: `${typeMeta.color}20`, fontWeight: event.eventType === 'championship' ? 800 : 700, letterSpacing: event.eventType === 'championship' && event.level ? '0.05em' : 0 }}>{typeDisplay}</span>}
           </div>
-          <button onClick={() => toggleFavorite(event.id)} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'} style={{ padding: 12, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: fav ? 'rgba(239,68,68,0.12)' : 'transparent', color: fav ? '#ef4444' : 'var(--sl-t3)' }}>
+          <button onClick={() => toggleFavorite(event.id)} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'} style={{ padding: 12, borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: fav ? 'rgba(239,68,68,0.12)' : 'transparent', color: fav ? '#ef4444' : 'var(--sl-t3)' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </button>
         </div>
@@ -219,12 +219,12 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
 
         {/* Social actions */}
         <div style={{ display: 'grid', gridTemplateColumns: event.clubId ? '1fr 1fr auto' : '1fr 1fr', gap: 8, marginBottom: 12 }}>
-          <motion.button whileTap={isFinished ? undefined : { scale: 0.95 }} disabled={isFinished} onClick={() => !isFinished && toggleAttend(event.id)} style={{ padding: '12px 0', borderRadius: 12, cursor: isFinished ? 'default' : 'pointer', opacity: isFinished ? 0.5 : 1, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: attending ? 'var(--sl-green-dim)' : 'var(--sl-surface)', color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, transition: 'all 0.15s' }}>
+          <motion.button whileTap={isFinished ? undefined : { scale: 0.95 }} disabled={isFinished} onClick={() => !isFinished && toggleAttend(event.id)} style={{ padding: '12px 0', borderRadius: 'var(--sl-radius-xl)', cursor: isFinished ? 'default' : 'pointer', opacity: isFinished ? 0.5 : 1, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: attending ? 'var(--sl-green-dim)' : 'var(--sl-surface)', color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, transition: 'all 0.15s' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill={attending ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             {attending ? "J'y serai ✓" : "J'y serai"}
-            {attendeeCount > 0 && <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 999, backgroundColor: attending ? 'rgba(255,255,255,0.2)' : 'var(--sl-green-dim)', color: attending ? 'white' : 'var(--sl-green)' }}>{attendeeCount}</span>}
+            {attendeeCount > 0 && <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 'var(--sl-radius-full)', backgroundColor: attending ? 'rgba(255,255,255,0.2)' : 'var(--sl-green-dim)', color: attending ? 'white' : 'var(--sl-green)' }}>{attendeeCount}</span>}
           </motion.button>
-          <button onClick={handleNav} style={{ padding: '12px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
+          <button onClick={handleNav} style={{ padding: '12px 0', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
             M'y rendre
           </button>
@@ -236,7 +236,7 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
         {snapPoint !== 'full' && <RideSection event={event} snapPoint={snapPoint} />}
 
         {snapPoint === 'detail' && (
-          <button onClick={() => setSnapPoint('full')} style={{ width: '100%', padding: '12px 0', borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t3)', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer' }}>
+          <button onClick={() => setSnapPoint('full')} style={{ width: '100%', padding: '12px 0', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t3)', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer' }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
             Voir les détails, partager, calendrier
           </button>
@@ -246,20 +246,20 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
           {snapPoint === 'full' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
               <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 4 }}>
-                <button onClick={handleShare} aria-label="Partager l'événement" style={{ flex: 1, padding: '12px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: copied ? 'var(--sl-green-dim)' : 'transparent', color: copied ? 'var(--sl-green)' : 'var(--sl-t2)' }}>
+                <button onClick={handleShare} aria-label="Partager l'événement" style={{ flex: 1, padding: '12px 0', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: copied ? 'var(--sl-green-dim)' : 'transparent', color: copied ? 'var(--sl-green)' : 'var(--sl-t2)' }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                   {copied ? 'Copié !' : 'Partager'}
                 </button>
-                <button onClick={() => downloadICS(event as any)} style={{ flex: 1, padding: '12px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'transparent', color: 'var(--sl-t2)' }}>
+                <button onClick={() => downloadICS(event as any)} style={{ flex: 1, padding: '12px 0', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'transparent', color: 'var(--sl-t2)' }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   Calendrier
                 </button>
                 {canCreatePoster ? (
-                  <button onClick={() => setShowPoster(true)} aria-label="Créer une affiche" style={{ width: 44, padding: '12px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', color: 'var(--sl-t2)', flexShrink: 0 }}>
+                  <button onClick={() => setShowPoster(true)} aria-label="Créer une affiche" style={{ width: 44, padding: '12px 0', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', color: 'var(--sl-t2)', flexShrink: 0 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                   </button>
                 ) : posterUrl ? (
-                  <button onClick={() => window.open(posterUrl, '_blank', 'noopener')} aria-label="Voir l'affiche" style={{ width: 44, padding: '12px 0', borderRadius: 12, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', color: 'var(--sl-t2)', flexShrink: 0 }}>
+                  <button onClick={() => window.open(posterUrl, '_blank', 'noopener')} aria-label="Voir l'affiche" style={{ width: 44, padding: '12px 0', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', color: 'var(--sl-t2)', flexShrink: 0 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </button>
                 ) : null}
@@ -295,8 +295,8 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
 
               {canEditThis && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                  <button onClick={() => onEdit?.(event)} style={{ flex: 1, padding: '11px 0', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#4da6ff', backgroundColor: 'rgba(77,166,255,0.10)' }}>Modifier</button>
-                  <button onClick={() => onDelete?.(event.id)} style={{ flex: 1, padding: '11px 0', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.10)' }}>Supprimer</button>
+                  <button onClick={() => onEdit?.(event)} style={{ flex: 1, padding: '11px 0', borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#4da6ff', backgroundColor: 'rgba(77,166,255,0.10)' }}>Modifier</button>
+                  <button onClick={() => onDelete?.(event.id)} style={{ flex: 1, padding: '11px 0', borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.10)' }}>Supprimer</button>
                 </div>
               )}
             </motion.div>
@@ -313,7 +313,7 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
 function MetaRow({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-      <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', marginTop: 2 }}>{icon}</div>
+      <div style={{ width: 32, height: 32, borderRadius: 'var(--sl-radius-md)', flexShrink: 0, backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', marginTop: 2 }}>{icon}</div>
       <div>{children}</div>
     </div>
   );

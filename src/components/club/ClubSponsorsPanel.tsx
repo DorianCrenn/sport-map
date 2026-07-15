@@ -20,7 +20,7 @@ const BLANK = {
 };
 
 const inp: React.CSSProperties = {
-  padding: '7px 10px', borderRadius: 8, fontSize: 12,
+  padding: '7px 10px', borderRadius: 'var(--sl-radius-md)', fontSize: 12,
   border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)',
   color: 'var(--sl-t1)', outline: 'none', width: '100%', boxSizing: 'border-box',
 };
@@ -32,7 +32,7 @@ const lbl: React.CSSProperties = {
 
 function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; label: string }) {
   return (
-    <button onClick={onToggle} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', border: 'none', backgroundColor: on ? 'rgba(34,197,94,0.15)' : 'var(--sl-surface)', color: on ? '#16a34a' : 'var(--sl-t3)' }}>
+    <button onClick={onToggle} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', border: 'none', backgroundColor: on ? 'rgba(34,197,94,0.15)' : 'var(--sl-surface)', color: on ? '#16a34a' : 'var(--sl-t3)' }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, backgroundColor: on ? '#16a34a' : 'var(--sl-border-s)' }} />
       {label}
     </button>
@@ -41,11 +41,11 @@ function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; la
 
 function ValidityBadge({ validFrom, validUntil }: { validFrom?: string; validUntil?: string }) {
   const today = new Date().toISOString().slice(0, 10);
-  if (validUntil && validUntil < today) return <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>Expiré</span>;
-  if (validFrom && validFrom > today) return <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 10, backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>À venir</span>;
+  if (validUntil && validUntil < today) return <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>Expiré</span>;
+  if (validFrom && validFrom > today) return <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>À venir</span>;
   if (validUntil) {
     const days = Math.round((new Date(validUntil).getTime() - Date.now()) / 86400000);
-    if (days <= 30) return <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 10, backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>Expire dans {days}j</span>;
+    if (days <= 30) return <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>Expire dans {days}j</span>;
   }
   return null;
 }
@@ -77,14 +77,14 @@ export default function ClubSponsorsPanel({ clubId, onClose }: ClubSponsorsPanel
       <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <button onClick={onClose} style={{ fontSize: 20, lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--sl-t1)', padding: '0 4px' }}>←</button>
         <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--sl-t1)', flex: 1 }}>Partenaires</span>
-        <button onClick={() => setShowForm(v => !v)} style={{ padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: 'none', backgroundColor: showForm ? 'var(--sl-surface)' : '#6366f1', color: showForm ? 'var(--sl-t2)' : '#fff' }}>
+        <button onClick={() => setShowForm(v => !v)} style={{ padding: '6px 14px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 12, fontWeight: 700, cursor: 'pointer', border: 'none', backgroundColor: showForm ? 'var(--sl-surface)' : '#6366f1', color: showForm ? 'var(--sl-t2)' : '#fff' }}>
           {showForm ? 'Annuler' : '+ Ajouter'}
         </button>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {showForm && (
-          <div style={{ borderRadius: 14, border: '1.5px solid #6366f1', backgroundColor: 'var(--sl-card)', padding: '14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ borderRadius: 'var(--sl-radius-2xl)', border: '1.5px solid #6366f1', backgroundColor: 'var(--sl-card)', padding: '14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Nouveau partenaire</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <div style={{ gridColumn: '1/-1' }}>
@@ -100,7 +100,7 @@ export default function ClubSponsorsPanel({ clubId, onClose }: ClubSponsorsPanel
               <div>
                 <label style={lbl}>Couleur fond feed</label>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <input type="color" value={form.bg_color} onChange={e => setF('bg_color', e.target.value)} style={{ width: 36, height: 32, padding: 2, borderRadius: 6, border: '1px solid var(--sl-border-s)', cursor: 'pointer' }} />
+                  <input type="color" value={form.bg_color} onChange={e => setF('bg_color', e.target.value)} style={{ width: 36, height: 32, padding: 2, borderRadius: 'var(--sl-radius-sm)', border: '1px solid var(--sl-border-s)', cursor: 'pointer' }} />
                   <input value={form.bg_color} onChange={e => setF('bg_color', e.target.value)} placeholder="#111827" style={{ ...inp, flex: 1 }} />
                 </div>
               </div>
@@ -144,7 +144,7 @@ export default function ClubSponsorsPanel({ clubId, onClose }: ClubSponsorsPanel
                 </div>
               </div>
             </div>
-            <button onClick={handleAdd} disabled={!form.sponsor_name.trim() || adding} style={{ padding: '9px 0', borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 13, cursor: form.sponsor_name.trim() && !adding ? 'pointer' : 'not-allowed', backgroundColor: form.sponsor_name.trim() ? '#6366f1' : 'var(--sl-border)', color: form.sponsor_name.trim() ? '#fff' : 'var(--sl-t3)', opacity: adding ? 0.7 : 1, transition: 'all 0.15s' }}>
+            <button onClick={handleAdd} disabled={!form.sponsor_name.trim() || adding} style={{ padding: '9px 0', borderRadius: 'var(--sl-radius-lg)', border: 'none', fontWeight: 700, fontSize: 13, cursor: form.sponsor_name.trim() && !adding ? 'pointer' : 'not-allowed', backgroundColor: form.sponsor_name.trim() ? '#6366f1' : 'var(--sl-border)', color: form.sponsor_name.trim() ? '#fff' : 'var(--sl-t3)', opacity: adding ? 0.7 : 1, transition: 'all 0.15s' }}>
               {adding ? 'Ajout…' : 'Ajouter le partenaire'}
             </button>
           </div>
@@ -152,7 +152,7 @@ export default function ClubSponsorsPanel({ clubId, onClose }: ClubSponsorsPanel
 
         {loading && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[1, 2].map(i => <div key={i} style={{ height: 80, borderRadius: 12, backgroundColor: 'var(--sl-surface)', opacity: 1 - i * 0.2 }} />)}
+            {[1, 2].map(i => <div key={i} style={{ height: 80, borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', opacity: 1 - i * 0.2 }} />)}
           </div>
         )}
 
@@ -167,9 +167,9 @@ export default function ClubSponsorsPanel({ clubId, onClose }: ClubSponsorsPanel
         {!loading && (sponsors as any[]).map(s => {
           const meta = TIER_META[s.tier] ?? TIER_META.partner;
           return (
-            <div key={s.id} style={{ borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div key={s.id} style={{ borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 8, flexShrink: 0, overflow: 'hidden', backgroundColor: meta.color + '22', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-md)', flexShrink: 0, overflow: 'hidden', backgroundColor: meta.color + '22', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {s.logo_url
                     ? <img src={s.logo_url} alt={s.sponsor_name} loading="lazy" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
                     : <span style={{ fontSize: 14, fontWeight: 700, color: meta.color }}>{(s.sponsor_name ?? '?')[0].toUpperCase()}</span>
@@ -188,8 +188,8 @@ export default function ClubSponsorsPanel({ clubId, onClose }: ClubSponsorsPanel
                 {confirmId === s.id ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                     <span style={{ fontSize: 11, color: 'var(--sl-t2)' }}>Supprimer ?</span>
-                    <button onClick={() => { removeSponsor(s.id); setConfirmId(null); }} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 8, border: 'none', backgroundColor: '#ef4444', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>Oui</button>
-                    <button onClick={() => setConfirmId(null)} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', cursor: 'pointer' }}>Non</button>
+                    <button onClick={() => { removeSponsor(s.id); setConfirmId(null); }} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 'var(--sl-radius-md)', border: 'none', backgroundColor: '#ef4444', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>Oui</button>
+                    <button onClick={() => setConfirmId(null)} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', cursor: 'pointer' }}>Non</button>
                   </div>
                 ) : (
                   <button onClick={() => setConfirmId(s.id)} style={{ flexShrink: 0, width: 28, height: 28, borderRadius: '50%', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--sl-t3)'; }}>
@@ -203,8 +203,8 @@ export default function ClubSponsorsPanel({ clubId, onClose }: ClubSponsorsPanel
                 <Toggle on={s.show_in_poster ?? true} onToggle={() => updateSponsor(s.id, { show_in_poster:  !(s.show_in_poster ?? true) })} label="🎨 Affiches" />
               </div>
               {s.logo_white_url && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid var(--sl-border)' }}>
-                  <div style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid var(--sl-border)' }}>
+                  <div style={{ width: 24, height: 24, borderRadius: 'var(--sl-radius-xs)', backgroundColor: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <img src={s.logo_white_url} alt="" loading="lazy" style={{ maxWidth: 20, maxHeight: 20, objectFit: 'contain' }} onError={e => { (e.target as HTMLElement).style.display = 'none'; }} />
                   </div>
                   <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>Logo blanc configuré ✓</span>

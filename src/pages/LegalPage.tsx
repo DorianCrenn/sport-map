@@ -221,7 +221,7 @@ export default function LegalPage({ initialTab = 'mentions', onClose }: LegalPag
           onClick={onClose}
           aria-label="Fermer"
           style={{
-            width: 40, height: 40, borderRadius: 12, border: 'none', cursor: 'pointer',
+            width: 40, height: 40, borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer',
             backgroundColor: 'var(--sl-hover)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--sl-t2)', flexShrink: 0,
@@ -249,7 +249,7 @@ export default function LegalPage({ initialTab = 'mentions', onClose }: LegalPag
             onClick={() => setActiveTab(tab.id)}
             style={{
               flexShrink: 0,
-              padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
+              padding: '8px 16px', borderRadius: 'var(--sl-radius-4xl)', border: 'none', cursor: 'pointer',
               fontWeight: 600, fontSize: 13, fontFamily: 'var(--sl-font-ui)',
               transition: 'background-color 0.15s, color 0.15s',
               backgroundColor: activeTab === tab.id ? 'var(--sl-green)' : 'var(--sl-hover)',

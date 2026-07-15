@@ -58,14 +58,14 @@ export default function QuickAddTeamModal({ club, onSave, onClose }: QuickAddTea
         style={{ backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', padding: '0 0 env(safe-area-inset-bottom, 16px)', maxHeight: '80dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
-          <div style={{ width: 36, height: 3.5, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
+          <div style={{ width: 36, height: 3.5, borderRadius: 'var(--sl-radius-full)', backgroundColor: 'var(--sl-border-s)' }} />
         </div>
         <div style={{ padding: '8px 18px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.02em' }}>Créer une équipe</div>
             <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>Choisissez une catégorie puis nommez l'équipe</div>
           </div>
-          <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 10, border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+          <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
@@ -76,7 +76,7 @@ export default function QuickAddTeamModal({ club, onSave, onClose }: QuickAddTea
               <button
                 key={cat}
                 onClick={() => selectCat(cat)}
-                style={{ padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: catName === cat ? 'var(--sl-green)' : 'var(--sl-surface)', color: catName === cat ? '#fff' : 'var(--sl-t2)', outline: catName === cat ? 'none' : existingCatNames.includes(cat) ? '1.5px solid var(--sl-green)' : '1px solid var(--sl-border)' }}
+                style={{ padding: '5px 12px', borderRadius: 'var(--sl-radius-4xl)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: catName === cat ? 'var(--sl-green)' : 'var(--sl-surface)', color: catName === cat ? '#fff' : 'var(--sl-t2)', outline: catName === cat ? 'none' : existingCatNames.includes(cat) ? '1.5px solid var(--sl-green)' : '1px solid var(--sl-border)' }}
               >
                 {cat}
               </button>
@@ -85,7 +85,7 @@ export default function QuickAddTeamModal({ club, onSave, onClose }: QuickAddTea
               placeholder="Autre catégorie…"
               value={AGE_CATEGORIES.includes(catName) ? '' : catName}
               onChange={e => selectCat(e.target.value)}
-              style={{ padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', width: 130 }}
+              style={{ padding: '5px 12px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 12, fontWeight: 600, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', width: 130 }}
             />
           </div>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Nom de l'équipe</div>
@@ -93,14 +93,14 @@ export default function QuickAddTeamModal({ club, onSave, onClose }: QuickAddTea
             value={teamName}
             onChange={e => setTeamName(e.target.value)}
             placeholder="ex: Seniors 1, U13 2…"
-            style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 14, fontWeight: 600, outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 14, fontWeight: 600, outline: 'none', boxSizing: 'border-box' }}
           />
         </div>
         <div style={{ padding: '12px 18px', borderTop: '1px solid var(--sl-border)', flexShrink: 0 }}>
           <button
             onClick={handleSave}
             disabled={saving || !catName.trim() || !teamName.trim()}
-            style={{ width: '100%', padding: '13px', borderRadius: 14, border: 'none', cursor: !catName.trim() || !teamName.trim() ? 'not-allowed' : 'pointer', fontSize: 14, fontWeight: 800, backgroundColor: !catName.trim() || !teamName.trim() ? 'var(--sl-surface)' : 'var(--sl-green)', color: !catName.trim() || !teamName.trim() ? 'var(--sl-t3)' : '#fff', opacity: saving ? 0.7 : 1 }}
+            style={{ width: '100%', padding: '13px', borderRadius: 'var(--sl-radius-2xl)', border: 'none', cursor: !catName.trim() || !teamName.trim() ? 'not-allowed' : 'pointer', fontSize: 14, fontWeight: 800, backgroundColor: !catName.trim() || !teamName.trim() ? 'var(--sl-surface)' : 'var(--sl-green)', color: !catName.trim() || !teamName.trim() ? 'var(--sl-t3)' : '#fff', opacity: saving ? 0.7 : 1 }}
           >
             {saving ? 'Création…' : "Créer l'équipe"}
           </button>

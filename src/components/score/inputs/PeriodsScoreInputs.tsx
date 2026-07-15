@@ -2,13 +2,13 @@ import { useState } from 'react';
 
 const numStyle: React.CSSProperties = {
   width: 52, textAlign: 'center', fontWeight: 700, fontSize: 18,
-  padding: '7px 0', borderRadius: 10,
+  padding: '7px 0', borderRadius: 'var(--sl-radius-lg)',
   backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
   color: 'var(--sl-t1)', outline: 'none',
 };
 const bigStyle: React.CSSProperties = {
   width: 72, textAlign: 'center', fontWeight: 800, fontSize: 28,
-  padding: '10px 0', borderRadius: 12,
+  padding: '10px 0', borderRadius: 'var(--sl-radius-xl)',
   backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
   color: 'var(--sl-t1)', outline: 'none',
 };
@@ -67,7 +67,7 @@ export default function PeriodsScoreInputs({ config, value, onChange }: PeriodsS
         </div>
       </div>
 
-      <button onClick={() => setShowPeriods(v => !v)} style={{ alignSelf: 'center', padding: '5px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer' }}>
+      <button onClick={() => setShowPeriods(v => !v)} style={{ alignSelf: 'center', padding: '5px 14px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 11, fontWeight: 600, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer' }}>
         {showPeriods ? '▲ Masquer les QT' : '▼ Détail par quart-temps'}
       </button>
 
@@ -90,7 +90,7 @@ export default function PeriodsScoreInputs({ config, value, onChange }: PeriodsS
       {config.overtimeEnabled && isDraw && (
         <>
           {!showOT ? (
-            <button onClick={() => setShowOT(true)} style={{ alignSelf: 'center', padding: '5px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer' }}>+ Prolongation (OT)</button>
+            <button onClick={() => setShowOT(true)} style={{ alignSelf: 'center', padding: '5px 14px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 11, fontWeight: 600, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer' }}>+ Prolongation (OT)</button>
           ) : (
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'center', marginBottom: 6 }}>OT</div>

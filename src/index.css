@@ -108,11 +108,15 @@
   --sl-info:         #4da6ff;
   --sl-info-dim:     rgba(77,166,255,0.12);
 
-  /* Border radius scale */
-  --sl-radius-sm:   8px;
-  --sl-radius-md:   12px;
-  --sl-radius-lg:   16px;
-  --sl-radius-xl:   20px;
+  /* Border radius scale — échelle unifiée (calquée sur l'usage réel de l'app) */
+  --sl-radius-xs:   4px;
+  --sl-radius-sm:   6px;
+  --sl-radius-md:   8px;
+  --sl-radius-lg:   10px;
+  --sl-radius-xl:   12px;
+  --sl-radius-2xl:  14px;
+  --sl-radius-3xl:  16px;
+  --sl-radius-4xl:  20px;
   --sl-radius-full: 9999px;
 }
 

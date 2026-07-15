@@ -31,11 +31,11 @@ export default function AddBlockMenu({ onAdd, onCancel }: AddBlockMenuProps) {
       >
         <div style={{ borderRadius: '20px 20px 0 0', backgroundColor: 'var(--sl-card)', borderTop: '1px solid var(--sl-border)', display: 'flex', flexDirection: 'column', maxHeight: '85vh', overflow: 'hidden' }}>
           <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4, flexShrink: 0 }}>
-            <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border)' }} />
+            <div style={{ width: 36, height: 4, borderRadius: 'var(--sl-radius-xs)', backgroundColor: 'var(--sl-border)' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px 10px', flexShrink: 0 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Choisir un type de bloc</span>
-            <button onClick={onCancel} style={{ fontSize: 11, color: 'var(--sl-t3)', padding: '3px 10px', borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', cursor: 'pointer' }}>
+            <button onClick={onCancel} style={{ fontSize: 11, color: 'var(--sl-t3)', padding: '3px 10px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', cursor: 'pointer' }}>
               Annuler
             </button>
           </div>
@@ -45,7 +45,7 @@ export default function AddBlockMenu({ onAdd, onCancel }: AddBlockMenuProps) {
                 <button
                   key={type}
                   onClick={() => onAdd(type)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, textAlign: 'left', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', transition: 'all 0.12s' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', textAlign: 'left', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', transition: 'all 0.12s' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.backgroundColor = 'rgba(59,130,246,0.06)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--sl-border)'; e.currentTarget.style.backgroundColor = 'var(--sl-surface)'; }}
                 >

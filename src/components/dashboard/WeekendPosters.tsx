@@ -247,7 +247,7 @@ function PosterCard({ match, bgImage, isDark, isExporting, hiddenActions = [], o
         {/* Indicateur photo en cours de chargement */}
         {!bgImage && (
           <div className="absolute bottom-2 right-2 z-10">
-            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', background: 'rgba(0,0,0,0.45)', padding: '2px 6px', borderRadius: 8, backdropFilter: 'blur(4px)' }}>
+            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', background: 'rgba(0,0,0,0.45)', padding: '2px 6px', borderRadius: 'var(--sl-radius-md)', backdropFilter: 'blur(4px)' }}>
               photo en cours…
             </span>
           </div>
@@ -280,7 +280,7 @@ function PosterCard({ match, bgImage, isDark, isExporting, hiddenActions = [], o
               fontSize: 9.5,
               fontWeight: 800,
               padding: '5px 4px',
-              borderRadius: 8,
+              borderRadius: 'var(--sl-radius-md)',
               border: activeTemplate === id ? `1.5px solid ${accent}` : `1px solid ${divider}`,
               cursor: 'pointer',
               background: activeTemplate === id ? accent : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),

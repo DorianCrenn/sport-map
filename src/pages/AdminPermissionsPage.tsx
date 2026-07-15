@@ -17,7 +17,7 @@ function PermCell({ allowed, saving, onClick, label }: PermCellProps) {
       aria-label={label ?? (allowed ? 'Autorisé — cliquer pour refuser' : 'Refusé — cliquer pour autoriser')}
       aria-pressed={allowed}
       style={{
-        width: 44, height: 44, borderRadius: 7, border: 'none', cursor: saving ? 'default' : 'pointer',
+        width: 44, height: 44, borderRadius: 'var(--sl-radius-sm)', border: 'none', cursor: saving ? 'default' : 'pointer',
         backgroundColor: allowed ? 'rgba(34,197,94,0.18)' : 'var(--sl-surface)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.1s',
@@ -91,7 +91,7 @@ export default function AdminPermissionsPage({ onBack }: AdminPermissionsPagePro
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ flexShrink: 0, padding: '16px 16px 12px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--sl-border)' }}>
-        <button onClick={onBack} aria-label="Retour à l'administration" style={{ width: 44, height: 44, borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <button onClick={onBack} aria-label="Retour à l'administration" style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div style={{ flex: 1 }}>
@@ -108,7 +108,7 @@ export default function AdminPermissionsPage({ onBack }: AdminPermissionsPagePro
             <button key={r.id} onClick={() => setSelectedRole(r.id)}
               aria-pressed={selectedRole === r.id}
               style={{
-                padding: '7px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', whiteSpace: 'nowrap',
+                padding: '7px 14px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', whiteSpace: 'nowrap',
                 backgroundColor: selectedRole === r.id ? r.color : 'var(--sl-surface)',
                 color: selectedRole === r.id ? '#fff' : 'var(--sl-t2)',
               }}>
@@ -125,7 +125,7 @@ export default function AdminPermissionsPage({ onBack }: AdminPermissionsPagePro
         <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{allowedCount}/{totalCount} permissions accordées</span>
         <div style={{ flex: 1 }} />
         <button onClick={() => setShowCopyFrom(p => !p)}
-          style={{ padding: '5px 12px', borderRadius: 20, border: '1px solid var(--sl-border)', fontSize: 11, fontWeight: 600, cursor: 'pointer', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t2)' }}>
+          style={{ padding: '5px 12px', borderRadius: 'var(--sl-radius-4xl)', border: '1px solid var(--sl-border)', fontSize: 11, fontWeight: 600, cursor: 'pointer', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t2)' }}>
           📋 Copier depuis…
         </button>
       </div>
@@ -135,18 +135,18 @@ export default function AdminPermissionsPage({ onBack }: AdminPermissionsPagePro
         <div style={{ flexShrink: 0, padding: '8px 16px', display: 'flex', gap: 8, alignItems: 'center', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'rgba(139,92,246,0.06)' }}>
           <label htmlFor="copy-from-select" style={{ fontSize: 12, color: 'var(--sl-t2)' }}>Copier les permissions de :</label>
           <select id="copy-from-select" value={copyFromRole} onChange={e => setCopyFromRole(e.target.value)}
-            style={{ padding: '5px 10px', borderRadius: 10, border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)' }}>
+            style={{ padding: '5px 10px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)' }}>
             <option value="">-- Choisir --</option>
             {ROLES.filter((r: any) => r.id !== selectedRole).map((r: any) => (
               <option key={r.id} value={r.id}>{r.label}</option>
             ))}
           </select>
           <button onClick={handleCopy} disabled={!copyFromRole || copying}
-            style={{ padding: '5px 12px', borderRadius: 10, border: 'none', fontSize: 12, fontWeight: 700, color: '#fff', backgroundColor: '#8b5cf6', cursor: 'pointer' }}>
+            style={{ padding: '5px 12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', fontSize: 12, fontWeight: 700, color: '#fff', backgroundColor: '#8b5cf6', cursor: 'pointer' }}>
             {copying ? '…' : 'Copier'}
           </button>
           <button onClick={() => setShowCopyFrom(false)}
-            style={{ padding: '5px 10px', borderRadius: 10, border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-card)', cursor: 'pointer', color: 'var(--sl-t2)' }}>
+            style={{ padding: '5px 10px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-card)', cursor: 'pointer', color: 'var(--sl-t2)' }}>
             Annuler
           </button>
         </div>
@@ -157,14 +157,14 @@ export default function AdminPermissionsPage({ onBack }: AdminPermissionsPagePro
         {RESOURCES.map((res: any) => {
           const rowAllowed = ACTIONS.filter((a: any) => isAllowed(selectedRole, res.id, a.id)).length;
           return (
-            <div key={res.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 14, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+            <div key={res.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
               {/* Ressource header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)' }}>
                 <span style={{ fontSize: 16 }}>{res.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--sl-t1)', flex: 1 }}>{res.label}</span>
                 <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{rowAllowed}/{ACTIONS.length}</span>
-                <button onClick={() => handleAllowAll(res.id)} aria-label={`Tout autoriser pour ${res.label}`} style={{ padding: '3px 8px', borderRadius: 8, border: '1px solid rgba(34,197,94,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer', color: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)' }}>✓ Tout</button>
-                <button onClick={() => handleDenyAll(res.id)} aria-label={`Tout refuser pour ${res.label}`} style={{ padding: '3px 8px', borderRadius: 8, border: '1px solid rgba(239,68,68,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer', color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)' }}>✗ Rien</button>
+                <button onClick={() => handleAllowAll(res.id)} aria-label={`Tout autoriser pour ${res.label}`} style={{ padding: '3px 8px', borderRadius: 'var(--sl-radius-md)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer', color: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)' }}>✓ Tout</button>
+                <button onClick={() => handleDenyAll(res.id)} aria-label={`Tout refuser pour ${res.label}`} style={{ padding: '3px 8px', borderRadius: 'var(--sl-radius-md)', border: '1px solid rgba(239,68,68,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer', color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)' }}>✗ Rien</button>
               </div>
               {/* Actions */}
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(${ACTIONS.length}, 1fr)`, gap: 0 }}>

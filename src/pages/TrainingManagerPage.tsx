@@ -39,7 +39,7 @@ function UpcomingSessionCard({ session, currentUser }: UpcomingSessionCardProps)
   const { counts, myStatus, respond } = useTrainingAttendance(session.id, currentUser?.id) as any;
   return (
     <div style={{
-      borderRadius: 14, border: '1px solid var(--sl-border)',
+      borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)',
       backgroundColor: 'var(--sl-card)', overflow: 'hidden', marginBottom: 10,
     }}>
       <div style={{ height: 3, background: myStatus === 'present' ? '#22c55e' : myStatus === 'absent' ? '#ef4444' : myStatus === 'unsure' ? '#f97316' : 'var(--sl-border)' }} />
@@ -66,7 +66,7 @@ function UpcomingSessionCard({ session, currentUser }: UpcomingSessionCardProps)
               key={s}
               onClick={() => respond(s)}
               style={{
-                flex: 1, padding: '7px 4px', borderRadius: 10, cursor: 'pointer',
+                flex: 1, padding: '7px 4px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer',
                 border: `1.5px solid ${myStatus === s ? cfg.color : 'var(--sl-border)'}`,
                 backgroundColor: myStatus === s ? cfg.bg : 'transparent',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
@@ -259,7 +259,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
             onClick={onBack}
             aria-label="Retour"
             style={{
-              width: 44, height: 44, borderRadius: 11, border: 'none', cursor: 'pointer',
+              width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer',
               backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center',
               justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0,
             }}
@@ -273,7 +273,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
               </h1>
               {isManager && generatedCount > 0 && (
                 <span style={{
-                  fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+                  fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-4xl)',
                   backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1',
                 }}>
                   {generatedCount} séance{generatedCount > 1 ? 's' : ''} planifiée{generatedCount > 1 ? 's' : ''}
@@ -296,7 +296,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
                 key={club.id}
                 onClick={() => { setSelectedClubId(String(club.id)); setSelectedTeam('all'); }}
                 style={{
-                  padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                  padding: '5px 12px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 11, fontWeight: 600,
                   cursor: 'pointer', transition: 'all 0.15s',
                   border: String(club.id) === selectedClubId ? 'none' : '1px solid var(--sl-border)',
                   backgroundColor: String(club.id) === selectedClubId ? '#4f46e5' : 'var(--sl-pill-bg)',
@@ -323,7 +323,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
             key={key}
             onClick={() => setMode(key)}
             style={{
-              padding: '7px 16px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+              padding: '7px 16px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 12, fontWeight: 600,
               cursor: 'pointer', transition: 'all 0.15s',
               border: mode === key ? 'none' : '1px solid var(--sl-border)',
               backgroundColor: mode === key ? '#4f46e5' : 'var(--sl-pill-bg)',
@@ -409,7 +409,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
                     key={t.id}
                     onClick={() => setSelectedTeam(t.id)}
                     style={{
-                      padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                      padding: '5px 12px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 11, fontWeight: 600,
                       cursor: 'pointer', whiteSpace: 'nowrap',
                       border: selectedTeam === t.id ? 'none' : '1px solid var(--sl-border)',
                       backgroundColor: selectedTeam === t.id ? '#4f46e5' : 'var(--sl-pill-bg)',
@@ -434,7 +434,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
                 <button
                   onClick={() => setMode('edit')}
                   style={{
-                    marginTop: 16, padding: '10px 24px', borderRadius: 12,
+                    marginTop: 16, padding: '10px 24px', borderRadius: 'var(--sl-radius-xl)',
                     backgroundColor: '#6366f1', color: '#fff', border: 'none',
                     fontSize: 13, fontWeight: 700, cursor: 'pointer',
                   }}
@@ -461,7 +461,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
             {clubsLoading ? (
               <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[1, 2, 3].map(i => (
-                  <div key={i} style={{ height: 40, borderRadius: 10, backgroundColor: 'var(--sl-surface)', opacity: 1 - i * 0.2 }} />
+                  <div key={i} style={{ height: 40, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-surface)', opacity: 1 - i * 0.2 }} />
                 ))}
               </div>
             ) : (
@@ -489,7 +489,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
                       >
                         <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isActive ? '#6366f1' : 'var(--sl-border-s)', flexShrink: 0 }} />
                         {team.name}
-                        <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 5px', borderRadius: 8, backgroundColor: isActive ? 'rgba(99,102,241,0.12)' : 'var(--sl-border)', color: isActive ? '#6366f1' : 'var(--sl-t3)' }}>
+                        <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 5px', borderRadius: 'var(--sl-radius-md)', backgroundColor: isActive ? 'rgba(99,102,241,0.12)' : 'var(--sl-border)', color: isActive ? '#6366f1' : 'var(--sl-t3)' }}>
                           {count}
                         </span>
                       </button>
@@ -513,7 +513,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
                 <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 80px', borderTop: '1px solid var(--sl-border)' }}>
                   {/* Formulaire ajout équipe */}
                   {addingTeam && (
-                    <div style={{ margin: '12px 0', padding: 12, borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+                    <div style={{ margin: '12px 0', padding: 12, borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
                       <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 8 }}>Nouvelle équipe</p>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <input
@@ -521,10 +521,10 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
                           onChange={e => setNewTeamName(e.target.value)}
                           onKeyDown={e => { if (e.key === 'Enter') handleAddTeam(); if (e.key === 'Escape') setAddingTeam(false); }}
                           placeholder="ex : Seniors A, U17…"
-                          style={{ flex: 1, padding: '8px 10px', borderRadius: 8, fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
+                          style={{ flex: 1, padding: '8px 10px', borderRadius: 'var(--sl-radius-md)', fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
                         />
-                        <button onClick={handleAddTeam} disabled={!newTeamName.trim()} style={{ padding: '8px 14px', borderRadius: 8, backgroundColor: '#6366f1', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: newTeamName.trim() ? 'pointer' : 'not-allowed', opacity: newTeamName.trim() ? 1 : 0.5 }}>Ajouter</button>
-                        <button onClick={() => { setAddingTeam(false); setNewTeamName(''); }} style={{ padding: '8px 10px', borderRadius: 8, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)', border: '1px solid var(--sl-border)', fontSize: 12, cursor: 'pointer' }}>✕</button>
+                        <button onClick={handleAddTeam} disabled={!newTeamName.trim()} style={{ padding: '8px 14px', borderRadius: 'var(--sl-radius-md)', backgroundColor: '#6366f1', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: newTeamName.trim() ? 'pointer' : 'not-allowed', opacity: newTeamName.trim() ? 1 : 0.5 }}>Ajouter</button>
+                        <button onClick={() => { setAddingTeam(false); setNewTeamName(''); }} style={{ padding: '8px 10px', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)', border: '1px solid var(--sl-border)', fontSize: 12, cursor: 'pointer' }}>✕</button>
                       </div>
                     </div>
                   )}
@@ -587,7 +587,7 @@ function MergedSessionRow({ session, hostTeam }: MergedSessionRowProps) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
-      padding: '8px 12px', borderRadius: 10, marginBottom: 6,
+      padding: '8px 12px', borderRadius: 'var(--sl-radius-lg)', marginBottom: 6,
       border: '1px dashed rgba(99,102,241,0.3)',
       backgroundColor: 'rgba(99,102,241,0.04)',
     }}>
@@ -599,7 +599,7 @@ function MergedSessionRow({ session, hostTeam }: MergedSessionRowProps) {
           {session.location}
         </span>
       )}
-      <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1', flexShrink: 0 }}>
+      <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1', flexShrink: 0 }}>
         🔗 {hostTeam.name}
       </span>
     </div>

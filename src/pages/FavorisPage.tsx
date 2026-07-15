@@ -53,13 +53,13 @@ export default function FavorisPage({ allEvents, allClubs = [], onNavigate }: Fa
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 300 }}>
           <button
             onClick={() => onNavigate?.('clubs')}
-            style={{ padding: '13px 20px', borderRadius: 14, border: 'none', backgroundColor: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+            style={{ padding: '13px 20px', borderRadius: 'var(--sl-radius-2xl)', border: 'none', backgroundColor: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
           >
             Découvrir les clubs
           </button>
           <button
             onClick={() => onNavigate?.('map')}
-            style={{ padding: '13px 20px', borderRadius: 14, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+            style={{ padding: '13px 20px', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
           >
             Voir les événements
           </button>
@@ -92,7 +92,7 @@ export default function FavorisPage({ allEvents, allClubs = [], onNavigate }: Fa
                 aria-controls={`tab-panel-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  flex: 1, padding: '11px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                  flex: 1, padding: '11px 8px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer',
                   fontSize: 11, fontWeight: isActive ? 700 : 500,
                   backgroundColor: isActive ? 'var(--sl-t1)' : 'var(--sl-surface)',
                   color: isActive ? 'var(--sl-bg)' : 'var(--sl-t3)',

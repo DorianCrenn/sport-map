@@ -56,7 +56,7 @@ export default function ClubsTab({ allEvents, allClubs, follows, onUnfollowClub,
         <motion.div
           animate={{ y: [0, -5, 0] }}
           transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-          style={{ width: 72, height: 72, borderRadius: 22, background: 'rgba(34,217,106,0.08)', border: '1px solid rgba(34,217,106,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}
+          style={{ width: 72, height: 72, borderRadius: 'var(--sl-radius-4xl)', background: 'rgba(34,217,106,0.08)', border: '1px solid rgba(34,217,106,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}
         >
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="1.5" strokeLinecap="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
@@ -83,24 +83,24 @@ export default function ClubsTab({ allEvents, allClubs, follows, onUnfollowClub,
 
         return (
           <div key={club.id} style={{ marginBottom: 10 }}>
-            <div style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+            <div style={{ borderRadius: 'var(--sl-radius-2xl)', overflow: 'hidden', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
               <div
                 onClick={() => setExpandedClubId(isExpanded ? null : club.id)}
                 style={{ padding: '12px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}
               >
-                <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, backgroundColor: `${sportColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0, backgroundColor: `${sportColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {club.logo
-                    ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }} />
+                    ? <img src={club.logo} alt={club.name} loading="lazy" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 'var(--sl-radius-sm)' }} onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }} />
                     : <SportIcon sport={club.sport} size={20} color={sportColor} />
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club.name}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                    <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 7px', borderRadius: 6, color: sportColor, backgroundColor: `${sportColor}18` }}>{club.sport}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 7px', borderRadius: 'var(--sl-radius-sm)', color: sportColor, backgroundColor: `${sportColor}18` }}>{club.sport}</span>
                     <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{teamsLabel}</span>
                     {upcomingEvents.length > 0 && (
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, color: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.12)' }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 'var(--sl-radius-sm)', color: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.12)' }}>
                         {upcomingEvents.length} à venir
                       </span>
                     )}
@@ -110,14 +110,14 @@ export default function ClubsTab({ allEvents, allClubs, follows, onUnfollowClub,
                   <button
                     onClick={(e: React.MouseEvent) => { e.stopPropagation(); setEditingClubId(club.id); }}
                     title="Modifier le suivi"
-                    style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)' }}
+                    style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t3)' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
                   </button>
                   <button
                     onClick={(e: React.MouseEvent) => { e.stopPropagation(); onUnfollowClub(club.id); }}
                     title="Ne plus suivre"
-                    style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}
+                    style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', border: '1px solid rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
@@ -153,7 +153,7 @@ export default function ClubsTab({ allEvents, allClubs, follows, onUnfollowClub,
                                 <div style={{ fontSize: 10, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.venue || ev.city}</div>
                               </div>
                               <button onClick={() => downloadICS(ev)} title="Ajouter au calendrier"
-                                style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <CalSvg size={12} />
                               </button>
                             </div>

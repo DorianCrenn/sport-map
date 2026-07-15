@@ -26,7 +26,7 @@ export default function FeedAnnouncements({ announcements, readIds, onRead }: Fe
         <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)' }}>Annonces clubs</span>
         {announcements.some(a => !readIds.has(a.id)) && (
           <span style={{
-            fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 10,
+            fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-lg)',
             backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444',
           }}>
             {announcements.filter(a => !readIds.has(a.id)).length} nouvelle{announcements.filter(a => !readIds.has(a.id)).length > 1 ? 's' : ''}
@@ -47,7 +47,7 @@ export default function FeedAnnouncements({ announcements, readIds, onRead }: Fe
               onClick={() => !isRead && onRead(ann.id)}
               style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10,
-                padding: '10px 12px', borderRadius: 14, marginBottom: 6,
+                padding: '10px 12px', borderRadius: 'var(--sl-radius-2xl)', marginBottom: 6,
                 backgroundColor: 'var(--sl-card)',
                 border: `1px solid ${isRead ? 'var(--sl-border)' : meta.color + '35'}`,
                 borderLeft: `3px solid ${isRead ? 'var(--sl-border)' : meta.color}`,
@@ -65,7 +65,7 @@ export default function FeedAnnouncements({ announcements, readIds, onRead }: Fe
                     {ann.clubName}
                   </span>
                   <span style={{
-                    fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 6,
+                    fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 'var(--sl-radius-sm)',
                     backgroundColor: `${meta.color}18`, color: meta.color,
                     textTransform: 'uppercase', letterSpacing: '0.05em',
                   }}>

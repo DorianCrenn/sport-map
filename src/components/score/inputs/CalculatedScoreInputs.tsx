@@ -1,6 +1,6 @@
 const numStyle: React.CSSProperties = {
   width: 52, textAlign: 'center', fontWeight: 700, fontSize: 20,
-  padding: '8px 0', borderRadius: 10,
+  padding: '8px 0', borderRadius: 'var(--sl-radius-lg)',
   backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
   color: 'var(--sl-t1)', outline: 'none',
 };
@@ -38,7 +38,7 @@ export default function CalculatedScoreInputs({ config, value, onChange }: Calcu
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '10px 16px', borderRadius: 12, backgroundColor: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '10px 16px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}>
         <span style={{ fontSize: 10, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Score calculé</span>
         <span style={{ fontWeight: 900, fontSize: 20, color: 'var(--sl-t1)' }}>{scoreHome} — {scoreAway}</span>
       </div>
@@ -65,7 +65,7 @@ export default function CalculatedScoreInputs({ config, value, onChange }: Calcu
       </div>
 
       {(warnHome || warnAway) && (
-        <div style={{ padding: '8px 12px', borderRadius: 8, backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, color: '#f59e0b' }}>
+        <div style={{ padding: '8px 12px', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, color: '#f59e0b' }}>
           ⚠️ {warnHome ? 'Dom. : transformations > essais.' : ''} {warnAway ? 'Ext. : transformations > essais.' : ''}
         </div>
       )}

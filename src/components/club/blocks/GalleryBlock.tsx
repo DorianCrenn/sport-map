@@ -38,7 +38,7 @@ export function GalleryBlockEditor({ block, onChange }: { block: Record<string, 
       {images.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
           {images.map((url, i) => (
-            <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 10, overflow: 'hidden', backgroundColor: 'var(--sl-border)' }}>
+            <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 'var(--sl-radius-lg)', overflow: 'hidden', backgroundColor: 'var(--sl-border)' }}>
               <img
                 src={url}
                 alt={`Photo ${i + 1}`}
@@ -67,12 +67,12 @@ export function GalleryBlockEditor({ block, onChange }: { block: Record<string, 
             onChange={e => setInputVal(e.target.value)}
             onKeyDown={handleKey}
             placeholder="URL de la photo (https://…)"
-            style={{ flex: 1, padding: '7px 10px', borderRadius: 8, fontSize: 12, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
+            style={{ flex: 1, padding: '7px 10px', borderRadius: 'var(--sl-radius-md)', fontSize: 12, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
           />
           <button
             onClick={addImage}
             disabled={!inputVal.trim()}
-            style={{ padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 12, fontWeight: 700, opacity: inputVal.trim() ? 1 : 0.4 }}
+            style={{ padding: '7px 12px', borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 12, fontWeight: 700, opacity: inputVal.trim() ? 1 : 0.4 }}
           >
             Ajouter
           </button>
@@ -100,7 +100,7 @@ export function GalleryBlockView({ block }: { block: Record<string, any> }) {
             onClick={() => setLightbox(i)}
             aria-label={`Agrandir la photo ${i + 1}`}
             className="img-skeleton"
-            style={{ display: 'block', padding: 0, border: 'none', cursor: 'zoom-in', aspectRatio: cols === 1 ? '16/9' : '1', borderRadius: 10, overflow: 'hidden' }}
+            style={{ display: 'block', padding: 0, border: 'none', cursor: 'zoom-in', aspectRatio: cols === 1 ? '16/9' : '1', borderRadius: 'var(--sl-radius-lg)', overflow: 'hidden' }}
           >
             <img
               src={url}
@@ -130,7 +130,7 @@ export function GalleryBlockView({ block }: { block: Record<string, any> }) {
               src={images[lightbox]}
               alt={`Photo ${lightbox + 1}`}
               onClick={e => e.stopPropagation()}
-              style={{ maxWidth: '100%', maxHeight: '90dvh', borderRadius: 12, objectFit: 'contain' }}
+              style={{ maxWidth: '100%', maxHeight: '90dvh', borderRadius: 'var(--sl-radius-xl)', objectFit: 'contain' }}
             />
 
             {images.length > 1 && lightbox > 0 && (

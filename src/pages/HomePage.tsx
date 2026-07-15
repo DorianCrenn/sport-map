@@ -251,7 +251,7 @@ function ClubBanner({ onNavigate }) {
         </p>
         <button onClick={() => onNavigate('clubs')}
           className="flex items-center gap-1.5 font-semibold font-poppins text-white"
-          style={{ backgroundColor: '#22d96a', borderRadius: 12, padding: '12px 16px', fontSize: 13 }}>
+          style={{ backgroundColor: '#22d96a', borderRadius: 'var(--sl-radius-xl)', padding: '12px 16px', fontSize: 13 }}>
           Voir les clubs
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
@@ -282,7 +282,7 @@ function ResultCard({ event, sports, index = 0 }) {
       transition={{ delay: index * 0.06, type: 'spring', stiffness: 320, damping: 28 }}
       whileHover={{ x: 3, boxShadow: `0 4px 20px ${sportColor}22` }}
       style={{
-        borderRadius: 14, padding: '12px 14px',
+        borderRadius: 'var(--sl-radius-2xl)', padding: '12px 14px',
         backgroundColor: 'var(--sl-card)',
         border: `1px solid var(--sl-border)`,
         borderLeft: `3px solid ${sportColor}`,
@@ -291,7 +291,7 @@ function ResultCard({ event, sports, index = 0 }) {
       }}>
       {/* Sport dot */}
       <div style={{
-        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+        width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0,
         backgroundColor: `${sportColor}18`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
@@ -309,7 +309,7 @@ function ResultCard({ event, sports, index = 0 }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
           <span style={{
-            fontSize: 11, fontWeight: 700, padding: '2px 6px', borderRadius: 5,
+            fontSize: 11, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-xs)',
             backgroundColor: `${typeColor}18`, color: typeColor,
           }}>
             {typeLabel}
@@ -336,7 +336,7 @@ function ResultCard({ event, sports, index = 0 }) {
       {hasScore ? (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
-          padding: '6px 10px', borderRadius: 10,
+          padding: '6px 10px', borderRadius: 'var(--sl-radius-lg)',
           backgroundColor: 'var(--sl-surface)',
         }}>
           <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>
@@ -350,14 +350,14 @@ function ResultCard({ event, sports, index = 0 }) {
       ) : !isPast ? (
         <div style={{
           fontSize: 11, fontWeight: 700, color: sportColor, flexShrink: 0,
-          padding: '4px 8px', borderRadius: 8, backgroundColor: `${sportColor}12`,
+          padding: '4px 8px', borderRadius: 'var(--sl-radius-md)', backgroundColor: `${sportColor}12`,
         }}>
           {timeStr}
         </div>
       ) : (
         <div style={{
           fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', flexShrink: 0,
-          padding: '3px 7px', borderRadius: 8, backgroundColor: 'var(--sl-surface)',
+          padding: '3px 7px', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'var(--sl-surface)',
         }}>
           Terminé
         </div>
@@ -618,7 +618,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             ].map(({ icon, label }) => (
               <div key={label} style={{
                 display:'flex', alignItems:'center', gap:5,
-                padding:'5px 11px', borderRadius:20,
+                padding:'5px 11px', borderRadius: 'var(--sl-radius-4xl)',
                 backgroundColor:'rgba(255,255,255,0.08)',
                 border:'1px solid rgba(255,255,255,0.14)',
                 fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.75)',
@@ -635,7 +635,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
               whileTap={{ scale:0.95 }} whileHover={{ scale:1.03, boxShadow:'0 8px 32px rgba(34,217,106,0.55)' }}
               onClick={() => onNavigate('profil')}
               className="font-bold font-poppins text-white flex items-center gap-2 cursor-pointer w-full justify-center sl-btn-shimmer"
-              style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'14px 22px', fontSize:15, maxWidth:300, boxShadow:'0 6px 24px rgba(34,217,106,0.4)', whiteSpace:'nowrap', overflow:'hidden' }}>
+              style={{ backgroundColor:'#22d96a', borderRadius: 'var(--sl-radius-2xl)', padding:'14px 22px', fontSize:15, maxWidth:300, boxShadow:'0 6px 24px rgba(34,217,106,0.4)', whiteSpace:'nowrap', overflow:'hidden' }}>
               S'inscrire gratuitement
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </motion.button>
@@ -655,7 +655,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('sl-launch-demo'))}
               className="font-semibold font-poppins flex items-center gap-1.5 justify-center cursor-pointer"
-              style={{ color:'#a5b4fc', background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', borderRadius:12, fontSize:13, padding:'13px 18px', marginTop:4, width:'100%', maxWidth:300 }}>
+              style={{ color:'#a5b4fc', background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.25)', borderRadius: 'var(--sl-radius-xl)', fontSize:13, padding:'13px 18px', marginTop:4, width:'100%', maxWidth:300 }}>
               <IconRocket size={14} color="#a5b4fc" /> Découvrir la démo interactive
             </button>
           </motion.div>
@@ -742,19 +742,19 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
             <div className="flex gap-4 mb-4">
               <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('profil')}
                 className="font-bold font-poppins text-white flex items-center gap-2.5 cursor-pointer"
-                style={{ backgroundColor:'#22d96a', borderRadius:16, padding:'14px 28px', fontSize:16, boxShadow:'0 8px 28px rgba(34,217,106,0.45)', whiteSpace:'nowrap', overflow:'hidden' }}>
+                style={{ backgroundColor:'#22d96a', borderRadius: 'var(--sl-radius-3xl)', padding:'14px 28px', fontSize:16, boxShadow:'0 8px 28px rgba(34,217,106,0.45)', whiteSpace:'nowrap', overflow:'hidden' }}>
                 S'inscrire gratuitement
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </motion.button>
               <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.03, y:-1 }} onClick={() => onNavigate('map')}
                 className="font-semibold font-poppins border-2 cursor-pointer"
-                style={{ borderColor:'rgba(255,255,255,0.3)', color:'white', borderRadius:16, padding:'14px 28px', fontSize:16, backgroundColor:'rgba(255,255,255,0.08)' }}>
+                style={{ borderColor:'rgba(255,255,255,0.3)', color:'white', borderRadius: 'var(--sl-radius-3xl)', padding:'14px 28px', fontSize:16, backgroundColor:'rgba(255,255,255,0.08)' }}>
                 Voir la carte
               </motion.button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('sl-launch-demo'))}
                 className="font-semibold font-poppins flex items-center gap-2 cursor-pointer"
-                style={{ color:'#a5b4fc', borderRadius:16, padding:'14px 24px', fontSize:16, backgroundColor:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.3)' }}>
+                style={{ color:'#a5b4fc', borderRadius: 'var(--sl-radius-3xl)', padding:'14px 24px', fontSize:16, backgroundColor:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.3)' }}>
                 <IconRocket size={16} color="#a5b4fc" /> Démo
               </button>
             </div>
@@ -865,7 +865,7 @@ export default function HomePage({ onNavigate, stats, clubs = [], allEvents = []
                 <motion.button whileTap={{ scale:0.96 }} whileHover={{ scale:1.04, y:-1 }}
                   onClick={() => onNavigate('clubs')}
                   className="flex-shrink-0 flex items-center gap-2 font-bold font-poppins text-white cursor-pointer"
-                  style={{ backgroundColor:'#22d96a', borderRadius:14, padding:'12px 24px', fontSize:15 }}>
+                  style={{ backgroundColor:'#22d96a', borderRadius: 'var(--sl-radius-2xl)', padding:'12px 24px', fontSize:15 }}>
                   Voir les clubs
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </motion.button>

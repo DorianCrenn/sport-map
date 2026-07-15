@@ -58,9 +58,9 @@ export default function ParentConvocationCard({ convocation, onDismiss, onRespon
   }
 
   return (
-    <div style={{ borderRadius: 18, background: 'var(--sl-card)', border: '1px solid rgba(99,102,241,0.22)', overflow: 'hidden' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-3xl)', background: 'var(--sl-card)', border: '1px solid rgba(99,102,241,0.22)', overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0, background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
           📋
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -78,8 +78,8 @@ export default function ParentConvocationCard({ convocation, onDismiss, onRespon
         <AnimatePresence mode="wait">
           {phase === 'idle' && (
             <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }} style={{ display: 'flex', gap: 8 }}>
-              <button data-testid="convoc-absent" onClick={() => setPhase('absent_reason')} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.07)', color: '#f87171', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Absent</button>
-              <button data-testid="convoc-present" data-demo="convocation-respond" onClick={() => setPhase('transport_choice')} style={{ flex: 2, padding: '10px 0', borderRadius: 10, border: 'none', background: '#6366f1', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(99,102,241,0.35)' }}>Présent ✓</button>
+              <button data-testid="convoc-absent" onClick={() => setPhase('absent_reason')} style={{ flex: 1, padding: '10px 0', borderRadius: 'var(--sl-radius-lg)', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.07)', color: '#f87171', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Absent</button>
+              <button data-testid="convoc-present" data-demo="convocation-respond" onClick={() => setPhase('transport_choice')} style={{ flex: 2, padding: '10px 0', borderRadius: 'var(--sl-radius-lg)', border: 'none', background: '#6366f1', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(99,102,241,0.35)' }}>Présent ✓</button>
             </motion.div>
           )}
 
@@ -87,10 +87,10 @@ export default function ParentConvocationCard({ convocation, onDismiss, onRespon
             <motion.div key="absent" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 340, damping: 36 }} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <input value={reason} onChange={e => setReason(e.target.value)} placeholder="Raison de l'absence (optionnel)" autoFocus
                 onKeyDown={e => e.key === 'Enter' && !busy && handleAbsentConfirm()}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
               <div style={{ display: 'flex', gap: 8 }}>
-                <button data-testid="convoc-cancel-absent" onClick={() => setPhase('idle')} style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: '1px solid var(--sl-border)', background: 'none', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
-                <button data-testid="convoc-confirm-absent" onClick={handleAbsentConfirm} disabled={busy} style={{ flex: 2, padding: '9px 0', borderRadius: 10, border: 'none', background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: busy ? 0.6 : 1 }}>{busy ? 'Envoi…' : "Confirmer l'absence"}</button>
+                <button data-testid="convoc-cancel-absent" onClick={() => setPhase('idle')} style={{ flex: 1, padding: '9px 0', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', background: 'none', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
+                <button data-testid="convoc-confirm-absent" onClick={handleAbsentConfirm} disabled={busy} style={{ flex: 2, padding: '9px 0', borderRadius: 'var(--sl-radius-lg)', border: 'none', background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: busy ? 0.6 : 1 }}>{busy ? 'Envoi…' : "Confirmer l'absence"}</button>
               </div>
             </motion.div>
           )}
@@ -98,15 +98,15 @@ export default function ParentConvocationCard({ convocation, onDismiss, onRespon
           {phase === 'transport_choice' && (
             <motion.div key="transport" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} transition={{ type: 'spring', stiffness: 340, damping: 36 }} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <p style={{ fontSize: 10, fontWeight: 800, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 2px' }}>Transport pour {player?.name ?? 'le joueur'}</p>
-              <button data-testid="convoc-drive" onClick={() => setPhase('drive_seats')} style={{ padding: '12px 14px', borderRadius: 12, cursor: 'pointer', border: '1px solid rgba(34,217,106,0.22)', background: 'rgba(34,217,106,0.07)', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button data-testid="convoc-drive" onClick={() => setPhase('drive_seats')} style={{ padding: '12px 14px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', border: '1px solid rgba(34,217,106,0.22)', background: 'rgba(34,217,106,0.07)', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 20, lineHeight: 1 }}>🚗</span>
                 <div><div style={{ fontSize: 13, fontWeight: 700, color: '#4ade80' }}>Je conduis</div><div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>Ajoute des places disponibles pour les autres</div></div>
               </button>
-              <button data-testid="convoc-passenger" onClick={handlePassenger} disabled={busy} style={{ padding: '12px 14px', borderRadius: 12, cursor: 'pointer', border: '1px solid rgba(77,166,255,0.18)', background: 'rgba(77,166,255,0.05)', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, opacity: busy ? 0.6 : 1 }}>
+              <button data-testid="convoc-passenger" onClick={handlePassenger} disabled={busy} style={{ padding: '12px 14px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', border: '1px solid rgba(77,166,255,0.18)', background: 'rgba(77,166,255,0.05)', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, opacity: busy ? 0.6 : 1 }}>
                 <span style={{ fontSize: 20, lineHeight: 1 }}>🙋</span>
                 <div><div style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa' }}>Je cherche une place</div><div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>Vous serez mis en attente de covoiturage</div></div>
               </button>
-              <button data-testid="convoc-own-means" onClick={handleOwnMeans} disabled={busy} style={{ padding: '12px 14px', borderRadius: 12, cursor: 'pointer', border: '1px solid var(--sl-border)', background: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, opacity: busy ? 0.6 : 1 }}>
+              <button data-testid="convoc-own-means" onClick={handleOwnMeans} disabled={busy} style={{ padding: '12px 14px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', border: '1px solid var(--sl-border)', background: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, opacity: busy ? 0.6 : 1 }}>
                 <span style={{ fontSize: 20, lineHeight: 1 }}>🏡</span>
                 <div><div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t2)' }}>Par mes propres moyens</div><div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>Je n'ai pas besoin de transport</div></div>
               </button>
@@ -123,8 +123,8 @@ export default function ParentConvocationCard({ convocation, onDismiss, onRespon
                 <button data-testid="convoc-seats-plus" onClick={() => setSeats(s => Math.min(8, s + 1))} style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setPhase('transport_choice')} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: '1px solid var(--sl-border)', background: 'none', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Retour</button>
-                <button data-testid="convoc-drive-validate" onClick={handleDriveConfirm} disabled={busy} style={{ flex: 2, padding: '10px 0', borderRadius: 10, border: 'none', background: '#22d96a', color: '#000', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: busy ? 0.6 : 1 }}>{busy ? 'Envoi…' : `Valider · ${seats} place${seats > 1 ? 's' : ''}`}</button>
+                <button onClick={() => setPhase('transport_choice')} style={{ flex: 1, padding: '10px 0', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', background: 'none', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Retour</button>
+                <button data-testid="convoc-drive-validate" onClick={handleDriveConfirm} disabled={busy} style={{ flex: 2, padding: '10px 0', borderRadius: 'var(--sl-radius-lg)', border: 'none', background: '#22d96a', color: '#000', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: busy ? 0.6 : 1 }}>{busy ? 'Envoi…' : `Valider · ${seats} place${seats > 1 ? 's' : ''}`}</button>
               </div>
             </motion.div>
           )}

@@ -36,7 +36,7 @@ function PlanBadge({ plan, planMeta }: PlanBadgeProps) {
   const p = planMeta?.[plan];
   if (!p) return null;
   return (
-    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20, backgroundColor: `${p.color}20`, color: p.color }}>
+    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: `${p.color}20`, color: p.color }}>
       {p.badge} {p.name}
     </span>
   );
@@ -100,7 +100,7 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
         const isEditing = editingPlan === planId;
 
         return (
-          <div key={planId} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, border: `2px solid ${isEditing ? m.color : 'var(--sl-border)'}`, overflow: 'hidden', transition: 'border-color 0.2s' }}>
+          <div key={planId} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', border: `2px solid ${isEditing ? m.color : 'var(--sl-border)'}`, overflow: 'hidden', transition: 'border-color 0.2s' }}>
 
             <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: 24 }}>{m.badge}</span>
@@ -108,12 +108,12 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 15, fontWeight: 800, color: m.color }}>{m.name}</span>
                   {m.is_popular && (
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: `${m.color}20`, color: m.color }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: `${m.color}20`, color: m.color }}>
                       ⭐ Populaire
                     </span>
                   )}
                   {!m.is_active && (
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: '#ef444420', color: '#ef4444' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: '#ef444420', color: '#ef4444' }}>
                       Masqué
                     </span>
                   )}
@@ -125,7 +125,7 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
               </div>
               {!isEditing && (
                 <button onClick={() => startEdit(planId)}
-                  style={{ padding: '7px 14px', borderRadius: 10, border: '1px solid var(--sl-border)', fontSize: 12, fontWeight: 600, cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', flexShrink: 0 }}>
+                  style={{ padding: '7px 14px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', fontSize: 12, fontWeight: 600, cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', flexShrink: 0 }}>
                   Modifier
                 </button>
               )}
@@ -150,7 +150,7 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
                           value={form.name}
                           onChange={e => setField('name', e.target.value)}
                           placeholder="ex. Club Pro"
-                          style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
                         />
                       </div>
                       <div>
@@ -161,7 +161,7 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
                           type="number" min="0" max="999"
                           value={form.price_monthly}
                           onChange={e => setField('price_monthly', e.target.value)}
-                          style={{ width: 90, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', textAlign: 'center' }}
+                          style={{ width: 90, padding: '9px 12px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', textAlign: 'center' }}
                         />
                       </div>
                     </div>
@@ -174,7 +174,7 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
                         value={form.tagline}
                         onChange={e => setField('tagline', e.target.value)}
                         placeholder="ex. Gestion complète"
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -186,7 +186,7 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
                         value={form.cta_label}
                         onChange={e => setField('cta_label', e.target.value)}
                         placeholder="ex. Choisir Club Pro"
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -198,7 +198,7 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
                         {BADGE_OPTIONS.map(b => (
                           <button key={b} onClick={() => setField('badge', b)}
                             style={{
-                              width: 36, height: 36, borderRadius: 10, fontSize: 18, cursor: 'pointer',
+                              width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', fontSize: 18, cursor: 'pointer',
                               border: `2px solid ${form.badge === b ? form.color : 'var(--sl-border)'}`,
                               backgroundColor: form.badge === b ? `${form.color}15` : 'var(--sl-surface)',
                             }}>
@@ -246,30 +246,30 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
                       </label>
                     </div>
 
-                    <div style={{ padding: '10px 14px', borderRadius: 12, border: `1.5px dashed ${form.color}60`, backgroundColor: `${form.color}08` }}>
+                    <div style={{ padding: '10px 14px', borderRadius: 'var(--sl-radius-xl)', border: `1.5px dashed ${form.color}60`, backgroundColor: `${form.color}08` }}>
                       <p style={{ margin: '0 0 4px', fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Aperçu</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 20 }}>{form.badge}</span>
                         <span style={{ fontSize: 15, fontWeight: 800, color: form.color }}>{form.name || '—'}</span>
-                        {form.is_popular && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: `${form.color}20`, color: form.color }}>⭐ Populaire</span>}
+                        {form.is_popular && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: `${form.color}20`, color: form.color }}>⭐ Populaire</span>}
                       </div>
                       <p style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 900, color: 'var(--sl-t1)' }}>
                         {form.price_monthly === 0 || form.price_monthly === '' ? 'Gratuit' : `${form.price_monthly}€`}
                         {form.price_monthly > 0 && <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--sl-t3)' }}>/mois</span>}
                       </p>
                       {form.tagline && <p style={{ margin: '2px 0 6px', fontSize: 12, color: 'var(--sl-t3)' }}>{form.tagline}</p>}
-                      <button style={{ padding: '6px 16px', borderRadius: 10, border: 'none', backgroundColor: form.color, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'default' }}>
+                      <button style={{ padding: '6px 16px', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: form.color, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'default' }}>
                         {form.cta_label || 'Choisir'}
                       </button>
                     </div>
 
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button onClick={() => setEditingPlan(null)}
-                        style={{ flex: 1, padding: '10px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 13, fontWeight: 600, cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
+                        style={{ flex: 1, padding: '10px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', fontSize: 13, fontWeight: 600, cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
                         Annuler
                       </button>
                       <button onClick={handleSave} disabled={saving} data-testid={`plan-save-${editingPlan}`}
-                        style={{ flex: 2, padding: '10px', borderRadius: 12, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', backgroundColor: form.color, color: '#fff', opacity: saving ? 0.6 : 1 }}>
+                        style={{ flex: 2, padding: '10px', borderRadius: 'var(--sl-radius-xl)', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', backgroundColor: form.color, color: '#fff', opacity: saving ? 0.6 : 1 }}>
                         {saving ? 'Sauvegarde…' : 'Enregistrer'}
                       </button>
                     </div>
@@ -377,7 +377,7 @@ export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}>
 
       <div style={{ flexShrink: 0, padding: '16px 16px 12px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--sl-border)' }}>
-        <button onClick={onBack} aria-label="Retour à l'administration" style={{ width: 44, height: 44, borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <button onClick={onBack} aria-label="Retour à l'administration" style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div style={{ flex: 1 }}>
@@ -400,7 +400,7 @@ export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
         ].map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)}
             style={{
-              padding: '7px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', flexShrink: 0,
+              padding: '7px 14px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', flexShrink: 0,
               backgroundColor: activeTab === t.id ? '#8b5cf6' : 'var(--sl-surface)',
               color: activeTab === t.id ? '#fff' : 'var(--sl-t2)',
             }}>
@@ -425,7 +425,7 @@ export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
                   {(groupFeatures as any[]).map(f => {
                     const isEditing = editingFeature === f.feature_key;
                     return (
-                      <div key={f.feature_key} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 12, border: '1px solid var(--sl-border)', padding: '10px 14px' }}>
+                      <div key={f.feature_key} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', padding: '10px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)' }}>{f.feature_label}</p>
@@ -435,7 +435,7 @@ export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
                             <>
                               <PlanBadge plan={f.min_plan} planMeta={planMeta} />
                               <button onClick={() => setEditingFeature(f.feature_key)}
-                                style={{ padding: '5px 10px', borderRadius: 8, border: '1px solid var(--sl-border)', fontSize: 11, fontWeight: 600, cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', flexShrink: 0 }}>
+                                style={{ padding: '5px 10px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', fontSize: 11, fontWeight: 600, cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', flexShrink: 0 }}>
                                 Modifier
                               </button>
                             </>
@@ -449,7 +449,7 @@ export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
                                 {plansForTable.map(p => (
                                   <button key={p.id} onClick={() => handleFeatureSave(f.feature_key, p.id)} disabled={saving}
                                     style={{
-                                      padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                                      padding: '6px 14px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 12, fontWeight: 700, cursor: 'pointer',
                                       border: `2px solid ${f.min_plan === p.id ? p.color : 'var(--sl-border)'}`,
                                       backgroundColor: f.min_plan === p.id ? `${p.color}18` : 'var(--sl-surface)',
                                       color: f.min_plan === p.id ? p.color : 'var(--sl-t2)',
@@ -507,11 +507,11 @@ export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
                                 onBlur={e => handleQuotaSave(p.id, key, e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); if (e.key === 'Escape') setEditingQuota(null); }}
                                 autoFocus
-                                style={{ width: 70, textAlign: 'center', padding: '4px 6px', borderRadius: 8, border: `1px solid ${p.color}`, fontSize: 12, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
+                                style={{ width: 70, textAlign: 'center', padding: '4px 6px', borderRadius: 'var(--sl-radius-md)', border: `1px solid ${p.color}`, fontSize: 12, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}
                               />
                             ) : (
                               <button onClick={() => setEditingQuota(`${p.id}:${key}`)}
-                                style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', fontSize: 12 }}>
+                                style={{ padding: '4px 10px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', fontSize: 12 }}>
                                 <QuotaValue value={row?.value ?? null} />
                               </button>
                             )}
@@ -536,14 +536,14 @@ export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
               const planQuotaRows = quotasByPlan[plan.id] ?? {};
               const m = planMeta[plan.id];
               return (
-                <div key={plan.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, border: `1px solid ${plan.color}30`, padding: 16 }}>
+                <div key={plan.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', border: `1px solid ${plan.color}30`, padding: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                     <span style={{ fontSize: 24 }}>{plan.badge}</span>
                     <span style={{ fontSize: 16, fontWeight: 800, color: plan.color }}>{plan.label}</span>
-                    {m?.is_popular && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: `${plan.color}20`, color: plan.color }}>⭐ Populaire</span>}
+                    {m?.is_popular && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: `${plan.color}20`, color: plan.color }}>⭐ Populaire</span>}
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
                       {planStats[plan.id] != null && (
-                        <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, backgroundColor: `${plan.color}14`, color: plan.color, fontWeight: 700 }}>
+                        <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: `${plan.color}14`, color: plan.color, fontWeight: 700 }}>
                           {planStats[plan.id]} club{planStats[plan.id] !== 1 ? 's' : ''}
                         </span>
                       )}
@@ -560,14 +560,14 @@ export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
                   )}
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
                     {Object.entries(planQuotaRows).map(([key, q]) => (
-                      <span key={key} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
+                      <span key={key} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)' }}>
                         {QUOTA_LABELS_DISPLAY[key]?.label ?? key} : {(q as any).value === null ? '∞' : (q as any).value === 0 ? '—' : (q as any).value}
                       </span>
                     ))}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                     {planFeatures.map((f: any) => (
-                      <span key={f.feature_key} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, backgroundColor: `${plan.color}12`, color: plan.color, fontWeight: 600 }}>
+                      <span key={f.feature_key} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: `${plan.color}12`, color: plan.color, fontWeight: 600 }}>
                         {f.feature_label}
                       </span>
                     ))}

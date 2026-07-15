@@ -53,7 +53,7 @@ function ShareBtn({ event }: ShareBtnProps) {
   }
   return (
     <button onClick={handle} title={copied ? 'Copié !' : 'Partager'}
-      style={{ padding: 6, borderRadius: 8, cursor: 'pointer', color: copied ? 'var(--sl-green)' : 'var(--sl-t3)', backgroundColor: 'transparent', border: 'none' }}>
+      style={{ padding: 6, borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', color: copied ? 'var(--sl-green)' : 'var(--sl-t3)', backgroundColor: 'transparent', border: 'none' }}>
       {copied
         ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
         : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -93,20 +93,20 @@ function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }: 
       animate={{ opacity: isPast ? 0.55 : 1, y: 0 }}
       exit={{ opacity: 0, x: -24 }}
       transition={{ duration: 0.18 }}
-      style={{ borderRadius: 14, marginBottom: 8, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', overflow: 'hidden' }}
+      style={{ borderRadius: 'var(--sl-radius-2xl)', marginBottom: 8, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', overflow: 'hidden' }}
     >
       <div style={{ width: 3, flexShrink: 0, backgroundColor: sportColor }} />
       <div style={{ flex: 1, minWidth: 0, padding: '11px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: '#fff', backgroundColor: sportColor, flexShrink: 0 }}>{event.sport}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-sm)', color: '#fff', backgroundColor: sportColor, flexShrink: 0 }}>{event.sport}</span>
           {typeMeta && (
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: typeMeta.color, backgroundColor: `${typeMeta.color}18`, flexShrink: 0 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-sm)', color: typeMeta.color, backgroundColor: `${typeMeta.color}18`, flexShrink: 0 }}>
               {event.eventType === 'championship' && event.level ? event.level : typeMeta.label}
             </span>
           )}
-          {isPast && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 6, color: '#64748b', backgroundColor: 'rgba(100,116,139,0.1)', flexShrink: 0 }}>Terminé</span>}
+          {isPast && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-sm)', color: '#64748b', backgroundColor: 'rgba(100,116,139,0.1)', flexShrink: 0 }}>Terminé</span>}
           <button onClick={() => onToggleFavorite(event.id)} title="Retirer des favoris"
-            style={{ marginLeft: 'auto', padding: 5, borderRadius: 8, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            style={{ marginLeft: 'auto', padding: 5, borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             <HeartSvg filled size={13} />
           </button>
         </div>
@@ -145,7 +145,7 @@ function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }: 
           <button
             onClick={() => onToggleAttend?.(event.id)}
             style={{
-              flex: 1, padding: '10px 4px', borderRadius: 10, cursor: 'pointer',
+              flex: 1, padding: '10px 4px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer',
               fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               backgroundColor: attending ? 'var(--sl-green-dim)' : 'var(--sl-surface)',
               color: attending ? 'var(--sl-green)' : 'var(--sl-t2)',
@@ -161,14 +161,14 @@ function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }: 
           </button>
           <button
             onClick={handleNav}
-            style={{ flex: 1, padding: '10px 4px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border-s)' }}
+            style={{ flex: 1, padding: '10px 4px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border-s)' }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
             M'y rendre
           </button>
           <ShareBtn event={event} />
           <button onClick={() => downloadICS(event)} title="Ajouter au calendrier"
-            style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CalSvg size={12} />
           </button>
         </div>
@@ -191,7 +191,7 @@ function DateGroup({ label, events, onToggleFavorite, accent, isAttending, onTog
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <div style={{ height: 1, flex: 1, backgroundColor: 'var(--sl-divider)' }} />
-        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '3px 10px', borderRadius: 999, color: accent || 'var(--sl-t2)', backgroundColor: accent ? `${accent}14` : 'var(--sl-surface)' }}>
+        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '3px 10px', borderRadius: 'var(--sl-radius-full)', color: accent || 'var(--sl-t2)', backgroundColor: accent ? `${accent}14` : 'var(--sl-surface)' }}>
           {label}
         </span>
         <div style={{ height: 1, flex: 1, backgroundColor: 'var(--sl-divider)' }} />
@@ -222,15 +222,15 @@ function NotifBanner({ favoriteEvents }: NotifBannerProps) {
   }
   return (
     <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-      style={{ margin: '10px 14px 0', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid var(--sl-green)', background: 'linear-gradient(135deg, var(--sl-green-dim), rgba(34,197,94,0.05))' }}>
-      <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--sl-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      style={{ margin: '10px 14px 0', borderRadius: 'var(--sl-radius-2xl)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid var(--sl-green)', background: 'linear-gradient(135deg, var(--sl-green-dim), rgba(34,197,94,0.05))' }}>
+      <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--sl-green)' }}>Activer les rappels</div>
         <div style={{ fontSize: 11, color: 'var(--sl-t2)', marginTop: 1 }}>Notification 1h avant chaque événement.</div>
       </div>
-      <button onClick={handleRequest} style={{ fontSize: 12, fontWeight: 700, color: '#fff', padding: '7px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', flexShrink: 0 }}>Activer</button>
+      <button onClick={handleRequest} style={{ fontSize: 12, fontWeight: 700, color: '#fff', padding: '7px 12px', borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', flexShrink: 0 }}>Activer</button>
     </motion.div>
   );
 }
@@ -280,7 +280,7 @@ export default function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleF
           <button
             onClick={() => exportAllICS(upcomingFavorites)}
             title="Exporter tous les favoris dans votre calendrier"
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, padding: '6px 11px', borderRadius: 9, cursor: 'pointer', color: 'var(--sl-t2)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, padding: '6px 11px', borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', color: 'var(--sl-t2)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent' }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             Exporter .ics
@@ -297,7 +297,7 @@ export default function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleF
             <motion.div
               animate={{ scale: [1, 1.12, 1], rotate: [0, -6, 6, 0] }}
               transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 1 }}
-              style={{ display: 'inline-flex', marginBottom: 20, padding: 20, borderRadius: 24, backgroundColor: 'rgba(34,217,106,0.08)' }}
+              style={{ display: 'inline-flex', marginBottom: 20, padding: 20, borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'rgba(34,217,106,0.08)' }}
             >
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="1.5" strokeLinecap="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -312,7 +312,7 @@ export default function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleF
             {onGoToMap && (
               <button
                 onClick={onGoToMap}
-                style={{ marginTop: 22, padding: '11px 24px', borderRadius: 14, backgroundColor: 'var(--sl-green)', color: '#000', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 800, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}
+                style={{ marginTop: 22, padding: '11px 24px', borderRadius: 'var(--sl-radius-2xl)', backgroundColor: 'var(--sl-green)', color: '#000', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 800, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}
               >
                 Explorer les événements
               </button>
@@ -331,7 +331,7 @@ export default function MatchsTab({ favoriteEvents, upcomingFavorites, onToggleF
                   style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, marginBottom: showPast ? 0 : 8, padding: '8px 0', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   <div style={{ height: 1, flex: 1, backgroundColor: 'var(--sl-divider)' }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '3px 10px', borderRadius: 999, color: 'var(--sl-t3)', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '3px 10px', borderRadius: 'var(--sl-radius-full)', color: 'var(--sl-t3)', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', gap: 5 }}>
                     {showPast ? 'Masquer les passés' : `Passés (${groups.past.length})`}
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transition: 'transform 0.2s', transform: showPast ? 'rotate(180deg)' : 'none' }}>
                       <polyline points="6 9 12 15 18 9"/>

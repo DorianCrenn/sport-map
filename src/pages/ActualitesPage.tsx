@@ -189,7 +189,7 @@ export default function ActualitesPage({
             ].map(({ icon, label }) => (
               <div key={label} style={{
                 display: 'flex', alignItems: 'center', gap: 5,
-                padding: '6px 12px', borderRadius: 20,
+                padding: '6px 12px', borderRadius: 'var(--sl-radius-4xl)',
                 backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
                 fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)',
               }}>
@@ -209,7 +209,7 @@ export default function ActualitesPage({
             onClick={() => onNavigate?.('clubs')}
             style={{
               backgroundColor: 'transparent', color: 'var(--sl-t2)',
-              padding: '12px 20px', borderRadius: 12, fontWeight: 600,
+              padding: '12px 20px', borderRadius: 'var(--sl-radius-xl)', fontWeight: 600,
               border: '1px solid var(--sl-border)', cursor: 'pointer', fontSize: 13,
             }}
           >
@@ -235,7 +235,7 @@ export default function ActualitesPage({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{
-                width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                width: 28, height: 28, borderRadius: 'var(--sl-radius-md)', flexShrink: 0,
                 background: 'linear-gradient(135deg, #8b5cf6 0%, #22d96a 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
               }}>🎨</div>
@@ -243,7 +243,7 @@ export default function ActualitesPage({
             </div>
             <span style={{
               fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)',
-              backgroundColor: 'var(--sl-surface)', padding: '2px 8px', borderRadius: 20,
+              backgroundColor: 'var(--sl-surface)', padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)',
             }}>
               {weekendMatches.length} match{weekendMatches.length > 1 ? 's' : ''}
             </span>
@@ -276,7 +276,7 @@ export default function ActualitesPage({
                   style={{
                     flexShrink: 0, width: 150,
                     display: 'flex', flexDirection: 'column', gap: 5,
-                    padding: '10px 12px', borderRadius: 14,
+                    padding: '10px 12px', borderRadius: 'var(--sl-radius-2xl)',
                     background: `linear-gradient(155deg, ${accent}22 0%, var(--sl-card) 65%)`,
                     border: `1px solid ${accent}44`,
                     cursor: 'pointer', textAlign: 'left',
@@ -304,7 +304,7 @@ export default function ActualitesPage({
                       <span style={{
                         display: 'inline-block', fontSize: 9, fontWeight: 800,
                         color: accent, backgroundColor: `${accent}20`,
-                        padding: '1px 6px', borderRadius: 6, marginBottom: 3,
+                        padding: '1px 6px', borderRadius: 'var(--sl-radius-sm)', marginBottom: 3,
                         letterSpacing: '0.04em', textTransform: 'uppercase',
                       }}>
                         {match.category}
@@ -395,7 +395,7 @@ export default function ActualitesPage({
               <button
                 onClick={() => setConvocationEvent(null)}
                 style={{
-                  width: 44, height: 44, borderRadius: 10, border: 'none', cursor: 'pointer',
+                  width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer',
                   backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}

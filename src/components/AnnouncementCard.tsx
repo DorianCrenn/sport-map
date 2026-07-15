@@ -27,18 +27,18 @@ export default function AnnouncementCard({ ann, variant = 'full', isRead = false
         <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: meta.color, flexShrink: 0, marginTop: 5, boxShadow: `0 0 5px ${meta.color}80` }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 8, backgroundColor: `${meta.color}18`, color: meta.color }}><meta.Icon size={10} color={meta.color} strokeWidth={2.2} />{meta.label}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-md)', backgroundColor: `${meta.color}18`, color: meta.color }}><meta.Icon size={10} color={meta.color} strokeWidth={2.2} />{meta.label}</span>
             <span style={{ fontSize: 9, color: 'var(--sl-t3)' }}>{timeAgo(ann.createdAt)}</span>
           </div>
           <div style={{ fontSize: 12, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.title || ann.message}</div>
         </div>
         {confirmDelete ? (
           <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-            <button onClick={() => setConfirmDelete(false)} style={{ padding: '4px 8px', borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 10, cursor: 'pointer' }}>Non</button>
-            <button onClick={handleDelete} disabled={deleting} style={{ padding: '4px 8px', borderRadius: 8, border: 'none', backgroundColor: '#ef4444', color: 'white', fontSize: 10, fontWeight: 700, cursor: deleting ? 'wait' : 'pointer' }}>{deleting ? '…' : 'Supprimer'}</button>
+            <button onClick={() => setConfirmDelete(false)} style={{ padding: '4px 8px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 10, cursor: 'pointer' }}>Non</button>
+            <button onClick={handleDelete} disabled={deleting} style={{ padding: '4px 8px', borderRadius: 'var(--sl-radius-md)', border: 'none', backgroundColor: '#ef4444', color: 'white', fontSize: 10, fontWeight: 700, cursor: deleting ? 'wait' : 'pointer' }}>{deleting ? '…' : 'Supprimer'}</button>
           </div>
         ) : (
-          <button onClick={() => setConfirmDelete(true)} style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>✕</button>
+          <button onClick={() => setConfirmDelete(true)} style={{ padding: '4px 10px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>✕</button>
         )}
       </div>
     );
@@ -46,14 +46,14 @@ export default function AnnouncementCard({ ann, variant = 'full', isRead = false
 
   if (variant === 'center') {
     return (
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} onClick={() => !isRead && onRead?.(ann.id)} style={{ borderRadius: 16, padding: 14, marginBottom: 10, backgroundColor: isRead ? 'var(--sl-surface)' : 'var(--sl-card)', border: `1px solid ${isRead ? 'var(--sl-border)' : meta.color + '30'}`, cursor: isRead ? 'default' : 'pointer', transition: 'all 0.2s' }}>
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} onClick={() => !isRead && onRead?.(ann.id)} style={{ borderRadius: 'var(--sl-radius-3xl)', padding: 14, marginBottom: 10, backgroundColor: isRead ? 'var(--sl-surface)' : 'var(--sl-card)', border: `1px solid ${isRead ? 'var(--sl-border)' : meta.color + '30'}`, cursor: isRead ? 'default' : 'pointer', transition: 'all 0.2s' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: 'var(--sl-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: 'var(--sl-t2)', flexShrink: 0 }}>{(ann.clubName ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+            <div style={{ width: 28, height: 28, borderRadius: 'var(--sl-radius-md)', backgroundColor: 'var(--sl-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: 'var(--sl-t2)', flexShrink: 0 }}>{(ann.clubName ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
             <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t2)' }}>{ann.clubName}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, backgroundColor: meta.bg, color: meta.color }}><meta.Icon size={10} color={meta.color} strokeWidth={2} />{' '}{meta.label}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: meta.bg, color: meta.color }}><meta.Icon size={10} color={meta.color} strokeWidth={2} />{' '}{meta.label}</span>
             {!isRead && <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: meta.color, flexShrink: 0 }} />}
           </div>
         </div>
@@ -69,11 +69,11 @@ export default function AnnouncementCard({ ann, variant = 'full', isRead = false
 
   const isLong = (ann.message?.length ?? 0) > 120;
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{ borderRadius: 'var(--sl-radius-2xl)', overflow: 'hidden', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
       <div style={{ height: 4, backgroundColor: meta.color }} />
       <div style={{ padding: '12px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', padding: '3px 8px', borderRadius: 6, backgroundColor: meta.bg, color: meta.color }}><meta.Icon size={10} color={meta.color} strokeWidth={2.2} />{meta.label}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', padding: '3px 8px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: meta.bg, color: meta.color }}><meta.Icon size={10} color={meta.color} strokeWidth={2.2} />{meta.label}</span>
           <span style={{ flex: 1 }} />
           <span style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 500 }}>{timeAgo(ann.createdAt)}</span>
         </div>
@@ -82,7 +82,7 @@ export default function AnnouncementCard({ ann, variant = 'full', isRead = false
         {isLong && <button onClick={() => setExpanded(v => !v)} style={{ marginTop: 6, padding: 0, border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: meta.color, cursor: 'pointer' }}>{expanded ? 'Voir moins ↑' : 'Lire la suite ↓'}</button>}
         {(ann.targetTeams ?? []).length > 0 && (
           <div style={{ marginTop: 8, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-            {ann.targetTeams!.map(t => <span key={t} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 5, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t3)' }}>{t}</span>)}
+            {ann.targetTeams!.map(t => <span key={t} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-xs)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t3)' }}>{t}</span>)}
           </div>
         )}
       </div>

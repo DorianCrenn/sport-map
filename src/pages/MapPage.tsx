@@ -373,7 +373,7 @@ export default function MapPage({
                         onClick={() => setSelectedEventId((prev: any) => prev === event.id ? null : event.id)}
                         style={{
                           display: 'flex', alignItems: 'center', gap: 12,
-                          padding: '12px 14px', borderRadius: 14,
+                          padding: '12px 14px', borderRadius: 'var(--sl-radius-2xl)',
                           backgroundColor: isSelected ? `${sportData?.color ?? 'var(--sl-green)'}14` : 'var(--sl-card)',
                           border: `1px solid ${isSelected ? (sportData?.color ?? 'var(--sl-green)') + '40' : 'var(--sl-border)'}`,
                           cursor: 'pointer', textAlign: 'left', width: '100%',
@@ -381,7 +381,7 @@ export default function MapPage({
                         }}
                       >
                         <div style={{
-                          width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                          width: 40, height: 40, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0,
                           backgroundColor: sportData ? `${sportData.color}18` : 'var(--sl-surface)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
@@ -398,7 +398,7 @@ export default function MapPage({
                           </p>
                         </div>
                         {sportData && (
-                          <div style={{ width: 4, height: 28, borderRadius: 2, backgroundColor: sportData.color, flexShrink: 0, opacity: 0.7 }} />
+                          <div style={{ width: 4, height: 28, borderRadius: 'var(--sl-radius-xs)', backgroundColor: sportData.color, flexShrink: 0, opacity: 0.7 }} />
                         )}
                       </motion.button>
                     );
@@ -434,7 +434,7 @@ export default function MapPage({
           {/* Favoris */}
           <button
             onClick={onGoToFavoris}
-            style={{ pointerEvents: 'auto', position: 'relative', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '10px 12px', borderRadius: 12, cursor: 'pointer', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', color: '#ef4444', border: '1px solid var(--sl-border)' }}
+            style={{ pointerEvents: 'auto', position: 'relative', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', color: '#ef4444', border: '1px solid var(--sl-border)' }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             Sauvegardés
@@ -452,7 +452,7 @@ export default function MapPage({
               onClick={() => setViewMode(m => m === 'map' ? 'list' : 'map')}
               style={{
                 pointerEvents: 'auto',
-                width: 44, height: 44, borderRadius: 12,
+                width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)',
                 backgroundColor: viewMode === 'list' ? 'var(--sl-blue)' : 'var(--sl-card)',
                 border: `1px solid ${viewMode === 'list' ? 'var(--sl-blue)' : 'var(--sl-border)'}`,
                 boxShadow: 'var(--sl-shadow)',
@@ -482,7 +482,7 @@ export default function MapPage({
                 onClick={handleRecentrer}
                 style={{
                   pointerEvents: 'auto',
-                  width: 44, height: 44, borderRadius: 12,
+                  width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)',
                   backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
                   boxShadow: 'var(--sl-shadow)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
@@ -507,7 +507,7 @@ export default function MapPage({
             {canAddEvent && (
               <button
                 onClick={() => setModalEvent({ _isNew: true })}
-                style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, padding: '12px 16px', borderRadius: 12, cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', border: 'none', boxShadow: '0 4px 16px rgba(34,217,106,0.35)' }}
+                style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, padding: '12px 16px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', border: 'none', boxShadow: '0 4px 16px rgba(34,217,106,0.35)' }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Ajouter

@@ -49,7 +49,7 @@ export default function EmptyState({ emoji, title, subtitle, actionLabel, onActi
           whileHover={{ scale: 1.04, boxShadow: '0 6px 20px rgba(34,217,106,0.4)' }}
           onClick={onAction}
           className="sl-btn-shimmer"
-          style={{ marginTop: 10, padding: '11px 22px', borderRadius: 14, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fff', backgroundColor: 'var(--sl-green)', boxShadow: 'var(--sl-green-glow)' }}
+          style={{ marginTop: 10, padding: '11px 22px', borderRadius: 'var(--sl-radius-2xl)', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fff', backgroundColor: 'var(--sl-green)', boxShadow: 'var(--sl-green-glow)' }}
         >
           {actionLabel}
         </motion.button>

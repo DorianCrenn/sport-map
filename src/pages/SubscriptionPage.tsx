@@ -26,7 +26,7 @@ function formatAmount(amount: number, currency: string): string {
 function StatusBadge({ status, cancelAtPeriodEnd }: { status: string | null; cancelAtPeriodEnd: boolean }) {
   if (cancelAtPeriodEnd) {
     return (
-      <span style={{ padding: '3px 10px', borderRadius: 8, background: 'rgba(245,158,11,0.12)', color: '#d97706', fontSize: 11, fontWeight: 700 }}>
+      <span style={{ padding: '3px 10px', borderRadius: 'var(--sl-radius-md)', background: 'rgba(245,158,11,0.12)', color: '#d97706', fontSize: 11, fontWeight: 700 }}>
         Annulation en cours
       </span>
     );
@@ -40,7 +40,7 @@ function StatusBadge({ status, cancelAtPeriodEnd }: { status: string | null; can
   };
   const cfg = map[status ?? 'inactive'] ?? map.inactive;
   return (
-    <span style={{ padding: '3px 10px', borderRadius: 8, background: cfg.bg, color: cfg.color, fontSize: 11, fontWeight: 700 }}>
+    <span style={{ padding: '3px 10px', borderRadius: 'var(--sl-radius-md)', background: cfg.bg, color: cfg.color, fontSize: 11, fontWeight: 700 }}>
       {cfg.label}
     </span>
   );
@@ -67,7 +67,7 @@ function InvoiceRow({ inv }: { inv: StripeInvoice }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Télécharger la facture PDF"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 8, background: 'var(--sl-surface)', color: 'var(--sl-t2)', textDecoration: 'none', flexShrink: 0 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 'var(--sl-radius-md)', background: 'var(--sl-surface)', color: 'var(--sl-t2)', textDecoration: 'none', flexShrink: 0 }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -161,7 +161,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
         {onClose && (
-          <button onClick={onClose} aria-label="Retour" style={{ width: 36, height: 36, borderRadius: 10, border: 'none', background: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <button onClick={onClose} aria-label="Retour" style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', border: 'none', background: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
         )}
@@ -173,12 +173,12 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
 
       {/* Alerte past_due */}
       {isPastDue && (
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 16, padding: '12px 16px', borderRadius: 'var(--sl-radius-xl)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
           <IconAlertTriangle size={18} color="#dc2626" style={{ flexShrink: 0, marginTop: 1 }} />
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#dc2626' }}>Paiement en attente</div>
             <div style={{ fontSize: 12, color: '#dc2626', marginTop: 2 }}>Votre paiement a échoué. Mettez à jour votre moyen de paiement pour maintenir l'accès.</div>
-            <button onClick={openPortal} disabled={actionLoading} style={{ marginTop: 8, padding: '6px 14px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+            <button onClick={openPortal} disabled={actionLoading} style={{ marginTop: 8, padding: '6px 14px', borderRadius: 'var(--sl-radius-md)', border: 'none', background: '#dc2626', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
               Mettre à jour le paiement
             </button>
           </div>
@@ -186,13 +186,13 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
       )}
 
       {/* Card plan actuel */}
-      <div style={{ borderRadius: 16, border: `2px solid ${planCfg.color}`, background: 'var(--sl-card)', padding: '20px', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ borderRadius: 'var(--sl-radius-3xl)', border: `2px solid ${planCfg.color}`, background: 'var(--sl-card)', padding: '20px', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 120, borderRadius: '50%', background: planCfg.color, opacity: 0.06, transform: 'translate(30%, -30%)' }} />
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Plan actuel</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: `${planCfg.color}18`, border: `1px solid ${planCfg.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconCrown size={20} color={planCfg.color} /></div>
+              <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', backgroundColor: `${planCfg.color}18`, border: `1px solid ${planCfg.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconCrown size={20} color={planCfg.color} /></div>
               <span style={{ fontSize: 22, fontWeight: 800, color: planCfg.color }}>{planCfg.name}</span>
             </div>
             <div style={{ fontSize: 13, color: 'var(--sl-t3)', marginTop: 4 }}>{planCfg.price}</div>
@@ -203,14 +203,14 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
         {/* Dates */}
         <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           {isTrial && trialEnd && (
-            <div style={{ flex: '1 1 140px', padding: '10px 14px', borderRadius: 10, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)' }}>
+            <div style={{ flex: '1 1 140px', padding: '10px 14px', borderRadius: 'var(--sl-radius-lg)', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)' }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase' }}>Fin d'essai</div>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', marginTop: 2 }}>{formatDate(trialEnd)}</div>
               {trialDays !== null && <div style={{ fontSize: 11, color: '#2563eb', marginTop: 1 }}>{trialDays} jour{trialDays > 1 ? 's' : ''} restant{trialDays > 1 ? 's' : ''}</div>}
             </div>
           )}
           {periodEnd && !isTrial && (
-            <div style={{ flex: '1 1 140px', padding: '10px 14px', borderRadius: 10, background: 'var(--sl-surface)' }}>
+            <div style={{ flex: '1 1 140px', padding: '10px 14px', borderRadius: 'var(--sl-radius-lg)', background: 'var(--sl-surface)' }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase' }}>{isCancelling ? 'Accès jusqu\'au' : 'Prochain renouvellement'}</div>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', marginTop: 2 }}>{formatDate(periodEnd)}</div>
               {periodDays !== null && !isCancelling && <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>dans {periodDays} jour{periodDays > 1 ? 's' : ''}</div>}
@@ -221,7 +221,7 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
 
       {/* Actions */}
       {error && (
-        <div style={{ marginBottom: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#dc2626', fontSize: 12, fontWeight: 600 }}>
+        <div style={{ marginBottom: 12, padding: '10px 14px', borderRadius: 'var(--sl-radius-lg)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#dc2626', fontSize: 12, fontWeight: 600 }}>
           {error}
         </div>
       )}
@@ -232,9 +232,9 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
         {plan !== 'elite' && (
           <button
             onClick={() => setShowPlans(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: 'pointer', textAlign: 'left' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: 'pointer', textAlign: 'left' }}
           >
-            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconRocket size={18} color="#6366f1" /></div>
+            <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconRocket size={18} color="#6366f1" /></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Changer de plan</div>
               <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Voir les fonctionnalités disponibles</div>
@@ -248,9 +248,9 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
           <button
             onClick={openPortal}
             disabled={actionLoading}
-            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: actionLoading ? 'wait' : 'pointer', textAlign: 'left', opacity: actionLoading ? 0.7 : 1 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: actionLoading ? 'wait' : 'pointer', textAlign: 'left', opacity: actionLoading ? 0.7 : 1 }}
           >
-            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconCreditCard size={18} color="#3b82f6" /></div>
+            <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconCreditCard size={18} color="#3b82f6" /></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Gérer le paiement</div>
               <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Moyen de paiement, adresse de facturation (Stripe)</div>
@@ -263,9 +263,9 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
         {isPaid && sub?.stripe_cus_id && (
           <button
             onClick={() => setShowInvoices(v => !v)}
-            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: 'pointer', textAlign: 'left' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: 'pointer', textAlign: 'left' }}
           >
-            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(107,114,128,0.1)', border: '1px solid rgba(107,114,128,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconClipboard size={18} color="var(--sl-t2)" /></div>
+            <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(107,114,128,0.1)', border: '1px solid rgba(107,114,128,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconClipboard size={18} color="var(--sl-t2)" /></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>Factures</div>
               <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Historique des paiements</div>
@@ -301,9 +301,9 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
             <button
               onClick={reactivate}
               disabled={actionLoading}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.05)', cursor: actionLoading ? 'wait' : 'pointer', textAlign: 'left', opacity: actionLoading ? 0.7 : 1 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.05)', cursor: actionLoading ? 'wait' : 'pointer', textAlign: 'left', opacity: actionLoading ? 0.7 : 1 }}
             >
-              <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconCheckCircle size={18} color="#16a34a" /></div>
+              <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconCheckCircle size={18} color="#16a34a" /></div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#16a34a' }}>Réactiver l'abonnement</div>
                 <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>L'accès sera maintenu après le {formatDate(periodEnd)}</div>
@@ -314,25 +314,25 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
               {!confirmCancel ? (
                 <button
                   onClick={() => setConfirmCancel(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: 'pointer', textAlign: 'left' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', background: 'var(--sl-card)', cursor: 'pointer', textAlign: 'left' }}
                 >
-                  <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconX size={18} color="var(--sl-t3)" /></div>
+                  <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><IconX size={18} color="var(--sl-t3)" /></div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t2)' }}>Annuler l'abonnement</div>
                     <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>Accès maintenu jusqu'au {formatDate(periodEnd)}</div>
                   </div>
                 </button>
               ) : (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '16px', borderRadius: 12, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.05)' }}>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '16px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.05)' }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#dc2626', marginBottom: 6 }}>Confirmer l'annulation ?</div>
                   <div style={{ fontSize: 12, color: 'var(--sl-t2)', marginBottom: 14 }}>
                     Votre accès sera maintenu jusqu'au <strong>{formatDate(periodEnd)}</strong>. Vous pourrez réactiver à tout moment avant cette date.
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={() => setConfirmCancel(false)} style={{ flex: 1, padding: '9px', borderRadius: 8, border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    <button onClick={() => setConfirmCancel(false)} style={{ flex: 1, padding: '9px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                       Garder l'abonnement
                     </button>
-                    <button onClick={async () => { setConfirmCancel(false); await cancel(); }} disabled={actionLoading} style={{ flex: 1, padding: '9px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', fontSize: 12, fontWeight: 700, cursor: actionLoading ? 'wait' : 'pointer', opacity: actionLoading ? 0.7 : 1 }}>
+                    <button onClick={async () => { setConfirmCancel(false); await cancel(); }} disabled={actionLoading} style={{ flex: 1, padding: '9px', borderRadius: 'var(--sl-radius-md)', border: 'none', background: '#dc2626', color: '#fff', fontSize: 12, fontWeight: 700, cursor: actionLoading ? 'wait' : 'pointer', opacity: actionLoading ? 0.7 : 1 }}>
                       Annuler quand même
                     </button>
                   </div>
@@ -345,10 +345,10 @@ export default function SubscriptionPage({ clubId, onClose }: SubscriptionPagePr
 
       {/* Info plan gratuit */}
       {!isPaid && (
-        <div style={{ padding: '16px', borderRadius: 12, background: 'var(--sl-surface)', textAlign: 'center' }}>
+        <div style={{ padding: '16px', borderRadius: 'var(--sl-radius-xl)', background: 'var(--sl-surface)', textAlign: 'center' }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 4 }}>Vous êtes sur le plan gratuit</div>
           <div style={{ fontSize: 12, color: 'var(--sl-t3)', marginBottom: 12 }}>Passez à Starter, Pro ou Elite pour débloquer des fonctionnalités avancées.</div>
-          <button onClick={() => setShowPlans(true)} style={{ padding: '9px 20px', borderRadius: 10, border: 'none', background: 'var(--sl-green)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+          <button onClick={() => setShowPlans(true)} style={{ padding: '9px 20px', borderRadius: 'var(--sl-radius-lg)', border: 'none', background: 'var(--sl-green)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
             Voir les plans
           </button>
         </div>

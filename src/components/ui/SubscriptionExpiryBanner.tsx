@@ -43,7 +43,7 @@ export default function SubscriptionExpiryBanner({ periodEnd, planId, planName, 
               {!compact && <span style={{ fontSize: 11, color: 'var(--sl-t3)', display: 'block', marginTop: 1 }}>Renouvelez pour conserver l'accès à toutes vos fonctionnalités.</span>}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <button onClick={() => setShowPlans(true)} style={{ padding: compact ? '4px 10px' : '6px 12px', borderRadius: 8, border: 'none', backgroundColor: urgency.color, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Renouveler</button>
+              <button onClick={() => setShowPlans(true)} style={{ padding: compact ? '4px 10px' : '6px 12px', borderRadius: 'var(--sl-radius-md)', border: 'none', backgroundColor: urgency.color, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Renouveler</button>
               <button onClick={() => { sessionStorage.setItem(dismissKey, '1'); setDismissed(true); }} aria-label="Fermer l'alerte" style={{ background: 'none', border: 'none', cursor: 'pointer', color: urgency.color, opacity: 0.6, padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>

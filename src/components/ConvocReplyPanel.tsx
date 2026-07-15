@@ -116,7 +116,7 @@ export default function ConvocReplyPanel({ token, onClose }: ConvocReplyPanelPro
       >
         {/* Handle */}
         <div style={{ padding: '10px 0 0', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--sl-border)' }} />
+          <div style={{ width: 36, height: 4, borderRadius: 'var(--sl-radius-xs)', background: 'var(--sl-border)' }} />
         </div>
 
         <div style={{ padding: '12px 20px 24px', overflowY: 'auto', flex: 1, minHeight: 0, overscrollBehavior: 'contain' }}>
@@ -135,13 +135,13 @@ export default function ConvocReplyPanel({ token, onClose }: ConvocReplyPanelPro
               </div>
               <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: '0 0 4px' }}>{STATUS_LABELS[done]}</p>
               <p style={{ fontSize: 13, color: 'var(--sl-t3)', margin: '0 0 16px' }}>Réponse enregistrée !</p>
-              <button onClick={onClose} style={{ padding: '11px 28px', borderRadius: 12, border: 'none', background: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Fermer</button>
+              <button onClick={onClose} style={{ padding: '11px 28px', borderRadius: 'var(--sl-radius-xl)', border: 'none', background: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Fermer</button>
             </div>
           ) : (
             <>
               <div style={{ marginBottom: 16 }}>
                 {data?.clubs?.name && (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#eff6ff', color: '#1d4ed8', borderRadius: 8, padding: '4px 8px', fontSize: 11, fontWeight: 700, marginBottom: 10 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#eff6ff', color: '#1d4ed8', borderRadius: 'var(--sl-radius-md)', padding: '4px 8px', fontSize: 11, fontWeight: 700, marginBottom: 10 }}>
                     🏆 {data.clubs.name}
                   </div>
                 )}
@@ -168,7 +168,7 @@ export default function ConvocReplyPanel({ token, onClose }: ConvocReplyPanelPro
                     onClick={() => reply(s)}
                     disabled={!!saving}
                     style={{
-                      padding: '14px 0', borderRadius: 14, border: 'none', cursor: saving ? 'not-allowed' : 'pointer',
+                      padding: '14px 0', borderRadius: 'var(--sl-radius-2xl)', border: 'none', cursor: saving ? 'not-allowed' : 'pointer',
                       background: saving === s ? STATUS_COLORS[s] : `${STATUS_COLORS[s]}15`,
                       color: saving === s ? '#fff' : STATUS_COLORS[s],
                       fontSize: 14, fontWeight: 700, transition: 'all 0.15s',

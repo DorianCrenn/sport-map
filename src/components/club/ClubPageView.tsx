@@ -306,7 +306,7 @@ export default function ClubPageView({
         <IconStadium size={36} color="var(--sl-t3)" />
         <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', margin: 0 }}>Club introuvable</p>
         <p style={{ fontSize: 13, margin: 0 }}>Ce club n'existe pas ou a été supprimé.</p>
-        <button onClick={onBack} style={{ marginTop: 4, padding: '10px 22px', borderRadius: 12, background: 'var(--sl-surface)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t1)', fontSize: 14, fontWeight: 600 }}>Retour</button>
+        <button onClick={onBack} style={{ marginTop: 4, padding: '10px 22px', borderRadius: 'var(--sl-radius-xl)', background: 'var(--sl-surface)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t1)', fontSize: 14, fontWeight: 600 }}>Retour</button>
       </div>
     );
   }
@@ -335,7 +335,7 @@ export default function ClubPageView({
       />
 
       {loginHint && (
-        <div style={{ position: 'absolute', top: 120, left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(15,23,42,0.95)', color: '#f1f5f9', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', padding: '7px 14px', borderRadius: 10, zIndex: 100, boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}>
+        <div style={{ position: 'absolute', top: 120, left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(15,23,42,0.95)', color: '#f1f5f9', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', padding: '7px 14px', borderRadius: 'var(--sl-radius-lg)', zIndex: 100, boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}>
           Connecte-toi pour suivre ce club
         </div>
       )}
@@ -457,7 +457,7 @@ export default function ClubPageView({
               whileTap={{ scale: 0.92 }}
               onClick={() => setModal('adminDrawer')}
               aria-label="Ouvrir les outils d'administration"
-              style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 7, padding: '11px 18px', borderRadius: 18, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, backgroundColor: 'rgba(15,23,42,0.92)', color: '#cbd5e1', boxShadow: '0 4px 24px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)' }}
+              style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 7, padding: '11px 18px', borderRadius: 'var(--sl-radius-3xl)', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, backgroundColor: 'rgba(15,23,42,0.92)', color: '#cbd5e1', boxShadow: '0 4px 24px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)' }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3"/>
@@ -478,10 +478,10 @@ export default function ClubPageView({
               <IconEdit size={12} color="#fff" style={{ marginRight: 4, opacity: 0.9 }} />{simpleMode ? 'Mode rapide' : 'Mode avancé'}
             </span>
             <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-              <button onClick={() => setSimpleMode((v: boolean) => !v)} style={{ fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', whiteSpace: 'nowrap' }}>
+              <button onClick={() => setSimpleMode((v: boolean) => !v)} style={{ fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff', whiteSpace: 'nowrap' }}>
                 {simpleMode ? <><IconZap size={11} color="#fff" /> Avancé</> : 'Rapide'}
               </button>
-              <button onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }} style={{ fontSize: 12, fontWeight: 800, padding: '6px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255,255,255,0.95)', color: '#d97706', whiteSpace: 'nowrap' }}>
+              <button onClick={() => { setIsEditing(false); setOpenMenuAfter(null); }} style={{ fontSize: 12, fontWeight: 800, padding: '6px 16px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255,255,255,0.95)', color: '#d97706', whiteSpace: 'nowrap' }}>
                 <IconCheckCircle size={12} color="#d97706" style={{ marginRight: 4 }} />Terminé
               </button>
             </div>
@@ -564,7 +564,7 @@ export default function ClubPageView({
       {showRosterPanel && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 50, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, backgroundColor: 'var(--sl-card)' }}>
-            <button onClick={() => setModal(null)} aria-label="Retour" style={{ width: 40, height: 40, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+            <button onClick={() => setModal(null)} aria-label="Retour" style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--sl-t1)', letterSpacing: '-0.02em' }}>Membres</span>

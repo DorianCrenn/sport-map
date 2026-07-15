@@ -155,7 +155,7 @@ export default function StripeSuccessModal({ plan, onClose, onViewSub }: StripeS
                 width: '100%',
                 maxWidth: 420,
                 backgroundColor: 'var(--sl-card)',
-                borderRadius: 24,
+                borderRadius: 'var(--sl-radius-4xl)',
                 overflow: 'hidden',
                 boxShadow: `0 24px 80px rgba(0,0,0,0.4), 0 0 0 1px ${cfg.color}40`,
                 pointerEvents: 'auto',
@@ -167,7 +167,7 @@ export default function StripeSuccessModal({ plan, onClose, onViewSub }: StripeS
                 <button
                   onClick={handleClose}
                   aria-label="Fermer"
-                  style={{ position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.1)', cursor: 'pointer', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: 'var(--sl-radius-md)', border: 'none', background: 'rgba(255,255,255,0.1)', cursor: 'pointer', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
@@ -225,14 +225,14 @@ export default function StripeSuccessModal({ plan, onClose, onViewSub }: StripeS
                 {onViewSub && (
                   <button
                     onClick={() => { handleClose(); onViewSub(); }}
-                    style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: cfg.color, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+                    style={{ width: '100%', padding: '13px', borderRadius: 'var(--sl-radius-xl)', border: 'none', background: cfg.color, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
                   >
                     Voir mon abonnement
                   </button>
                 )}
                 <button
                   onClick={handleClose}
-                  style={{ width: '100%', padding: '12px', borderRadius: 12, border: '1px solid var(--sl-border)', background: 'transparent', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '12px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', background: 'transparent', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
                 >
                   Commencer à utiliser {cfg.name}
                 </button>

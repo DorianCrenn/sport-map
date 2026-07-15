@@ -18,7 +18,7 @@ export default function StreakWidget({ compact = false }: StreakWidgetProps) {
           alignItems: 'center',
           gap: 3,
           padding: '2px 8px',
-          borderRadius: 999,
+          borderRadius: 'var(--sl-radius-full)',
           background: 'rgba(255,107,43,0.14)',
           border: '1px solid rgba(255,107,43,0.28)',
         }}
@@ -42,7 +42,7 @@ export default function StreakWidget({ compact = false }: StreakWidgetProps) {
           alignItems: 'center',
           gap: 10,
           padding: '10px 14px',
-          borderRadius: 14,
+          borderRadius: 'var(--sl-radius-2xl)',
           background: 'linear-gradient(135deg, rgba(255,107,43,0.12) 0%, rgba(255,77,77,0.06) 100%)',
           border: '1px solid rgba(255,107,43,0.22)',
           margin: '0 16px 12px',
@@ -66,9 +66,9 @@ export default function StreakWidget({ compact = false }: StreakWidgetProps) {
           return (
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', marginBottom: 4 }}>→ {next}j</div>
-              <div style={{ width: 44, height: 4, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+              <div style={{ width: 44, height: 4, borderRadius: 'var(--sl-radius-full)', backgroundColor: 'rgba(255,255,255,0.08)' }}>
                 <div style={{
-                  height: '100%', borderRadius: 999, width: `${pct}%`,
+                  height: '100%', borderRadius: 'var(--sl-radius-full)', width: `${pct}%`,
                   background: 'var(--sl-gradient-fire)',
                   transition: 'width 0.8s cubic-bezier(0.34,1.56,0.64,1)',
                 }} />

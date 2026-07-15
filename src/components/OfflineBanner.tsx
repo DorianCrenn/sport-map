@@ -94,7 +94,7 @@ export default function OfflineBanner() {
             </span>
             <button
               onClick={syncNow}
-              style={{ fontSize: 11, fontWeight: 700, color: '#3b82f6', background: 'rgba(59,130,246,0.12)', border: 'none', cursor: 'pointer', padding: '3px 10px', borderRadius: 6 }}
+              style={{ fontSize: 11, fontWeight: 700, color: '#3b82f6', background: 'rgba(59,130,246,0.12)', border: 'none', cursor: 'pointer', padding: '3px 10px', borderRadius: 'var(--sl-radius-sm)' }}
             >
               Synchroniser
             </button>

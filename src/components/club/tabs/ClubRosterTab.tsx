@@ -58,7 +58,7 @@ export default function ClubRosterTab({
           <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
           <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>Aucune équipe configurée</div>
           {canEdit ? (
-            <button onClick={() => setShowAddTeam(true)} style={{ marginTop: 8, padding: '10px 22px', borderRadius: 14, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 800, backgroundColor: 'var(--sl-green)', color: '#fff' }}>
+            <button onClick={() => setShowAddTeam(true)} style={{ marginTop: 8, padding: '10px 22px', borderRadius: 'var(--sl-radius-2xl)', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 800, backgroundColor: 'var(--sl-green)', color: '#fff' }}>
               + Créer une équipe
             </button>
           ) : (
@@ -132,18 +132,18 @@ export default function ClubRosterTab({
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>Équipes</h2>
                 {canEdit && (
-                  <button onClick={() => setShowAddTeam(true)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: 'rgba(34,217,106,0.12)', color: 'var(--sl-green)' }}>
+                  <button onClick={() => setShowAddTeam(true)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: 'rgba(34,217,106,0.12)', color: 'var(--sl-green)' }}>
                     <span style={{ fontSize: 14 }}>+</span> Ajouter une équipe
                   </button>
                 )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {(club.categories ?? []).map((cat: any) => (
-                  <div key={cat.id} style={{ padding: '12px 14px', borderRadius: 12, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+                  <div key={cat.id} style={{ padding: '12px 14px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
                     <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--sl-t2)', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{cat.name}</div>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {(cat.teams ?? []).map((team: any) => (
-                        <button key={team.id} onClick={() => setActiveTeamId(team.id)} style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}10`, color: accentColor, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                        <button key={team.id} onClick={() => setActiveTeamId(team.id)} style={{ padding: '5px 12px', borderRadius: 'var(--sl-radius-4xl)', border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}10`, color: accentColor, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
                           {team.name}{team.level && <span style={{ marginLeft: 4, opacity: 0.7 }}>· {team.level}</span>}
                         </button>
                       ))}

@@ -109,7 +109,7 @@ function OAuthMockModal({ provider, onDone, onClose }: OAuthMockModalProps) {
         <button
           onClick={onClose}
           className="w-full py-3 mt-2 text-sm font-semibold transition-colors"
-          style={{ color: 'rgba(222,238,255,0.6)', background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 15 }}
+          style={{ color: 'rgba(222,238,255,0.6)', background: 'rgba(255,255,255,0.05)', borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', fontSize: 15 }}
         >
           ← Annuler
         </button>
@@ -203,7 +203,7 @@ function ForgotPasswordView({ onBack }: ForgotPasswordViewProps) {
       <button
         onClick={onBack}
         className="w-full py-3 text-sm font-semibold transition-colors"
-        style={{ color: 'rgba(222,238,255,0.6)', background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 15 }}
+        style={{ color: 'rgba(222,238,255,0.6)', background: 'rgba(255,255,255,0.05)', borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', fontSize: 15 }}
       >
         ← Retour à la connexion
       </button>
@@ -415,7 +415,7 @@ export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initi
                   <button
                     onClick={() => switchMode('register')}
                     className="w-full py-3 rounded-xl text-sm text-slate-400 hover:text-white transition-colors font-medium"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: 'none', cursor: 'pointer', borderRadius: 12 }}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: 'none', cursor: 'pointer', borderRadius: 'var(--sl-radius-xl)' }}
                   >
                     Recommencer l'inscription
                   </button>

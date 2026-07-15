@@ -84,7 +84,7 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
     });
   }
 
-  const inputStyle = { width: '100%', boxSizing: 'border-box' as const, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, outline: 'none' };
+  const inputStyle = { width: '100%', boxSizing: 'border-box' as const, padding: '10px 12px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, outline: 'none' };
 
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 300, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
@@ -101,7 +101,7 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
             <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)' }}>Importer un calendrier</div>
             <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>Fichier .ics ou lien de calendrier</div>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', cursor: 'pointer', fontSize: 16 }}>×</button>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', cursor: 'pointer', fontSize: 16 }}>×</button>
         </div>
 
         <AnimatePresence mode="wait">
@@ -111,7 +111,7 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
               <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 6 }}>
                 {importedCount} événement{importedCount > 1 ? 's' : ''} importé{importedCount > 1 ? 's' : ''}
               </div>
-              <button onClick={onClose} style={{ marginTop: 16, padding: '10px 24px', borderRadius: 10, border: 'none', backgroundColor: 'var(--sl-accent)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+              <button onClick={onClose} style={{ marginTop: 16, padding: '10px 24px', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: 'var(--sl-accent)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
                 Terminé
               </button>
             </motion.div>
@@ -137,9 +137,9 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
                   const dateStr = isNaN(d.getTime()) ? ev.date : d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: ev.allDay ? undefined : '2-digit', minute: ev.allDay ? undefined : '2-digit' });
                   return (
                     <button key={key} onClick={() => toggleEvent(key)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${isSelected ? 'var(--sl-accent)' : 'var(--sl-border)'}`, backgroundColor: isSelected ? 'rgba(99,102,241,0.06)' : 'var(--sl-surface)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.1s' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 'var(--sl-radius-lg)', border: `1.5px solid ${isSelected ? 'var(--sl-accent)' : 'var(--sl-border)'}`, backgroundColor: isSelected ? 'rgba(99,102,241,0.06)' : 'var(--sl-surface)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.1s' }}
                     >
-                      <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${isSelected ? 'var(--sl-accent)' : 'var(--sl-border)'}`, backgroundColor: isSelected ? 'var(--sl-accent)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 18, height: 18, borderRadius: 'var(--sl-radius-xs)', border: `2px solid ${isSelected ? 'var(--sl-accent)' : 'var(--sl-border)'}`, backgroundColor: isSelected ? 'var(--sl-accent)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {isSelected && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -154,15 +154,15 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
                 })}
               </div>
 
-              {error && <div style={{ padding: '8px 12px', borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: 12 }}>{error}</div>}
+              {error && <div style={{ padding: '8px 12px', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: 12 }}>{error}</div>}
 
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => { setPhase('idle'); setEvents([]); setError(null); }}
-                  style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '11px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
                   Annuler
                 </button>
                 <button onClick={handleImport} disabled={selected.size === 0}
-                  style={{ flex: 2, padding: '11px', borderRadius: 10, border: 'none', backgroundColor: selected.size > 0 ? 'var(--sl-accent)' : 'var(--sl-border)', color: selected.size > 0 ? '#fff' : 'var(--sl-t3)', fontSize: 13, fontWeight: 800, cursor: selected.size > 0 ? 'pointer' : 'not-allowed' }}>
+                  style={{ flex: 2, padding: '11px', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: selected.size > 0 ? 'var(--sl-accent)' : 'var(--sl-border)', color: selected.size > 0 ? '#fff' : 'var(--sl-t3)', fontSize: 13, fontWeight: 800, cursor: selected.size > 0 ? 'pointer' : 'not-allowed' }}>
                   {`Importer ${selected.size} événement${selected.size > 1 ? 's' : ''}`}
                 </button>
               </div>
@@ -170,10 +170,10 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
           ) : (
             <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {/* Tabs */}
-              <div style={{ display: 'flex', backgroundColor: 'var(--sl-surface)', borderRadius: 10, padding: 3, gap: 2 }}>
+              <div style={{ display: 'flex', backgroundColor: 'var(--sl-surface)', borderRadius: 'var(--sl-radius-lg)', padding: 3, gap: 2 }}>
                 {(['file', 'url'] as Tab[]).map(t => (
                   <button key={t} onClick={() => { setTab(t); setError(null); }}
-                    style={{ flex: 1, padding: '8px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.15s', backgroundColor: tab === t ? 'var(--sl-card)' : 'transparent', color: tab === t ? 'var(--sl-t1)' : 'var(--sl-t3)' }}>
+                    style={{ flex: 1, padding: '8px', borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.15s', backgroundColor: tab === t ? 'var(--sl-card)' : 'transparent', color: tab === t ? 'var(--sl-t1)' : 'var(--sl-t3)' }}>
                     {t === 'file' ? '📂 Fichier .ics' : '🔗 URL de calendrier'}
                   </button>
                 ))}
@@ -187,7 +187,7 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
                     onDragOver={e => e.preventDefault()}
                     onDrop={onDrop}
                     onClick={() => fileRef.current?.click()}
-                    style={{ border: `2px dashed ${isDragging ? 'var(--sl-accent)' : 'var(--sl-border)'}`, borderRadius: 14, padding: '32px 20px', textAlign: 'center', cursor: 'pointer', backgroundColor: isDragging ? 'rgba(99,102,241,0.05)' : 'var(--sl-surface)', transition: 'all 0.15s' }}
+                    style={{ border: `2px dashed ${isDragging ? 'var(--sl-accent)' : 'var(--sl-border)'}`, borderRadius: 'var(--sl-radius-2xl)', padding: '32px 20px', textAlign: 'center', cursor: 'pointer', backgroundColor: isDragging ? 'rgba(99,102,241,0.05)' : 'var(--sl-surface)', transition: 'all 0.15s' }}
                   >
                     <div style={{ fontSize: 32, marginBottom: 8 }}>📅</div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 4 }}>
@@ -217,14 +217,14 @@ export default function ICSImportModal({ clubId: _clubId, onImport, onClose }: I
                     Collez l'adresse du flux iCal. Note : certains calendriers privés bloquent les imports directs (CORS). Si ça échoue, téléchargez le fichier .ics et utilisez l'onglet Fichier.
                   </div>
                   <button onClick={handleURLFetch} disabled={!urlInput.trim() || phase === 'loading'}
-                    style={{ padding: '12px', borderRadius: 10, border: 'none', backgroundColor: urlInput.trim() ? 'var(--sl-accent)' : 'var(--sl-border)', color: urlInput.trim() ? '#fff' : 'var(--sl-t3)', fontSize: 13, fontWeight: 800, cursor: urlInput.trim() ? 'pointer' : 'not-allowed' }}>
+                    style={{ padding: '12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: urlInput.trim() ? 'var(--sl-accent)' : 'var(--sl-border)', color: urlInput.trim() ? '#fff' : 'var(--sl-t3)', fontSize: 13, fontWeight: 800, cursor: urlInput.trim() ? 'pointer' : 'not-allowed' }}>
                     {phase === 'loading' ? '⏳ Chargement…' : '🔗 Charger le calendrier'}
                   </button>
                 </>
               )}
 
               {error && (
-                <div style={{ padding: '10px 12px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444', fontSize: 12, lineHeight: 1.5 }}>
+                <div style={{ padding: '10px 12px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444', fontSize: 12, lineHeight: 1.5 }}>
                   {error}
                 </div>
               )}

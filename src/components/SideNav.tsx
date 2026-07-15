@@ -54,7 +54,7 @@ function NavBtn({ item, active, badge, onClick }: { item: NavItem; active: boole
       whileTap={{ scale: 0.97 }}
       style={{
         display: 'flex', alignItems: 'center', gap: 11,
-        width: '100%', padding: '9px 12px', borderRadius: 10,
+        width: '100%', padding: '9px 12px', borderRadius: 'var(--sl-radius-lg)',
         border: 'none', cursor: 'pointer', textAlign: 'left',
         backgroundColor: active ? 'rgba(34,217,106,0.12)' : 'transparent',
         color: active ? 'var(--sl-green)' : 'var(--sl-t2)',
@@ -65,7 +65,7 @@ function NavBtn({ item, active, badge, onClick }: { item: NavItem; active: boole
       <span style={{ fontSize: 14, fontWeight: active ? 700 : 500, color: 'inherit', flex: 1 }}>{item.label}</span>
       {!!badge && badge > 0 && (
         <span style={{
-          minWidth: 18, height: 18, borderRadius: 9,
+          minWidth: 18, height: 18, borderRadius: 'var(--sl-radius-md)',
           backgroundColor: '#ef4444', color: '#fff',
           fontSize: 10, fontWeight: 700,
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px',
@@ -85,7 +85,7 @@ function ActionBtn({ icon, label, onClick }: { icon: React.ReactNode; label: str
       whileTap={{ scale: 0.97 }}
       style={{
         display: 'flex', alignItems: 'center', gap: 10,
-        width: '100%', padding: '8px 10px', borderRadius: 8,
+        width: '100%', padding: '8px 10px', borderRadius: 'var(--sl-radius-md)',
         border: 'none', cursor: 'pointer', textAlign: 'left',
         backgroundColor: 'transparent', color: 'var(--sl-t2)',
       }}
@@ -171,7 +171,7 @@ export default function SideNav({
             onClick={() => setActionsOpen(o => !o)}
             style={{
               width: '100%', display: 'flex', alignItems: 'center', gap: 9,
-              padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              padding: '9px 12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer',
               backgroundColor: 'var(--sl-green)', color: '#000',
               fontFamily: "'Barlow Condensed', sans-serif",
               fontSize: 13, fontWeight: 800, letterSpacing: '0.03em',
@@ -223,7 +223,7 @@ export default function SideNav({
           flexShrink: 0,
         }}>
           <div style={{
-            width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+            width: 32, height: 32, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0,
             backgroundColor: 'rgba(34,217,106,0.15)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 13, fontWeight: 800, color: 'var(--sl-green)',

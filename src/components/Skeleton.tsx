@@ -8,7 +8,7 @@ export const Skeleton = memo(function Skeleton({ width, height, radius = 8, styl
 
 export const SkeletonClubCard = memo(function SkeletonClubCard() {
   return (
-    <div aria-hidden="true" style={{ borderRadius: 14, marginBottom: 8, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+    <div aria-hidden="true" style={{ borderRadius: 'var(--sl-radius-2xl)', marginBottom: 8, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px 10px' }}>
         <Skeleton width={44} height={44} radius={12} />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}>

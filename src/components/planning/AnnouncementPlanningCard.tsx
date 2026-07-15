@@ -28,7 +28,7 @@ export default function AnnouncementPlanningCard({ announcement, isRead, onMarkR
       }}
       style={{
         width: '100%', textAlign: 'left', cursor: 'pointer',
-        borderRadius: 14,
+        borderRadius: 'var(--sl-radius-2xl)',
         border: '1px solid var(--sl-border)',
         borderLeft: `3px solid ${conf.color}`,
         backgroundColor: isRead ? 'var(--sl-card)' : `${conf.color}08`,
@@ -42,7 +42,7 @@ export default function AnnouncementPlanningCard({ announcement, isRead, onMarkR
           <span style={{
             fontSize: 8, fontWeight: 800, letterSpacing: '0.08em',
             color: conf.color, backgroundColor: `${conf.color}18`,
-            padding: '2px 6px', borderRadius: 4,
+            padding: '2px 6px', borderRadius: 'var(--sl-radius-xs)',
           }}>
             {conf.label}
           </span>

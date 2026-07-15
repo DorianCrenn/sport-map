@@ -241,7 +241,7 @@ export function AboutBlockView({ block }: { block: Record<string, any> }) {
                     rel="noopener noreferrer"
                     title={CONTACT_TYPES.find(t => t.value === c.type)?.label || c.type}
                     style={{
-                      width: 44, height: 44, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 44, height: 44, borderRadius: 'var(--sl-radius-2xl)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: meta.bg, color: meta.color, textDecoration: 'none', flexShrink: 0,
                       boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
                     }}

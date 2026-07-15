@@ -424,7 +424,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         {/* Drag handle — mobile uniquement, donne du souffle entre le bord arrondi et le header */}
         {!isDesktop && (
           <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4 }}>
-            <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border)' }} />
+            <div style={{ width: 36, height: 4, borderRadius: 'var(--sl-radius-xs)', backgroundColor: 'var(--sl-border)' }} />
           </div>
         )}
 
@@ -436,7 +436,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               <div style={{
                 position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                 whiteSpace: 'nowrap', zIndex: 10,
-                backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 16, padding: '12px 28px',
+                backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 'var(--sl-radius-3xl)', padding: '12px 28px',
                 display: 'flex', alignItems: 'center', gap: 16,
                 border: '1px solid rgba(255,255,255,0.15)',
               }}>
@@ -446,7 +446,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               </div>
             )}
             {watermarkVisible && (
-              <div style={{ position: 'absolute', bottom: 10, right: 12, padding: '3px 9px', borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.38)' }}>
+              <div style={{ position: 'absolute', bottom: 10, right: 12, padding: '3px 9px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: 'rgba(0,0,0,0.38)' }}>
                 <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.09em', color: 'rgba(255,255,255,0.72)', textTransform: 'uppercase', fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif' }}>
                   {club?.name ? `${club.name} · SportLink` : 'Créé avec SportLink'}
                 </span>
@@ -463,7 +463,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               <div style={{
                 position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                 whiteSpace: 'nowrap', zIndex: 10,
-                backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 16, padding: '12px 28px',
+                backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 'var(--sl-radius-3xl)', padding: '12px 28px',
                 display: 'flex', alignItems: 'center', gap: 16,
                 border: '1px solid rgba(255,255,255,0.15)',
               }}>
@@ -473,7 +473,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               </div>
             )}
             {watermarkVisible && (
-              <div style={{ position: 'absolute', bottom: 10, right: 12, padding: '3px 9px', borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.38)' }}>
+              <div style={{ position: 'absolute', bottom: 10, right: 12, padding: '3px 9px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: 'rgba(0,0,0,0.38)' }}>
                 <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.09em', color: 'rgba(255,255,255,0.72)', textTransform: 'uppercase', fontFamily: '"Inter","Helvetica Neue",Arial,sans-serif' }}>
                   {club?.name ? `${club.name} · SportLink` : 'Créé avec SportLink'}
                 </span>
@@ -489,7 +489,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, borderRadius: 'inherit' }}>
               <PosterRenderer templateId={templateId} data={posterData} format={format} previewWidth={Math.min(300, 320)} transforms={transforms} bgPresetId={bgPreset} effects={posterEffects} overlayElements={overlayElements || []} aiOverlayElements={aiOverlayElements || []} playerLayers={playerLayers || []} sponsorLogos={activeBandLogos} showWatermark={!hasPremium} />
               <button onClick={() => setPreviewFull(false)}
-                style={{ padding: '12px 22px', borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                style={{ padding: '12px 22px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Fermer
               </button>
             </motion.div>
@@ -536,7 +536,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         }}>
           {/* Gauche : icône + titre + sous-titre événement */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, overflow: 'hidden' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: `${accentColor}1E`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 'var(--sl-radius-md)', backgroundColor: `${accentColor}1E`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" strokeLinecap="round">
                 <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
               </svg>
@@ -552,7 +552,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             {/* Segmented control Simple ↔ Expert */}
             <div style={{
               display: 'flex', flexShrink: 0,
-              borderRadius: 10, border: '1px solid var(--sl-border)',
+              borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)',
               backgroundColor: 'var(--sl-surface)', overflow: 'hidden',
             }}>
               {/* Simple */}
@@ -633,7 +633,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               onClick={() => { setActiveTab(null); setExportOpen(prev => !prev); }}
               title="Partager / Exporter"
               aria-label="Partager ou exporter l'affiche"
-              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: isDesktop ? '10px 12px' : '10px', borderRadius: 10, border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}12`, cursor: 'pointer', color: accentColor, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: isDesktop ? '10px 12px' : '10px', borderRadius: 'var(--sl-radius-lg)', border: `1px solid ${accentColor}40`, backgroundColor: `${accentColor}12`, cursor: 'pointer', color: accentColor, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
@@ -642,7 +642,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             </button>
 
             <button onClick={onClose} aria-label="Fermer PosterStudio"
-              style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
+              style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
@@ -666,12 +666,12 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               }
             </span>
             <button onClick={() => { setExportOpen(true); setQuickBannerDismissed(true); }}
-              style={{ padding: '5px 12px', borderRadius: 8, border: 'none', backgroundColor: 'var(--sl-green)', color: '#000', fontSize: 11, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>
+              style={{ padding: '5px 12px', borderRadius: 'var(--sl-radius-md)', border: 'none', backgroundColor: 'var(--sl-green)', color: '#000', fontSize: 11, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>
               Partager
             </button>
             <button onClick={() => setQuickBannerDismissed(true)}
               aria-label="Fermer la bannière"
-              style={{ width: 22, height: 22, borderRadius: 6, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              style={{ width: 22, height: 22, borderRadius: 'var(--sl-radius-sm)', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </motion.div>
@@ -773,7 +773,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         }}>
           <div style={{
             display: 'inline-flex', gap: 2, flexShrink: 0,
-            backgroundColor: 'var(--sl-surface)', borderRadius: 13,
+            backgroundColor: 'var(--sl-surface)', borderRadius: 'var(--sl-radius-xl)',
             padding: 3, border: '1px solid var(--sl-border)',
           }}>
             {[
@@ -785,7 +785,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
                 <button key={f.id} onClick={() => set('format', f.id)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
-                    padding: '6px 12px', borderRadius: 11,
+                    padding: '6px 12px', borderRadius: 'var(--sl-radius-lg)',
                     fontSize: 12, fontWeight: 700, cursor: 'pointer',
                     border: 'none', whiteSpace: 'nowrap',
                     backgroundColor: active ? accentColor : 'transparent',
@@ -802,7 +802,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           {/* Active template pill */}
           <div style={{
             flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 5,
-            padding: '5px 9px', borderRadius: 10,
+            padding: '5px 9px', borderRadius: 'var(--sl-radius-lg)',
             backgroundColor: `${activeTpl.color}12`,
             border: `1px solid ${activeTpl.color}30`, overflow: 'hidden',
           }}>
@@ -811,7 +811,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           </div>
 
           {/* Accent color dot */}
-          <div style={{ width: 24, height: 24, borderRadius: 7, background: accentColor, flexShrink: 0, boxShadow: `0 0 8px ${accentColor}60` }} />
+          <div style={{ width: 24, height: 24, borderRadius: 'var(--sl-radius-sm)', background: accentColor, flexShrink: 0, boxShadow: `0 0 8px ${accentColor}60` }} />
         </div>}
 
         {/* ── CANVAS AREA ─────────────────────────────────────────────────────── */}
@@ -823,7 +823,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <div style={{
               width: PREVIEW_W, height: previewH,
-              borderRadius: 12, overflow: 'hidden', flexShrink: 0, position: 'relative',
+              borderRadius: 'var(--sl-radius-xl)', overflow: 'hidden', flexShrink: 0, position: 'relative',
               boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.18)',
               border: '1px solid rgba(255,255,255,0.06)',
             }}>
@@ -875,19 +875,19 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             {/* Floating action buttons — absolus à droite du poster, ne débordent pas du flex */}
             <div style={{ position: 'absolute', left: PREVIEW_W + 8, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 8 }}>
               <button onClick={() => setPreviewFull(true)} title="Aperçu plein écran" aria-label="Aperçu plein écran"
-                style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t2)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
+                style={{ width: 34, height: 34, borderRadius: 'var(--sl-radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t2)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                 </svg>
               </button>
               <button onClick={() => setPlatformPreview('ig-story')} title="Aperçu plateformes" aria-label="Aperçu sur les plateformes (Instagram, Facebook…)"
-                style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t2)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
+                style={{ width: 34, height: 34, borderRadius: 'var(--sl-radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', cursor: 'pointer', color: 'var(--sl-t2)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
                 </svg>
               </button>
               <button onClick={() => setEditorOpen(true)} title="Éditeur visuel" aria-label="Ouvrir l'éditeur visuel"
-                style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: `${accentColor}16`, border: `1px solid ${accentColor}50`, cursor: 'pointer', color: accentColor, boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
+                style={{ width: 34, height: 34, borderRadius: 'var(--sl-radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: `${accentColor}16`, border: `1px solid ${accentColor}50`, cursor: 'pointer', color: accentColor, boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                 </svg>
@@ -1044,7 +1044,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         >
           {/* Badge + close */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
               👑
             </div>
             <div style={{ flex: 1 }}>
@@ -1054,7 +1054,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
             <button
               onClick={() => setShowUpgradeModal(false)}
               aria-label="Fermer"
-              style={{ width: 44, height: 44, borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+              style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -1070,7 +1070,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               ['🤖', "Génération de fond par IA (10 crédits/mois)"],
               ['🤝', 'Intégration automatique des logos sponsors'],
             ].map(([emoji, text]) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: 'var(--sl-surface)' }}>
+              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-surface)' }}>
                 <span style={{ fontSize: 16, flexShrink: 0 }}>{emoji}</span>
                 <span style={{ fontSize: 12, color: 'var(--sl-t2)' }}>{text}</span>
               </div>
@@ -1080,7 +1080,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           {/* CTA */}
           <a
             href="mailto:contact@sportlink.app?subject=Abonnement Premium SportLink"
-            style={{ display: 'block', width: '100%', padding: '13px 0', borderRadius: 14, backgroundColor: '#D4AF37', color: '#0B1E3D', textAlign: 'center', fontWeight: 800, fontSize: 14, textDecoration: 'none' }}
+            style={{ display: 'block', width: '100%', padding: '13px 0', borderRadius: 'var(--sl-radius-2xl)', backgroundColor: '#D4AF37', color: '#0B1E3D', textAlign: 'center', fontWeight: 800, fontSize: 14, textDecoration: 'none' }}
           >
             Passer au plan Premium — 10 €/mois
           </a>

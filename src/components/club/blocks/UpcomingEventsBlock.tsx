@@ -24,13 +24,13 @@ export default function UpcomingEventsBlock({ data, allEvents, club, isEditing, 
   return (
     <div>
       {isEditing && onUpdate && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12, padding: 12, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1.5px dashed var(--sl-border)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12, padding: 12, borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', border: '1.5px dashed var(--sl-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <label style={{ fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600 }}>Sport</label>
             <select
               value={data?.sport || ''}
               onChange={e => onUpdate({ sport: e.target.value || null })}
-              style={{ fontSize: 11, border: '1px solid var(--sl-border)', borderRadius: 8, padding: '3px 8px', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }}
+              style={{ fontSize: 11, border: '1px solid var(--sl-border)', borderRadius: 'var(--sl-radius-md)', padding: '3px 8px', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }}
             >
               <option value="">Tous</option>
               {Object.values(SPORTS ?? {}).map((s: any) => (
@@ -43,7 +43,7 @@ export default function UpcomingEventsBlock({ data, allEvents, club, isEditing, 
             <select
               value={data?.maxItems ?? 5}
               onChange={e => onUpdate({ maxItems: Number(e.target.value) })}
-              style={{ fontSize: 11, border: '1px solid var(--sl-border)', borderRadius: 8, padding: '3px 8px', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }}
+              style={{ fontSize: 11, border: '1px solid var(--sl-border)', borderRadius: 'var(--sl-radius-md)', padding: '3px 8px', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }}
             >
               {[3, 5, 10].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
@@ -63,11 +63,11 @@ export default function UpcomingEventsBlock({ data, allEvents, club, isEditing, 
             return (
               <div
                 key={event.id}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', transition: 'background-color 0.15s' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', transition: 'background-color 0.15s' }}
                 onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--sl-hover)'}
                 onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--sl-surface)'}
               >
-                <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, backgroundColor: `${sp?.color ?? '#64748b'}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0, backgroundColor: `${sp?.color ?? '#64748b'}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <SportIcon sport={event.sport} size={18} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -80,7 +80,7 @@ export default function UpcomingEventsBlock({ data, allEvents, club, isEditing, 
                     {d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', padding: '3px 8px', borderRadius: 999, flexShrink: 0, backgroundColor: sp?.color ?? '#64748b' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', padding: '3px 8px', borderRadius: 'var(--sl-radius-full)', flexShrink: 0, backgroundColor: sp?.color ?? '#64748b' }}>
                   {event.city}
                 </span>
               </div>

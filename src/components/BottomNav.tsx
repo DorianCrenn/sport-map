@@ -72,7 +72,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
         {fabOpen && !overlayOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setFabOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 1001 }} />
-            <motion.div initial={{ opacity: 0, scale: 0.92, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 8 }} transition={{ type: 'spring', stiffness: 420, damping: 34 }} style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 82px)', left: isClubAdminOnly ? 'calc(50% - 148px)' : 'calc(50% - 124px)', width: isClubAdminOnly ? 296 : 248, zIndex: 1002, backgroundColor: 'var(--sl-card)', borderRadius: 20, border: '1px solid var(--sl-border-s)', boxShadow: 'var(--sl-shadow-xl)', overflow: 'hidden' }}>
+            <motion.div initial={{ opacity: 0, scale: 0.92, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 8 }} transition={{ type: 'spring', stiffness: 420, damping: 34 }} style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 82px)', left: isClubAdminOnly ? 'calc(50% - 148px)' : 'calc(50% - 124px)', width: isClubAdminOnly ? 296 : 248, zIndex: 1002, backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-4xl)', border: '1px solid var(--sl-border-s)', boxShadow: 'var(--sl-shadow-xl)', overflow: 'hidden' }}>
               {!fabWelcomeSeen && (
                 <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--sl-border)', marginBottom: 2 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
@@ -97,9 +97,9 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.18, delay: 4 * 0.04 }}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'transparent', color: 'var(--sl-t2)' }}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', backgroundColor: 'transparent', color: 'var(--sl-t2)' }}
                     >
-                      <div style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, backgroundColor: 'var(--sl-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0, backgroundColor: 'var(--sl-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <motion.div animate={{ rotate: fabExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
                         </motion.div>
@@ -142,7 +142,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
           </>
         )}
       </AnimatePresence>
-      <nav style={{ display: 'flex', alignItems: 'stretch', margin: '8px 12px 12px', borderRadius: 24, background: 'var(--sl-nav-bg)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: 'var(--sl-nav-shadow)', border: '1px solid var(--sl-nav-border)', overflow: 'visible', position: 'relative' }}>
+      <nav style={{ display: 'flex', alignItems: 'stretch', margin: '8px 12px 12px', borderRadius: 'var(--sl-radius-4xl)', background: 'var(--sl-nav-bg)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: 'var(--sl-nav-shadow)', border: '1px solid var(--sl-nav-border)', overflow: 'visible', position: 'relative' }}>
         {tabs.map((tab, tabIdx) => {
           if (tab === null) {
             return (
@@ -156,7 +156,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                       transition={{ delay: 0.8, duration: 0.3 }}
                       style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 12, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
                     >
-                      <div style={{ backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 12, fontWeight: 700, padding: '5px 10px', borderRadius: 20, whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(34,217,106,0.45)' }}>
+                      <div style={{ backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 12, fontWeight: 700, padding: '5px 10px', borderRadius: 'var(--sl-radius-4xl)', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(34,217,106,0.45)' }}>
                         Appuyez pour créer
                       </div>
                       <svg width="10" height="6" viewBox="0 0 10 6" fill="#22d96a"><path d="M5 6L0 0h10z"/></svg>
@@ -181,7 +181,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
           const badgeCount = badgeCounts[tab.id] || 0;
           return (
             <motion.button key={`${tab.id}-${tabIdx}`} whileTap={{ scale: 0.86 }} whileHover={{ color: active ? activeColor : 'rgba(222,238,255,0.7)' }} onClick={() => { setFabOpen(false); onTabChange(tab.id); }} data-demo={`tab-${tab.id}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, padding: '10px 4px', background: 'transparent', border: 'none', cursor: 'pointer', color, position: 'relative' }}>
-              {active && <motion.div layoutId="nav-indicator" style={{ position: 'absolute', top: 0, left: 0, right: 0, width: 28, height: 3, borderRadius: 999, backgroundColor: activeColor, margin: '0 auto' }} transition={{ type: 'spring', stiffness: 500, damping: 35 }} />}
+              {active && <motion.div layoutId="nav-indicator" style={{ position: 'absolute', top: 0, left: 0, right: 0, width: 28, height: 3, borderRadius: 'var(--sl-radius-full)', backgroundColor: activeColor, margin: '0 auto' }} transition={{ type: 'spring', stiffness: 500, damping: 35 }} />}
               <div style={{ position: 'relative' }}>
                 <motion.div
                   key={active ? 'a' : 'i'}
@@ -217,9 +217,9 @@ function FabAction({ idx = 0, icon, label, desc, color, onClick, dataDemo }: Fab
       transition={{ duration: 0.18, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ backgroundColor: 'var(--sl-hover)' }}
       whileTap={{ scale: 0.97 }}
-      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}
+      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}
     >
-      <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, backgroundColor: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>{icon}</div>
+      <div style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', flexShrink: 0, backgroundColor: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>{icon}</div>
       <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t1)' }}>{label}</div>
         {desc && <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>{desc}</div>}

@@ -37,7 +37,7 @@ export default function PushBroadcastModal({ clubId, clubName, teams = [], upcom
 
   const inputStyle = {
     width: '100%', boxSizing: 'border-box' as const,
-    padding: '10px 12px', borderRadius: 10, border: '1px solid var(--sl-border)',
+    padding: '10px 12px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)',
     backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13,
     outline: 'none',
   };
@@ -59,7 +59,7 @@ export default function PushBroadcastModal({ clubId, clubName, teams = [], upcom
             <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)' }}>Envoyer une notification</div>
             <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>{clubName}</div>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t3)', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
 
         <AnimatePresence mode="wait">
@@ -82,7 +82,7 @@ export default function PushBroadcastModal({ clubId, clubName, teams = [], upcom
               {result.skipped && (
                 <div style={{ fontSize: 12, color: 'var(--sl-t3)' }}>Push non configuré (VAPID manquant).</div>
               )}
-              <button onClick={() => { reset(); setTitle(''); setBody(''); }} style={{ marginTop: 18, padding: '10px 24px', borderRadius: 10, border: 'none', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+              <button onClick={() => { reset(); setTitle(''); setBody(''); }} style={{ marginTop: 18, padding: '10px 24px', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
                 Nouvelle notification
               </button>
             </motion.div>
@@ -94,7 +94,7 @@ export default function PushBroadcastModal({ clubId, clubName, teams = [], upcom
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {TARGET_OPTIONS.map(opt => (
                     <button key={opt.value} onClick={() => setTarget(opt.value)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${target === opt.value ? 'var(--sl-accent)' : 'var(--sl-border)'}`, backgroundColor: target === opt.value ? 'rgba(99,102,241,0.08)' : 'var(--sl-surface)', cursor: 'pointer', textAlign: 'left' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 'var(--sl-radius-lg)', border: `1.5px solid ${target === opt.value ? 'var(--sl-accent)' : 'var(--sl-border)'}`, backgroundColor: target === opt.value ? 'rgba(99,102,241,0.08)' : 'var(--sl-surface)', cursor: 'pointer', textAlign: 'left' }}
                     >
                       <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${target === opt.value ? 'var(--sl-accent)' : 'var(--sl-border)'}`, backgroundColor: target === opt.value ? 'var(--sl-accent)' : 'transparent', flexShrink: 0 }} />
                       <div>
@@ -155,10 +155,10 @@ export default function PushBroadcastModal({ clubId, clubName, teams = [], upcom
 
               {/* Preview */}
               {(title || body) && (
-                <div style={{ padding: 12, borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)' }}>
+                <div style={{ padding: 12, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', marginBottom: 6, letterSpacing: '0.06em' }}>APERÇU NOTIFICATION</div>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: 'var(--sl-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🏆</div>
+                    <div style={{ width: 30, height: 30, borderRadius: 'var(--sl-radius-md)', backgroundColor: 'var(--sl-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🏆</div>
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)' }}>{title || '…'}</div>
                       <div style={{ fontSize: 11, color: 'var(--sl-t2)', marginTop: 2, lineHeight: 1.4 }}>{body || '…'}</div>
@@ -168,14 +168,14 @@ export default function PushBroadcastModal({ clubId, clubName, teams = [], upcom
               )}
 
               {error && (
-                <div style={{ padding: '8px 12px', borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', fontSize: 12 }}>
+                <div style={{ padding: '8px 12px', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', fontSize: 12 }}>
                   {error}
                 </div>
               )}
 
               <button
                 onClick={handleSend} disabled={!canSend || loading}
-                style={{ padding: '13px', borderRadius: 12, border: 'none', backgroundColor: canSend && !loading ? 'var(--sl-accent)' : 'var(--sl-border)', color: canSend && !loading ? '#fff' : 'var(--sl-t3)', fontSize: 14, fontWeight: 800, cursor: canSend && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}
+                style={{ padding: '13px', borderRadius: 'var(--sl-radius-xl)', border: 'none', backgroundColor: canSend && !loading ? 'var(--sl-accent)' : 'var(--sl-border)', color: canSend && !loading ? '#fff' : 'var(--sl-t3)', fontSize: 14, fontWeight: 800, cursor: canSend && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}
               >
                 {loading ? '🔄 Envoi…' : '🔔 Envoyer la notification'}
               </button>

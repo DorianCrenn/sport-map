@@ -33,7 +33,7 @@ function TypeBadge({ type, small = false }: TypeBadgeProps) {
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
       padding: small ? '2px 7px' : '3px 9px',
-      borderRadius: 20, fontSize: small ? 10 : 11, fontWeight: 700,
+      borderRadius: 'var(--sl-radius-4xl)', fontSize: small ? 10 : 11, fontWeight: 700,
       backgroundColor: m.bg, color: m.color, flexShrink: 0,
     }}>
       {m.emoji} {m.label}
@@ -47,7 +47,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <span style={{
       display: 'inline-block',
-      padding: '2px 8px', borderRadius: 20, fontSize: 10, fontWeight: 700,
+      padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 10, fontWeight: 700,
       backgroundColor: m.bg, color: m.color, flexShrink: 0,
     }}>
       {m.label}
@@ -105,7 +105,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
           onClick={onClose}
           aria-label="Retour à la liste"
           style={{
-            width: 38, height: 38, borderRadius: 10, border: 'none',
+            width: 38, height: 38, borderRadius: 'var(--sl-radius-lg)', border: 'none',
             backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
@@ -129,7 +129,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <TypeBadge type={item.type} />
           {item.category && (
-            <span style={{ fontSize: 11, color: 'var(--sl-t3)', backgroundColor: 'var(--sl-surface)', padding: '2px 8px', borderRadius: 20, border: '1px solid var(--sl-border)' }}>
+            <span style={{ fontSize: 11, color: 'var(--sl-t3)', backgroundColor: 'var(--sl-surface)', padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', border: '1px solid var(--sl-border)' }}>
               {item.category}
             </span>
           )}
@@ -138,13 +138,13 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
           </span>
         </div>
 
-        <div style={{ backgroundColor: 'var(--sl-card)', borderRadius: 14, padding: 14, border: '1px solid var(--sl-border)' }}>
+        <div style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-2xl)', padding: 14, border: '1px solid var(--sl-border)' }}>
           <p style={{ margin: '0 0 6px', fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Titre</p>
           <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', lineHeight: 1.4 }}>{item.title}</p>
         </div>
 
         {item.description && (
-          <div style={{ backgroundColor: 'var(--sl-card)', borderRadius: 14, padding: 14, border: '1px solid var(--sl-border)' }}>
+          <div style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-2xl)', padding: 14, border: '1px solid var(--sl-border)' }}>
             <p style={{ margin: '0 0 6px', fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</p>
             <p style={{ margin: 0, fontSize: 13, color: 'var(--sl-t2)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{item.description}</p>
           </div>
@@ -152,7 +152,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
 
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          backgroundColor: 'var(--sl-card)', borderRadius: 14, padding: 14,
+          backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-2xl)', padding: 14,
           border: '1px solid var(--sl-border)',
         }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
@@ -164,7 +164,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
         </div>
 
         {(item.page_url || item.app_version || browserInfo.ua) && (
-          <details style={{ backgroundColor: 'var(--sl-card)', borderRadius: 14, padding: 14, border: '1px solid var(--sl-border)' }}>
+          <details style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-2xl)', padding: 14, border: '1px solid var(--sl-border)' }}>
             <summary style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t3)', cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
@@ -181,7 +181,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
           </details>
         )}
 
-        <div style={{ backgroundColor: 'var(--sl-card)', borderRadius: 14, padding: 14, border: '1px solid rgba(99,102,241,0.25)' }}>
+        <div style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-2xl)', padding: 14, border: '1px solid rgba(99,102,241,0.25)' }}>
           <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Zone Admin</p>
 
           <div style={{ marginBottom: 12 }}>
@@ -197,7 +197,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
                     key={s}
                     onClick={() => setStatus(s)}
                     style={{
-                      padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                      padding: '5px 12px', borderRadius: 'var(--sl-radius-4xl)', border: 'none', cursor: 'pointer',
                       fontSize: 11, fontWeight: 600,
                       backgroundColor: active ? m.color : 'var(--sl-surface)',
                       color: active ? '#fff' : 'var(--sl-t2)',
@@ -226,7 +226,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
               rows={3}
               style={{
                 width: '100%', boxSizing: 'border-box', padding: '9px 12px',
-                borderRadius: 10, border: '1px solid var(--sl-border)',
+                borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)',
                 backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)',
                 fontSize: 13, resize: 'vertical', outline: 'none',
                 fontFamily: 'var(--sl-font-ui)',
@@ -239,7 +239,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
             disabled={saving || !changed}
             data-testid="feedback-save-btn"
             style={{
-              width: '100%', padding: '11px', borderRadius: 12, border: 'none',
+              width: '100%', padding: '11px', borderRadius: 'var(--sl-radius-xl)', border: 'none',
               backgroundColor: changed ? '#6366f1' : 'var(--sl-surface)',
               color: changed ? '#fff' : 'var(--sl-t3)',
               fontSize: 13, fontWeight: 700, cursor: changed ? 'pointer' : 'default',
@@ -266,7 +266,7 @@ function FeedbackCard({ item, onClick }: FeedbackCardProps) {
       onClick={() => onClick(item)}
       style={{
         width: '100%', textAlign: 'left',
-        backgroundColor: 'var(--sl-card)', borderRadius: 14,
+        backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-2xl)',
         border: '1px solid var(--sl-border)',
         padding: 14, cursor: 'pointer',
         transition: 'border-color 0.12s',
@@ -276,7 +276,7 @@ function FeedbackCard({ item, onClick }: FeedbackCardProps) {
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
         <span style={{
-          width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+          width: 32, height: 32, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0,
           backgroundColor: m.bg, color: m.color,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 15,
@@ -297,7 +297,7 @@ function FeedbackCard({ item, onClick }: FeedbackCardProps) {
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             {item.category && (
-              <span style={{ fontSize: 10, color: 'var(--sl-t3)', backgroundColor: 'var(--sl-surface)', padding: '1px 6px', borderRadius: 10, border: '1px solid var(--sl-border)' }}>
+              <span style={{ fontSize: 10, color: 'var(--sl-t3)', backgroundColor: 'var(--sl-surface)', padding: '1px 6px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)' }}>
                 {item.category}
               </span>
             )}
@@ -326,7 +326,7 @@ function StatsRow({ stats }: StatsRowProps) {
         { label: 'Questions',value: stats.byType.question, emoji: '❓', color: '#6366f1' },
       ].map(({ label, value, emoji, color }) => (
         <div key={label} style={{
-          backgroundColor: 'var(--sl-card)', borderRadius: 12, padding: '10px 12px',
+          backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-xl)', padding: '10px 12px',
           border: '1px solid var(--sl-border)', textAlign: 'center',
         }}>
           <div style={{ fontSize: 18, marginBottom: 2 }}>{emoji}</div>
@@ -421,7 +421,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
             onClick={onBack}
             aria-label="Retour à l'administration"
             style={{
-              width: 38, height: 38, borderRadius: 10, border: 'none', flexShrink: 0,
+              width: 38, height: 38, borderRadius: 'var(--sl-radius-lg)', border: 'none', flexShrink: 0,
               backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
@@ -449,7 +449,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
             return (
               <button key={s} onClick={() => applyStatus(s)}
                 style={{
-                  padding: '5px 11px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                  padding: '5px 11px', borderRadius: 'var(--sl-radius-4xl)', border: 'none', cursor: 'pointer',
                   fontSize: 11, fontWeight: 600, flexShrink: 0,
                   backgroundColor: active ? m.color : 'var(--sl-surface)',
                   color: active ? '#fff' : 'var(--sl-t3)',
@@ -468,7 +468,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
             return (
               <button key={t} onClick={() => applyType(t)}
                 style={{
-                  padding: '5px 11px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                  padding: '5px 11px', borderRadius: 'var(--sl-radius-4xl)', border: 'none', cursor: 'pointer',
                   fontSize: 11, fontWeight: 600, flexShrink: 0,
                   backgroundColor: active ? m.color : 'var(--sl-surface)',
                   color: active ? '#fff' : 'var(--sl-t3)',
@@ -486,7 +486,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
             ].map(({ id, label }) => (
               <button key={id} onClick={() => applySort(id)}
                 style={{
-                  padding: '5px 10px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                  padding: '5px 10px', borderRadius: 'var(--sl-radius-4xl)', border: 'none', cursor: 'pointer',
                   fontSize: 10, fontWeight: 600,
                   backgroundColor: sort === id ? '#6366f1' : 'var(--sl-surface)',
                   color: sort === id ? '#fff' : 'var(--sl-t3)',
@@ -514,7 +514,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
             style={{
               width: '100%', boxSizing: 'border-box',
               paddingLeft: 32, paddingRight: 12, paddingTop: 8, paddingBottom: 8,
-              borderRadius: 10, fontSize: 13,
+              borderRadius: 'var(--sl-radius-lg)', fontSize: 13,
               backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
               color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)',
             }}
@@ -546,7 +546,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
               disabled={page === 0}
               onClick={() => setPage(p => p - 1)}
               style={{
-                padding: '7px 16px', borderRadius: 10, border: '1px solid var(--sl-border)',
+                padding: '7px 16px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)',
                 backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
                 fontSize: 12, fontWeight: 600, cursor: page === 0 ? 'default' : 'pointer',
                 opacity: page === 0 ? 0.4 : 1,
@@ -561,7 +561,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
               disabled={page + 1 >= totalPages}
               onClick={() => setPage(p => p + 1)}
               style={{
-                padding: '7px 16px', borderRadius: 10, border: '1px solid var(--sl-border)',
+                padding: '7px 16px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)',
                 backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
                 fontSize: 12, fontWeight: 600, cursor: page + 1 >= totalPages ? 'default' : 'pointer',
                 opacity: page + 1 >= totalPages ? 0.4 : 1,

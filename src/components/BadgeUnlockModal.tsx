@@ -17,7 +17,7 @@ function SparkleParticles({ color }: { color: string }) {
   return (
     <>
       {SPARKLES.map((pos, i) => (
-        <motion.div key={i} initial={{ x: 0, y: 0, scale: 0, opacity: 0 }} animate={{ x: pos.x, y: pos.y, scale: [0, 1.3, 0], opacity: [0, 1, 0] }} transition={{ duration: 0.85, delay: 0.05 + i * 0.055, ease: 'easeOut' }} style={{ position: 'absolute', width: 7, height: 7, borderRadius: 2, backgroundColor: color, transform: 'rotate(45deg)', pointerEvents: 'none' }} />
+        <motion.div key={i} initial={{ x: 0, y: 0, scale: 0, opacity: 0 }} animate={{ x: pos.x, y: pos.y, scale: [0, 1.3, 0], opacity: [0, 1, 0] }} transition={{ duration: 0.85, delay: 0.05 + i * 0.055, ease: 'easeOut' }} style={{ position: 'absolute', width: 7, height: 7, borderRadius: 'var(--sl-radius-xs)', backgroundColor: color, transform: 'rotate(45deg)', pointerEvents: 'none' }} />
       ))}
     </>
   );
@@ -86,7 +86,7 @@ export default function BadgeUnlockModal({ badges, onDone }: BadgeUnlockModalPro
         <motion.div key={index} initial={{ opacity: 0, scale: 0.65, y: 70 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.82, y: -35 }} transition={{ type: 'spring', stiffness: 270, damping: 22 }} style={{ textAlign: 'center', maxWidth: 310, width: '100%' }}>
           {badges.length > 1 && (
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 30 }}>
-              {badges.map((_, i) => <motion.div key={i} animate={{ backgroundColor: i <= index ? def.color : 'rgba(255,255,255,0.18)' }} transition={{ duration: 0.3 }} style={{ height: 3, flex: 1, borderRadius: 2 }} />)}
+              {badges.map((_, i) => <motion.div key={i} animate={{ backgroundColor: i <= index ? def.color : 'rgba(255,255,255,0.18)' }} transition={{ duration: 0.3 }} style={{ height: 3, flex: 1, borderRadius: 'var(--sl-radius-xs)' }} />)}
             </div>
           )}
           <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} style={{ color: def.color, fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', margin: '0 0 22px', fontFamily: 'var(--sl-font-ui)' }}>Nouveau badge débloqué !</motion.p>
@@ -98,7 +98,7 @@ export default function BadgeUnlockModal({ badges, onDone }: BadgeUnlockModalPro
           </div>
           <motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} style={{ color: '#fff', fontSize: 30, fontWeight: 800, margin: '0 0 10px', fontFamily: 'var(--sl-font-ui)', letterSpacing: '-0.025em', lineHeight: 1.1 }}>{def.name}</motion.h2>
           <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.26 }} style={{ color: 'rgba(255,255,255,0.52)', fontSize: 15, lineHeight: 1.6, margin: '0 0 36px', fontFamily: 'var(--sl-font-ui)' }}>{def.description}</motion.p>
-          <motion.button initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }} whileTap={{ scale: 0.95 }} onClick={next} style={{ padding: '14px 52px', borderRadius: 999, border: 'none', backgroundColor: def.color, color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: `0 4px 28px ${def.glow}`, fontFamily: 'var(--sl-font-ui)', letterSpacing: '-0.01em' }}>
+          <motion.button initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }} whileTap={{ scale: 0.95 }} onClick={next} style={{ padding: '14px 52px', borderRadius: 'var(--sl-radius-full)', border: 'none', backgroundColor: def.color, color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: `0 4px 28px ${def.glow}`, fontFamily: 'var(--sl-font-ui)', letterSpacing: '-0.01em' }}>
             {index < badges.length - 1 ? 'Suivant →' : 'Super !'}
           </motion.button>
           {badges.length > 1 && index < badges.length - 1 && (

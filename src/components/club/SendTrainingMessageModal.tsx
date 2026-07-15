@@ -59,7 +59,7 @@ export default function SendTrainingMessageModal({
   const selected = TYPES.find(t => t.id === type);
   const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box',
-    padding: '10px 12px', borderRadius: 12, fontSize: 13,
+    padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', fontSize: 13,
     backgroundColor: 'var(--sl-surface)',
     border: `1.5px solid ${content ? selected?.color : 'var(--sl-border)'}`,
     color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)',
@@ -86,7 +86,7 @@ export default function SendTrainingMessageModal({
             </p>
           )}
           {targetGroup && (
-            <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, backgroundColor: targetGroup === 'absent' ? 'rgba(239,68,68,0.08)' : 'rgba(249,115,22,0.08)', border: `1px solid ${targetGroup === 'absent' ? 'rgba(239,68,68,0.25)' : 'rgba(249,115,22,0.25)'}`, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 'var(--sl-radius-md)', backgroundColor: targetGroup === 'absent' ? 'rgba(239,68,68,0.08)' : 'rgba(249,115,22,0.08)', border: `1px solid ${targetGroup === 'absent' ? 'rgba(239,68,68,0.25)' : 'rgba(249,115,22,0.25)'}`, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 12 }}>📬</span>
               <span style={{ fontSize: 12, fontWeight: 600, color: targetGroup === 'absent' ? '#ef4444' : '#f97316' }}>
                 Message ciblé :&nbsp;<strong>{targetGroup === 'absent' ? `Absents (${counts?.absent ?? 0})` : `Peut-être (${counts?.unsure ?? 0})`}</strong>
@@ -97,7 +97,7 @@ export default function SendTrainingMessageModal({
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
           {TYPES.map(t => (
-            <button key={t.id} onClick={() => prefill(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, cursor: 'pointer', border: `2px solid ${type === t.id ? t.color : 'var(--sl-border)'}`, backgroundColor: type === t.id ? `${t.color}12` : 'var(--sl-surface)', color: type === t.id ? t.color : 'var(--sl-t2)', fontSize: 12, fontWeight: 600, textAlign: 'left', transition: 'all 0.12s' }}>
+            <button key={t.id} onClick={() => prefill(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', border: `2px solid ${type === t.id ? t.color : 'var(--sl-border)'}`, backgroundColor: type === t.id ? `${t.color}12` : 'var(--sl-surface)', color: type === t.id ? t.color : 'var(--sl-t2)', fontSize: 12, fontWeight: 600, textAlign: 'left', transition: 'all 0.12s' }}>
               <span style={{ fontSize: 16 }}>{t.emoji}</span>
               {t.label}
             </button>
@@ -113,10 +113,10 @@ export default function SendTrainingMessageModal({
         </div>
 
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: '12px 0', borderRadius: 12, cursor: 'pointer', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '12px 0', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600 }}>
             Annuler
           </button>
-          <button onClick={handleSend} disabled={sending || !content.trim()} style={{ flex: 2, padding: '12px 0', borderRadius: 12, cursor: sending || !content.trim() ? 'not-allowed' : 'pointer', border: 'none', backgroundColor: sending || !content.trim() ? 'var(--sl-surface)' : (selected?.color ?? 'var(--sl-green)'), color: sending || !content.trim() ? 'var(--sl-t3)' : '#fff', fontSize: 13, fontWeight: 700, transition: 'all 0.15s' }}>
+          <button onClick={handleSend} disabled={sending || !content.trim()} style={{ flex: 2, padding: '12px 0', borderRadius: 'var(--sl-radius-xl)', cursor: sending || !content.trim() ? 'not-allowed' : 'pointer', border: 'none', backgroundColor: sending || !content.trim() ? 'var(--sl-surface)' : (selected?.color ?? 'var(--sl-green)'), color: sending || !content.trim() ? 'var(--sl-t3)' : '#fff', fontSize: 13, fontWeight: 700, transition: 'all 0.15s' }}>
             {sending ? 'Envoi…' : 'Envoyer'}
           </button>
         </div>

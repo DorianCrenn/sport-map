@@ -62,7 +62,7 @@ function MiniPosterCard({ ex }: { ex: typeof EXAMPLES[0] }) {
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.97 }}
       style={{
-        width: 110, flexShrink: 0, borderRadius: 14,
+        width: 110, flexShrink: 0, borderRadius: 'var(--sl-radius-2xl)',
         background: ex.gradient,
         border: `1px solid ${ex.accent}33`,
         boxShadow: `0 4px 20px ${ex.accent}22`,
@@ -141,14 +141,14 @@ function RecentCard({ poster }: { poster: ReturnType<typeof useRecentPosters>['p
       animate={{ opacity: 1, x: 0 }}
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
-        padding: '10px 12px', borderRadius: 14,
+        padding: '10px 12px', borderRadius: 'var(--sl-radius-2xl)',
         backgroundColor: 'var(--sl-card)',
         border: '1px solid var(--sl-border)',
       }}
     >
       {/* Color dot */}
       <div style={{
-        width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+        width: 40, height: 40, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0,
         backgroundColor: `${color}18`,
         border: `1px solid ${color}33`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',

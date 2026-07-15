@@ -527,7 +527,7 @@ export function FeaturedGalleryCard({ item, onNavigate }: FeaturedCardProps) {
     <button
       onClick={() => onNavigate?.(item.event_id)}
       style={{
-        width: 158, flexShrink: 0, borderRadius: 14, padding: 0,
+        width: 158, flexShrink: 0, borderRadius: 'var(--sl-radius-2xl)', padding: 0,
         border: `1.5px solid ${cfg.border}`,
         boxShadow: `0 0 14px ${cfg.glow}`,
         background: `linear-gradient(155deg, ${cfg.bg} 0%, var(--sl-bg) 100%)`,
@@ -545,7 +545,7 @@ export function FeaturedGalleryCard({ item, onNavigate }: FeaturedCardProps) {
           <span style={{ fontSize: 9, fontWeight: 800, color: cfg.accent, letterSpacing: '0.05em', textTransform: 'uppercase', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {item.club_name}
           </span>
-          <span style={{ fontSize: 7, fontWeight: 800, padding: '2px 5px', borderRadius: 5, background: `${cfg.accent}18`, color: cfg.accent, border: `1px solid ${cfg.accent}30`, whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <span style={{ fontSize: 7, fontWeight: 800, padding: '2px 5px', borderRadius: 'var(--sl-radius-xs)', background: `${cfg.accent}18`, color: cfg.accent, border: `1px solid ${cfg.accent}30`, whiteSpace: 'nowrap', flexShrink: 0 }}>
             {cfg.label}
           </span>
         </div>

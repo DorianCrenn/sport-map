@@ -25,7 +25,7 @@ const DETOUR_OPTIONS = [
 
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
-  borderRadius: 12, padding: '10px 12px', fontSize: 13,
+  borderRadius: 'var(--sl-radius-xl)', padding: '10px 12px', fontSize: 13,
   backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
   color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)',
 };
@@ -146,7 +146,7 @@ export default function CreateRideModal({ event, onSave, onClose }: CreateRideMo
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
-          <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
+          <div style={{ width: 36, height: 3, borderRadius: 'var(--sl-radius-full)', backgroundColor: 'var(--sl-border-s)' }} />
         </div>
 
         <AnimatePresence>
@@ -163,13 +163,13 @@ export default function CreateRideModal({ event, onSave, onClose }: CreateRideMo
             <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, letterSpacing: '-0.02em' }}>🚗 Proposer un trajet</h2>
             <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 3 }}>{event.title} · {dateLabel} à {timeLabel}</div>
           </div>
-          <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
 
         <form id="create-ride-form" onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 8px', display: 'flex', flexDirection: 'column', gap: 16, overscrollBehavior: 'contain' }}>
-          <div style={{ borderRadius: 12, padding: '10px 12px', backgroundColor: 'rgba(34,217,106,0.06)', border: '1px solid rgba(34,217,106,0.2)' }}>
+          <div style={{ borderRadius: 'var(--sl-radius-xl)', padding: '10px 12px', backgroundColor: 'rgba(34,217,106,0.06)', border: '1px solid rgba(34,217,106,0.2)' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-green)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>Destination</div>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>{event.venue || event.city || event.title}</div>
             {event.city && event.venue && <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>{event.city}</div>}
@@ -194,7 +194,7 @@ export default function CreateRideModal({ event, onSave, onClose }: CreateRideMo
               {[1, 2, 3, 4, 5, 6].map(n => {
                 const sel = form.availableSeats === n;
                 return (
-                  <button key={n} type="button" onClick={() => set('availableSeats', n)} style={{ flex: 1, padding: '10px 0', borderRadius: 12, cursor: 'pointer', border: `2px solid ${sel ? 'var(--sl-green)' : 'var(--sl-border)'}`, backgroundColor: sel ? 'rgba(34,217,106,0.12)' : 'var(--sl-surface)', color: sel ? 'var(--sl-green)' : 'var(--sl-t2)', fontSize: 14, fontWeight: 800, transition: 'all 0.12s' }}>
+                  <button key={n} type="button" onClick={() => set('availableSeats', n)} style={{ flex: 1, padding: '10px 0', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', border: `2px solid ${sel ? 'var(--sl-green)' : 'var(--sl-border)'}`, backgroundColor: sel ? 'rgba(34,217,106,0.12)' : 'var(--sl-surface)', color: sel ? 'var(--sl-green)' : 'var(--sl-t2)', fontSize: 14, fontWeight: 800, transition: 'all 0.12s' }}>
                     {n === 6 ? '6+' : n}
                   </button>
                 );
@@ -207,7 +207,7 @@ export default function CreateRideModal({ event, onSave, onClose }: CreateRideMo
               {EQUIPMENT_OPTIONS.map(opt => {
                 const sel = form.acceptedEquipment.includes(opt.key);
                 return (
-                  <button key={opt.key} type="button" onClick={() => toggleEquipment(opt.key)} style={{ padding: '7px 12px', borderRadius: 10, cursor: 'pointer', border: `1.5px solid ${sel ? 'var(--sl-green)' : 'var(--sl-border)'}`, backgroundColor: sel ? 'rgba(34,217,106,0.1)' : 'var(--sl-surface)', color: sel ? 'var(--sl-green)' : 'var(--sl-t2)', fontSize: 12, fontWeight: sel ? 700 : 500, transition: 'all 0.12s' }}>
+                  <button key={opt.key} type="button" onClick={() => toggleEquipment(opt.key)} style={{ padding: '7px 12px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer', border: `1.5px solid ${sel ? 'var(--sl-green)' : 'var(--sl-border)'}`, backgroundColor: sel ? 'rgba(34,217,106,0.1)' : 'var(--sl-surface)', color: sel ? 'var(--sl-green)' : 'var(--sl-t2)', fontSize: 12, fontWeight: sel ? 700 : 500, transition: 'all 0.12s' }}>
                     {opt.label}
                   </button>
                 );
@@ -220,7 +220,7 @@ export default function CreateRideModal({ event, onSave, onClose }: CreateRideMo
               {DETOUR_OPTIONS.map(opt => {
                 const sel = form.detourFlexibility === opt.key;
                 return (
-                  <button key={opt.key} type="button" onClick={() => set('detourFlexibility', opt.key)} style={{ padding: '9px 6px', borderRadius: 10, cursor: 'pointer', textAlign: 'center', border: `1.5px solid ${sel ? '#3b82f6' : 'var(--sl-border)'}`, backgroundColor: sel ? 'rgba(59,130,246,0.1)' : 'var(--sl-surface)', color: sel ? '#3b82f6' : 'var(--sl-t2)', fontSize: 11, fontWeight: sel ? 700 : 500, transition: 'all 0.12s' }}>
+                  <button key={opt.key} type="button" onClick={() => set('detourFlexibility', opt.key)} style={{ padding: '9px 6px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer', textAlign: 'center', border: `1.5px solid ${sel ? '#3b82f6' : 'var(--sl-border)'}`, backgroundColor: sel ? 'rgba(59,130,246,0.1)' : 'var(--sl-surface)', color: sel ? '#3b82f6' : 'var(--sl-t2)', fontSize: 11, fontWeight: sel ? 700 : 500, transition: 'all 0.12s' }}>
                     {opt.label}
                   </button>
                 );
@@ -236,8 +236,8 @@ export default function CreateRideModal({ event, onSave, onClose }: CreateRideMo
         </form>
 
         <div style={{ flexShrink: 0, padding: '14px 18px 20px', borderTop: '1px solid var(--sl-border)', display: 'flex', gap: 10 }}>
-          <button type="button" onClick={onClose} style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
-          <button type="submit" form="create-ride-form" disabled={saving} style={{ flex: 2, padding: '13px 0', borderRadius: 14, border: 'none', backgroundColor: saving ? 'var(--sl-surface)' : 'var(--sl-green)', color: saving ? 'var(--sl-t3)' : '#fff', fontSize: 14, fontWeight: 700, cursor: saving ? 'default' : 'pointer', boxShadow: saving ? 'none' : '0 4px 14px rgba(34,217,106,0.35)', transition: 'all 0.15s' }}>
+          <button type="button" onClick={onClose} style={{ flex: 1, padding: '13px 0', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
+          <button type="submit" form="create-ride-form" disabled={saving} style={{ flex: 2, padding: '13px 0', borderRadius: 'var(--sl-radius-2xl)', border: 'none', backgroundColor: saving ? 'var(--sl-surface)' : 'var(--sl-green)', color: saving ? 'var(--sl-t3)' : '#fff', fontSize: 14, fontWeight: 700, cursor: saving ? 'default' : 'pointer', boxShadow: saving ? 'none' : '0 4px 14px rgba(34,217,106,0.35)', transition: 'all 0.15s' }}>
             {saving ? 'Enregistrement…' : '🚗 Proposer le trajet'}
           </button>
         </div>

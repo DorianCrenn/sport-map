@@ -71,15 +71,15 @@ export default function EncounterCard({ encounter, encounterType, clubId, setsPe
   const setsWon = local.score_detail?.sets_won;
 
   return (
-    <div style={{ borderRadius: 12, border: `1px solid ${winner ? SIDE_COLOR[winner] + '40' : 'var(--sl-border)'}`, backgroundColor: 'var(--sl-card)', overflow: 'hidden', transition: 'border-color 0.2s' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-xl)', border: `1px solid ${winner ? SIDE_COLOR[winner] + '40' : 'var(--sl-border)'}`, backgroundColor: 'var(--sl-card)', overflow: 'hidden', transition: 'border-color 0.2s' }}>
       <button onClick={() => setOpen(v => !v)} style={{ width: '100%', padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, borderBottom: open ? '1px solid var(--sl-border)' : 'none' }}>
-        <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 20, backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1', flexShrink: 0 }}>
+        <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1', flexShrink: 0 }}>
           {isDouble ? '×2' : '×1'} {encounterType.label}
         </span>
         <span style={{ flex: 1, fontSize: 11, color: 'var(--sl-t2)', textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {setsWon ? `${setsWon.home}–${setsWon.away}` : `${playerLabel('home', 1)} vs ${playerLabel('away', 1)}`}
         </span>
-        {winner && <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 20, backgroundColor: SIDE_COLOR[winner] + '18', color: SIDE_COLOR[winner], flexShrink: 0 }}>{winner === 'home' ? 'Dom. ✓' : 'Ext. ✓'}</span>}
+        {winner && <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: SIDE_COLOR[winner] + '18', color: SIDE_COLOR[winner], flexShrink: 0 }}>{winner === 'home' ? 'Dom. ✓' : 'Ext. ✓'}</span>}
         {saving && <span style={{ fontSize: 10, color: 'var(--sl-t3)', flexShrink: 0 }}>⏳</span>}
         <span style={{ color: 'var(--sl-t3)', fontSize: 12, flexShrink: 0 }}>{open ? '▲' : '▼'}</span>
       </button>
@@ -107,7 +107,7 @@ export default function EncounterCard({ encounter, encounterType, clubId, setsPe
           <div style={{ display: 'flex', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', alignSelf: 'center' }}>Gagnant :</span>
             {(['home', 'away'] as const).map(side => (
-              <button key={side} onClick={() => setWinnerManual(winner === side ? null! : side)} style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: winner === side ? SIDE_COLOR[side] : SIDE_COLOR[side] + '18', color: winner === side ? '#fff' : SIDE_COLOR[side], transition: 'all 0.15s' }}>
+              <button key={side} onClick={() => setWinnerManual(winner === side ? null! : side)} style={{ flex: 1, padding: '7px 0', borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: winner === side ? SIDE_COLOR[side] : SIDE_COLOR[side] + '18', color: winner === side ? '#fff' : SIDE_COLOR[side], transition: 'all 0.15s' }}>
                 {side === 'home' ? '✓ Domicile' : '✓ Extérieur'}
               </button>
             ))}

@@ -33,7 +33,7 @@ export default function HelpTooltip({ content, size = 14 }: HelpTooltipProps) {
       {createPortal(
         <AnimatePresence>
           {open && (
-            <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.12 }} style={{ position: 'fixed', top: pos.top, left: pos.left, width: 220, zIndex: 9999, backgroundColor: '#1e293b', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 12, padding: '10px 14px', fontSize: 12, lineHeight: 1.55, color: 'rgba(222,238,255,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', pointerEvents: 'none' }}>
+            <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.12 }} style={{ position: 'fixed', top: pos.top, left: pos.left, width: 220, zIndex: 9999, backgroundColor: '#1e293b', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 'var(--sl-radius-xl)', padding: '10px 14px', fontSize: 12, lineHeight: 1.55, color: 'rgba(222,238,255,0.9)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', pointerEvents: 'none' }}>
               <div style={{ position: 'absolute', top: -5, left: 14, width: 8, height: 8, backgroundColor: '#1e293b', border: '1px solid rgba(99,102,241,0.3)', borderRight: 'none', borderBottom: 'none', transform: 'rotate(45deg)' }} />
               {content}
             </motion.div>

@@ -46,7 +46,7 @@ export default function PosterFeatureStrip({ onOpen }: PosterFeatureStripProps) 
       data-demo="poster-feature-strip"
       style={{
         margin: '8px 12px 4px',
-        borderRadius: 18,
+        borderRadius: 'var(--sl-radius-3xl)',
         background: 'linear-gradient(135deg, rgba(34,217,106,0.07) 0%, rgba(10,22,40,0.06) 100%)',
         border: '1px solid rgba(34,217,106,0.18)',
         padding: '14px 14px 12px',
@@ -56,7 +56,7 @@ export default function PosterFeatureStrip({ onOpen }: PosterFeatureStripProps) 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           <div style={{
-            width: 30, height: 30, borderRadius: 9,
+            width: 30, height: 30, borderRadius: 'var(--sl-radius-md)',
             background: 'rgba(34,217,106,0.15)',
             border: '1px solid rgba(34,217,106,0.25)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -76,7 +76,7 @@ export default function PosterFeatureStrip({ onOpen }: PosterFeatureStripProps) 
             style={{
               fontSize: 12, fontWeight: 700, color: '#fff',
               background: '#22d96a',
-              border: 'none', borderRadius: 10,
+              border: 'none', borderRadius: 'var(--sl-radius-lg)',
               padding: '7px 13px', cursor: 'pointer', flexShrink: 0,
               boxShadow: '0 2px 8px rgba(34,217,106,0.35)',
             }}
@@ -98,7 +98,7 @@ export default function PosterFeatureStrip({ onOpen }: PosterFeatureStripProps) 
             whileTap={{ scale: 0.96 }}
             onClick={onOpen}
             style={{
-              width: 108, flexShrink: 0, borderRadius: 13,
+              width: 108, flexShrink: 0, borderRadius: 'var(--sl-radius-xl)',
               background: card.gradient,
               border: `1.5px solid ${card.accent}40`,
               boxShadow: `0 3px 14px ${card.accent}18`,
@@ -128,7 +128,7 @@ export default function PosterFeatureStrip({ onOpen }: PosterFeatureStripProps) 
             whileTap={{ scale: 0.96 }}
             onClick={onOpen}
             style={{
-              width: 84, flexShrink: 0, borderRadius: 13,
+              width: 84, flexShrink: 0, borderRadius: 'var(--sl-radius-xl)',
               border: '1.5px dashed rgba(34,217,106,0.4)',
               background: 'rgba(34,217,106,0.04)',
               display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -137,7 +137,7 @@ export default function PosterFeatureStrip({ onOpen }: PosterFeatureStripProps) 
             }}
           >
             <div style={{
-              width: 30, height: 30, borderRadius: 9,
+              width: 30, height: 30, borderRadius: 'var(--sl-radius-md)',
               background: 'rgba(34,217,106,0.18)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 18, color: '#22d96a',

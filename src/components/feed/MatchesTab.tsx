@@ -299,7 +299,7 @@ function MatchesEmpty({ subTab, statusFilter, onNavigateClubs, hasFollowedClubs 
       <span className="text-5xl mb-4 select-none">{emoji}</span>
       <p className="text-[13px] font-semibold text-[var(--sl-t1)] mb-1.5">{title}</p>
       {sub && <p className="text-[12px] text-[var(--sl-t3)] max-w-[220px] leading-relaxed">{sub}</p>}
-      {showClubCta && <button onClick={onNavigateClubs} style={{ marginTop: 20, padding: '12px 24px', borderRadius: 14, border: 'none', background: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 18px rgba(99,102,241,0.35)' }}>Découvrir les clubs</button>}
+      {showClubCta && <button onClick={onNavigateClubs} style={{ marginTop: 20, padding: '12px 24px', borderRadius: 'var(--sl-radius-2xl)', border: 'none', background: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 18px rgba(99,102,241,0.35)' }}>Découvrir les clubs</button>}
     </div>
   );
 }

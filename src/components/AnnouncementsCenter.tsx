@@ -31,7 +31,7 @@ export default function AnnouncementsCenter({ onClose }: AnnouncementsCenterProp
     <motion.div role="dialog" aria-modal="true" aria-label="Annonces clubs" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 340, damping: 36 }} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)', zIndex: Z.announcementsPanel }}>
       <div style={{ flexShrink: 0, backgroundColor: 'var(--sl-card)', borderBottom: '1px solid var(--sl-border)', padding: '14px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={onClose} aria-label="Retour" style={{ width: 44, height: 44, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
+          <button onClick={onClose} aria-label="Retour" style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <div style={{ flex: 1 }}>
@@ -39,7 +39,7 @@ export default function AnnouncementsCenter({ onClose }: AnnouncementsCenterProp
             <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: '2px 0 0' }}>{unreadCount > 0 ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}` : 'Tout est à jour'}</p>
           </div>
           {unreadCount > 0 && (
-            <button onClick={markAllRead as () => void} style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', background: 'none', border: '1px solid rgba(59,130,246,0.3)', padding: '10px 12px', borderRadius: 8, cursor: 'pointer' }}>Tout lire</button>
+            <button onClick={markAllRead as () => void} style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', background: 'none', border: '1px solid rgba(59,130,246,0.3)', padding: '10px 12px', borderRadius: 'var(--sl-radius-md)', cursor: 'pointer' }}>Tout lire</button>
           )}
         </div>
       </div>

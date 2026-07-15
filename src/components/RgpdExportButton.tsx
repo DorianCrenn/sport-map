@@ -77,7 +77,7 @@ export default function RgpdExportButton({ userId, userEmail }: RgpdExportButton
   }
 
   return (
-    <div style={{ padding: '14px', borderRadius: 16, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+    <div style={{ padding: '14px', borderRadius: 'var(--sl-radius-3xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
       <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', margin: '0 0 4px' }}>Mes données personnelles</p>
       <p style={{ fontSize: 11, color: 'var(--sl-t3)', margin: '0 0 12px', lineHeight: 1.5 }}>
         Conformément au RGPD (art. 20), téléchargez une copie de toutes vos données SportLink.
@@ -87,7 +87,7 @@ export default function RgpdExportButton({ userId, userEmail }: RgpdExportButton
         disabled={loading}
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          padding: '9px 14px', borderRadius: 10,
+          padding: '9px 14px', borderRadius: 'var(--sl-radius-lg)',
           border: '1px solid var(--sl-border)',
           background: done ? 'rgba(34,197,94,0.1)' : 'var(--sl-surface)',
           color: done ? '#16a34a' : 'var(--sl-t1)',

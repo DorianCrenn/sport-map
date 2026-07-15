@@ -203,7 +203,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               onClick={() => setFormClub(true)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 10,
+                fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 'var(--sl-radius-lg)',
                 backgroundColor: 'var(--sl-green)', color: '#fff', border: 'none', cursor: 'pointer',
               }}
             >
@@ -217,7 +217,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             <button
               onClick={() => onShowAuth?.()}
               style={{
-                fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 10,
+                fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 'var(--sl-radius-lg)',
                 backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', border: '1px solid var(--sl-border)', cursor: 'pointer',
               }}
             >
@@ -239,7 +239,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             style={{
               width: '100%', boxSizing: 'border-box',
               paddingLeft: 34, paddingRight: 12, paddingTop: 9, paddingBottom: 9,
-              borderRadius: 12, fontSize: 13, fontFamily: 'var(--sl-font-ui)',
+              borderRadius: 'var(--sl-radius-xl)', fontSize: 13, fontFamily: 'var(--sl-font-ui)',
               backgroundColor: 'var(--sl-input-bg)',
               border: '1px solid var(--sl-input-border)',
               color: 'var(--sl-t1)', outline: 'none',
@@ -258,7 +258,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               <button
                 onClick={() => { setShowAllSports(false); setSportFilter(null); }}
                 style={{
-                  padding: '8px 10px', borderRadius: 999, border: '1px solid var(--sl-green)',
+                  padding: '8px 10px', borderRadius: 'var(--sl-radius-full)', border: '1px solid var(--sl-green)',
                   fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
                   backgroundColor: 'var(--sl-green-dim)', color: 'var(--sl-green)', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 4,
@@ -273,7 +273,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             <button
               onClick={() => setSportFilter(null)}
               style={{
-                padding: '8px 12px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+                padding: '8px 12px', borderRadius: 'var(--sl-radius-full)', fontSize: 11, fontWeight: 600,
                 whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
                 backgroundColor: sportFilter === null ? 'var(--sl-green)' : 'transparent',
                 color: sportFilter === null ? '#fff' : 'var(--sl-t2)',
@@ -287,7 +287,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                 key={sport.id}
                 onClick={() => setSportFilter(sportFilter === sport.id ? null : sport.id)}
                 style={{
-                  padding: '8px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+                  padding: '8px 10px', borderRadius: 'var(--sl-radius-full)', fontSize: 11, fontWeight: 600,
                   whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 4,
                   backgroundColor: sportFilter === sport.id ? sport.color : 'transparent',
@@ -303,7 +303,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               <button
                 onClick={() => { setShowAllSports(true); setSportFilter(null); }}
                 style={{
-                  padding: '8px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+                  padding: '8px 10px', borderRadius: 'var(--sl-radius-full)', fontSize: 11, fontWeight: 600,
                   whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 4,
                   backgroundColor: 'var(--sl-green-dim)', color: 'var(--sl-green)',
@@ -323,7 +323,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
       <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px calc(90px + env(safe-area-inset-bottom, 0px))' }}>
 
         {leaderboard.length > 0 && (
-          <div style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+          <div style={{ marginBottom: 12, borderRadius: 'var(--sl-radius-2xl)', overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
             <button
               onClick={() => setLeaderboardOpen(o => !o)}
               style={{
@@ -360,8 +360,8 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                         {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`}
                       </span>
                       {lClub.logo_url
-                        ? <img src={lClub.logo_url} alt={lClub.name} loading="lazy" style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
-                        : <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: 'var(--sl-surface)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚽</div>
+                        ? <img src={lClub.logo_url} alt={lClub.name} loading="lazy" style={{ width: 28, height: 28, borderRadius: 'var(--sl-radius-md)', objectFit: 'contain', flexShrink: 0 }} />
+                        : <div style={{ width: 28, height: 28, borderRadius: 'var(--sl-radius-md)', backgroundColor: 'var(--sl-surface)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚽</div>
                       }
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lClub.name}</div>
@@ -386,12 +386,12 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
           <motion.div
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
             style={{
-              marginBottom: 10, borderRadius: 14, padding: '12px 14px',
+              marginBottom: 10, borderRadius: 'var(--sl-radius-2xl)', padding: '12px 14px',
               display: 'flex', alignItems: 'center', gap: 12,
               backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
             }}
           >
-            <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-lg)', backgroundColor: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
@@ -403,7 +403,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             <button
               onClick={() => setSelectedClub(myClub)}
               style={{
-                fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 8,
+                fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 'var(--sl-radius-md)',
                 backgroundColor: '#f59e0b', color: '#fff', border: 'none', cursor: 'pointer', flexShrink: 0,
               }}
             >
@@ -416,12 +416,12 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
           <motion.div
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
             style={{
-              marginBottom: 10, borderRadius: 14, padding: '12px 14px',
+              marginBottom: 10, borderRadius: 'var(--sl-radius-2xl)', padding: '12px 14px',
               display: 'flex', alignItems: 'center', gap: 12,
               backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)',
             }}
           >
-            <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(245,158,11,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(245,158,11,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
@@ -453,7 +453,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               transition={{ delay: i * 0.05, type: 'spring', stiffness: 340, damping: 28 }}
               whileHover={{ y: -3, boxShadow: `0 8px 28px ${sportColor}28, 0 2px 8px rgba(0,0,0,0.18)` }}
               style={{
-                borderRadius: 14, overflow: 'hidden',
+                borderRadius: 'var(--sl-radius-2xl)', overflow: 'hidden',
                 backgroundColor: 'var(--sl-card)',
                 border: `1px solid ${own ? 'rgba(34,217,106,0.35)' : 'var(--sl-border)'}`,
                 cursor: 'pointer',
@@ -463,7 +463,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               <div aria-hidden="true" style={{ height: 4, background: `linear-gradient(90deg, ${sportColor} 0%, ${sportColor}66 60%, transparent 100%)` }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px 10px' }}>
                 <div style={{
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                  width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', flexShrink: 0,
                   overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   backgroundColor: club.logo ? 'transparent' : sportColor,
                   fontWeight: 700, fontSize: 13, color: '#fff', fontFamily: 'var(--sl-font-ui)',
@@ -481,7 +481,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                     </div>
                     {own && (
                       <span style={{
-                        fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, flexShrink: 0,
+                        fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-full)', flexShrink: 0,
                         backgroundColor: 'var(--sl-green-dim)', color: 'var(--sl-green)',
                       }}>
                         {isAdmin ? 'Géré' : 'Mon club'}
@@ -489,7 +489,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                     )}
                     {!own && isFollowingClub(club.id) && (
                       <span style={{
-                        fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, flexShrink: 0,
+                        fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-full)', flexShrink: 0,
                         backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6',
                       }}>
                         Suivi
@@ -507,14 +507,14 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>
                     <span style={{
-                      fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6,
+                      fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-sm)',
                       backgroundColor: sportColor, color: '#fff', flexShrink: 0,
                     }}>
                       {club.sport}
                     </span>
                     {club.categories?.slice(0, 4).map((cat: any) => (
                       <span key={cat.id} style={{
-                        fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 6,
+                        fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 'var(--sl-radius-sm)',
                         backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)', flexShrink: 0,
                       }}>
                         {cat.name}

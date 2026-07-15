@@ -194,7 +194,7 @@ export default function VenueAutocomplete({ value, onChange, onSelect, placehold
         <motion.div
           initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.12 }}
-          style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: Z.venueDropdown, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 28px rgba(0,0,0,0.18)' }}>
+          style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: Z.venueDropdown, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 'var(--sl-radius-xl)', overflow: 'hidden', boxShadow: '0 8px 28px rgba(0,0,0,0.18)' }}>
           {isCityMode && cityName && (
             <div style={{ padding: '7px 14px 5px', display: 'flex', alignItems: 'center', gap: 5, borderBottom: '1px solid var(--sl-border)' }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 8-8z"/></svg>
@@ -225,7 +225,7 @@ export default function VenueAutocomplete({ value, onChange, onSelect, placehold
                   {city && <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 1 }}>{city}</div>}
                 </div>
                 {tag && (
-                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 6, backgroundColor: sport ? 'var(--sl-green-dim)' : 'var(--sl-surface)', color: sport ? 'var(--sl-green)' : 'var(--sl-t3)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: sport ? 'var(--sl-green-dim)' : 'var(--sl-surface)', color: sport ? 'var(--sl-green)' : 'var(--sl-t3)', flexShrink: 0, whiteSpace: 'nowrap' }}>
                     {tag}
                   </span>
                 )}

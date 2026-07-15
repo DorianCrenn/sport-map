@@ -6,7 +6,7 @@ interface ReactionButtonProps { emoji: string; count: number; active: boolean; o
 
 function ReactionButton({ emoji, count, active, onClick, isLoggedIn }: ReactionButtonProps) {
   return (
-    <motion.button whileTap={{ scale: 0.82 }} onClick={isLoggedIn ? onClick : undefined} title={isLoggedIn ? (active ? `Retirer ${emoji}` : `Réagir ${emoji}`) : 'Connectez-vous pour réagir'} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 20, border: `1.5px solid ${active ? 'rgba(34,217,106,0.5)' : 'var(--sl-border)'}`, backgroundColor: active ? 'rgba(34,217,106,0.10)' : 'var(--sl-surface)', cursor: isLoggedIn ? 'pointer' : 'default', transition: 'all 0.15s', flexShrink: 0 }}>
+    <motion.button whileTap={{ scale: 0.82 }} onClick={isLoggedIn ? onClick : undefined} title={isLoggedIn ? (active ? `Retirer ${emoji}` : `Réagir ${emoji}`) : 'Connectez-vous pour réagir'} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 'var(--sl-radius-4xl)', border: `1.5px solid ${active ? 'rgba(34,217,106,0.5)' : 'var(--sl-border)'}`, backgroundColor: active ? 'rgba(34,217,106,0.10)' : 'var(--sl-surface)', cursor: isLoggedIn ? 'pointer' : 'default', transition: 'all 0.15s', flexShrink: 0 }}>
       <span style={{ fontSize: 16, lineHeight: 1 }}>{emoji}</span>
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.span key={count} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.15 }} style={{ fontSize: 12, fontWeight: 700, color: active ? 'var(--sl-green)' : 'var(--sl-t3)', fontVariantNumeric: 'tabular-nums', minWidth: 14, textAlign: 'center' }}>

@@ -31,7 +31,7 @@ const COLOR_PRESETS = [
 
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
-  padding: '11px 14px', borderRadius: 12, fontSize: 14,
+  padding: '11px 14px', borderRadius: 'var(--sl-radius-xl)', fontSize: 14,
   border: '1.5px solid var(--sl-border)',
   backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)',
   outline: 'none', fontFamily: 'var(--sl-font-ui)',
@@ -49,7 +49,7 @@ function StepHeader({ step, total, title, subtitle, optional }: { step: number; 
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', letterSpacing: '0.06em' }}>ÉTAPE {step}/{total}</span>
-        {optional && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 6, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t3)', letterSpacing: '0.04em' }}>OPTIONNEL</span>}
+        {optional && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t3)', letterSpacing: '0.04em' }}>OPTIONNEL</span>}
       </div>
       <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--sl-t1)', margin: 0, marginBottom: 4, letterSpacing: '-0.02em' }}>{title}</h2>
       {subtitle && <p style={{ fontSize: 13, color: 'var(--sl-t3)', margin: 0, lineHeight: 1.5 }}>{subtitle}</p>}
@@ -61,7 +61,7 @@ function ProgressBar({ step, total, accentColor }: { step: number; total: number
   return (
     <div style={{ display: 'flex', gap: 4, padding: '0 18px', marginBottom: 4 }}>
       {Array.from({ length: total }, (_, i) => (
-        <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: i < step ? accentColor : 'var(--sl-border)', transition: 'background-color 0.3s' }} />
+        <div key={i} style={{ flex: 1, height: 3, borderRadius: 'var(--sl-radius-xs)', backgroundColor: i < step ? accentColor : 'var(--sl-border)', transition: 'background-color 0.3s' }} />
       ))}
     </div>
   );
@@ -72,7 +72,7 @@ function LogoUpload({ logo, name, accentColor, onUpload, uploading }: { logo: st
   const initials = (name || '?').split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase().slice(0, 3);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-      <div onClick={() => fileRef.current?.click()} style={{ width: 72, height: 72, borderRadius: 16, flexShrink: 0, backgroundColor: logo ? '#fff' : accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', border: `2px dashed ${logo ? 'transparent' : 'rgba(255,255,255,0.4)'}`, boxShadow: '0 2px 12px rgba(0,0,0,0.1)', position: 'relative' }}>
+      <div onClick={() => fileRef.current?.click()} style={{ width: 72, height: 72, borderRadius: 'var(--sl-radius-3xl)', flexShrink: 0, backgroundColor: logo ? '#fff' : accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', border: `2px dashed ${logo ? 'transparent' : 'rgba(255,255,255,0.4)'}`, boxShadow: '0 2px 12px rgba(0,0,0,0.1)', position: 'relative' }}>
         {uploading ? (
           <div style={{ width: 20, height: 20, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'sl-spin 0.7s linear infinite' }} />
         ) : logo ? (
@@ -88,7 +88,7 @@ function LogoUpload({ logo, name, accentColor, onUpload, uploading }: { logo: st
       <div>
         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 3 }}>Logo du club</div>
         <div style={{ fontSize: 11, color: 'var(--sl-t3)', lineHeight: 1.4 }}>PNG ou JPG · max 2 Mo<br />Fond blanc ou transparent recommandé</div>
-        <button onClick={() => fileRef.current?.click()} style={{ marginTop: 6, padding: '4px 10px', borderRadius: 8, border: `1px solid ${accentColor}50`, backgroundColor: `${accentColor}10`, color: accentColor, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+        <button onClick={() => fileRef.current?.click()} style={{ marginTop: 6, padding: '4px 10px', borderRadius: 'var(--sl-radius-md)', border: `1px solid ${accentColor}50`, backgroundColor: `${accentColor}10`, color: accentColor, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
           {logo ? '↺ Changer' : '+ Ajouter'}
         </button>
       </div>
@@ -100,9 +100,9 @@ function ClubPreview({ form, accentColor }: { form: Record<string, any>; accentC
   const initials = (form.name || '?').split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase().slice(0, 3);
   const teamCount = (form.categories ?? []).flatMap((c: any) => c.teams ?? []).length;
   return (
-    <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', marginBottom: 16 }}>
+    <div style={{ borderRadius: 'var(--sl-radius-2xl)', overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', marginBottom: 16 }}>
       <div style={{ height: 56, background: `linear-gradient(135deg, #0f172a 0%, ${accentColor}40 100%)`, display: 'flex', alignItems: 'flex-end', padding: '0 12px 8px', position: 'relative' }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, backgroundColor: form.logoUrl ? '#fff' : accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 2px rgba(255,255,255,0.8)', overflow: 'hidden' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0, backgroundColor: form.logoUrl ? '#fff' : accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 2px rgba(255,255,255,0.8)', overflow: 'hidden' }}>
           {form.logoUrl ? <img src={form.logoUrl} alt="Aperçu du logo" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 3 }} /> : <span style={{ fontSize: 11, fontWeight: 800, color: '#fff' }}>{initials}</span>}
         </div>
         <div style={{ marginLeft: 8 }}>
@@ -259,7 +259,7 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(88px, 1fr))', gap: 6 }}>
               {sportList.slice(0, 12).map((s: any) => (
                 <button key={s.id} aria-label={s.id} aria-pressed={form.sport === s.id} onClick={() => { set('sport', s.id); if (!form.primaryColor || form.primaryColor === '#22C55E') set('primaryColor', s.color ?? '#22C55E'); }}
-                  style={{ padding: '8px 6px', borderRadius: 10, cursor: 'pointer', border: `2px solid ${form.sport === s.id ? (s.color ?? '#22C55E') : 'var(--sl-border)'}`, backgroundColor: form.sport === s.id ? `${s.color ?? '#22C55E'}12` : 'var(--sl-surface)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'all 0.12s' }}>
+                  style={{ padding: '8px 6px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer', border: `2px solid ${form.sport === s.id ? (s.color ?? '#22C55E') : 'var(--sl-border)'}`, backgroundColor: form.sport === s.id ? `${s.color ?? '#22C55E'}12` : 'var(--sl-surface)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'all 0.12s' }}>
                   <SportIcon sport={s.id} size={18} />
                   <span style={{ fontSize: 9, fontWeight: 700, color: form.sport === s.id ? (s.color ?? '#22C55E') : 'var(--sl-t3)' }}>{s.id}</span>
                 </button>
@@ -280,11 +280,11 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
             <label style={labelStyle}>Couleur principale</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               {COLOR_PRESETS.map(c => (
-                <button key={c} onClick={() => set('primaryColor', c)} aria-label={`Couleur ${c}`} aria-pressed={form.primaryColor === c} style={{ width: 30, height: 30, borderRadius: 8, border: 'none', cursor: 'pointer', flexShrink: 0, backgroundColor: c, outline: form.primaryColor === c ? `3px solid ${c}` : 'none', outlineOffset: 2, transition: 'transform 0.1s' }} />
+                <button key={c} onClick={() => set('primaryColor', c)} aria-label={`Couleur ${c}`} aria-pressed={form.primaryColor === c} style={{ width: 30, height: 30, borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: 'pointer', flexShrink: 0, backgroundColor: c, outline: form.primaryColor === c ? `3px solid ${c}` : 'none', outlineOffset: 2, transition: 'transform 0.1s' }} />
               ))}
               <label style={{ display: 'contents' }}>
                 <span className="sr-only">Couleur personnalisée</span>
-                <input type="color" value={form.primaryColor} onChange={e => set('primaryColor', e.target.value)} aria-label="Couleur personnalisée" style={{ width: 30, height: 30, borderRadius: 8, cursor: 'pointer', border: 'none', padding: 0 }} />
+                <input type="color" value={form.primaryColor} onChange={e => set('primaryColor', e.target.value)} aria-label="Couleur personnalisée" style={{ width: 30, height: 30, borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', border: 'none', padding: 0 }} />
               </label>
             </div>
           </div>
@@ -300,7 +300,7 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
           {QUICK_TEAMS.map(qt => {
             const selected = isTeamSelected(qt);
             return (
-              <button key={`${qt.cat}-${qt.name}`} onClick={() => toggleQuickTeam(qt)} style={{ padding: '12px', borderRadius: 12, cursor: 'pointer', border: `2px solid ${selected ? accentColor : 'var(--sl-border)'}`, backgroundColor: selected ? `${accentColor}10` : 'var(--sl-surface)', textAlign: 'left', transition: 'all 0.12s' }}>
+              <button key={`${qt.cat}-${qt.name}`} onClick={() => toggleQuickTeam(qt)} style={{ padding: '12px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', border: `2px solid ${selected ? accentColor : 'var(--sl-border)'}`, backgroundColor: selected ? `${accentColor}10` : 'var(--sl-surface)', textAlign: 'left', transition: 'all 0.12s' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: selected ? accentColor : 'var(--sl-t1)' }}>{selected ? '✓ ' : ''}{qt.name}</div>
                 <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 3 }}>{qt.cat}</div>
               </button>
@@ -308,10 +308,10 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
           })}
         </div>
         {form.categories.length > 0 && (
-          <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
+          <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
               {form.categories.flatMap((c: any) => c.teams).map((t: any) => (
-                <span key={t.id} style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 6, backgroundColor: `${accentColor}12`, color: accentColor, border: `1px solid ${accentColor}30` }}>{t.name}</span>
+                <span key={t.id} style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: `${accentColor}12`, color: accentColor, border: `1px solid ${accentColor}30` }}>{t.name}</span>
               ))}
             </div>
           </div>
@@ -322,17 +322,17 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
       <>
         <StepHeader step={3} total={3} title="C'est prêt !" subtitle="Votre club va être créé. Vous pourrez compléter les infos depuis le tableau de bord." />
         <ClubPreview form={form} accentColor={accentColor} />
-        <div style={{ borderRadius: 14, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', padding: '0 14px', marginBottom: 16 }}>
+        <div style={{ borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', padding: '0 14px', marginBottom: 16 }}>
           <RecapRow label="Nom"      value={form.name} />
           <RecapRow label="Sport"    value={form.sport} />
           <RecapRow label="Ville"    value={form.city} />
           <RecapRow label="Équipes"  value={form.categories.flatMap((c: any) => c.teams).map((t: any) => t.name).join(', ') || '—'} />
         </div>
-        <div style={{ padding: '12px 14px', borderRadius: 12, backgroundColor: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.2)', marginBottom: 12 }}>
+        <div style={{ padding: '12px 14px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.2)', marginBottom: 12 }}>
           <p style={{ margin: 0, fontSize: 12, color: 'var(--sl-t2)', lineHeight: 1.6 }}>Après la création, tu pourras ajouter : description, logo, horaires d'entraînement, réseaux sociaux, contact, etc.</p>
         </div>
         {errors.submit && (
-          <div style={{ padding: '8px 12px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 12, color: '#ef4444', marginBottom: 8 }}>{errors.submit}</div>
+          <div style={{ padding: '8px 12px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 12, color: '#ef4444', marginBottom: 8 }}>{errors.submit}</div>
         )}
       </>
     ),
@@ -344,11 +344,11 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: (Z as any).formModal, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', stiffness: 360, damping: 34 }} ref={panelRef} role="dialog" aria-modal="true" aria-label="Créer mon club" style={{ width: '100%', maxWidth: 540, backgroundColor: 'var(--sl-card)', borderRadius: '22px 22px 0 0', border: '1px solid var(--sl-border)', borderBottom: 'none', maxHeight: '92dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 2px', flexShrink: 0 }}>
-          <div style={{ width: 36, height: 3.5, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
+          <div style={{ width: 36, height: 3.5, borderRadius: 'var(--sl-radius-full)', backgroundColor: 'var(--sl-border-s)' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 18px 12px', flexShrink: 0 }}>
           <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 8 }}><IconStadium size={18} color="var(--sl-green)" /> Créer un club</span>
-          <button onClick={onClose} aria-label="Fermer" style={{ width: 36, height: 36, borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} aria-label="Fermer" style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
@@ -362,14 +362,14 @@ export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWiza
         </div>
         <div style={{ flexShrink: 0, padding: '12px 18px 18px', borderTop: '1px solid var(--sl-border)', display: 'flex', gap: 10 }}>
           {step > 1 ? (
-            <button onClick={goBack} style={{ flex: 1, padding: '13px', borderRadius: 14, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>← Précédent</button>
+            <button onClick={goBack} style={{ flex: 1, padding: '13px', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>← Précédent</button>
           ) : (
-            <button onClick={onClose} style={{ flex: 1, padding: '13px', borderRadius: 14, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
+            <button onClick={onClose} style={{ flex: 1, padding: '13px', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
           )}
           {step > 1 && !isLastStep && (
-            <button onClick={skip} style={{ padding: '13px 16px', borderRadius: 14, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>Passer</button>
+            <button onClick={skip} style={{ padding: '13px 16px', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', color: 'var(--sl-t3)', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>Passer</button>
           )}
-          <button onClick={isLastStep ? handleSubmit : goNext} disabled={submitting} style={{ flex: 2, padding: '13px', borderRadius: 14, border: 'none', backgroundColor: submitting ? 'var(--sl-surface)' : accentColor, color: submitting ? 'var(--sl-t3)' : '#fff', fontSize: 14, fontWeight: 800, cursor: submitting ? 'default' : 'pointer', boxShadow: submitting ? 'none' : `0 4px 14px ${accentColor}50`, transition: 'all 0.15s' }}>
+          <button onClick={isLastStep ? handleSubmit : goNext} disabled={submitting} style={{ flex: 2, padding: '13px', borderRadius: 'var(--sl-radius-2xl)', border: 'none', backgroundColor: submitting ? 'var(--sl-surface)' : accentColor, color: submitting ? 'var(--sl-t3)' : '#fff', fontSize: 14, fontWeight: 800, cursor: submitting ? 'default' : 'pointer', boxShadow: submitting ? 'none' : `0 4px 14px ${accentColor}50`, transition: 'all 0.15s' }}>
             {submitting ? 'Création…' : isLastStep ? <><IconCheckCircle size={16} color="#fff" style={{ marginRight: 6 }} />Créer le club</> : 'Suivant →'}
           </button>
         </div>

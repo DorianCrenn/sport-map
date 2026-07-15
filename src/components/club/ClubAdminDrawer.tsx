@@ -82,14 +82,14 @@ export default function ClubAdminDrawer({ open, onClose, onAction, isEditing }: 
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 61, backgroundColor: 'var(--sl-card)', borderRadius: '20px 20px 0 0', overflow: 'hidden', paddingBottom: 'env(safe-area-inset-bottom, 0px)', maxHeight: '82dvh', display: 'flex', flexDirection: 'column' }}
           >
             <div onMouseDown={handleHandleDown} onTouchStart={handleHandleDown} style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px', flexShrink: 0, cursor: 'grab', touchAction: 'none' }}>
-              <div style={{ width: 36, height: 3.5, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
+              <div style={{ width: 36, height: 3.5, borderRadius: 'var(--sl-radius-full)', backgroundColor: 'var(--sl-border-s)' }} />
             </div>
             <div style={{ padding: '8px 18px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--sl-border)', flexShrink: 0 }}>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--sl-t1)', letterSpacing: '-0.02em' }}>Administration</div>
                 <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>Outils de gestion du club</div>
               </div>
-              <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 10, border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+              <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -106,7 +106,7 @@ export default function ClubAdminDrawer({ open, onClose, onAction, isEditing }: 
                     onMouseEnter={e => !isActive && (e.currentTarget.style.background = 'var(--sl-hover)')}
                     onMouseLeave={e => { e.currentTarget.style.background = isActive ? 'rgba(34,217,106,0.07)' : 'transparent'; }}
                   >
-                    <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: isActive ? 'rgba(34,217,106,0.12)' : `${(item.color ?? '#fff')}14`, border: `1px solid ${isActive ? 'rgba(34,217,106,0.3)' : `${(item.color ?? '#fff')}28`}` }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 'var(--sl-radius-xl)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: isActive ? 'rgba(34,217,106,0.12)' : `${(item.color ?? '#fff')}14`, border: `1px solid ${isActive ? 'rgba(34,217,106,0.3)' : `${(item.color ?? '#fff')}28`}` }}>
                       {item.Icon && <item.Icon size={18} color={isActive ? 'var(--sl-green)' : item.color} strokeWidth={1.75} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>

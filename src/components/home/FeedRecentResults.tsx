@@ -110,7 +110,7 @@ export default function FeedRecentResults({ clubIds }: FeedRecentResultsProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               style={{
-                flexShrink: 0, minWidth: 160, borderRadius: 14,
+                flexShrink: 0, minWidth: 160, borderRadius: 'var(--sl-radius-2xl)',
                 padding: '10px 12px',
                 backgroundColor: 'var(--sl-card)',
                 border: `1px solid ${resultColor}30`,
@@ -144,7 +144,7 @@ export default function FeedRecentResults({ clubIds }: FeedRecentResultsProps) {
                 </span>
                 <span style={{
                   fontSize: 11, fontWeight: 900, width: 22, height: 22,
-                  borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: 'var(--sl-radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   backgroundColor: `${resultColor}20`, color: resultColor,
                 }}>
                   {resultLabel}

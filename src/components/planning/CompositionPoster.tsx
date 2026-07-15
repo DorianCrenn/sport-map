@@ -113,12 +113,12 @@ export default function CompositionPoster({ event, club, onClose }: CompositionP
               <span className="text-white/50 text-sm">Chargement des convocations…</span>
             </div>
           ) : (
-            <div ref={posterRef} style={{ width: 360, minHeight: 480, background: 'linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)', borderRadius: 20, overflow: 'hidden', fontFamily: "'Inter', sans-serif", flexShrink: 0 }}>
+            <div ref={posterRef} style={{ width: 360, minHeight: 480, background: 'linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)', borderRadius: 'var(--sl-radius-4xl)', overflow: 'hidden', fontFamily: "'Inter', sans-serif", flexShrink: 0 }}>
               <div style={{ background: `linear-gradient(135deg, ${clubPrimary}dd, ${clubPrimary}88)`, padding: '20px 16px 16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   {(club?.logoUrl ?? club?.logo_url)
-                    ? <img src={club.logoUrl ?? club.logo_url} alt={club?.name} style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8 }} />
-                    : <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    ? <img src={club.logoUrl ?? club.logo_url} alt={club?.name} style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 'var(--sl-radius-md)' }} />
+                    : <div style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-md)', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <span style={{ color: '#fff', fontWeight: 900, fontSize: 14 }}>{(club?.name ?? 'FC')[0]}</span>
                       </div>
                   }

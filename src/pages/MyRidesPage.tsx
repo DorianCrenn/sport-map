@@ -145,7 +145,7 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
           <button
             onClick={onBack}
             aria-label="Retour"
-            style={{ height: 44, paddingInline: 12, borderRadius: 11, border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--sl-t2)', flexShrink: 0, fontSize: 13, fontWeight: 700 }}
+            style={{ height: 44, paddingInline: 12, borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--sl-t2)', flexShrink: 0, fontSize: 13, fontWeight: 700 }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <polyline points="15 18 9 12 15 6"/>
@@ -172,7 +172,7 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
                 key={tab.key}
                 onClick={() => { setActiveTab(tab.key); if (tab.key === 'notifs' && unreadCount > 0) markAllRead(); }}
                 style={{
-                  flex: 1, padding: '9px 4px', borderRadius: 12, cursor: 'pointer',
+                  flex: 1, padding: '9px 4px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer',
                   border: `2px solid ${isActive ? 'var(--sl-green)' : 'var(--sl-border)'}`,
                   backgroundColor: isActive ? 'rgba(34,217,106,0.1)' : 'var(--sl-surface)',
                   color: isActive ? 'var(--sl-green)' : 'var(--sl-t2)',
@@ -185,7 +185,7 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
                 {badge > 0 && (
                   <span style={{
                     position: 'absolute', top: -5, right: -4,
-                    minWidth: 16, height: 16, borderRadius: 999, padding: '0 4px',
+                    minWidth: 16, height: 16, borderRadius: 'var(--sl-radius-full)', padding: '0 4px',
                     backgroundColor: '#ef4444', color: '#fff',
                     fontSize: 9, fontWeight: 800,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -254,14 +254,14 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
                       const meta = STATUS_META[req.status];
                       return (
                         <div key={req.id} style={{
-                          borderRadius: 16, padding: '14px',
+                          borderRadius: 'var(--sl-radius-3xl)', padding: '14px',
                           backgroundColor: 'var(--sl-card)',
                           border: `1px solid ${req.status === 'accepted' ? 'rgba(34,217,106,0.25)' : 'var(--sl-border)'}`,
                         }}>
                           {/* Status badge */}
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                             <span style={{
-                              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 'var(--sl-radius-full)',
                               backgroundColor: meta?.bg, color: meta?.color,
                             }}>
                               {meta?.label ?? req.status}
@@ -279,7 +279,7 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
                                 </span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <div style={{ width: 22, height: 22, borderRadius: 7, backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: 'var(--sl-t2)', flexShrink: 0 }}>
+                                <div style={{ width: 22, height: 22, borderRadius: 'var(--sl-radius-sm)', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: 'var(--sl-t2)', flexShrink: 0 }}>
                                   {(req.ride.driverName ?? '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
                                 </div>
                                 <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>
@@ -302,7 +302,7 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
                           {(req.status === 'pending' || req.status === 'accepted') && (
                             <button
                               onClick={() => handleCancelRequest(req.id)}
-                              style={{ width: '100%', padding: '8px 0', borderRadius: 10, fontSize: 12, fontWeight: 600, color: 'var(--sl-t3)', background: 'none', border: '1px solid var(--sl-border)', cursor: 'pointer', marginTop: 2 }}
+                              style={{ width: '100%', padding: '8px 0', borderRadius: 'var(--sl-radius-lg)', fontSize: 12, fontWeight: 600, color: 'var(--sl-t3)', background: 'none', border: '1px solid var(--sl-border)', cursor: 'pointer', marginTop: 2 }}
                             >
                               Se désister
                             </button>
@@ -316,7 +316,7 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
                           Annulées — {pastPassenger.length}
                         </div>
                         {pastPassenger.map((req: any) => (
-                          <div key={req.id} style={{ borderRadius: 14, padding: '12px', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', opacity: 0.6 }}>
+                          <div key={req.id} style={{ borderRadius: 'var(--sl-radius-2xl)', padding: '12px', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', opacity: 0.6 }}>
                             {req.ride && <div style={{ fontSize: 12, color: 'var(--sl-t2)' }}>📍 {req.ride.departureLocation} — {req.ride.driverName}</div>}
                             <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginTop: 4, display: 'block' }}>Annulée</span>
                           </div>
@@ -340,7 +340,7 @@ export default function MyRidesPage({ onBack }: MyRidesPageProps) {
                         key={notif.id}
                         onClick={() => !notif.read && markRead(notif.id)}
                         style={{
-                          borderRadius: 14, padding: '12px 14px',
+                          borderRadius: 'var(--sl-radius-2xl)', padding: '12px 14px',
                           backgroundColor: notif.read ? 'var(--sl-surface)' : 'var(--sl-card)',
                           border: `1px solid ${notif.read ? 'var(--sl-border)' : 'rgba(34,217,106,0.2)'}`,
                           cursor: notif.read ? 'default' : 'pointer',

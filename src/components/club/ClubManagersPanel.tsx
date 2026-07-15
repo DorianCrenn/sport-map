@@ -12,11 +12,11 @@ const ROLES = [
 
 function roleMeta(id: string) { return ROLES.find(r => r.id === id) ?? ROLES[0]; }
 
-const ROW: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 12, backgroundColor: 'var(--sl-surface)' };
+const ROW: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)' };
 
 function Avatar({ name, color }: { name?: string | null; color: string }) {
   return (
-    <div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, backgroundColor: `${color}20`, color, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ width: 34, height: 34, borderRadius: 'var(--sl-radius-lg)', flexShrink: 0, backgroundColor: `${color}20`, color, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       {((name?.[0]) ?? '?').toUpperCase()}
     </div>
   );
@@ -81,7 +81,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
         initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
         transition={{ duration: 0.2 }}
         onClick={e => e.stopPropagation()}
-        style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--sl-card)', borderRadius: 24, padding: 20, border: '1px solid var(--sl-border)', maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-4xl)', padding: 20, border: '1px solid var(--sl-border)', maxHeight: '90vh', overflowY: 'auto' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div>
@@ -95,7 +95,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
 
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
           {ROLES.map(r => (
-            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 8px', borderRadius: 20, backgroundColor: `${r.color}16`, color: r.color, fontWeight: 700, border: `1px solid ${r.color}30` }}>
+            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, padding: '3px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: `${r.color}16`, color: r.color, fontWeight: 700, border: `1px solid ${r.color}30` }}>
               <span>{r.label}</span><span style={{ opacity: 0.7, fontWeight: 400 }}>— {r.desc}</span>
             </div>
           ))}
@@ -107,7 +107,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ownerName ?? 'Propriétaire'}</div>
             <div style={{ fontSize: 11, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ownerEmail ?? '—'}</div>
           </div>
-          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: 'rgba(34,197,94,0.15)', color: '#22C55E', flexShrink: 0 }}>Propriétaire</span>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'rgba(34,197,94,0.15)', color: '#22C55E', flexShrink: 0 }}>Propriétaire</span>
         </div>
 
         {managers.map(m => {
@@ -119,21 +119,21 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
-                  {isPending && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 20, backgroundColor: 'rgba(234,179,8,0.15)', color: '#b45309', flexShrink: 0 }}>En attente</span>}
+                  {isPending && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'rgba(234,179,8,0.15)', color: '#b45309', flexShrink: 0 }}>En attente</span>}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--sl-t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.email}</div>
               </div>
               {isPending && (
-                <button onClick={() => resendInvite(m)} disabled={sending === m.email} title="Renvoyer l'invitation" style={{ padding: '4px 8px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 10, fontWeight: 600, color: '#64748b', cursor: 'pointer', backgroundColor: 'transparent', flexShrink: 0 }}>
+                <button onClick={() => resendInvite(m)} disabled={sending === m.email} title="Renvoyer l'invitation" style={{ padding: '4px 8px', borderRadius: 'var(--sl-radius-md)', border: '1px solid #e2e8f0', fontSize: 10, fontWeight: 600, color: '#64748b', cursor: 'pointer', backgroundColor: 'transparent', flexShrink: 0 }}>
                   {sending === m.email ? '…' : '📧 Renvoyer'}
                 </button>
               )}
               {!isPending && onRoleChange ? (
-                <select value={m.role ?? 'manager'} onChange={e => onRoleChange(m.email, e.target.value)} style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 8, backgroundColor: `${rm.color}16`, color: rm.color, border: `1px solid ${rm.color}40`, cursor: 'pointer', outline: 'none', flexShrink: 0 }}>
+                <select value={m.role ?? 'manager'} onChange={e => onRoleChange(m.email, e.target.value)} style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 'var(--sl-radius-md)', backgroundColor: `${rm.color}16`, color: rm.color, border: `1px solid ${rm.color}40`, cursor: 'pointer', outline: 'none', flexShrink: 0 }}>
                   {ROLES.map(r => <option key={r.id} value={r.id} style={{ background: 'var(--sl-card)' }}>{r.label}</option>)}
                 </select>
               ) : !isPending ? (
-                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: `${rm.color}16`, color: rm.color, flexShrink: 0 }}>{rm.label}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: `${rm.color}16`, color: rm.color, flexShrink: 0 }}>{rm.label}</span>
               ) : null}
               <button onClick={() => onRemove(m.email)} aria-label={`Retirer ${m.name}`} style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', flexShrink: 0 }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -152,7 +152,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
 
         <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
           {ROLES.map(r => (
-            <button key={r.id} onClick={() => setRole(r.id)} title={r.desc} style={{ flex: 1, padding: '6px 4px', borderRadius: 8, border: `1.5px solid ${role === r.id ? r.color : 'var(--sl-border)'}`, backgroundColor: role === r.id ? `${r.color}16` : 'transparent', fontSize: 10, fontWeight: 700, color: role === r.id ? r.color : 'var(--sl-t3)', cursor: 'pointer', transition: 'all 0.12s' }}>
+            <button key={r.id} onClick={() => setRole(r.id)} title={r.desc} style={{ flex: 1, padding: '6px 4px', borderRadius: 'var(--sl-radius-md)', border: `1.5px solid ${role === r.id ? r.color : 'var(--sl-border)'}`, backgroundColor: role === r.id ? `${r.color}16` : 'transparent', fontSize: 10, fontWeight: 700, color: role === r.id ? r.color : 'var(--sl-t3)', cursor: 'pointer', transition: 'all 0.12s' }}>
               {r.label}
             </button>
           ))}
@@ -166,7 +166,7 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
               value={teamFilter}
               onChange={e => setTeamFilter(e.target.value)}
               placeholder="Équipe / catégorie (ex: Senior A, U17…)"
-              style={{ width: '100%', padding: '9px 12px', borderRadius: 10, fontSize: 12, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--sl-radius-lg)', fontSize: 12, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', boxSizing: 'border-box' }}
             />
             <p style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 4 }}>
               Laisser vide pour accès à tous les matchs du club.
@@ -174,8 +174,8 @@ export default function ClubManagersPanel({ managers, ownerEmail, ownerName, clu
           </div>
         )}
         <div style={{ display: 'flex', gap: 8 }}>
-          <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }} placeholder="email@exemple.com" style={{ flex: 1, padding: '9px 12px', borderRadius: 10, fontSize: 12, border: `1px solid ${error ? '#ef4444' : 'var(--sl-border-s)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }} />
-          <button onClick={handleAdd} disabled={!email.trim()} style={{ padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: '#0F1E3A', color: '#fff', fontSize: 12, fontWeight: 700, opacity: email.trim() ? 1 : 0.4 }}>Ajouter</button>
+          <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }} placeholder="email@exemple.com" style={{ flex: 1, padding: '9px 12px', borderRadius: 'var(--sl-radius-lg)', fontSize: 12, border: `1px solid ${error ? '#ef4444' : 'var(--sl-border-s)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }} />
+          <button onClick={handleAdd} disabled={!email.trim()} style={{ padding: '9px 14px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: '#0F1E3A', color: '#fff', fontSize: 12, fontWeight: 700, opacity: email.trim() ? 1 : 0.4 }}>Ajouter</button>
         </div>
 
         {error   && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6 }}>{error}</p>}

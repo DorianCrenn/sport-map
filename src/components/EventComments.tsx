@@ -72,10 +72,10 @@ export default function EventComments({ eventId }: EventCommentsProps) {
               {isLoggedIn ? (
                 <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 6 }}>
                   <div style={{ flex: 1, position: 'relative' }}>
-                    <input ref={inputRef} value={text} onChange={e => { setText(e.target.value); setError(null); }} placeholder="Ajouter un commentaire…" maxLength={MAX_LEN} disabled={posting as boolean} style={{ width: '100%', padding: '7px 10px', borderRadius: 9, fontSize: 12, boxSizing: 'border-box', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)', outline: 'none' }} />
+                    <input ref={inputRef} value={text} onChange={e => { setText(e.target.value); setError(null); }} placeholder="Ajouter un commentaire…" maxLength={MAX_LEN} disabled={posting as boolean} style={{ width: '100%', padding: '7px 10px', borderRadius: 'var(--sl-radius-md)', fontSize: 12, boxSizing: 'border-box', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)', outline: 'none' }} />
                     {text.length > 400 && <span style={{ position: 'absolute', right: 8, bottom: 8, fontSize: 9, color: text.length >= MAX_LEN ? '#ef4444' : 'var(--sl-t3)' }}>{MAX_LEN - text.length}</span>}
                   </div>
-                  <motion.button whileTap={{ scale: 0.9 }} type="submit" disabled={(posting as boolean) || !text.trim()} style={{ padding: '7px 12px', borderRadius: 9, border: 'none', cursor: (posting as boolean) || !text.trim() ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-green)', color: '#fff', opacity: (posting as boolean) || !text.trim() ? 0.5 : 1, flexShrink: 0 }}>
+                  <motion.button whileTap={{ scale: 0.9 }} type="submit" disabled={(posting as boolean) || !text.trim()} style={{ padding: '7px 12px', borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: (posting as boolean) || !text.trim() ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: 'var(--sl-green)', color: '#fff', opacity: (posting as boolean) || !text.trim() ? 0.5 : 1, flexShrink: 0 }}>
                     {posting ? '…' : 'Envoyer'}
                   </motion.button>
                 </form>

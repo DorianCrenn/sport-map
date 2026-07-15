@@ -221,7 +221,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   page: { maxWidth: 480, margin: '0 auto', padding: '40px 20px' },
   sportBadge: {
-    display: 'inline-block', padding: '4px 12px', borderRadius: 20,
+    display: 'inline-block', padding: '4px 12px', borderRadius: 'var(--sl-radius-4xl)',
     backgroundColor: '#dcfce7', color: '#15803d',
     fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
     marginBottom: 16,
@@ -230,7 +230,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 0 8px', fontSize: 24, fontWeight: 900, color: '#0f172a', lineHeight: 1.3,
   },
   clubRow: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 },
-  clubLogo: { width: 32, height: 32, borderRadius: 8, objectFit: 'contain', background: '#f1f5f9', border: '1px solid #e2e8f0' },
+  clubLogo: { width: 32, height: 32, borderRadius: 'var(--sl-radius-md)', objectFit: 'contain', background: '#f1f5f9', border: '1px solid #e2e8f0' },
   clubName: { fontSize: 14, fontWeight: 600, color: '#475569' },
   metaList: { marginBottom: 28 },
   metaRow:  { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
@@ -238,7 +238,7 @@ const styles: Record<string, React.CSSProperties> = {
   metaText: { fontSize: 14, color: '#334155', lineHeight: 1.5 },
   ctaPrimary: {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    width: '100%', padding: '14px', borderRadius: 14,
+    width: '100%', padding: '14px', borderRadius: 'var(--sl-radius-2xl)',
     backgroundColor: '#22D96A', color: '#fff',
     fontWeight: 800, fontSize: 15, textDecoration: 'none', marginBottom: 10,
   },

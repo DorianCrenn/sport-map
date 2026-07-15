@@ -75,20 +75,20 @@ export default function CalendarTab({ allEvents, favorites }: CalendarTabProps) 
     <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px calc(90px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Month navigation */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <button onClick={prevMonth} style={{ width: 44, height: 44, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+        <button onClick={prevMonth} style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--sl-t1)' }}>{MONTHS_FR[viewMonth.getMonth()]}</div>
           <div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{viewMonth.getFullYear()} · {calEvents.length} favori{calEvents.length !== 1 ? 's' : ''}</div>
         </div>
-        <button onClick={nextMonth} style={{ width: 44, height: 44, borderRadius: 10, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
+        <button onClick={nextMonth} style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
 
       {/* Calendar grid */}
-      <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+      <div style={{ borderRadius: 'var(--sl-radius-3xl)', overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--sl-border)' }}>
           {WEEK_DAYS.map(d => (
             <div key={d} style={{ textAlign: 'center', padding: '8px 0', fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', letterSpacing: '0.05em' }}>{d}</div>
@@ -147,17 +147,17 @@ export default function CalendarTab({ allEvents, favorites }: CalendarTabProps) 
                 const sportColor = SPORTS[ev.sport]?.color ?? '#22d96a';
                 const d = new Date(ev.date);
                 return (
-                  <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', marginBottom: 8, borderRadius: 12, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
-                    <div style={{ width: 3, height: 36, borderRadius: 2, backgroundColor: sportColor, flexShrink: 0 }} />
+                  <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', marginBottom: 8, borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+                    <div style={{ width: 3, height: 36, borderRadius: 'var(--sl-radius-xs)', backgroundColor: sportColor, flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
                         <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 5, color: sportColor, backgroundColor: `${sportColor}18` }}>{ev.sport}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 'var(--sl-radius-xs)', color: sportColor, backgroundColor: `${sportColor}18` }}>{ev.sport}</span>
                       </div>
                     </div>
                     <button onClick={() => downloadICS(ev)} title="Ajouter au calendrier"
-                      style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--sl-t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <CalSvg size={13} />
                     </button>
                   </div>

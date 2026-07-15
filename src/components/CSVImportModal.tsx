@@ -163,7 +163,7 @@ export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalPr
         style={{ width: '100%', maxWidth: 520, borderRadius: '22px 22px 0 0', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', maxHeight: '90dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingBottom: 'env(safe-area-inset-bottom, 20px)' }}
       >
         <div style={{ padding: '14px 0 0', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'var(--sl-border-s)' }} />
+          <div style={{ width: 36, height: 4, borderRadius: 'var(--sl-radius-xs)', backgroundColor: 'var(--sl-border-s)' }} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 10px', flexShrink: 0 }}>
@@ -171,7 +171,7 @@ export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalPr
             <div style={{ fontWeight: 800, fontSize: 17, color: 'var(--sl-t1)' }}>Import CSV</div>
             <div style={{ fontSize: 12, color: 'var(--sl-t3)', marginTop: 2 }}>Importer plusieurs matchs en une fois</div>
           </div>
-          <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 12, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
+          <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
@@ -190,7 +190,7 @@ export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalPr
                 </div>
               </div>
 
-              <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--sl-border)', marginBottom: 20 }}>
+              <div style={{ borderRadius: 'var(--sl-radius-xl)', overflow: 'hidden', border: '1px solid var(--sl-border)', marginBottom: 20 }}>
                 {results.map((r, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: i < results.length - 1 ? '1px solid var(--sl-border)' : 'none' }}>
                     <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: r.ok ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)' }}>
@@ -207,13 +207,13 @@ export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalPr
                 ))}
               </div>
 
-              <button onClick={onClose} style={{ width: '100%', padding: '13px 0', borderRadius: 14, border: 'none', cursor: 'pointer', backgroundColor: sportColor, color: '#fff', fontWeight: 700, fontSize: 14, boxShadow: `0 4px 16px ${sportColor}40` }}>
+              <button onClick={onClose} style={{ width: '100%', padding: '13px 0', borderRadius: 'var(--sl-radius-2xl)', border: 'none', cursor: 'pointer', backgroundColor: sportColor, color: '#fff', fontWeight: 700, fontSize: 14, boxShadow: `0 4px 16px ${sportColor}40` }}>
                 Fermer
               </button>
             </>
           ) : (
             <>
-              <div style={{ borderRadius: 12, padding: '12px 14px', marginBottom: 16, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
+              <div style={{ borderRadius: 'var(--sl-radius-xl)', padding: '12px 14px', marginBottom: 16, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--sl-t3)', marginBottom: 8 }}>Format CSV attendu</div>
                 <code style={{ fontSize: 10, color: 'var(--sl-t2)', display: 'block', lineHeight: 1.7, fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
                   {`date,heure,adversaire,equipe,lieu,type,domicile\n20/05/2026,18:00,Quimper FC,Seniors A,Stade Mun.,championship,oui`}
@@ -227,7 +227,7 @@ export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalPr
               <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={handleFile} style={{ display: 'none' }} />
               <button
                 onClick={() => fileRef.current?.click()}
-                style={{ width: '100%', padding: '16px 0', borderRadius: 14, border: `2px dashed ${sportColor}55`, cursor: 'pointer', backgroundColor: `${sportColor}08`, color: sportColor, fontWeight: 700, fontSize: 14, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                style={{ width: '100%', padding: '16px 0', borderRadius: 'var(--sl-radius-2xl)', border: `2px dashed ${sportColor}55`, cursor: 'pointer', backgroundColor: `${sportColor}08`, color: sportColor, fontWeight: 700, fontSize: 14, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 {rows.length > 0 ? 'Changer de fichier' : 'Choisir un fichier CSV'}
@@ -236,19 +236,19 @@ export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalPr
               {rows.length > 0 && (
                 <>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-                    <div style={{ flex: 1, padding: '10px 12px', borderRadius: 12, backgroundColor: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', textAlign: 'center' }}>
+                    <div style={{ flex: 1, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', textAlign: 'center' }}>
                       <div style={{ fontWeight: 800, fontSize: 20, color: '#22c55e', lineHeight: 1 }}>{validRows.length}</div>
                       <div style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 600, marginTop: 2 }}>Valide{validRows.length !== 1 ? 's' : ''}</div>
                     </div>
                     {invalidRows.length > 0 && (
-                      <div style={{ flex: 1, padding: '10px 12px', borderRadius: 12, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', textAlign: 'center' }}>
+                      <div style={{ flex: 1, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', textAlign: 'center' }}>
                         <div style={{ fontWeight: 800, fontSize: 20, color: '#ef4444', lineHeight: 1 }}>{invalidRows.length}</div>
                         <div style={{ fontSize: 10, color: 'var(--sl-t3)', fontWeight: 600, marginTop: 2 }}>Erreur{invalidRows.length !== 1 ? 's' : ''}</div>
                       </div>
                     )}
                   </div>
 
-                  <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--sl-border)', marginBottom: 20 }}>
+                  <div style={{ borderRadius: 'var(--sl-radius-xl)', overflow: 'hidden', border: '1px solid var(--sl-border)', marginBottom: 20 }}>
                     {rows.map((row, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: i < rows.length - 1 ? '1px solid var(--sl-border)' : 'none', backgroundColor: row._error ? 'rgba(239,68,68,0.03)' : 'transparent' }}>
                         <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: row._error ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.12)' }}>
@@ -277,7 +277,7 @@ export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalPr
                     onClick={handleImport}
                     disabled={validRows.length === 0 || importing}
                     style={{
-                      width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
+                      width: '100%', padding: '14px 0', borderRadius: 'var(--sl-radius-2xl)', border: 'none',
                       cursor: validRows.length === 0 || importing ? 'not-allowed' : 'pointer',
                       backgroundColor: validRows.length > 0 ? sportColor : 'var(--sl-surface)',
                       color: validRows.length > 0 ? '#fff' : 'var(--sl-t3)',

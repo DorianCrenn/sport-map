@@ -44,7 +44,7 @@ export function ChampionshipLevelPicker({ value, onChange, levels }: Championshi
         return (
           <button key={opt.value} type="button" onClick={() => onChange(sel ? '' : opt.value)} title={opt.label}
             style={{
-              padding: '6px 13px', borderRadius: 10, cursor: 'pointer',
+              padding: '6px 13px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer',
               border: `2px solid ${sel ? '#3b82f6' : 'var(--sl-border)'}`,
               backgroundColor: sel ? 'rgba(59,130,246,0.12)' : 'var(--sl-surface)',
               color: sel ? '#3b82f6' : 'var(--sl-t2)',
@@ -74,7 +74,7 @@ export function CupTypePicker({ value, onChange }: CupTypePickerProps) {
         return (
           <button key={opt.value} type="button" onClick={() => onChange(sel ? '' : opt.value)}
             style={{
-              padding: '6px 11px', borderRadius: 10, cursor: 'pointer',
+              padding: '6px 11px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer',
               border: `2px solid ${sel ? '#f97316' : 'var(--sl-border)'}`,
               backgroundColor: sel ? 'rgba(249,115,22,0.10)' : 'var(--sl-surface)',
               color: sel ? '#f97316' : 'var(--sl-t2)',
@@ -133,7 +133,7 @@ export function AdversaireField({ value, onChange, sameSportClubs, myClubId, inp
         style={inputStyle} autoComplete="off"
       />
       {focused && filtered.length > 0 && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 12, marginTop: 4, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 'var(--sl-radius-xl)', marginTop: 4, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
           {filtered.map(c => (
             <button
               key={c.id} type="button"
@@ -143,9 +143,9 @@ export function AdversaireField({ value, onChange, sameSportClubs, myClubId, inp
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
             >
               {c.logo_url ? (
-                <img src={c.logo_url} alt="" loading="lazy" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'contain', flexShrink: 0 }} />
+                <img src={c.logo_url} alt="" loading="lazy" style={{ width: 22, height: 22, borderRadius: 'var(--sl-radius-xs)', objectFit: 'contain', flexShrink: 0 }} />
               ) : (
-                <div style={{ width: 22, height: 22, borderRadius: 4, backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)' }}>
+                <div style={{ width: 22, height: 22, borderRadius: 'var(--sl-radius-xs)', backgroundColor: 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)' }}>
                   {c.name[0]}
                 </div>
               )}
@@ -180,7 +180,7 @@ export function PillPicker({ options, value, onChange, color = '#8b5cf6' }: Pill
         return (
           <button key={v} type="button" onClick={() => onChange(sel ? '' : v)}
             style={{
-              padding: '6px 12px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: sel ? 700 : 500,
+              padding: '6px 12px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer', fontSize: 11, fontWeight: sel ? 700 : 500,
               border: `2px solid ${sel ? color : 'var(--sl-border)'}`,
               backgroundColor: sel ? `${color}18` : 'var(--sl-surface)',
               color: sel ? color : 'var(--sl-t2)', transition: 'all 0.12s',
@@ -301,7 +301,7 @@ export function EventTypeRadio({ value, onChange }: EventTypeRadioProps) {
           <button key={type.value} type="button" onClick={() => onChange(type.value)}
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-              padding: '12px 8px', borderRadius: 14, cursor: 'pointer',
+              padding: '12px 8px', borderRadius: 'var(--sl-radius-2xl)', cursor: 'pointer',
               border: `2px solid ${selected ? type.color : 'var(--sl-border)'}`,
               backgroundColor: selected ? `${type.color}14` : 'var(--sl-surface)',
               color: selected ? type.color : 'var(--sl-t2)', transition: 'all 0.15s',
@@ -345,7 +345,7 @@ export function MotmField({ value, onChange, clubId, inputStyle }: MotmFieldProp
         style={inputStyle} autoComplete="off"
       />
       {open && players?.length > 0 && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.12)', maxHeight: 200, overflowY: 'auto', marginTop: 4 }}>
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 'var(--sl-radius-xl)', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', maxHeight: 200, overflowY: 'auto', marginTop: 4 }}>
           {filtered.slice(0, 10).map(p => (
             <button key={p.id} type="button"
               onMouseDown={() => { onChange(p.name); setOpen(false); }}

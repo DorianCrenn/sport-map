@@ -156,14 +156,14 @@ function EditBlock({ block, rowBlocks, isFirst, isLast, onUpdate, onDelete, onTo
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginLeft: 2 }}>
           <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--sl-t3)', letterSpacing: '0.04em', userSelect: 'none' }}>Aa</span>
-          <select value={block.data?.font ?? ''} onChange={e => { const font = e.target.value || null; if (font) injectGoogleFont(font); onUpdate({ font }); }} title="Police du bloc" style={{ fontSize: 10, fontWeight: 600, fontFamily: block.data?.font ? `'${block.data.font}', sans-serif` : undefined, backgroundColor: 'var(--sl-bg)', color: block.data?.font ? 'var(--sl-t1)' : 'var(--sl-t3)', border: `1px solid ${block.data?.font ? 'var(--sl-green)' : 'var(--sl-border)'}`, borderRadius: 6, padding: '2px 4px', cursor: 'pointer', outline: 'none' }}>
+          <select value={block.data?.font ?? ''} onChange={e => { const font = e.target.value || null; if (font) injectGoogleFont(font); onUpdate({ font }); }} title="Police du bloc" style={{ fontSize: 10, fontWeight: 600, fontFamily: block.data?.font ? `'${block.data.font}', sans-serif` : undefined, backgroundColor: 'var(--sl-bg)', color: block.data?.font ? 'var(--sl-t1)' : 'var(--sl-t3)', border: `1px solid ${block.data?.font ? 'var(--sl-green)' : 'var(--sl-border)'}`, borderRadius: 'var(--sl-radius-sm)', padding: '2px 4px', cursor: 'pointer', outline: 'none' }}>
             <option value="">Auto</option>
             {(FONT_OPTIONS as any[]).map((f: any) => <option key={f.key} value={f.key}>{f.label}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: 1 }}>
           <label title="Couleur du texte" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}>
-            <div style={{ width: 13, height: 13, borderRadius: 3, background: block.data?.color || 'var(--sl-t1)', border: `1.5px solid ${block.data?.color ? 'var(--sl-green)' : 'var(--sl-border)'}`, flexShrink: 0 }} />
+            <div style={{ width: 13, height: 13, borderRadius: 'var(--sl-radius-xs)', background: block.data?.color || 'var(--sl-t1)', border: `1.5px solid ${block.data?.color ? 'var(--sl-green)' : 'var(--sl-border)'}`, flexShrink: 0 }} />
             <input type="color" value={block.data?.color || '#deeeff'} onChange={e => onUpdate({ color: e.target.value })} style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }} tabIndex={-1} />
           </label>
           {block.data?.color && <button onClick={() => onUpdate({ color: null })} title="Réinitialiser la couleur" style={{ fontSize: 10, lineHeight: 1, color: 'var(--sl-t3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>×</button>}

@@ -23,7 +23,7 @@ function SponsorLogo({ sponsor, height }: { sponsor: Sponsor; height: number }) 
   const meta = TIER_META[sponsor.tier] ?? TIER_META.partner;
   const wrapper: React.CSSProperties = {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    height, minWidth: 60, padding: '6px 10px', borderRadius: 12,
+    height, minWidth: 60, padding: '6px 10px', borderRadius: 'var(--sl-radius-xl)',
     backgroundColor: sponsor.logo && !err ? '#fff' : meta.color + '22',
     border: '1px solid var(--sl-border)',
     boxShadow: sponsor.tier === 'gold' ? '0 2px 10px rgba(0,0,0,0.10)' : 'none',
@@ -87,7 +87,7 @@ export function SponsorsBlockView({ block, clubId, canEdit = false }: { block: R
   if (sponsors.length === 0) {
     if (!canEdit) return null;
     return (
-      <div style={{ padding: '20px 16px', textAlign: 'center', borderRadius: 14, border: '1px dashed var(--sl-border)', color: 'var(--sl-t3)', fontSize: 12 }}>
+      <div style={{ padding: '20px 16px', textAlign: 'center', borderRadius: 'var(--sl-radius-2xl)', border: '1px dashed var(--sl-border)', color: 'var(--sl-t3)', fontSize: 12 }}>
         🤝 Aucun partenaire — ajoutez vos sponsors depuis le tableau de bord
       </div>
     );

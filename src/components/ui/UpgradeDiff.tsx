@@ -48,10 +48,10 @@ export default function UpgradeDiff({ currentPlanId, nextPlanId, onUpgrade, comp
   const accentColor = nextMeta.color;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={compact ? {} : { borderRadius: 16, overflow: 'hidden', border: `1.5px solid ${accentColor}30`, backgroundColor: `${accentColor}07` }}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={compact ? {} : { borderRadius: 'var(--sl-radius-3xl)', overflow: 'hidden', border: `1.5px solid ${accentColor}30`, backgroundColor: `${accentColor}07` }}>
       {!compact && (
         <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0, backgroundColor: `${accentColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{nextMeta.badge}</div>
+          <div style={{ width: 32, height: 32, borderRadius: 'var(--sl-radius-md)', flexShrink: 0, backgroundColor: `${accentColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{nextMeta.badge}</div>
           <div><div style={{ fontSize: 13, fontWeight: 800, color: accentColor, lineHeight: 1.2 }}>Passer à {nextMeta.name}</div><div style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{nextMeta.price === 0 ? 'Gratuit' : `${nextMeta.price} €/mois`}</div></div>
         </div>
       )}
@@ -72,7 +72,7 @@ export default function UpgradeDiff({ currentPlanId, nextPlanId, onUpgrade, comp
       </div>
       {onUpgrade && (
         <div style={{ padding: compact ? '10px 0 0' : '4px 16px 14px' }}>
-          <motion.button whileTap={{ scale: 0.97 }} onClick={onUpgrade} style={{ width: '100%', padding: '11px 0', borderRadius: 12, border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: `0 4px 14px ${accentColor}35` }}>
+          <motion.button whileTap={{ scale: 0.97 }} onClick={onUpgrade} style={{ width: '100%', padding: '11px 0', borderRadius: 'var(--sl-radius-xl)', border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: `0 4px 14px ${accentColor}35` }}>
             Passer à {nextMeta.name} — {nextMeta.price} €/mois →
           </motion.button>
         </div>

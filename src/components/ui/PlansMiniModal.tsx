@@ -35,7 +35,7 @@ export default function PlansMiniModal({ open, onClose, currentPlanId, nextPlanI
                 <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--sl-t1)' }}>Plans d'abonnement</div>
                 {currentMeta && <div style={{ fontSize: 11, color: 'var(--sl-t3)', marginTop: 2 }}>Plan actuel : {currentMeta.badge} {currentMeta.name}</div>}
               </div>
-              <button onClick={onClose} aria-label="Fermer" style={{ width: 36, height: 36, borderRadius: 10, border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button onClick={onClose} aria-label="Fermer" style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -45,7 +45,7 @@ export default function PlansMiniModal({ open, onClose, currentPlanId, nextPlanI
               {/* Toggle mensuel/annuel */}
               <div style={{ display: 'flex', justifyContent: 'center', gap: 4, padding: '16px 20px 0' }}>
                 {(['monthly', 'yearly'] as const).map(iv => (
-                  <button key={iv} onClick={() => setSelectedInterval(iv)} style={{ padding: '7px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 12, background: selectedInterval === iv ? 'var(--sl-blue)' : 'var(--sl-surface)', color: selectedInterval === iv ? '#fff' : 'var(--sl-t2)', transition: 'all 0.15s' }}>
+                  <button key={iv} onClick={() => setSelectedInterval(iv)} style={{ padding: '7px 18px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 12, background: selectedInterval === iv ? 'var(--sl-blue)' : 'var(--sl-surface)', color: selectedInterval === iv ? '#fff' : 'var(--sl-t2)', transition: 'all 0.15s' }}>
                     {iv === 'monthly' ? 'Mensuel' : 'Annuel −20%'}
                   </button>
                 ))}
@@ -58,7 +58,7 @@ export default function PlansMiniModal({ open, onClose, currentPlanId, nextPlanI
               }} />
 
               {checkoutError && (
-                <div style={{ margin: '0 20px 16px', padding: '10px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: 12, fontWeight: 600 }}>
+                <div style={{ margin: '0 20px 16px', padding: '10px 14px', borderRadius: 'var(--sl-radius-lg)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: 12, fontWeight: 600 }}>
                   {checkoutError}
                 </div>
               )}

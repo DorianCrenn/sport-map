@@ -1,12 +1,12 @@
 const numStyle: React.CSSProperties = {
   width: 52, textAlign: 'center', fontWeight: 700, fontSize: 20,
-  padding: '8px 0', borderRadius: 10,
+  padding: '8px 0', borderRadius: 'var(--sl-radius-lg)',
   backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
   color: 'var(--sl-t1)', outline: 'none',
 };
 const bigStyle: React.CSSProperties = {
   width: 64, textAlign: 'center', fontWeight: 800, fontSize: 26,
-  padding: '10px 0', borderRadius: 12,
+  padding: '10px 0', borderRadius: 'var(--sl-radius-xl)',
   backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
   color: 'var(--sl-t1)', outline: 'none',
 };

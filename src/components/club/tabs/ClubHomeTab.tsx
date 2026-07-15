@@ -13,8 +13,8 @@ function AnnouncementPreviewCard({ ann, accentColor }: { ann: Record<string, any
   const color = TYPE_COLOR[ann.type] ?? accentColor;
 
   return (
-    <div style={{ padding: '10px 12px', borderRadius: 12, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-      <div style={{ width: 6, borderRadius: 3, alignSelf: 'stretch', flexShrink: 0, backgroundColor: color, minHeight: 36 }} />
+    <div style={{ padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+      <div style={{ width: 6, borderRadius: 'var(--sl-radius-xs)', alignSelf: 'stretch', flexShrink: 0, backgroundColor: color, minHeight: 36 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {ann.title || ann.message?.slice(0, 50)}
@@ -147,7 +147,7 @@ export default function ClubHomeTab({
                 ) : (
                   <button
                     onClick={() => onSetOpenMenuAfter(row.rowId)}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', marginBottom: 8, padding: '8px', borderRadius: 12, border: 'none', background: 'none', color: 'var(--sl-t3)', fontSize: 12, cursor: 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', marginBottom: 8, padding: '8px', borderRadius: 'var(--sl-radius-xl)', border: 'none', background: 'none', color: 'var(--sl-t3)', fontSize: 12, cursor: 'pointer' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--sl-hover)'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
                   >
@@ -163,7 +163,7 @@ export default function ClubHomeTab({
       {isEditing && blocks.length > 0 && openMenuAfter === null && (
         <button
           onClick={() => onSetOpenMenuAfter('__end__')}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '12px', borderRadius: 14, border: '2px dashed var(--sl-border)', background: 'none', color: 'var(--sl-t3)', fontSize: 12, cursor: 'pointer', marginTop: 4 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '12px', borderRadius: 'var(--sl-radius-2xl)', border: '2px dashed var(--sl-border)', background: 'none', color: 'var(--sl-t3)', fontSize: 12, cursor: 'pointer', marginTop: 4 }}
         >
           <PlusIcon /> Ajouter un bloc à la fin
         </button>
@@ -178,7 +178,7 @@ export default function ClubHomeTab({
       </AnimatePresence>
 
       {blocks.length === 0 && !isEditing && recentAnnouncements.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '32px 20px', borderRadius: 16, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', marginTop: 8 }}>
+        <div style={{ textAlign: 'center', padding: '32px 20px', borderRadius: 'var(--sl-radius-3xl)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', marginTop: 8 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>⚽</div>
           <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>Ce club n'a pas encore publié de contenu</div>
           {club.description ? (
@@ -193,7 +193,7 @@ export default function ClubHomeTab({
         <div style={{ textAlign: 'center', padding: '40px 20px' }}>
           <div style={{ fontSize: 36, marginBottom: 12 }}>✨</div>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--sl-t2)', marginBottom: 16 }}>Page vide — ajoutez votre premier bloc</div>
-          <button onClick={() => addBlock('about', null)} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+          <button onClick={() => addBlock('about', null)} style={{ padding: '10px 20px', borderRadius: 'var(--sl-radius-xl)', border: 'none', backgroundColor: accentColor, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
             + Ajouter un bloc
           </button>
         </div>
@@ -240,7 +240,7 @@ function ClubSetupChecklist({ club, blocks, events, hasConvocations, onDismiss, 
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-      style={{ marginBottom: 14, borderRadius: 14, border: '1px solid rgba(99,102,241,0.25)', backgroundColor: 'rgba(99,102,241,0.06)', overflow: 'hidden' }}
+      style={{ marginBottom: 14, borderRadius: 'var(--sl-radius-2xl)', border: '1px solid rgba(99,102,241,0.25)', backgroundColor: 'rgba(99,102,241,0.06)', overflow: 'hidden' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px 6px' }}>
         <span style={{ fontSize: 11, fontWeight: 800, color: '#6366f1' }}>✅ Configuration — {done}/{items.length}</span>
@@ -251,11 +251,11 @@ function ClubSetupChecklist({ club, blocks, events, hasConvocations, onDismiss, 
         </button>
       </div>
       <div style={{ height: 3, backgroundColor: 'var(--sl-border)', margin: '0 12px 8px' }}>
-        <div style={{ height: '100%', backgroundColor: '#6366f1', borderRadius: 2, width: `${pct}%`, transition: 'width 0.4s' }} />
+        <div style={{ height: '100%', backgroundColor: '#6366f1', borderRadius: 'var(--sl-radius-xs)', width: `${pct}%`, transition: 'width 0.4s' }} />
       </div>
       <div style={{ padding: '0 10px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
         {items.map((item, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, backgroundColor: item.done ? 'rgba(34,217,106,0.06)' : 'transparent' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 'var(--sl-radius-md)', backgroundColor: item.done ? 'rgba(34,217,106,0.06)' : 'transparent' }}>
             <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, backgroundColor: item.done ? '#22d96a' : 'var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {item.done && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
             </div>
@@ -263,7 +263,7 @@ function ClubSetupChecklist({ club, blocks, events, hasConvocations, onDismiss, 
               {item.label}
             </span>
             {!item.done && item.action && (
-              <button onClick={item.action} style={{ padding: '4px 8px', borderRadius: 7, border: '1px solid rgba(99,102,241,0.3)', backgroundColor: 'rgba(99,102,241,0.1)', color: '#6366f1', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
+              <button onClick={item.action} style={{ padding: '4px 8px', borderRadius: 'var(--sl-radius-sm)', border: '1px solid rgba(99,102,241,0.3)', backgroundColor: 'rgba(99,102,241,0.1)', color: '#6366f1', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
                 {item.actionLabel}
               </button>
             )}

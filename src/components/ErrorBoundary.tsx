@@ -28,9 +28,9 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--sl-t1)' }}>Une erreur est survenue</div>
         <div style={{ fontSize: 12, color: 'var(--sl-t3)', maxWidth: 280 }}>{this.state.error.message}</div>
         <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-          <button onClick={() => this.setState({ error: null })} style={{ padding: '10px 22px', borderRadius: 10, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Réessayer</button>
+          <button onClick={() => this.setState({ error: null })} style={{ padding: '10px 22px', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Réessayer</button>
           {this.props.onReport && (
-            <button onClick={() => this.props.onReport!({ type: 'bug', title: `Erreur : ${this.state.error?.message ?? 'inconnue'}`, description: this.state.error?.stack ?? '', category: 'crash' })} style={{ padding: '10px 18px', borderRadius: 10, border: '1.5px solid rgba(239,68,68,0.4)', backgroundColor: 'rgba(239,68,68,0.08)', color: '#ef4444', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Signaler le problème</button>
+            <button onClick={() => this.props.onReport!({ type: 'bug', title: `Erreur : ${this.state.error?.message ?? 'inconnue'}`, description: this.state.error?.stack ?? '', category: 'crash' })} style={{ padding: '10px 18px', borderRadius: 'var(--sl-radius-lg)', border: '1.5px solid rgba(239,68,68,0.4)', backgroundColor: 'rgba(239,68,68,0.08)', color: '#ef4444', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Signaler le problème</button>
           )}
         </div>
       </div>

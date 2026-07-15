@@ -33,7 +33,7 @@ function PlayerRow({ player, selected, onToggle }: PlayerRowProps) {
       }}
     >
       <div style={{
-        width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+        width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', flexShrink: 0,
         backgroundColor: selected ? 'rgba(99,102,241,0.15)' : 'var(--sl-surface)',
         border: `1.5px solid ${selected ? '#6366f1' : 'var(--sl-border)'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -51,7 +51,7 @@ function PlayerRow({ player, selected, onToggle }: PlayerRowProps) {
         {player.email && <span style={{ fontSize: 10, color: '#2563eb', opacity: 0.7 }}>📧</span>}
       </div>
       <div style={{
-        width: 20, height: 20, borderRadius: 6, flexShrink: 0,
+        width: 20, height: 20, borderRadius: 'var(--sl-radius-sm)', flexShrink: 0,
         border: `2px solid ${selected ? '#6366f1' : 'var(--sl-border)'}`,
         backgroundColor: selected ? '#6366f1' : 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -214,7 +214,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
 
         {/* Envoi par email si des joueurs ont un email */}
         {emailCount > 0 && !emailSent && (
-          <div style={{ width: '100%', maxWidth: 320, borderRadius: 14, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', padding: 16, textAlign: 'left' }}>
+          <div style={{ width: '100%', maxWidth: 320, borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)', background: 'var(--sl-card)', padding: 16, textAlign: 'left' }}>
             <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)', margin: '0 0 6px' }}>
               📧 Envoyer aussi par email ?
             </p>
@@ -224,7 +224,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
             <button
               onClick={handleSendEmails}
               disabled={emailSending}
-              style={{ width: '100%', padding: '11px 0', borderRadius: 12, border: 'none', cursor: emailSending ? 'not-allowed' : 'pointer', backgroundColor: '#2563eb', color: '#fff', fontSize: 13, fontWeight: 700 }}
+              style={{ width: '100%', padding: '11px 0', borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: emailSending ? 'not-allowed' : 'pointer', backgroundColor: '#2563eb', color: '#fff', fontSize: 13, fontWeight: 700 }}
             >
               {emailSending ? 'Envoi en cours…' : `Envoyer ${emailCount} email${emailCount > 1 ? 's' : ''}`}
             </button>
@@ -240,7 +240,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
             neutral: { c: '#64748b', bg: 'rgba(100,116,139,0.1)', b: 'rgba(100,116,139,0.3)' },
           }[severity];
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: palette.bg, border: `1px solid ${palette.b}`, borderRadius: 12, padding: '10px 14px', width: '100%', maxWidth: 320 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: palette.bg, border: `1px solid ${palette.b}`, borderRadius: 'var(--sl-radius-xl)', padding: '10px 14px', width: '100%', maxWidth: 320 }}>
               <span style={{ fontSize: 16 }}>{icon}</span>
               <p style={{ fontSize: 13, color: palette.c, margin: 0, fontWeight: 600 }}>{message}</p>
             </div>
@@ -249,7 +249,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
 
         <button
           onClick={onDone}
-          style={{ width: '100%', maxWidth: 280, padding: '13px 0', borderRadius: 14, border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700 }}
+          style={{ width: '100%', maxWidth: 280, padding: '13px 0', borderRadius: 'var(--sl-radius-2xl)', border: 'none', cursor: 'pointer', backgroundColor: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700 }}
         >
           Terminé
         </button>
@@ -296,7 +296,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
       <div style={{ padding: '12px 16px', borderTop: '1px solid var(--sl-border)', flexShrink: 0, display: 'flex', gap: 10 }}>
         <button
           onClick={onClose}
-          style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '1px solid var(--sl-border)', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600 }}
+          style={{ flex: 1, padding: '12px 0', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)', cursor: 'pointer', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600 }}
         >
           Passer
         </button>
@@ -304,7 +304,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
           disabled={!selected.size || sending}
           onClick={handleSend}
           style={{
-            flex: 2, padding: '12px 0', borderRadius: 14, border: 'none', cursor: selected.size && !sending ? 'pointer' : 'not-allowed',
+            flex: 2, padding: '12px 0', borderRadius: 'var(--sl-radius-2xl)', border: 'none', cursor: selected.size && !sending ? 'pointer' : 'not-allowed',
             backgroundColor: selected.size && !sending ? '#6366f1' : 'var(--sl-surface)',
             color: selected.size && !sending ? '#fff' : 'var(--sl-t3)',
             fontSize: 13, fontWeight: 700,

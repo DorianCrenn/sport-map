@@ -2,13 +2,13 @@ import { useState } from 'react';
 
 const numStyle: React.CSSProperties = {
   width: 72, textAlign: 'center', fontWeight: 800, fontSize: 28,
-  padding: '10px 0', borderRadius: 12,
+  padding: '10px 0', borderRadius: 'var(--sl-radius-xl)',
   backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
   color: 'var(--sl-t1)', outline: 'none',
 };
 const optStyle: React.CSSProperties = {
   width: 52, textAlign: 'center', fontWeight: 700, fontSize: 18,
-  padding: '7px 0', borderRadius: 10,
+  padding: '7px 0', borderRadius: 'var(--sl-radius-lg)',
   backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
   color: 'var(--sl-t1)', outline: 'none',
 };
@@ -65,7 +65,7 @@ export default function SimpleScoreInputs({ config, value, onChange }: SimpleSco
       </div>
 
       {hasExtraTime && isDraw && !showExtra && (
-        <button onClick={() => setShowExtra(true)} style={{ alignSelf: 'center', padding: '6px 16px', borderRadius: 20, fontSize: 12, fontWeight: 600, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer' }}>
+        <button onClick={() => setShowExtra(true)} style={{ alignSelf: 'center', padding: '6px 16px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 12, fontWeight: 600, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer' }}>
           + Prolongation
         </button>
       )}

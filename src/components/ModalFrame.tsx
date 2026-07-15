@@ -22,7 +22,7 @@ const VARIANTS = {
       animate:    { scale: 1,    opacity: 1 },
       exit:       { scale: 0.92, opacity: 0 },
       transition: { type: 'spring', stiffness: 340, damping: 30 },
-      style: { borderRadius: 20, width: '100%', maxWidth: 480, margin: '0 16px', border: '1px solid var(--sl-border)' },
+      style: { borderRadius: 'var(--sl-radius-4xl)', width: '100%', maxWidth: 480, margin: '0 16px', border: '1px solid var(--sl-border)' },
     },
     align: { alignItems: 'center', justifyContent: 'center' },
   },
@@ -72,7 +72,7 @@ export default function ModalFrame({ open, onClose, variant = 'sheet', zIndex = 
           <motion.div ref={firstFocusRef as any} {...(v.panel as any)} style={{ backgroundColor: 'var(--sl-card)', padding: variant === 'sheet' ? '0' : '24px', display: 'flex', flexDirection: 'column', maxHeight: variant === 'sheet' ? '92dvh' : '88dvh', overflow: 'hidden', ...v.panel.style, ...panelStyle, transform: variant === 'sheet' && sheetDy > 0 ? `translateY(${sheetDy}px)` : undefined, transition: sheetDy > 0 ? 'none' : undefined }} onClick={e => e.stopPropagation()}>
             {variant === 'sheet' && (
               <div role="button" tabIndex={-1} onMouseDown={handleDragHandleDown} onTouchStart={handleDragHandleDown} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onClose?.()} aria-label="Glisser pour fermer" style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px', cursor: 'grab', touchAction: 'none', flexShrink: 0 }}>
-                <div style={{ width: 36, height: 4, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
+                <div style={{ width: 36, height: 4, borderRadius: 'var(--sl-radius-full)', backgroundColor: 'var(--sl-border-s)' }} />
               </div>
             )}
             {/* Contenu scrollable : le panneau est contraint en hauteur (maxHeight),

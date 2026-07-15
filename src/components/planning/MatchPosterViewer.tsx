@@ -43,7 +43,7 @@ export default function MatchPosterViewer({ imageUrl, title, onClose }: MatchPos
         <motion.img
           initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
           src={imageUrl} alt={title ?? 'Affiche du match'}
-          style={{ maxWidth: '100%', maxHeight: '72vh', borderRadius: 16, objectFit: 'contain', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}
+          style={{ maxWidth: '100%', maxHeight: '72vh', borderRadius: 'var(--sl-radius-3xl)', objectFit: 'contain', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}
         />
 
         <div className="flex items-center gap-3 mt-5">

@@ -62,7 +62,7 @@ function TrendBadge({ pct }: TrendBadgeProps) {
     <span style={{
       fontSize: 10, fontWeight: 700, color,
       backgroundColor: `${color}15`,
-      padding: '2px 6px', borderRadius: 10,
+      padding: '2px 6px', borderRadius: 'var(--sl-radius-lg)',
     }}>
       {arrow} {Math.abs(pct)}%
     </span>
@@ -80,12 +80,12 @@ interface KpiCardProps {
 function KpiCard({ label, value, sub, color = '#6366f1', icon, trend }: KpiCardProps) {
   return (
     <div style={{
-      backgroundColor: 'var(--sl-card)', borderRadius: 16,
+      backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)',
       padding: 16, border: '1px solid var(--sl-border)',
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
         <div style={{
-          width: 36, height: 36, borderRadius: 12,
+          width: 36, height: 36, borderRadius: 'var(--sl-radius-xl)',
           backgroundColor: `${color}20`, color,
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
@@ -106,7 +106,7 @@ interface ChartCardProps { title: string; children: React.ReactNode; }
 function ChartCard({ title, children }: ChartCardProps) {
   return (
     <div style={{
-      backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16,
+      backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', padding: 16,
       border: '1px solid var(--sl-border)',
     }}>
       <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>{title}</p>
@@ -194,7 +194,7 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
         backgroundColor: color.dim,
         borderColor: color.solid,
         borderWidth: 1.5,
-        borderRadius: 5,
+        borderRadius: 'var(--sl-radius-xs)',
       }],
     };
   }
@@ -218,7 +218,7 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
       backgroundColor: CHART_COLORS.indigo.dim,
       borderColor: CHART_COLORS.indigo.solid,
       borderWidth: 1.5,
-      borderRadius: 5,
+      borderRadius: 'var(--sl-radius-xs)',
     }],
   } : null;
 
@@ -240,7 +240,7 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
           onClick={onBack}
           aria-label="Retour à l'administration"
           style={{
-            width: 38, height: 38, borderRadius: 10, border: 'none',
+            width: 38, height: 38, borderRadius: 'var(--sl-radius-lg)', border: 'none',
             backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
@@ -261,7 +261,7 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
               key={value}
               onClick={() => setPeriod(value)}
               style={{
-                padding: '5px 10px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                padding: '5px 10px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer',
                 fontSize: 11, fontWeight: 600,
                 backgroundColor: period === value ? '#6366f1' : 'var(--sl-surface)',
                 color: period === value ? '#fff' : 'var(--sl-t3)',
@@ -440,8 +440,8 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
                             </span>
                             <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{count as number} ({pct}%)</span>
                           </div>
-                          <div style={{ height: 6, backgroundColor: 'var(--sl-surface)', borderRadius: 6, overflow: 'hidden' }}>
-                            <div style={{ width: `${pct}%`, height: '100%', backgroundColor: '#8b5cf6', borderRadius: 6, transition: 'width 0.4s' }} />
+                          <div style={{ height: 6, backgroundColor: 'var(--sl-surface)', borderRadius: 'var(--sl-radius-sm)', overflow: 'hidden' }}>
+                            <div style={{ width: `${pct}%`, height: '100%', backgroundColor: '#8b5cf6', borderRadius: 'var(--sl-radius-sm)', transition: 'width 0.4s' }} />
                           </div>
                         </div>
                       );
@@ -486,8 +486,8 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
                           <span style={{ fontSize: 12, color: 'var(--sl-t2)', fontWeight: 600, flex: 1, fontFamily: 'monospace' }}>{tpl.id}</span>
                           <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sl-t1)', fontVariantNumeric: 'tabular-nums' }}>{tpl.count}×</span>
                         </div>
-                        <div style={{ height: 4, backgroundColor: 'var(--sl-surface)', borderRadius: 4, overflow: 'hidden' }}>
-                          <div style={{ width: `${pct}%`, height: '100%', backgroundColor: CHART_COLORS.amber.solid, borderRadius: 4, transition: 'width 0.4s' }} />
+                        <div style={{ height: 4, backgroundColor: 'var(--sl-surface)', borderRadius: 'var(--sl-radius-xs)', overflow: 'hidden' }}>
+                          <div style={{ width: `${pct}%`, height: '100%', backgroundColor: CHART_COLORS.amber.solid, borderRadius: 'var(--sl-radius-xs)', transition: 'width 0.4s' }} />
                         </div>
                       </div>
                     );
@@ -517,11 +517,11 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
                             {pct}%
                           </span>
                         </div>
-                        <div style={{ height: 6, backgroundColor: 'var(--sl-surface)', borderRadius: 6, overflow: 'hidden', marginBottom: drop !== null ? 2 : 8 }}>
+                        <div style={{ height: 6, backgroundColor: 'var(--sl-surface)', borderRadius: 'var(--sl-radius-sm)', overflow: 'hidden', marginBottom: drop !== null ? 2 : 8 }}>
                           <div style={{
                             width: `${pct}%`, height: '100%',
                             backgroundColor: colors[i] ?? '#6366f1',
-                            borderRadius: 6, transition: 'width 0.5s ease',
+                            borderRadius: 'var(--sl-radius-sm)', transition: 'width 0.5s ease',
                           }} />
                         </div>
                         {drop !== null && drop > 0 && (

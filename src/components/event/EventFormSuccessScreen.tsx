@@ -57,7 +57,7 @@ export default function EventFormSuccessScreen({ createdEvent, onOpenPoster, onC
                   onClick={() => setShowConvocation(true)}
                   style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    padding: '14px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                    padding: '14px 12px', borderRadius: 'var(--sl-radius-3xl)', border: 'none', cursor: 'pointer',
                     background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                     color: 'white', fontSize: 13, fontWeight: 800,
                     boxShadow: '0 6px 20px rgba(99,102,241,0.30)',
@@ -75,7 +75,7 @@ export default function EventFormSuccessScreen({ createdEvent, onOpenPoster, onC
                   onClick={() => { onOpenPoster(createdEvent); onClose(); }}
                   style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    padding: '14px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                    padding: '14px 12px', borderRadius: 'var(--sl-radius-3xl)', border: 'none', cursor: 'pointer',
                     background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
                     color: 'white', fontSize: 13, fontWeight: 800,
                     boxShadow: '0 6px 20px rgba(124,58,237,0.28)',
@@ -94,7 +94,7 @@ export default function EventFormSuccessScreen({ createdEvent, onOpenPoster, onC
         <button
           onClick={onClose}
           style={{
-            padding: '11px 28px', borderRadius: 12, cursor: 'pointer',
+            padding: '11px 28px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer',
             border: '1px solid var(--sl-border)', backgroundColor: 'transparent',
             color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600,
           }}

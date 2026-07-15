@@ -55,7 +55,7 @@ export default function TennisSetsInput({ setsPerMatch = 3, value, onChange }: T
   const matchOver    = setsWonHome >= toWin || setsWonAway >= toWin;
   const displayCount = matchOver ? sets.length : Math.min(sets.length + 1, setsPerMatch);
 
-  const numSt: React.CSSProperties = { width: 46, textAlign: 'center', fontWeight: 700, fontSize: 18, padding: '7px 0', borderRadius: 8, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)', outline: 'none' };
+  const numSt: React.CSSProperties = { width: 46, textAlign: 'center', fontWeight: 700, fontSize: 18, padding: '7px 0', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)', outline: 'none' };
   const tbSt: React.CSSProperties  = { ...numSt, width: 36, fontSize: 14 };
 
   return (

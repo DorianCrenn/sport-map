@@ -27,10 +27,10 @@ function GrantCard({ grant, onRevoke }: GrantCardProps) {
   }
 
   return (
-    <div style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, border: `1px solid ${isActive ? color + '40' : 'var(--sl-border)'}`, padding: 14, opacity: isActive ? 1 : 0.65 }}>
+    <div style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', border: `1px solid ${isActive ? color + '40' : 'var(--sl-border)'}`, padding: 14, opacity: isActive ? 1 : 0.65 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         {/* Logo club */}
-        <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-xl)', backgroundColor: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
           {grant.clubs?.logo_url
             ? <img src={grant.clubs.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 4 }} />
             : <span style={{ fontSize: 14, fontWeight: 800, color }}>{clubName[0]?.toUpperCase()}</span>}
@@ -38,13 +38,13 @@ function GrantCard({ grant, onRevoke }: GrantCardProps) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
             <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--sl-t1)' }}>{clubName}</span>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, backgroundColor: `${color}18`, color }}>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: `${color}18`, color }}>
               {grant.plan.toUpperCase()}
             </span>
-            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)' }}>
+            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)' }}>
               {TYPE_LABEL[grant.grant_type] ?? grant.grant_type}
             </span>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)',
               backgroundColor: isActive ? 'rgba(34,197,94,0.12)' : isExpired ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)',
               color: isActive ? '#22c55e' : isExpired ? '#f59e0b' : '#ef4444',
             }}>
@@ -65,16 +65,16 @@ function GrantCard({ grant, onRevoke }: GrantCardProps) {
         </div>
         {isActive && !confirm && (
           <button onClick={() => setConfirm(true)} data-testid={`grant-revoke-${grant.id}`}
-            style={{ padding: '5px 10px', borderRadius: 8, border: '1px solid rgba(239,68,68,0.3)', fontSize: 11, fontWeight: 600, color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', cursor: 'pointer', flexShrink: 0 }}>
+            style={{ padding: '5px 10px', borderRadius: 'var(--sl-radius-md)', border: '1px solid rgba(239,68,68,0.3)', fontSize: 11, fontWeight: 600, color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', cursor: 'pointer', flexShrink: 0 }}>
             Révoquer
           </button>
         )}
         {confirm && (
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-            <button onClick={handleRevoke} disabled={revoking} style={{ padding: '5px 10px', borderRadius: 8, border: 'none', fontSize: 11, fontWeight: 700, color: '#fff', backgroundColor: '#ef4444', cursor: 'pointer' }}>
+            <button onClick={handleRevoke} disabled={revoking} style={{ padding: '5px 10px', borderRadius: 'var(--sl-radius-md)', border: 'none', fontSize: 11, fontWeight: 700, color: '#fff', backgroundColor: '#ef4444', cursor: 'pointer' }}>
               {revoking ? '…' : 'Confirmer'}
             </button>
-            <button onClick={() => setConfirm(false)} style={{ padding: '5px 10px', borderRadius: 8, border: '1px solid var(--sl-border)', fontSize: 11, backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t2)' }}>
+            <button onClick={() => setConfirm(false)} style={{ padding: '5px 10px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', fontSize: 11, backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t2)' }}>
               Non
             </button>
           </div>
@@ -161,7 +161,7 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ flexShrink: 0, padding: '16px 16px 12px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--sl-border)' }}>
-        <button onClick={onBack} aria-label="Retour à l'administration" style={{ width: 44, height: 44, borderRadius: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <button onClick={onBack} aria-label="Retour à l'administration" style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sl-t2)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div style={{ flex: 1 }}>
@@ -169,7 +169,7 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
           <p style={{ margin: 0, fontSize: 11, color: 'var(--sl-t3)' }}>{activeCount} actifs · {expiredCount} expirés</p>
         </div>
         <button onClick={() => setShowForm(p => !p)}
-          style={{ padding: '8px 16px', borderRadius: 12, border: 'none', fontSize: 13, fontWeight: 700, color: '#fff', backgroundColor: '#8b5cf6', cursor: 'pointer' }}>
+          style={{ padding: '8px 16px', borderRadius: 'var(--sl-radius-xl)', border: 'none', fontSize: 13, fontWeight: 700, color: '#fff', backgroundColor: '#8b5cf6', cursor: 'pointer' }}>
           + Accorder
         </button>
       </div>
@@ -189,7 +189,7 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
                   {(GRANT_PRESETS as any[]).map(p => (
                     <button key={p.label} type="button" onClick={() => applyPreset(p)}
                       style={{
-                        padding: '5px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                        padding: '5px 10px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 11, fontWeight: 600, cursor: 'pointer',
                         backgroundColor: formPreset === p.label ? '#8b5cf6' : 'var(--sl-card)',
                         color: formPreset === p.label ? '#fff' : 'var(--sl-t2)',
                         border: `1px solid ${formPreset === p.label ? '#8b5cf6' : 'var(--sl-border)'}`,
@@ -205,9 +205,9 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
                 <label htmlFor="grant-club-search" style={{ display: 'block', margin: '0 0 6px', fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600 }}>Club * :</label>
                 <input id="grant-club-search" value={clubSearch} onChange={e => { setClubSearch(e.target.value); if (!e.target.value) setFormClubId(''); }}
                   placeholder="Rechercher un club vérifié…" aria-label="Rechercher un club vérifié"
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }} />
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }} />
                 {filteredClubs.length > 0 && (
-                  <div style={{ marginTop: 4, backgroundColor: 'var(--sl-card)', borderRadius: 12, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+                  <div style={{ marginTop: 4, backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
                     {filteredClubs.map(c => (
                       <button key={c.id} type="button" onClick={() => { setFormClubId(c.id); setClubSearch(c.name); }}
                         style={{ width: '100%', textAlign: 'left', padding: '8px 12px', border: 'none', backgroundColor: formClubId === c.id ? 'rgba(139,92,246,0.12)' : 'transparent', cursor: 'pointer', fontSize: 12, color: 'var(--sl-t1)' }}>
@@ -225,7 +225,7 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
                   <div style={{ display: 'flex', gap: 6 }}>
                     {['starter','pro','elite'].map(p => (
                       <button key={p} type="button" onClick={() => setFormPlan(p)}
-                        style={{ flex: 1, padding: '7px 0', borderRadius: 10, border: `2px solid ${formPlan === p ? PLAN_COLOR[p] : 'var(--sl-border)'}`, cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: formPlan === p ? `${PLAN_COLOR[p]}18` : 'var(--sl-card)', color: formPlan === p ? PLAN_COLOR[p] : 'var(--sl-t3)' }}>
+                        style={{ flex: 1, padding: '7px 0', borderRadius: 'var(--sl-radius-lg)', border: `2px solid ${formPlan === p ? PLAN_COLOR[p] : 'var(--sl-border)'}`, cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: formPlan === p ? `${PLAN_COLOR[p]}18` : 'var(--sl-card)', color: formPlan === p ? PLAN_COLOR[p] : 'var(--sl-t3)' }}>
                         {p}
                       </button>
                     ))}
@@ -235,12 +235,12 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
                   <label htmlFor="grant-months" style={{ display: 'block', margin: '0 0 6px', fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600 }}>Durée :</label>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     <button type="button" onClick={() => setFormLifetime(p => !p)} aria-pressed={formLifetime}
-                      style={{ padding: '7px 12px', borderRadius: 10, border: `2px solid ${formLifetime ? '#f59e0b' : 'var(--sl-border)'}`, cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: formLifetime ? 'rgba(245,158,11,0.12)' : 'var(--sl-card)', color: formLifetime ? '#f59e0b' : 'var(--sl-t3)' }}>
+                      style={{ padding: '7px 12px', borderRadius: 'var(--sl-radius-lg)', border: `2px solid ${formLifetime ? '#f59e0b' : 'var(--sl-border)'}`, cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: formLifetime ? 'rgba(245,158,11,0.12)' : 'var(--sl-card)', color: formLifetime ? '#f59e0b' : 'var(--sl-t3)' }}>
                       À vie
                     </button>
                     {!formLifetime && (
                       <input id="grant-months" type="number" min="1" max="120" value={formMonths} onChange={e => setFormMonths(Number(e.target.value))} aria-label="Durée en mois"
-                        style={{ width: 60, padding: '7px 8px', borderRadius: 10, border: '1px solid var(--sl-border)', fontSize: 12, textAlign: 'center', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }} />
+                        style={{ width: 60, padding: '7px 8px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', fontSize: 12, textAlign: 'center', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }} />
                     )}
                     {!formLifetime && <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>mois</span>}
                   </div>
@@ -252,7 +252,7 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
                 <label htmlFor="grant-reason" style={{ display: 'block', margin: '0 0 6px', fontSize: 11, color: 'var(--sl-t3)', fontWeight: 600 }}>Motif * :</label>
                 <input id="grant-reason" value={formReason} onChange={e => setFormReason(e.target.value)}
                   placeholder="Ex: Partenariat Ligue Bretagne, club test, club démo…"
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }} />
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-card)', color: 'var(--sl-t1)', outline: 'none' }} />
               </div>
 
               <div style={{ display: 'flex', gap: 8 }}>
@@ -262,11 +262,11 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
                   setClubSearch(''); setFormPlan('pro'); setFormType('manual');
                   setFormMonths(3); setFormLifetime(false);
                 }}
-                  style={{ flex: 1, padding: '10px 0', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 13, fontWeight: 600, color: 'var(--sl-t2)', backgroundColor: 'var(--sl-card)', cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '10px 0', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', fontSize: 13, fontWeight: 600, color: 'var(--sl-t2)', backgroundColor: 'var(--sl-card)', cursor: 'pointer' }}>
                   Annuler
                 </button>
                 <button type="submit" disabled={submitting || !formClubId} data-testid="grant-submit-btn"
-                  style={{ flex: 2, padding: '10px 0', borderRadius: 12, border: 'none', fontSize: 13, fontWeight: 700, color: '#fff', backgroundColor: formClubId ? '#8b5cf6' : '#94a3b8', cursor: formClubId ? 'pointer' : 'not-allowed' }}>
+                  style={{ flex: 2, padding: '10px 0', borderRadius: 'var(--sl-radius-xl)', border: 'none', fontSize: 13, fontWeight: 700, color: '#fff', backgroundColor: formClubId ? '#8b5cf6' : '#94a3b8', cursor: formClubId ? 'pointer' : 'not-allowed' }}>
                   {submitting ? 'Création…' : 'Accorder le grant'}
                 </button>
               </div>
@@ -284,7 +284,7 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
           { id: 'all',     label: 'Tous' },
         ].map(f => (
           <button key={f.id} onClick={() => setFilterState(f.id)}
-            style={{ padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: 'none', backgroundColor: filterState === f.id ? '#8b5cf6' : 'var(--sl-surface)', color: filterState === f.id ? '#fff' : 'var(--sl-t2)' }}>
+            style={{ padding: '5px 12px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 11, fontWeight: 600, cursor: 'pointer', border: 'none', backgroundColor: filterState === f.id ? '#8b5cf6' : 'var(--sl-surface)', color: filterState === f.id ? '#fff' : 'var(--sl-t2)' }}>
             {f.label}
           </button>
         ))}

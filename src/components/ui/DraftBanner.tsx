@@ -11,8 +11,8 @@ export default function DraftBanner({ onRestore, onDiscard }: DraftBannerProps) 
           Brouillon retrouvé
         </span>
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={onRestore} style={{ fontSize: 11, fontWeight: 700, padding: '4px 11px', borderRadius: 7, backgroundColor: '#6366f1', color: '#fff', border: 'none', cursor: 'pointer' }}>Restaurer</button>
-          <button onClick={onDiscard} style={{ fontSize: 11, fontWeight: 600, padding: '4px 8px', borderRadius: 7, backgroundColor: 'transparent', color: 'rgba(129,140,248,0.8)', border: 'none', cursor: 'pointer' }}>Ignorer</button>
+          <button onClick={onRestore} style={{ fontSize: 11, fontWeight: 700, padding: '4px 11px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: '#6366f1', color: '#fff', border: 'none', cursor: 'pointer' }}>Restaurer</button>
+          <button onClick={onDiscard} style={{ fontSize: 11, fontWeight: 600, padding: '4px 8px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: 'transparent', color: 'rgba(129,140,248,0.8)', border: 'none', cursor: 'pointer' }}>Ignorer</button>
         </div>
       </div>
     </motion.div>

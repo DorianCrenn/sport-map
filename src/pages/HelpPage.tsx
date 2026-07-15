@@ -143,7 +143,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
           onClick={onClose}
           aria-label="Fermer l'aide"
           style={{
-            width: 40, height: 40, borderRadius: 12, border: 'none', cursor: 'pointer',
+            width: 40, height: 40, borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer',
             backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}
@@ -165,7 +165,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
             onClick={onOpenFeedback}
             aria-label="Donner mon avis"
             style={{
-              padding: '7px 12px', borderRadius: 10, border: '1.5px solid rgba(99,102,241,0.35)',
+              padding: '7px 12px', borderRadius: 'var(--sl-radius-lg)', border: '1.5px solid rgba(99,102,241,0.35)',
               backgroundColor: 'rgba(99,102,241,0.1)', color: '#818cf8',
               fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
               display: 'flex', alignItems: 'center', gap: 5,
@@ -206,7 +206,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
             <t.Icon size={13} color={tab === t.id ? '#6366f1' : 'var(--sl-t3)'} /> {t.label}
             {(t as any).badge > 0 && (
               <span aria-hidden="true" style={{
-                minWidth: 16, height: 16, borderRadius: 8, padding: '0 4px',
+                minWidth: 16, height: 16, borderRadius: 'var(--sl-radius-md)', padding: '0 4px',
                 backgroundColor: '#ef4444', color: '#fff',
                 fontSize: 9, fontWeight: 800,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -244,7 +244,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                   placeholder="Rechercher une question…"
                   style={{
                     width: '100%', boxSizing: 'border-box',
-                    padding: '9px 12px 9px 34px', borderRadius: 12,
+                    padding: '9px 12px 9px 34px', borderRadius: 'var(--sl-radius-xl)',
                     backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
                     color: 'var(--sl-t1)', fontSize: 13, outline: 'none',
                   }}
@@ -269,7 +269,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
               <button
                 onClick={() => setCategory(null)}
                 style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
+                  padding: '6px 14px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
                   backgroundColor: !activeCategory ? 'var(--sl-green)' : 'var(--sl-surface)',
                   color: !activeCategory ? '#000' : 'var(--sl-t2)',
                   border: '1px solid var(--sl-border)',
@@ -283,7 +283,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                   key={cat.id}
                   onClick={() => setCategory(activeCategory === cat.id ? null : cat.id)}
                   style={{
-                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
+                    padding: '6px 14px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
                     display: 'flex', alignItems: 'center', gap: 5,
                     backgroundColor: activeCategory === cat.id ? 'var(--sl-green)' : 'var(--sl-surface)',
                     color: activeCategory === cat.id ? '#000' : 'var(--sl-t2)',
@@ -318,7 +318,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.03 }}
                           style={{
-                            borderRadius: 14,
+                            borderRadius: 'var(--sl-radius-2xl)',
                             backgroundColor: 'var(--sl-card)',
                             border: `1px solid ${isOpen ? 'rgba(99,102,241,0.3)' : 'var(--sl-border)'}`,
                             overflow: 'hidden',
@@ -367,14 +367,14 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                   </AnimatePresence>
 
                   {onOpenFeedback && (
-                    <div style={{ marginTop: 16, padding: '14px 16px', borderRadius: 14, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', textAlign: 'center' }}>
+                    <div style={{ marginTop: 16, padding: '14px 16px', borderRadius: 'var(--sl-radius-2xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', textAlign: 'center' }}>
                       <p style={{ margin: '0 0 10px', fontSize: 13, color: 'var(--sl-t2)' }}>
                         Vous ne trouvez pas votre réponse ?
                       </p>
                       <button
                         onClick={onOpenFeedback}
                         style={{
-                          padding: '9px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                          padding: '9px 20px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer',
                           backgroundColor: 'rgba(99,102,241,0.12)', color: '#818cf8',
                           fontSize: 13, fontWeight: 700,
                           display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -429,7 +429,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                       transition={{ delay: i * 0.04 }}
                       style={{
                         display: 'flex', alignItems: 'flex-start', gap: 12,
-                        padding: '12px 14px', borderRadius: 14,
+                        padding: '12px 14px', borderRadius: 'var(--sl-radius-2xl)',
                         backgroundColor: 'var(--sl-card)',
                         border: `1px solid ${voted ? 'rgba(99,102,241,0.3)' : 'var(--sl-border)'}`,
                         transition: 'border-color 0.15s',
@@ -441,7 +441,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                         aria-pressed={voted}
                         style={{
                           flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                          width: 40, padding: '6px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+                          width: 40, padding: '6px 0', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer',
                           backgroundColor: voted ? 'rgba(99,102,241,0.15)' : 'var(--sl-surface)',
                           color: voted ? '#6366f1' : 'var(--sl-t3)',
                           transition: 'all 0.12s',
@@ -465,7 +465,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                           </p>
                         )}
                         <span style={{
-                          display: 'inline-block', padding: '2px 8px', borderRadius: 20,
+                          display: 'inline-block', padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)',
                           fontSize: 10, fontWeight: 700, letterSpacing: '0.03em',
                           backgroundColor: `${status.color}18`, color: status.color,
                           border: `1px solid ${status.color}30`,
@@ -481,7 +481,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                   <button
                     onClick={onOpenFeedback}
                     style={{
-                      marginTop: 8, padding: '12px', borderRadius: 14, border: '1.5px dashed var(--sl-border)',
+                      marginTop: 8, padding: '12px', borderRadius: 'var(--sl-radius-2xl)', border: '1.5px dashed var(--sl-border)',
                       backgroundColor: 'transparent', cursor: 'pointer',
                       fontSize: 13, fontWeight: 600, color: 'var(--sl-t3)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -536,7 +536,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                       initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
                       style={{
-                        padding: '12px 14px', borderRadius: 14,
+                        padding: '12px 14px', borderRadius: 'var(--sl-radius-2xl)',
                         backgroundColor: n.read ? 'var(--sl-card)' : 'rgba(99,102,241,0.06)',
                         border: `1px solid ${n.read ? 'var(--sl-border)' : 'rgba(99,102,241,0.2)'}`,
                         cursor: !n.read && onMarkRead ? 'pointer' : 'default',
@@ -563,7 +563,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
                               fontSize: 11, fontWeight: 700,
                               color: newStatusColor,
                               backgroundColor: `${newStatusColor}18`,
-                              padding: '2px 8px', borderRadius: 20,
+                              padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)',
                             }}>
                               {NOTIF_STATUS_LABELS[n.new_status] ?? n.new_status}
                             </span>

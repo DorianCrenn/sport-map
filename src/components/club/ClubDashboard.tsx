@@ -47,7 +47,7 @@ function useConvocStats(clubId: string | number | null | undefined) {
 
 function StatCard({ label, value, sub, color = 'var(--sl-t1)' }: { label: string; value: number; sub?: string; color?: string }) {
   return (
-    <div style={{ flex: 1, minWidth: 0, borderRadius: 14, padding: '14px 12px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div style={{ flex: 1, minWidth: 0, borderRadius: 'var(--sl-radius-2xl)', padding: '14px 12px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', display: 'flex', flexDirection: 'column', gap: 2 }}>
       <div style={{ fontSize: 22, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>{value}</div>
       <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t2)' }}>{label}</div>
       {sub && <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>{sub}</div>}
@@ -86,7 +86,7 @@ function CalendrierEditorial({ upcomingEvents, scheduledAnnouncements }: { upcom
   if (items.length === 0) return null;
 
   return (
-    <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-2xl)', padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
       <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 12 }}>Calendrier éditorial — 30 jours</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
         {items.map((item, idx) => {
@@ -100,7 +100,7 @@ function CalendrierEditorial({ upcomingEvents, scheduledAnnouncements }: { upcom
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 1 }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{item.label}</span>
-                  <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 10, backgroundColor: `${dotColor}18`, color: dotColor, flexShrink: 0 }}>{isEvent ? 'Match' : (ANN_TYPE_LABEL[item.annType] ?? 'Annonce')}</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: `${dotColor}18`, color: dotColor, flexShrink: 0 }}>{isEvent ? 'Match' : (ANN_TYPE_LABEL[item.annType] ?? 'Annonce')}</span>
                 </div>
                 <div style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{day} {isEvent ? `à ${time}` : `— envoi à ${time}`}{item.sub ? ` · ${item.sub}` : ''}</div>
               </div>
@@ -128,7 +128,7 @@ function TrainingsSection({ clubId }: { clubId: string | number }) {
   const next = sorted.slice(0, 3);
 
   return (
-    <div style={{ borderRadius: 14, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-2xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}><IconRun size={12} strokeWidth={2} /> Entraînements</div>
@@ -138,7 +138,7 @@ function TrainingsSection({ clubId }: { clubId: string | number }) {
       <div style={{ borderTop: '1px solid var(--sl-border)' }}>
         {next.map((s, idx) => (
           <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', borderBottom: idx < next.length - 1 ? '1px solid var(--sl-border)' : 'none' }}>
-            <div style={{ width: 34, height: 34, borderRadius: 8, flexShrink: 0, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 34, height: 34, borderRadius: 'var(--sl-radius-md)', flexShrink: 0, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ fontSize: 11, fontWeight: 800, color: '#6366f1', letterSpacing: '0.02em', textTransform: 'uppercase' }}>{s.day?.slice(0, 2)}</span>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -182,13 +182,13 @@ function AnnouncementsSection({ club }: { club: Record<string, any> }) {
   }
 
   return (
-    <div style={{ borderRadius: 14, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-2xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}><IconMegaphone size={12} strokeWidth={2} /> Annonces envoyées</div>
           <div style={{ fontSize: 12, color: 'var(--sl-t2)', marginTop: 2 }}>{loading ? 'Chargement…' : published.length === 0 ? 'Aucune annonce publiée' : `${published.length} publiée${published.length > 1 ? 's' : ''}`}</div>
         </div>
-        {canCreate && <button onClick={() => setShowModal(true)} style={{ padding: '7px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', backgroundColor: '#3b82f6', color: 'white', fontSize: 12, fontWeight: 700 }}>+ Nouvelle</button>}
+        {canCreate && <button onClick={() => setShowModal(true)} style={{ padding: '7px 12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', backgroundColor: '#3b82f6', color: 'white', fontSize: 12, fontWeight: 700 }}>+ Nouvelle</button>}
       </div>
       {!loading && published.length > 0 && (
         <div style={{ borderTop: '1px solid var(--sl-border)' }}>
@@ -231,7 +231,7 @@ function SubscriptionSection({ clubId }: { clubId: string | number }) {
   return (
     <>
       <SubscriptionExpiryBanner periodEnd={periodEnd} planId={planId} planName={planMeta?.name} />
-      <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+      <div style={{ borderRadius: 'var(--sl-radius-2xl)', overflow: 'hidden', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--sl-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 18 }}>{planMeta.badge}</span>
@@ -245,12 +245,12 @@ function SubscriptionSection({ clubId }: { clubId: string | number }) {
               <button
                 onClick={openSubscriptionPage}
                 data-testid="btn-manage-subscription"
-                style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t2)', background: 'none', border: '1px solid var(--sl-border)', cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}
+                style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t2)', background: 'none', border: '1px solid var(--sl-border)', cursor: 'pointer', padding: '4px 8px', borderRadius: 'var(--sl-radius-md)' }}
               >
                 Mon abonnement
               </button>
             )}
-            <button onClick={() => setShowPlans(true)} style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-blue)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 8, backgroundColor: 'rgba(77,166,255,0.08)' }}>Voir les plans</button>
+            <button onClick={() => setShowPlans(true)} style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-blue)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'rgba(77,166,255,0.08)' }}>Voir les plans</button>
           </div>
         </div>
         <div style={{ padding: '10px 16px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -299,7 +299,7 @@ function ArchiveSeasonSection({ club, allEvents, clubEventIds, onArchiveSeason }
   const year = new Date().getFullYear();
 
   return (
-    <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-2xl)', padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
       <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 10 }}>Saison {year - 1}–{year}</div>
       {done ? (
         <div style={{ fontSize: 13, color: '#22D96A', fontWeight: 600 }}>✓ Saison archivée — {pastCount} match{pastCount > 1 ? 's' : ''} archivé{pastCount > 1 ? 's' : ''}</div>
@@ -307,14 +307,14 @@ function ArchiveSeasonSection({ club, allEvents, clubEventIds, onArchiveSeason }
         <div>
           <div style={{ fontSize: 12, color: 'var(--sl-t2)', marginBottom: 10, lineHeight: 1.5 }}>{pastCount} match{pastCount > 1 ? 's' : ''} passé{pastCount > 1 ? 's' : ''} sera{pastCount > 1 ? 'ont' : ''} archivé{pastCount > 1 ? 's' : ''} et masqué{pastCount > 1 ? 's' : ''} du feed. Cette action est irréversible depuis l'app.</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => setConfirming(false)} style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
-            <button onClick={handleArchive} disabled={loading} style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', backgroundColor: '#ef4444', color: 'white', fontSize: 12, fontWeight: 700, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}>{loading ? 'Archivage…' : 'Confirmer'}</button>
+            <button onClick={() => setConfirming(false)} style={{ flex: 1, padding: '9px 0', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', backgroundColor: 'transparent', color: 'var(--sl-t2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
+            <button onClick={handleArchive} disabled={loading} style={{ flex: 1, padding: '9px 0', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: '#ef4444', color: 'white', fontSize: 12, fontWeight: 700, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}>{loading ? 'Archivage…' : 'Confirmer'}</button>
           </div>
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ fontSize: 12, color: 'var(--sl-t2)' }}>{pastCount} match{pastCount > 1 ? 's' : ''} passé{pastCount > 1 ? 's' : ''} à archiver</div>
-          <button onClick={() => setConfirming(true)} style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 10, border: '1px solid #ef4444', backgroundColor: 'transparent', color: '#ef4444', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>🗂 Clôturer la saison</button>
+          <button onClick={() => setConfirming(true)} style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid #ef4444', backgroundColor: 'transparent', color: '#ef4444', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>🗂 Clôturer la saison</button>
         </div>
       )}
     </div>
@@ -333,7 +333,7 @@ function NotifPrefsSection({ clubId }: { clubId: string | number }) {
   function toggle(key: string) { save({ admin_notif_prefs: { ...prefs, [key]: !prefs[key] } }); }
 
   return (
-    <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-2xl)', padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
       <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 12 }}>Rappels push — Préférences</div>
       {NOTIF_ITEMS.map(({ key, label, desc }, idx) => (
         <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: idx < NOTIF_ITEMS.length - 1 ? '1px solid var(--sl-border)' : 'none' }}>
@@ -341,7 +341,7 @@ function NotifPrefsSection({ clubId }: { clubId: string | number }) {
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-t1)' }}>{label}</div>
             <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>{desc}</div>
           </div>
-          <button disabled={saving} onClick={() => toggle(key)} aria-label={prefs[key] ? 'Désactiver' : 'Activer'} style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 12, border: 'none', cursor: saving ? 'wait' : 'pointer', backgroundColor: prefs[key] ? '#22D96A' : 'var(--sl-border)', position: 'relative', transition: 'background-color 0.2s' }}>
+          <button disabled={saving} onClick={() => toggle(key)} aria-label={prefs[key] ? 'Désactiver' : 'Activer'} style={{ flexShrink: 0, width: 44, height: 24, borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: saving ? 'wait' : 'pointer', backgroundColor: prefs[key] ? '#22D96A' : 'var(--sl-border)', position: 'relative', transition: 'background-color 0.2s' }}>
             <div style={{ position: 'absolute', top: 2, left: prefs[key] ? 22 : 2, width: 20, height: 20, borderRadius: '50%', backgroundColor: 'white', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.25)' }} />
           </button>
         </div>
@@ -393,35 +393,35 @@ function ChallengesSection({ club }: { club: Record<string, any> }) {
   const displayList: any[] = tab === 'received' ? received : sent;
 
   return (
-    <div style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-2xl)', overflow: 'hidden', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sl-t1)' }}>
             <IconTarget size={14} style={{ marginRight: 5, verticalAlign: 'middle' }} /> Défis inter-clubs
-            {pendingReceived.length > 0 && <span style={{ marginLeft: 6, backgroundColor: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, borderRadius: 20, padding: '1px 6px' }}>{pendingReceived.length}</span>}
+            {pendingReceived.length > 0 && <span style={{ marginLeft: 6, backgroundColor: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, borderRadius: 'var(--sl-radius-4xl)', padding: '1px 6px' }}>{pendingReceived.length}</span>}
           </div>
           <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 1 }}>Lancez ou répondez à un défi sportif</div>
         </div>
-        <button onClick={() => setShowForm(v => !v)} style={{ padding: '7px 12px', borderRadius: 10, border: 'none', backgroundColor: showForm ? 'var(--sl-surface)' : '#3b82f6', color: showForm ? 'var(--sl-t2)' : '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{showForm ? 'Annuler' : '+ Défi'}</button>
+        <button onClick={() => setShowForm(v => !v)} style={{ padding: '7px 12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: showForm ? 'var(--sl-surface)' : '#3b82f6', color: showForm ? 'var(--sl-t2)' : '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{showForm ? 'Annuler' : '+ Défi'}</button>
       </div>
 
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden', borderBottom: '1px solid var(--sl-border)' }}>
             <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <select value={targetClubId} onChange={e => setTargetClubId(e.target.value)} style={{ width: '100%', padding: '9px 11px', borderRadius: 10, fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}>
+              <select value={targetClubId} onChange={e => setTargetClubId(e.target.value)} style={{ width: '100%', padding: '9px 11px', borderRadius: 'var(--sl-radius-lg)', fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none' }}>
                 <option value="">Sélectionner un club à défier…</option>
                 {otherClubs.map((c: any) => <option key={c.id} value={c.id}>{c.name} — {c.sport}</option>)}
               </select>
               <div style={{ display: 'flex', gap: 6 }}>
                 {CHALLENGE_TYPE_OPTS.map(opt => (
-                  <button key={opt.key} onClick={() => setChalType(opt.key)} style={{ flex: 1, padding: '8px 4px', borderRadius: 10, border: `1.5px solid ${chalType === opt.key ? '#3b82f6' : 'var(--sl-border)'}`, backgroundColor: chalType === opt.key ? 'rgba(59,130,246,0.1)' : 'var(--sl-surface)', color: chalType === opt.key ? '#3b82f6' : 'var(--sl-t2)', fontSize: 11, fontWeight: 700, cursor: 'pointer', textAlign: 'center' }}>
+                  <button key={opt.key} onClick={() => setChalType(opt.key)} style={{ flex: 1, padding: '8px 4px', borderRadius: 'var(--sl-radius-lg)', border: `1.5px solid ${chalType === opt.key ? '#3b82f6' : 'var(--sl-border)'}`, backgroundColor: chalType === opt.key ? 'rgba(59,130,246,0.1)' : 'var(--sl-surface)', color: chalType === opt.key ? '#3b82f6' : 'var(--sl-t2)', fontSize: 11, fontWeight: 700, cursor: 'pointer', textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center' }}><opt.Icon size={14} color={chalType === opt.key ? '#3b82f6' : 'var(--sl-t2)'} /></div><div style={{ fontSize: 9, marginTop: 2 }}>{opt.label}</div>
                   </button>
                 ))}
               </div>
-              <input value={chalMsg} onChange={e => setChalMsg(e.target.value)} placeholder="Message optionnel (ex : match retour, terrain neutre…)" style={{ width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 10, fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }} />
-              <button onClick={handleSend} disabled={!targetClubId || sending} style={{ padding: '11px', borderRadius: 10, border: 'none', backgroundColor: !targetClubId || sending ? 'var(--sl-surface)' : '#3b82f6', color: !targetClubId || sending ? 'var(--sl-t3)' : '#fff', fontSize: 12, fontWeight: 700, cursor: !targetClubId || sending ? 'default' : 'pointer' }}>
+              <input value={chalMsg} onChange={e => setChalMsg(e.target.value)} placeholder="Message optionnel (ex : match retour, terrain neutre…)" style={{ width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 'var(--sl-radius-lg)', fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }} />
+              <button onClick={handleSend} disabled={!targetClubId || sending} style={{ padding: '11px', borderRadius: 'var(--sl-radius-lg)', border: 'none', backgroundColor: !targetClubId || sending ? 'var(--sl-surface)' : '#3b82f6', color: !targetClubId || sending ? 'var(--sl-t3)' : '#fff', fontSize: 12, fontWeight: 700, cursor: !targetClubId || sending ? 'default' : 'pointer' }}>
                 {sending ? 'Envoi…' : <><IconTarget size={14} /> Lancer le défi</>}
               </button>
             </div>
@@ -455,8 +455,8 @@ function ChallengesSection({ club }: { club: Record<string, any> }) {
               </div>
               {tab === 'received' && ch.status === 'pending' ? (
                 <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
-                  <button onClick={() => handleRespond(ch.id, 'accepted')} disabled={respondingId === ch.id} style={{ padding: '5px 10px', borderRadius: 8, border: 'none', backgroundColor: 'rgba(34,217,106,0.15)', color: '#22d96a', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>✓ Oui</button>
-                  <button onClick={() => handleRespond(ch.id, 'declined')} disabled={respondingId === ch.id} style={{ padding: '5px 10px', borderRadius: 8, border: 'none', backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>✕ Non</button>
+                  <button onClick={() => handleRespond(ch.id, 'accepted')} disabled={respondingId === ch.id} style={{ padding: '5px 10px', borderRadius: 'var(--sl-radius-md)', border: 'none', backgroundColor: 'rgba(34,217,106,0.15)', color: '#22d96a', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>✓ Oui</button>
+                  <button onClick={() => handleRespond(ch.id, 'declined')} disabled={respondingId === ch.id} style={{ padding: '5px 10px', borderRadius: 'var(--sl-radius-md)', border: 'none', backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>✕ Non</button>
                 </div>
               ) : (
                 <span style={{ fontSize: 10, fontWeight: 700, color: statusMeta.color, flexShrink: 0 }}>{statusMeta.label}</span>
@@ -491,7 +491,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
   return (
     <motion.div data-demo="admin-dashboard" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 340, damping: 36 }} style={{ position: 'absolute', inset: 0, zIndex: (Z as any).formModal, backgroundColor: 'var(--sl-bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ flexShrink: 0, backgroundColor: '#0F1E3A', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, color: 'white' }}>
-        <button onClick={onClose} aria-label="Retour à la page du club" style={{ width: 44, height: 44, borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <button onClick={onClose} aria-label="Retour à la page du club" style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div>
@@ -509,13 +509,13 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
             <ClubInvitePanel clubId={String(club.id)} clubName={club.name} />
 
             {isEmpty && (
-              <div style={{ borderRadius: 16, padding: '16px', marginBottom: 4, backgroundColor: 'rgba(34,217,106,0.08)', border: '1px solid rgba(34,217,106,0.2)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ borderRadius: 'var(--sl-radius-3xl)', padding: '16px', marginBottom: 4, backgroundColor: 'rgba(34,217,106,0.08)', border: '1px solid rgba(34,217,106,0.2)', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-green)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}><IconRocket size={15} /> Votre club vient d'être créé !</p>
                 <p style={{ fontSize: 12, color: 'var(--sl-t2)', margin: 0, lineHeight: 1.5 }}>Partagez la page de votre club, ajoutez des événements et invitez vos membres à s'abonner pour voir vos premières statistiques apparaître ici.</p>
               </div>
             )}
             {hasDemo && (
-              <button onClick={async () => { setDeletingDemo(true); await deleteDemoData(club.id).catch(() => {}); setHasDemo(false); setDeletingDemo(false); }} disabled={deletingDemo} style={{ marginBottom: 4, padding: '10px 14px', borderRadius: 12, cursor: deletingDemo ? 'not-allowed' : 'pointer', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button onClick={async () => { setDeletingDemo(true); await deleteDemoData(club.id).catch(() => {}); setHasDemo(false); setDeletingDemo(false); }} disabled={deletingDemo} style={{ marginBottom: 4, padding: '10px 14px', borderRadius: 'var(--sl-radius-xl)', cursor: deletingDemo ? 'not-allowed' : 'pointer', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
                 {deletingDemo ? 'Suppression…' : 'Supprimer les données de démonstration'}
               </button>
@@ -532,7 +532,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
             </div>
 
             {convocStats && convocStats.total > 0 && (
-              <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+              <div style={{ borderRadius: 'var(--sl-radius-2xl)', padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 10 }}>Convocations — 30 derniers jours</div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <div style={{ flex: 1, textAlign: 'center' }}>
@@ -553,7 +553,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
                   </div>
                 </div>
                 {convocStats.total > 0 && (
-                  <div style={{ marginTop: 10, height: 6, borderRadius: 999, background: 'var(--sl-border)', overflow: 'hidden', display: 'flex' }}>
+                  <div style={{ marginTop: 10, height: 6, borderRadius: 'var(--sl-radius-full)', background: 'var(--sl-border)', overflow: 'hidden', display: 'flex' }}>
                     <div style={{ width: `${(convocStats.accepted / convocStats.total) * 100}%`, background: '#22c55e', borderRadius: '999px 0 0 999px', transition: 'width 0.4s' }} />
                     <div style={{ width: `${(convocStats.declined / convocStats.total) * 100}%`, background: '#ef4444' }} />
                     <div style={{ flex: 1, background: 'var(--sl-border-s)' }} />
@@ -562,7 +562,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
               </div>
             )}
 
-            <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+            <div style={{ borderRadius: 'var(--sl-radius-2xl)', padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)' }}>Vues de la page — 8 semaines</div>
                 {data.pageViews.distinctViewers > 0 && <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{data.pageViews.distinctViewers} visiteur{data.pageViews.distinctViewers > 1 ? 's' : ''} identifié{data.pageViews.distinctViewers > 1 ? 's' : ''}</span>}
@@ -571,7 +571,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
             </div>
 
             {data.attendees.topEvents.length > 0 && (
-              <div style={{ borderRadius: 14, padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+              <div style={{ borderRadius: 'var(--sl-radius-2xl)', padding: '14px 16px', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--sl-t3)', marginBottom: 10 }}>Top matchs — J'y serai</div>
                 {data.attendees.topEvents.map((row: any, idx: number) => {
                   const ev = (allEvents ?? []).find(e => String(e.id) === String(row.event_id));
@@ -609,7 +609,7 @@ export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, 
               </div>
             )}
 
-            <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '14px 16px', borderRadius: 14, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginTop: 4, paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' } as React.CSSProperties}>
+            <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '14px 16px', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', color: 'var(--sl-t2)', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginTop: 4, paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' } as React.CSSProperties}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
               Retour à la page du club
             </button>

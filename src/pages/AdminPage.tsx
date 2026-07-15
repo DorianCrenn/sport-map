@@ -49,7 +49,7 @@ const STATUS_COLORS: Record<string, ColorStyle> = {
 function statusBadge(status: string): JSX.Element {
   const c: ColorStyle = STATUS_COLORS[status] ?? { bg: 'var(--sl-surface)', color: 'var(--sl-t3)' };
   return (
-    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, backgroundColor: c.bg, color: c.color }}>
+    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: c.bg, color: c.color }}>
       {STATUS_LABELS[status] ?? status}
     </span>
   );
@@ -88,7 +88,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }: SportFo
   const selectedIcon = (SPORT_ICONS as any)[form.iconId];
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-      style={{ borderRadius: 16, border: '1px solid var(--sl-border)', padding: 12, backgroundColor: 'var(--sl-card)' }}>
+      style={{ borderRadius: 'var(--sl-radius-3xl)', border: '1px solid var(--sl-border)', padding: 12, backgroundColor: 'var(--sl-card)' }}>
       <h3 style={{ fontWeight: 700, fontSize: 12, marginBottom: 12, color: 'var(--sl-t1)', fontFamily: 'var(--sl-font-ui)' }}>
         {saveLabel === 'Ajouter' ? 'Nouveau sport' : 'Modifier le sport'}
       </h3>
@@ -97,7 +97,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }: SportFo
           <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', marginBottom: 6, display: 'block' }}>Nom du sport *</label>
           <input value={form.label} onChange={e => { set('label')(e.target.value); setError(''); }}
             placeholder="Ex: Natation"
-            style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }} />
+            style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }} />
           {error && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{error}</p>}
         </div>
         <div>
@@ -105,10 +105,10 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }: SportFo
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             {PRESET_COLORS.map(c => (
               <button key={c} type="button" onClick={() => set('color')(c)}
-                style={{ width: 28, height: 28, borderRadius: 8, border: 'none', cursor: 'pointer', flexShrink: 0, backgroundColor: c, outline: form.color === c ? `3px solid ${c}` : 'none', outlineOffset: 2 }} />
+                style={{ width: 28, height: 28, borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: 'pointer', flexShrink: 0, backgroundColor: c, outline: form.color === c ? `3px solid ${c}` : 'none', outlineOffset: 2 }} />
             ))}
             <input type="color" value={form.color} onChange={e => set('color')(e.target.value)}
-              style={{ width: 28, height: 28, borderRadius: 8, cursor: 'pointer', border: 'none', padding: 0 }} title="Couleur personnalisée" />
+              style={{ width: 28, height: 28, borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', border: 'none', padding: 0 }} title="Couleur personnalisée" />
           </div>
         </div>
         <div>
@@ -119,7 +119,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }: SportFo
                 const isSelected = form.iconId === opt.id;
                 return (
                   <button key={opt.id} type="button" onClick={() => set('iconId')(opt.id)}
-                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 4px', borderRadius: 12, cursor: 'pointer', backgroundColor: isSelected ? `${form.color}18` : 'var(--sl-surface)', border: `2px solid ${isSelected ? form.color : 'transparent'}`, transition: 'all 0.12s' }}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 4px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', backgroundColor: isSelected ? `${form.color}18` : 'var(--sl-surface)', border: `2px solid ${isSelected ? form.color : 'transparent'}`, transition: 'all 0.12s' }}
                     title={opt.label}>
                     <svg width="26" height="26" viewBox="0 0 24 24" style={{ color: isSelected ? form.color : 'var(--sl-t3)' }}>
                       <g dangerouslySetInnerHTML={{ __html: (SPORT_ICONS as any)[opt.id] }} />
@@ -135,23 +135,23 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }: SportFo
           </div>
         </div>
         {form.label && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 12, backgroundColor: `${form.color}12` }}>
-            <div style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${form.color}25` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: `${form.color}12` }}>
+            <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-xl)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${form.color}25` }}>
               <svg width="20" height="20" viewBox="0 0 24 24" style={{ color: form.color }}>
                 <g dangerouslySetInnerHTML={{ __html: selectedIcon ?? (SPORT_ICONS as any).Football }} />
               </svg>
             </div>
             <span style={{ fontSize: 13, fontWeight: 700, color: form.color, flex: 1 }}>{form.label}</span>
-            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, color: 'white', backgroundColor: form.color }}>Aperçu</span>
+            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)', color: 'white', backgroundColor: form.color }}>Aperçu</span>
           </div>
         )}
         <div style={{ display: 'flex', gap: 6, paddingTop: 2 }}>
           <button type="button" onClick={onCancel}
-            style={{ flex: 1, padding: '8px 0', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer' }}>
+            style={{ flex: 1, padding: '8px 0', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', fontSize: 12, fontWeight: 600, color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', cursor: 'pointer' }}>
             Annuler
           </button>
           <button type="submit"
-            style={{ flex: 1, padding: '8px 0', borderRadius: 12, border: 'none', fontSize: 12, fontWeight: 700, color: 'white', backgroundColor: '#22C55E', cursor: 'pointer' }}>
+            style={{ flex: 1, padding: '8px 0', borderRadius: 'var(--sl-radius-xl)', border: 'none', fontSize: 12, fontWeight: 700, color: 'white', backgroundColor: '#22C55E', cursor: 'pointer' }}>
             {saveLabel}
           </button>
         </div>
@@ -335,7 +335,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
       {/* Header */}
       <div style={{ flexShrink: 0, backgroundColor: 'var(--sl-card)', borderBottom: '1px solid var(--sl-border)', padding: '20px 16px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: 'var(--sl-blue-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-blue-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
@@ -366,11 +366,11 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {STAT_CARDS.map(({ label, value, color, bg, icon, onClick }) => (
                 <button key={label} onClick={onClick}
-                  style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16, border: '1px solid var(--sl-border)', textAlign: 'left', cursor: 'pointer', transition: 'border-color 0.15s' }}
+                  style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', padding: 16, border: '1px solid var(--sl-border)', textAlign: 'left', cursor: 'pointer', transition: 'border-color 0.15s' }}
                   onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.borderColor = color; }}
                   onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.borderColor = 'var(--sl-border)'; }}
                 >
-                  <div style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10, backgroundColor: bg, color }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-xl)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10, backgroundColor: bg, color }}>
                     {icon}
                   </div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 2, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
@@ -381,7 +381,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
 
             {clubStats.pending > 0 && (
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                style={{ borderRadius: 16, padding: 16, border: '1px solid rgba(245,158,11,0.35)', backgroundColor: 'rgba(245,158,11,0.08)' }}>
+                style={{ borderRadius: 'var(--sl-radius-3xl)', padding: 16, border: '1px solid rgba(245,158,11,0.35)', backgroundColor: 'rgba(245,158,11,0.08)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round">
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -405,7 +405,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                   onClick={() => onNavigate?.('feedback')}
                   style={{
                     width: '100%', textAlign: 'left',
-                    backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16,
+                    backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', padding: 16,
                     border: '1px solid rgba(99,102,241,0.25)', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 14,
                     transition: 'border-color 0.15s',
@@ -414,7 +414,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                   onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.25)'; }}
                 >
                   <div style={{
-                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                    width: 44, height: 44, borderRadius: 'var(--sl-radius-2xl)', flexShrink: 0,
                     backgroundColor: 'rgba(99,102,241,0.12)', color: '#818cf8',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
@@ -436,7 +436,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                   onClick={() => onNavigate?.('analytics')}
                   style={{
                     width: '100%', textAlign: 'left',
-                    backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16,
+                    backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', padding: 16,
                     border: '1px solid rgba(16,185,129,0.25)', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 14,
                     transition: 'border-color 0.15s',
@@ -445,7 +445,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                   onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.borderColor = 'rgba(16,185,129,0.25)'; }}
                 >
                   <div style={{
-                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                    width: 44, height: 44, borderRadius: 'var(--sl-radius-2xl)', flexShrink: 0,
                     backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
@@ -497,7 +497,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                     onClick={() => onNavigate?.(item.key)}
                     style={{
                       width: '100%', textAlign: 'left',
-                      backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16,
+                      backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', padding: 16,
                       border: `1px solid ${item.color}25`, cursor: 'pointer',
                       display: 'flex', alignItems: 'center', gap: 14,
                       transition: 'border-color 0.15s',
@@ -506,7 +506,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                     onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.borderColor = `${item.color}25`; }}
                   >
                     <div style={{
-                      width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                      width: 44, height: 44, borderRadius: 'var(--sl-radius-2xl)', flexShrink: 0,
                       backgroundColor: `${item.color}14`, color: item.color,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
@@ -538,7 +538,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
               </svg>
               <input value={clubSearch} onChange={(e: ChangeEvent<HTMLInputElement>) => setClubSearch(e.target.value)}
                 placeholder="Rechercher un club…" aria-label="Rechercher un club"
-                style={{ width: '100%', boxSizing: 'border-box', paddingLeft: 32, paddingRight: 12, paddingTop: 9, paddingBottom: 9, borderRadius: 12, fontSize: 13, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }} />
+                style={{ width: '100%', boxSizing: 'border-box', paddingLeft: 32, paddingRight: 12, paddingTop: 9, paddingBottom: 9, borderRadius: 'var(--sl-radius-xl)', fontSize: 13, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }} />
             </div>
 
             {/* Filtres statut */}
@@ -549,7 +549,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                 return (
                   <button key={s} onClick={() => setClubStatusFilter(s)}
                     style={{
-                      padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                      padding: '6px 12px', borderRadius: 'var(--sl-radius-4xl)', fontSize: 11, fontWeight: 600, cursor: 'pointer',
                       backgroundColor: isActive ? c.color : 'var(--sl-surface)',
                       color: isActive ? '#fff' : 'var(--sl-t2)',
                       border: `1px solid ${isActive ? c.color : 'var(--sl-border)'}`,
@@ -580,12 +580,12 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
               const initials  = (club.name ?? '?').split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase().slice(0, 3);
 
               return (
-                <div key={club.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+                <div key={club.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
                   <div style={{ padding: 14 }}>
                     {/* Ligne principale */}
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                       {/* Logo */}
-                      <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, backgroundColor: sport ? `${sport.color}18` : 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', flexShrink: 0, backgroundColor: sport ? `${sport.color}18` : 'var(--sl-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                         {club.logo_url
                           ? <img src={club.logo_url} alt={club.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 4 }} />
                           : <span style={{ fontSize: 12, fontWeight: 800, color: sport?.color ?? 'var(--sl-t3)' }}>{initials}</span>}
@@ -602,7 +602,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                           {sport && (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, color: '#fff', backgroundColor: sport.color, display: 'flex', alignItems: 'center', gap: 3 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-4xl)', color: '#fff', backgroundColor: sport.color, display: 'flex', alignItems: 'center', gap: 3 }}>
                               <SportIcon sport={sport.id} size={9} color="#fff" /> {sport.label}
                             </span>
                           )}
@@ -616,8 +616,8 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                           </span>
                           {/* Score de complétude */}
                           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 5 }}>
-                            <div style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: 'var(--sl-border)', overflow: 'hidden' }}>
-                              <div style={{ width: `${pct}%`, height: '100%', borderRadius: 2, backgroundColor: pct >= 70 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444', transition: 'width 0.3s' }} />
+                            <div style={{ flex: 1, height: 3, borderRadius: 'var(--sl-radius-xs)', backgroundColor: 'var(--sl-border)', overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', borderRadius: 'var(--sl-radius-xs)', backgroundColor: pct >= 70 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444', transition: 'width 0.3s' }} />
                             </div>
                             <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 70 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444', flexShrink: 0 }}>{pct}%</span>
                           </div>
@@ -639,26 +639,26 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                         id="admin-note" aria-label="Note pour le club (optionnelle, visible par le club)"
                         placeholder="Note optionnelle (visible par le club)…"
                         rows={2}
-                        style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', resize: 'none', fontFamily: 'var(--sl-font-ui)' }} />
+                        style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', resize: 'none', fontFamily: 'var(--sl-font-ui)' }} />
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         <button onClick={() => { setReviewingClubId(null); setAdminNote(''); }}
-                          style={{ flex: 1, padding: '9px 8px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 11, color: 'var(--sl-t2)', fontWeight: 600, backgroundColor: 'var(--sl-surface)', cursor: 'pointer', minWidth: 60 }}>
+                          style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', fontSize: 11, color: 'var(--sl-t2)', fontWeight: 600, backgroundColor: 'var(--sl-surface)', cursor: 'pointer', minWidth: 60 }}>
                           Annuler
                         </button>
                         <button onClick={() => handleClubAction(club, 'info')} disabled={actionLoading} data-testid="club-action-info"
-                          style={{ flex: 1, padding: '9px 8px', borderRadius: 12, border: 'none', fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b', cursor: 'pointer', minWidth: 60 }}>
+                          style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--sl-radius-xl)', border: 'none', fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b', cursor: 'pointer', minWidth: 60 }}>
                           ℹ️ Infos
                         </button>
                         <button onClick={() => handleClubAction(club, 'suspend')} disabled={actionLoading} data-testid="club-action-suspend"
-                          style={{ flex: 1, padding: '9px 8px', borderRadius: 12, border: 'none', fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(249,115,22,0.12)', color: '#ea580c', cursor: 'pointer', minWidth: 60 }}>
+                          style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--sl-radius-xl)', border: 'none', fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(249,115,22,0.12)', color: '#ea580c', cursor: 'pointer', minWidth: 60 }}>
                           ⏸ Suspendre
                         </button>
                         <button onClick={() => handleClubAction(club, 'reject')} disabled={actionLoading} data-testid="club-action-reject"
-                          style={{ flex: 1, padding: '9px 8px', borderRadius: 12, border: 'none', fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444', cursor: 'pointer', minWidth: 60 }}>
+                          style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--sl-radius-xl)', border: 'none', fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444', cursor: 'pointer', minWidth: 60 }}>
                           <IconX size={11} /> Refuser
                         </button>
                         <button onClick={() => handleClubAction(club, 'verify')} disabled={actionLoading} data-testid="club-action-verify"
-                          style={{ flex: 2, padding: '9px 8px', borderRadius: 12, border: 'none', fontSize: 11, fontWeight: 700, color: 'white', backgroundColor: '#22C55E', cursor: 'pointer', minWidth: 80, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                          style={{ flex: 2, padding: '9px 8px', borderRadius: 'var(--sl-radius-xl)', border: 'none', fontSize: 11, fontWeight: 700, color: 'white', backgroundColor: '#22C55E', cursor: 'pointer', minWidth: 80, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                           {actionLoading ? '…' : <><IconCheckCircle size={11} color="white" /> Vérifier</>}
                         </button>
                       </div>
@@ -692,8 +692,8 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
               const isSelf = user.id === currentUser?.id;
               const canToggle = (user.role === 'user' || user.role === 'admin') && !isSelf;
               return (
-                <div key={user.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 16, border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: 'white', flexShrink: 0, backgroundColor: color }}>
+                <div key={user.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', padding: 16, border: '1px solid var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-xl)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: 'white', flexShrink: 0, backgroundColor: color }}>
                     {user.name?.slice(0, 2).toUpperCase() ?? '??'}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -707,11 +707,11 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                   {canToggle ? (
                     <button onClick={() => toggleRole(user)}
                       aria-label={`Rôle actuel : ${label}. Cliquer pour changer`}
-                      style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, flexShrink: 0, border: `1px solid ${color}40`, backgroundColor: `${color}15`, color, cursor: 'pointer' }}>
+                      style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 'var(--sl-radius-4xl)', flexShrink: 0, border: `1px solid ${color}40`, backgroundColor: `${color}15`, color, cursor: 'pointer' }}>
                       {label}
                     </button>
                   ) : (
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, flexShrink: 0, backgroundColor: `${color}15`, color }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 'var(--sl-radius-4xl)', flexShrink: 0, backgroundColor: `${color}15`, color }}>
                       {label}
                     </span>
                   )}
@@ -731,7 +731,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
               </p>
               {!showSportForm && !editingId && (
                 <button onClick={() => setShowSportForm(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 12, color: 'white', backgroundColor: '#22C55E', border: 'none', cursor: 'pointer' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 'var(--sl-radius-xl)', color: 'white', backgroundColor: '#22C55E', border: 'none', cursor: 'pointer' }}>
                   <span style={{ fontSize: 16, lineHeight: 1 }}>＋</span> Nouveau sport
                 </button>
               )}
@@ -748,9 +748,9 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                 const isEditing  = editingId === sport.id;
                 const isArchived = !!sport.isArchived;
                 return (
-                  <div key={sport.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, border: '1px solid var(--sl-border)', overflow: 'hidden', opacity: isArchived ? 0.55 : 1, transition: 'opacity 0.2s' }}>
+                  <div key={sport.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', border: '1px solid var(--sl-border)', overflow: 'hidden', opacity: isArchived ? 0.55 : 1, transition: 'opacity 0.2s' }}>
                     <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${sport.color}18` }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 'var(--sl-radius-xl)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${sport.color}18` }}>
                         <SportIcon sport={sport.id} size={22} color={sport.color} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -759,17 +759,17 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                           <div style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0, backgroundColor: sport.color }} />
                           <span style={{ fontSize: 10, color: 'var(--sl-t3)' }}>{sport.color}</span>
                           {sport.isCustom
-                            ? <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 20, backgroundColor: 'rgba(34,197,94,0.12)', color: '#16a34a' }}>Personnalisé</span>
+                            ? <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'rgba(34,197,94,0.12)', color: '#16a34a' }}>Personnalisé</span>
                             : sport.isOverride
-                              ? <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 20, backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}>Modifié</span>
-                              : <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 20, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)' }}>Par défaut</span>}
-                          {isArchived && <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 20, backgroundColor: 'rgba(249,115,22,0.12)', color: '#f97316' }}>Archivé</span>}
+                              ? <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}>Modifié</span>
+                              : <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)' }}>Par défaut</span>}
+                          {isArchived && <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'rgba(249,115,22,0.12)', color: '#f97316' }}>Archivé</span>}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                         <button onClick={() => setEditingId(isEditing ? null : sport.id)}
                           aria-label={isEditing ? 'Fermer la modification' : 'Modifier le sport'}
-                          style={{ width: 44, height: 44, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', backgroundColor: isEditing ? 'rgba(59,130,246,0.12)' : 'var(--sl-surface)', color: isEditing ? '#3b82f6' : 'var(--sl-t3)' }}>
+                          style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', backgroundColor: isEditing ? 'rgba(59,130,246,0.12)' : 'var(--sl-surface)', color: isEditing ? '#3b82f6' : 'var(--sl-t3)' }}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -777,7 +777,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                         </button>
                         <button onClick={() => toggleArchive(sport.id)}
                           aria-label={isArchived ? 'Désarchiver le sport' : 'Archiver le sport'}
-                          style={{ width: 44, height: 44, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', backgroundColor: isArchived ? 'rgba(249,115,22,0.12)' : 'var(--sl-surface)', color: isArchived ? '#f97316' : 'var(--sl-t3)' }}>
+                          style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', backgroundColor: isArchived ? 'rgba(249,115,22,0.12)' : 'var(--sl-surface)', color: isArchived ? '#f97316' : 'var(--sl-t3)' }}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/>
                           </svg>
@@ -785,18 +785,18 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                         {deletingId === sport.id ? (
                           <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                             <button onClick={() => { deleteSport(sport.id); setDeletingId(null); }}
-                              style={{ padding: '4px 8px', borderRadius: 8, border: 'none', fontSize: 10, fontWeight: 700, color: '#fff', backgroundColor: '#ef4444', cursor: 'pointer' }}>
+                              style={{ padding: '4px 8px', borderRadius: 'var(--sl-radius-md)', border: 'none', fontSize: 10, fontWeight: 700, color: '#fff', backgroundColor: '#ef4444', cursor: 'pointer' }}>
                               OK
                             </button>
                             <button onClick={() => setDeletingId(null)}
-                              style={{ padding: '4px 8px', borderRadius: 8, border: '1px solid var(--sl-border)', fontSize: 10, backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t2)' }}>
+                              style={{ padding: '4px 8px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border)', fontSize: 10, backgroundColor: 'var(--sl-surface)', cursor: 'pointer', color: 'var(--sl-t2)' }}>
                               Non
                             </button>
                           </div>
                         ) : (
                           <button onClick={() => setDeletingId(sport.id)}
                             aria-label="Supprimer le sport"
-                            style={{ width: 44, height: 44, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
+                            style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                               <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
                             </svg>
@@ -827,13 +827,13 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                 <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Sports supprimés</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {deletedDefaults.map((sport: any) => (
-                    <div key={sport.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 16, padding: 12, border: '1px dashed var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, opacity: 0.5 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${sport.color}18` }}>
+                    <div key={sport.id} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-3xl)', padding: 12, border: '1px dashed var(--sl-border)', display: 'flex', alignItems: 'center', gap: 12, opacity: 0.5 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 'var(--sl-radius-xl)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${sport.color}18` }}>
                         <SportIcon sport={sport.id} size={20} color={sport.color} />
                       </div>
                       <div style={{ flex: 1, fontSize: 13, color: 'var(--sl-t3)' }}>{sport.label}</div>
                       <button onClick={() => restoreSport(sport.id)}
-                        style={{ fontSize: 10, fontWeight: 700, padding: '6px 10px', borderRadius: 12, border: 'none', cursor: 'pointer', backgroundColor: 'rgba(34,197,94,0.12)', color: '#16a34a' }}>
+                        style={{ fontSize: 10, fontWeight: 700, padding: '6px 10px', borderRadius: 'var(--sl-radius-xl)', border: 'none', cursor: 'pointer', backgroundColor: 'rgba(34,197,94,0.12)', color: '#16a34a' }}>
                         Restaurer
                       </button>
                     </div>

@@ -39,7 +39,7 @@ export default function TennisEncountersManager({ event, onUpdateEvent }: Tennis
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 14 }}>
-        {[1, 2, 3, 4].map(i => <div key={i} style={{ height: 52, borderRadius: 12, backgroundColor: 'var(--sl-surface)', opacity: 1 - i * 0.15 }} />)}
+        {[1, 2, 3, 4].map(i => <div key={i} style={{ height: 52, borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', opacity: 1 - i * 0.15 }} />)}
       </div>
     );
   }
@@ -51,7 +51,7 @@ export default function TennisEncountersManager({ event, onUpdateEvent }: Tennis
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>🎾 Rencontres</div>
         {(total.home > 0 || total.away > 0) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px', borderRadius: 20, backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px', borderRadius: 'var(--sl-radius-4xl)', backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}>
             <span style={{ fontSize: 10, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Score</span>
             <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--sl-t1)' }}>{total.home} — {total.away}</span>
           </div>
@@ -75,7 +75,7 @@ export default function TennisEncountersManager({ event, onUpdateEvent }: Tennis
       </div>
 
       <button onClick={handleValidate} disabled={!isComplete || savingTotal}
-        style={{ width: '100%', marginTop: 14, padding: '11px 0', borderRadius: 12, border: savedTotal ? '1px solid var(--sl-green)' : 'none', cursor: isComplete && !savingTotal ? 'pointer' : 'not-allowed', fontSize: 14, fontWeight: 700, backgroundColor: savedTotal ? 'var(--sl-green-dim)' : isComplete ? 'var(--sl-green)' : 'var(--sl-surface)', color: savedTotal ? 'var(--sl-green)' : isComplete ? '#fff' : 'var(--sl-t3)', opacity: savingTotal ? 0.7 : 1, transition: 'all 0.15s' }}
+        style={{ width: '100%', marginTop: 14, padding: '11px 0', borderRadius: 'var(--sl-radius-xl)', border: savedTotal ? '1px solid var(--sl-green)' : 'none', cursor: isComplete && !savingTotal ? 'pointer' : 'not-allowed', fontSize: 14, fontWeight: 700, backgroundColor: savedTotal ? 'var(--sl-green-dim)' : isComplete ? 'var(--sl-green)' : 'var(--sl-surface)', color: savedTotal ? 'var(--sl-green)' : isComplete ? '#fff' : 'var(--sl-t3)', opacity: savingTotal ? 0.7 : 1, transition: 'all 0.15s' }}
       >
         {savingTotal ? '⏳ Enregistrement…' : savedTotal ? '✓ Résultat enregistré' : isComplete ? 'Valider la rencontre' : `Complétez les ${(config.encounterTypes ?? []).length} rencontres`}
       </button>

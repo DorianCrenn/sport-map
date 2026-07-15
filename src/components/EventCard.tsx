@@ -54,20 +54,20 @@ function EventTypeBadge({ event }: { event: Record<string, any> }) {
   const meta = EVENT_TYPE_META[event.eventType];
   if (!meta) return event.level ? <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', flexShrink: 0 }}>{event.level}</span> : null;
   if (event.eventType === 'championship') {
-    return <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 6, color: meta.color, backgroundColor: `${meta.color}20`, letterSpacing: '0.05em', flexShrink: 0 }}>{event.level || meta.label}</span>;
+    return <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 'var(--sl-radius-sm)', color: meta.color, backgroundColor: `${meta.color}20`, letterSpacing: '0.05em', flexShrink: 0 }}>{event.level || meta.label}</span>;
   }
   if (event.eventType === 'cup' && event.cupType) {
     const short = (event.cupType as string).replace(/^Coupe (?:de |du |d'|des )?/i, '') || event.cupType;
-    return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6, color: meta.color, backgroundColor: `${meta.color}20`, flexShrink: 0, maxWidth: 82, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{short}</span>;
+    return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-sm)', color: meta.color, backgroundColor: `${meta.color}20`, flexShrink: 0, maxWidth: 82, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{short}</span>;
   }
-  return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6, color: meta.color, backgroundColor: `${meta.color}20`, flexShrink: 0 }}>{meta.label}</span>;
+  return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-sm)', color: meta.color, backgroundColor: `${meta.color}20`, flexShrink: 0 }}>{meta.label}</span>;
 }
 
 function StatusBadge({ event }: { event: Record<string, any> }) {
   const status = getEffectiveStatus(event);
   if (status === 'upcoming') return null;
   const m = STATUS_META[status] ?? STATUS_META.done;
-  return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6, color: m.color, backgroundColor: m.bg, flexShrink: 0 }}>{m.label}</span>;
+  return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-sm)', color: m.color, backgroundColor: m.bg, flexShrink: 0 }}>{m.label}</span>;
 }
 
 // ─── CountdownBadge ───────────────────────────────────────────────────────────
@@ -91,7 +91,7 @@ function CountdownBadge({ date }: { date: string }) {
     <motion.span
       initial={{ scale: 0.7, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      style={{ fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444', flexShrink: 0, letterSpacing: '0.02em' }}
+      style={{ fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 'var(--sl-radius-sm)', backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444', flexShrink: 0, letterSpacing: '0.02em' }}
     >
       ⏱ {label}
     </motion.span>
@@ -181,11 +181,11 @@ function ShareBtn({ event }: { event: Record<string, any> }) {
   function handleWA(e: React.MouseEvent) { e.stopPropagation(); openWhatsAppShare(description); }
   function handleFB(e: React.MouseEvent) { e.stopPropagation(); openFacebookShare(eventUrl); }
 
-  const iconBtnStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 9, cursor: 'pointer', flexShrink: 0, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', color: 'var(--sl-t2)' };
+  const iconBtnStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', flexShrink: 0, border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', color: 'var(--sl-t2)' };
 
   return (
     <div style={{ display: 'flex', gap: 4 }}>
-      <button onClick={handleShare} title={copied ? 'Copié !' : 'Partager'} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 9, cursor: 'pointer', minHeight: 36, color: copied ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${copied ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: copied ? 'var(--sl-green-dim)' : 'transparent' }}>
+      <button onClick={handleShare} title={copied ? 'Copié !' : 'Partager'} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', minHeight: 36, color: copied ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${copied ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: copied ? 'var(--sl-green-dim)' : 'transparent' }}>
         {copied ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>}
         {copied ? 'Copié !' : 'Partager'}
       </button>
@@ -223,7 +223,7 @@ function AttendBtn({ event }: { event: Record<string, any> }) {
       whileHover={past ? undefined : { scale: 1.04 }}
       onClick={handleClick}
       disabled={past}
-      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 9, cursor: past ? 'default' : 'pointer', opacity: past ? 0.5 : 1, minHeight: 36, color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: attending ? 'var(--sl-green-dim)' : 'transparent', transition: 'color 0.15s, border-color 0.15s, background-color 0.15s', fontWeight: attending ? 700 : 500 }}>
+      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 'var(--sl-radius-md)', cursor: past ? 'default' : 'pointer', opacity: past ? 0.5 : 1, minHeight: 36, color: attending ? 'var(--sl-green)' : 'var(--sl-t2)', border: `1px solid ${attending ? 'var(--sl-green)' : 'var(--sl-border-s)'}`, backgroundColor: attending ? 'var(--sl-green-dim)' : 'transparent', transition: 'color 0.15s, border-color 0.15s, background-color 0.15s', fontWeight: attending ? 700 : 500 }}>
       <svg width="11" height="11" viewBox="0 0 24 24" fill={attending ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       {attending ? "J'y serai ✓" : "J'y serai"}
     </motion.button>
@@ -240,7 +240,7 @@ function NavBtn({ event }: { event: Record<string, any> }) {
     window.open(isIOS ? `maps://maps.apple.com/?q=${addr}` : `https://maps.google.com/?q=${addr}`, '_blank');
   }
   return (
-    <button onClick={handleNav} title="M'y rendre" style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 9, cursor: 'pointer', minHeight: 36, color: 'var(--sl-t2)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent' }}>
+    <button onClick={handleNav} title="M'y rendre" style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '9px 10px', borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', minHeight: 36, color: 'var(--sl-t2)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent' }}>
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
       M'y rendre
     </button>
@@ -301,10 +301,10 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
         {event.score != null ? 'Modifier le score' : 'Saisir le score'}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <input type="number" min="0" max="99" value={home} onChange={e => setHome(e.target.value)} aria-label="Score domicile" style={{ width: 50, textAlign: 'center', fontWeight: 800, fontSize: 18, padding: '5px 0', borderRadius: 8, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }} />
+        <input type="number" min="0" max="99" value={home} onChange={e => setHome(e.target.value)} aria-label="Score domicile" style={{ width: 50, textAlign: 'center', fontWeight: 800, fontSize: 18, padding: '5px 0', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }} />
         <span style={{ fontWeight: 800, fontSize: 13, color: 'var(--sl-t3)' }}>—</span>
-        <input type="number" min="0" max="99" value={away} onChange={e => setAway(e.target.value)} aria-label="Score extérieur" style={{ width: 50, textAlign: 'center', fontWeight: 800, fontSize: 18, padding: '5px 0', borderRadius: 8, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }} />
-        <button onClick={handleSave} style={{ flex: 1, padding: '6px 0', borderRadius: 8, border: saved ? '1px solid var(--sl-green)' : 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: saved ? 'var(--sl-green-dim)' : 'var(--sl-green)', color: saved ? 'var(--sl-green)' : '#fff', transition: 'all 0.15s' }}>
+        <input type="number" min="0" max="99" value={away} onChange={e => setAway(e.target.value)} aria-label="Score extérieur" style={{ width: 50, textAlign: 'center', fontWeight: 800, fontSize: 18, padding: '5px 0', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t1)' }} />
+        <button onClick={handleSave} style={{ flex: 1, padding: '6px 0', borderRadius: 'var(--sl-radius-md)', border: saved ? '1px solid var(--sl-green)' : 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, backgroundColor: saved ? 'var(--sl-green-dim)' : 'var(--sl-green)', color: saved ? 'var(--sl-green)' : '#fff', transition: 'all 0.15s' }}>
           {saved ? '✓ Enregistré' : 'Enregistrer'}
         </button>
       </div>
@@ -313,9 +313,9 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
         <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
           Joueur du match <span style={{ fontWeight: 400 }}>(optionnel)</span>
         </div>
-        <input type="text" value={motm} onChange={e => { setMotm(e.target.value); setMotmOpen(true); }} onFocus={() => setMotmOpen(true)} onBlur={() => setTimeout(() => setMotmOpen(false), 150)} placeholder={(players as any[]).length ? 'Sélectionner dans le roster…' : 'ex. Kevin Dupont'} autoComplete="off" style={{ width: '100%', padding: '7px 12px', borderRadius: 8, border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box' }} />
+        <input type="text" value={motm} onChange={e => { setMotm(e.target.value); setMotmOpen(true); }} onFocus={() => setMotmOpen(true)} onBlur={() => setTimeout(() => setMotmOpen(false), 150)} placeholder={(players as any[]).length ? 'Sélectionner dans le roster…' : 'ex. Kevin Dupont'} autoComplete="off" style={{ width: '100%', padding: '7px 12px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box' }} />
         {motmOpen && (players as any[]).length > 0 && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', maxHeight: 180, overflowY: 'auto', marginTop: 4 }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 'var(--sl-radius-lg)', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', maxHeight: 180, overflowY: 'auto', marginTop: 4 }}>
             {filteredPlayers.slice(0, 8).map((p: any) => (
               <button key={p.id} type="button" onMouseDown={() => { setMotm(p.name); setMotmOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '11px 12px', fontSize: 12, textAlign: 'left', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--sl-text)', minHeight: 44 }} onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--sl-surface)'} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                 <span style={{ width: 24, textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)' }}>#{p.number ?? '—'}</span>
@@ -332,7 +332,7 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
         {saved && onPosterResult && (
           <motion.button initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
             onClick={(e) => { e.stopPropagation(); onPosterResult({ home: parseInt(home, 10), away: parseInt(away, 10) }); }}
-            style={{ width: '100%', marginTop: 8, padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', fontSize: 12, fontWeight: 800 }}>
+            style={{ width: '100%', marginTop: 8, padding: '9px 0', borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', fontSize: 12, fontWeight: 800 }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             Créer l'affiche résultat
           </motion.button>
@@ -340,7 +340,7 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
         {saved && onAnnounceResult && !announced && (
           <motion.button initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
             onClick={handleAnnounce} disabled={announcing}
-            style={{ width: '100%', marginTop: 6, padding: '9px 0', borderRadius: 9, border: 'none', cursor: announcing ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: 'white', fontSize: 12, fontWeight: 800, opacity: announcing ? 0.7 : 1 }}>
+            style={{ width: '100%', marginTop: 6, padding: '9px 0', borderRadius: 'var(--sl-radius-md)', border: 'none', cursor: announcing ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: 'white', fontSize: 12, fontWeight: 800, opacity: announcing ? 0.7 : 1 }}>
             {announcing ? 'Envoi…' : <><IconMegaphone size={13} color="white" /> Notifier les abonnés</>}
           </motion.button>
         )}
@@ -359,7 +359,7 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
 function ICSBtn({ event }: { event: Record<string, any> }) {
   function handleICS(e: React.MouseEvent) { e.stopPropagation(); downloadICS(event as any); }
   return (
-    <button onClick={handleICS} title="Ajouter au calendrier" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}>
+    <button onClick={handleICS} title="Ajouter au calendrier" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     </button>
   );
@@ -384,7 +384,7 @@ function FollowClubPill({ event }: { event: Record<string, any> }) {
           }
         }}
         title={following ? `Ne plus suivre ${event.clubName ?? 'ce club'}` : `Suivre ${event.clubName ?? 'ce club'}`}
-        style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, backgroundColor: following ? 'rgba(34,217,106,0.15)' : 'var(--sl-surface)', color: following ? 'var(--sl-green)' : 'var(--sl-t3)', transition: 'all 0.15s', flexShrink: 0 }}>
+        style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 'var(--sl-radius-4xl)', border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, backgroundColor: following ? 'rgba(34,217,106,0.15)' : 'var(--sl-surface)', color: following ? 'var(--sl-green)' : 'var(--sl-t3)', transition: 'all 0.15s', flexShrink: 0 }}>
         {following
           ? <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           : <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -429,22 +429,22 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6, flexWrap: 'wrap' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: '#fff', backgroundColor: TOURNAMENT_COLOR, flexShrink: 0 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-sm)', color: '#fff', backgroundColor: TOURNAMENT_COLOR, flexShrink: 0 }}>
           <SportIcon sport={event.sport} size={10} color="white" />
           {event.sport}
         </span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 6, color: TOURNAMENT_COLOR, backgroundColor: `${TOURNAMENT_COLOR}18`, border: `1px solid ${TOURNAMENT_COLOR}30`, flexShrink: 0, letterSpacing: '0.04em' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 'var(--sl-radius-sm)', color: TOURNAMENT_COLOR, backgroundColor: `${TOURNAMENT_COLOR}18`, border: `1px solid ${TOURNAMENT_COLOR}30`, flexShrink: 0, letterSpacing: '0.04em' }}>
           <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}><path d="M17 4V2H7v2H2v4c0 2.76 1.86 5.08 4.4 5.8L7 14h10l.6-0.2C20.14 13.08 22 10.76 22 8V4h-5zM4 8V6h3v3.8A4.01 4.01 0 0 1 4 8zm16 0a4.01 4.01 0 0 1-3 3.8V6h3v2z"/><path d="M12 15a3 3 0 0 0-3 3v1h6v-1a3 3 0 0 0-3-3zM7 20h10v2H7z"/></svg>
           TOURNOI
         </span>
-        {event.tournamentType && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5, color: `${TOURNAMENT_COLOR}CC`, backgroundColor: `${TOURNAMENT_COLOR}10`, flexShrink: 0 }}>{event.tournamentType}</span>}
+        {event.tournamentType && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--sl-radius-xs)', color: `${TOURNAMENT_COLOR}CC`, backgroundColor: `${TOURNAMENT_COLOR}10`, flexShrink: 0 }}>{event.tournamentType}</span>}
         <StatusBadge event={event} />
         {event.source === 'user' && <span style={{ fontSize: 10, color: '#4da6ff', fontWeight: 600, flexShrink: 0 }}>✦ Club</span>}
         {canEditThis && (
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, flexShrink: 0 }}>
-            {onDuplicate && <button onClick={(e) => { e.stopPropagation(); onDuplicate(event); }} title="Dupliquer" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#a78bfa', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>}
-            <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-            <button onClick={(e) => { e.stopPropagation(); onDelete(); }} style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+            {onDuplicate && <button onClick={(e) => { e.stopPropagation(); onDuplicate(event); }} title="Dupliquer" style={{ padding: 4, borderRadius: 'var(--sl-radius-sm)', border: 'none', cursor: 'pointer', color: '#a78bfa', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>}
+            <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} style={{ padding: 4, borderRadius: 'var(--sl-radius-sm)', border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button onClick={(e) => { e.stopPropagation(); onDelete(); }} style={{ padding: 4, borderRadius: 'var(--sl-radius-sm)', border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
           </div>
         )}
       </div>
@@ -456,7 +456,7 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
       {(event.numTeams || event.tournamentFormat) && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
           {event.numTeams && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: TOURNAMENT_COLOR, backgroundColor: `${TOURNAMENT_COLOR}12`, padding: '2px 8px', borderRadius: 20 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: TOURNAMENT_COLOR, backgroundColor: `${TOURNAMENT_COLOR}12`, padding: '2px 8px', borderRadius: 'var(--sl-radius-4xl)' }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               {event.numTeams} équipes
             </div>
@@ -488,11 +488,11 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
             {event.description && <p style={{ fontSize: 12, marginTop: 10, lineHeight: 1.6, borderTop: '1px solid var(--sl-border)', paddingTop: 10, color: 'var(--sl-t2)' }}>{event.description}</p>}
             {cats.length > 0 && (
               <div style={{ marginTop: 8, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                {cats.map((c: string, i: number) => <span key={i} style={{ fontSize: 10, fontWeight: 600, padding: '3px 9px', borderRadius: 20, color: TOURNAMENT_COLOR, backgroundColor: `${TOURNAMENT_COLOR}12`, border: `1px solid ${TOURNAMENT_COLOR}25` }}>{c}</span>)}
+                {cats.map((c: string, i: number) => <span key={i} style={{ fontSize: 10, fontWeight: 600, padding: '3px 9px', borderRadius: 'var(--sl-radius-4xl)', color: TOURNAMENT_COLOR, backgroundColor: `${TOURNAMENT_COLOR}12`, border: `1px solid ${TOURNAMENT_COLOR}25` }}>{c}</span>)}
               </div>
             )}
             {event.prize && (
-              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, backgroundColor: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 'var(--sl-radius-md)', backgroundColor: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
                 <IconTrophy size={13} color="#C9A84C" />
                 <span style={{ fontSize: 11, fontWeight: 600, color: '#C9A84C' }}>{event.prize}</span>
               </div>
@@ -503,11 +503,11 @@ function TournamentCardContent({ event, isSelected, canEditThis, onEdit, onDelet
               <ShareBtn event={event} />
               <ICSBtn event={event} />
               {canCreatePoster ? (
-                <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} title="Créer une affiche" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}>
+                <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} title="Créer une affiche" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 </button>
               ) : posterUrl ? (
-                <button onClick={(e) => { e.stopPropagation(); window.open(posterUrl, '_blank', 'noopener'); }} title="Voir l'affiche" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}>
+                <button onClick={(e) => { e.stopPropagation(); window.open(posterUrl, '_blank', 'noopener'); }} title="Voir l'affiche" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', color: 'var(--sl-t3)', border: '1px solid var(--sl-border-s)', backgroundColor: 'transparent', flexShrink: 0 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               ) : null}
@@ -589,7 +589,7 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
         transition={{ duration: 0.16 }}
         whileHover={isSelected ? {} : { y: -2, boxShadow: `0 6px 24px rgba(0,0,0,0.22), 0 0 0 1px ${accentColor}20` }}
         aria-label={cardTitle}
-        style={{ position: 'relative', backgroundColor: 'var(--sl-card)', borderRadius: 14, marginBottom: 8, border: `1.5px solid ${isSelected ? accentColor : isTournament ? `${TOURNAMENT_COLOR}30` : 'var(--sl-border)'}`, boxShadow: isSelected ? `0 0 0 1px ${accentColor}25, 0 4px 16px ${accentColor}15` : 'none', overflow: 'hidden', cursor: 'pointer' }}
+        style={{ position: 'relative', backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-2xl)', marginBottom: 8, border: `1.5px solid ${isSelected ? accentColor : isTournament ? `${TOURNAMENT_COLOR}30` : 'var(--sl-border)'}`, boxShadow: isSelected ? `0 0 0 1px ${accentColor}25, 0 4px 16px ${accentColor}15` : 'none', overflow: 'hidden', cursor: 'pointer' }}
       >
         <button
           className="event-card-select-btn"
@@ -627,7 +627,7 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
             <div style={{ flex: 1, minWidth: 0 }}>
               {/* Top row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, color: '#fff', backgroundColor: sportColor, flexShrink: 0 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--sl-radius-sm)', color: '#fff', backgroundColor: sportColor, flexShrink: 0 }}>
                   <SportIcon sport={event.sport} size={10} color="white" />
                   {event.sport}
                 </span>
@@ -641,13 +641,13 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
                 {event.clubId && !isUserEvent && <FollowClubPill event={event} />}
                 {canEditThis && (
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, flexShrink: 0, alignItems: 'center' }}>
-                    <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} aria-label="Créer l'affiche" title="Créer l'affiche" style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 7, border: 'none', cursor: 'pointer', backgroundColor: `${accentColor}15`, color: accentColor, fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+                    <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} aria-label="Créer l'affiche" title="Créer l'affiche" style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 'var(--sl-radius-sm)', border: 'none', cursor: 'pointer', backgroundColor: `${accentColor}15`, color: accentColor, fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                       Affiche
                     </button>
-                    {onDuplicate && <button onClick={(e) => { e.stopPropagation(); onDuplicate(event); }} aria-label="Dupliquer l'événement" title="Dupliquer" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#a78bfa', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>}
-                    <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} aria-label="Modifier l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                    <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }} aria-label="Supprimer l'événement" style={{ padding: 4, borderRadius: 6, border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+                    {onDuplicate && <button onClick={(e) => { e.stopPropagation(); onDuplicate(event); }} aria-label="Dupliquer l'événement" title="Dupliquer" style={{ padding: 4, borderRadius: 'var(--sl-radius-sm)', border: 'none', cursor: 'pointer', color: '#a78bfa', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>}
+                    <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} aria-label="Modifier l'événement" style={{ padding: 4, borderRadius: 'var(--sl-radius-sm)', border: 'none', cursor: 'pointer', color: '#4da6ff', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                    <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }} aria-label="Supprimer l'événement" style={{ padding: 4, borderRadius: 'var(--sl-radius-sm)', border: 'none', cursor: 'pointer', color: '#ef4444', backgroundColor: 'transparent' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
                   </div>
                 )}
               </div>
@@ -703,12 +703,12 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
                       <ShareBtn event={event} />
                       <ICSBtn event={event} />
                       {canCreatePoster ? (
-                        <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} aria-label="Créer une affiche" title="Créer une affiche" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 11px', borderRadius: 9, cursor: 'pointer', color: accentColor, border: `1px solid ${accentColor}30`, backgroundColor: `${accentColor}10`, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                        <button onClick={(e) => { e.stopPropagation(); setShowPoster(true); }} aria-label="Créer une affiche" title="Créer une affiche" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 11px', borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', color: accentColor, border: `1px solid ${accentColor}30`, backgroundColor: `${accentColor}10`, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                           Créer l'affiche
                         </button>
                       ) : posterUrl ? (
-                        <button onClick={(e) => { e.stopPropagation(); window.open(posterUrl, '_blank', 'noopener'); }} aria-label="Voir l'affiche" title="Voir l'affiche" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 11px', borderRadius: 9, cursor: 'pointer', color: accentColor, border: `1px solid ${accentColor}30`, backgroundColor: `${accentColor}10`, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                        <button onClick={(e) => { e.stopPropagation(); window.open(posterUrl, '_blank', 'noopener'); }} aria-label="Voir l'affiche" title="Voir l'affiche" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 11px', borderRadius: 'var(--sl-radius-md)', cursor: 'pointer', color: accentColor, border: `1px solid ${accentColor}30`, backgroundColor: `${accentColor}10`, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                           Voir l'affiche
                         </button>

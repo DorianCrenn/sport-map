@@ -238,7 +238,7 @@ function ClubSuggestionsStep({ sports, selectedCity: initialCity, onFinish, onBa
           disabled={detectingGps}
           style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            padding: '10px 16px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.12)',
+            padding: '10px 16px', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid rgba(255,255,255,0.12)',
             backgroundColor: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)',
             fontSize: 13, fontWeight: 600, cursor: detectingGps ? 'wait' : 'pointer',
             marginBottom: 16, opacity: detectingGps ? 0.6 : 1,
@@ -255,7 +255,7 @@ function ClubSuggestionsStep({ sports, selectedCity: initialCity, onFinish, onBa
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '5px 12px', borderRadius: 999,
+            padding: '5px 12px', borderRadius: 'var(--sl-radius-full)',
             backgroundColor: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)',
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round">
@@ -461,7 +461,7 @@ export default function OnboardingPage({ onDone }: OnboardingPageProps) {
       <div style={{ display: 'flex', justifyContent: 'center', gap: 6, paddingTop: 20, flexShrink: 0 }}>
         {[1, 2, 3, 4, 5].map(s => (
           <div key={s} style={{
-            width: step === s ? 18 : 6, height: 6, borderRadius: 3,
+            width: step === s ? 18 : 6, height: 6, borderRadius: 'var(--sl-radius-xs)',
             backgroundColor: step === s ? '#22C55E' : s < step ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.2)',
             transition: 'all 0.25s',
           }} />
@@ -667,7 +667,7 @@ export default function OnboardingPage({ onDone }: OnboardingPageProps) {
                 initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '10px 14px', borderRadius: 12,
+                  padding: '10px 14px', borderRadius: 'var(--sl-radius-xl)',
                   backgroundColor: 'rgba(34,197,94,0.12)',
                   border: '1px solid rgba(34,197,94,0.25)',
                   marginBottom: 8,

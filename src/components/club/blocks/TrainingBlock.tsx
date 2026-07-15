@@ -301,7 +301,7 @@ function MonthCalendar({ sessions, clubId, onOpenDetail }: { sessions: Session[]
               const color = CATEGORY_COLORS[cat] ?? '#64748b';
               return (
                 <div key={cat} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ backgroundColor: `${color}18` }}>
-                  <div style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: color }} />
+                  <div style={{ width: 8, height: 8, borderRadius: 'var(--sl-radius-xs)', backgroundColor: color }} />
                   <span style={{ fontSize: 11, fontWeight: 600, color }}>{cat}</span>
                 </div>
               );

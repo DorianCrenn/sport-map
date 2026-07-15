@@ -69,7 +69,7 @@ function SimpleModeToggle() {
       </div>
       {/* Toggle pill */}
       <div style={{
-        width: 44, height: 24, borderRadius: 12, position: 'relative', flexShrink: 0,
+        width: 44, height: 24, borderRadius: 'var(--sl-radius-xl)', position: 'relative', flexShrink: 0,
         backgroundColor: simple ? 'var(--sl-green)' : 'rgba(255,255,255,0.12)',
         transition: 'background-color 0.2s',
       }}>
@@ -211,7 +211,7 @@ function RoleSection({ jobRole, onSave }: RoleSectionProps) {
               onClick={() => { onSave(role.id); setEditing(false); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
-                padding: '9px 12px', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
+                padding: '9px 12px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer', textAlign: 'left',
                 border: `2px solid ${jobRole === role.id ? 'var(--sl-green)' : 'var(--sl-border)'}`,
                 backgroundColor: jobRole === role.id ? 'rgba(34,217,106,0.08)' : 'var(--sl-surface)',
                 fontSize: 12, fontWeight: 600,
@@ -293,7 +293,7 @@ export default function ProfilPage({
           }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
             <div style={{
-              width: 48, height: 48, borderRadius: 12,
+              width: 48, height: 48, borderRadius: 'var(--sl-radius-xl)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
             }}>
@@ -309,8 +309,8 @@ export default function ProfilPage({
         </div>
 
         <div style={{ padding: '12px 16px calc(90px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ borderRadius: 20, padding: '24px', textAlign: 'center', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
-            <div style={{ width: 48, height: 48, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', backgroundColor: 'var(--sl-green-dim)' }}>
+          <div style={{ borderRadius: 'var(--sl-radius-4xl)', padding: '24px', textAlign: 'center', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 'var(--sl-radius-3xl)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', backgroundColor: 'var(--sl-green-dim)' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
@@ -322,7 +322,7 @@ export default function ProfilPage({
             <button
               onClick={onShowAuth}
               style={{
-                width: '100%', padding: '14px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                width: '100%', padding: '14px', borderRadius: 'var(--sl-radius-3xl)', border: 'none', cursor: 'pointer',
                 fontWeight: 800, fontFamily: "'Barlow Condensed', sans-serif", fontSize: 16, letterSpacing: '0.03em',
                 color: '#fff', backgroundColor: 'var(--sl-green)', boxShadow: 'var(--sl-green-glow)',
               }}
@@ -334,7 +334,7 @@ export default function ProfilPage({
           <ThemeToggle />
           <SimpleModeToggle />
 
-          <div style={{ borderRadius: 20, padding: 16, backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
+          <div style={{ borderRadius: 'var(--sl-radius-4xl)', padding: 16, backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)', border: '1px solid var(--sl-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
               <SportLinkLogo size={110} variant="full" />
             </div>
@@ -373,11 +373,11 @@ export default function ProfilPage({
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
-              style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0, boxShadow: '0 0 0 2px rgba(34,217,106,0.5)' }}
+              style={{ width: 56, height: 56, borderRadius: 'var(--sl-radius-2xl)', objectFit: 'cover', flexShrink: 0, boxShadow: '0 0 0 2px rgba(34,217,106,0.5)' }}
             />
           ) : (
             <div style={{
-              width: 56, height: 56, borderRadius: 14, flexShrink: 0,
+              width: 56, height: 56, borderRadius: 'var(--sl-radius-2xl)', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 800, fontSize: 20, fontFamily: 'var(--sl-font-ui)',
               backgroundColor: '#22d96a', color: '#fff',
@@ -395,7 +395,7 @@ export default function ProfilPage({
                 initial={{ scale: 0, rotate: -12 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 18, delay: 0.2 }}
-                style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 999, backgroundColor: `${levelInfo?.color ?? '#22d96a'}25`, color: levelInfo?.color ?? '#22d96a', border: `1px solid ${levelInfo?.color ?? '#22d96a'}50`, flexShrink: 0, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}
+                style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 'var(--sl-radius-full)', backgroundColor: `${levelInfo?.color ?? '#22d96a'}25`, color: levelInfo?.color ?? '#22d96a', border: `1px solid ${levelInfo?.color ?? '#22d96a'}50`, flexShrink: 0, letterSpacing: '0.04em', whiteSpace: 'nowrap' }}
               >
                 {levelInfo?.icon ?? '⚡'} Niv.{levelInfo?.level ?? 1}
               </motion.span>
@@ -403,7 +403,7 @@ export default function ProfilPage({
             <p style={{ fontSize: 12, color: 'rgba(238,242,239,0.5)', margin: '3px 0 8px' }}>{currentUser.email}</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{
-                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 'var(--sl-radius-full)',
                 backgroundColor: roleBadge.bg, color: roleBadge.color, flexShrink: 0,
               }}>
                 {roleBadge.label}
@@ -412,14 +412,14 @@ export default function ProfilPage({
               {/* Plan badge */}
               {planId !== 'free' ? (
                 <span style={{
-                  fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                  fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 'var(--sl-radius-full)',
                   backgroundColor: `${planInfo.color}20`, color: planInfo.color, flexShrink: 0,
                 }}>
                   {planInfo.badge} {planInfo.name}
                 </span>
               ) : canUpgrade && (
                 <span style={{
-                  fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 999,
+                  fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 'var(--sl-radius-full)',
                   border: '1px dashed rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.35)', flexShrink: 0,
                   cursor: 'pointer',
                 }}>
@@ -448,7 +448,7 @@ export default function ProfilPage({
                       }
                       whileHover={isEarned ? { scale: 1.25, rotate: 5 } : {}}
                       style={{
-                        width: 26, height: 26, borderRadius: 8, fontSize: 13,
+                        width: 26, height: 26, borderRadius: 'var(--sl-radius-md)', fontSize: 13,
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                         backgroundColor: isEarned ? `${def.color}28` : 'rgba(255,255,255,0.04)',
                         border: `1.5px solid ${isEarned ? def.color + '80' : 'rgba(255,255,255,0.08)'}`,
@@ -504,7 +504,7 @@ export default function ProfilPage({
 
         {/* Stats */}
         <div style={{
-          borderRadius: 16, padding: '14px 10px',
+          borderRadius: 'var(--sl-radius-3xl)', padding: '14px 10px',
           display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8,
           backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)',
         }}>
@@ -518,7 +518,7 @@ export default function ProfilPage({
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
             >
-              <div style={{ width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
+              <div style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
                 <span style={{ fontSize: 18, fontWeight: 800, color, fontFamily: 'var(--sl-font-ui)' }}>{value}</span>
               </div>
               <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
@@ -529,7 +529,7 @@ export default function ProfilPage({
         {/* CTA si aucun événement créé */}
         {profileTab === 'profil' && eventCount === 0 && (
           <div style={{
-            borderRadius: 16, padding: '16px 16px',
+            borderRadius: 'var(--sl-radius-3xl)', padding: '16px 16px',
             backgroundColor: 'var(--sl-card)', border: '1px dashed var(--sl-border)',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center',
           }}>
@@ -538,7 +538,7 @@ export default function ProfilPage({
             <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: 0, lineHeight: 1.4 }}>Créez votre premier événement sur la carte pour débloquer vos badges.</p>
             <button
               onClick={() => onNavigate?.('map')}
-              style={{ marginTop: 6, padding: '9px 20px', borderRadius: 12, backgroundColor: 'var(--sl-green)', color: '#000', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}
+              style={{ marginTop: 6, padding: '9px 20px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-green)', color: '#000', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}
             >
               Voir la carte
             </button>
@@ -552,7 +552,7 @@ export default function ProfilPage({
 
         {/* Stats joueur de football / sport */}
         {playerStats && (
-          <div style={{ borderRadius: 16, padding: 16, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
+          <div style={{ borderRadius: 'var(--sl-radius-3xl)', padding: 16, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)' }}>
             <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--sl-t1)', marginBottom: 12, letterSpacing: '-0.01em' }}>
               ⚽ Statistiques de saison
             </div>
@@ -562,7 +562,7 @@ export default function ProfilPage({
                 { label: 'Buts',         value: playerStats.totalGoals,    icon: '⚽' },
                 { label: 'Passes D.',    value: playerStats.totalAssists,  icon: '🅰️' },
               ].map(s => (
-                <div key={s.label} style={{ padding: '10px 8px', borderRadius: 12, backgroundColor: 'var(--sl-surface)', textAlign: 'center' }}>
+                <div key={s.label} style={{ padding: '10px 8px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', textAlign: 'center' }}>
                   <div style={{ fontSize: 20, marginBottom: 2 }}>{s.icon}</div>
                   <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--sl-t1)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{s.value}</div>
                   <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)', marginTop: 2, letterSpacing: '0.04em' }}>{s.label.toUpperCase()}</div>
@@ -575,7 +575,7 @@ export default function ProfilPage({
                 { label: 'Carton J.',   value: playerStats.totalYellow, icon: '🟨' },
                 { label: 'Carton R.',   value: playerStats.totalRed,    icon: '🟥' },
               ].map(s => (
-                <div key={s.label} style={{ padding: '8px 6px', borderRadius: 10, backgroundColor: 'var(--sl-surface)', textAlign: 'center' }}>
+                <div key={s.label} style={{ padding: '8px 6px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-surface)', textAlign: 'center' }}>
                   <div style={{ fontSize: 16, marginBottom: 1 }}>{s.icon}</div>
                   <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--sl-t1)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{s.value}</div>
                   <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--sl-t3)', marginTop: 2, letterSpacing: '0.04em' }}>{s.label.toUpperCase()}</div>
@@ -587,7 +587,7 @@ export default function ProfilPage({
 
         {/* XP / Level card — version hype */}
         <div style={{
-          borderRadius: 16, padding: '16px',
+          borderRadius: 'var(--sl-radius-3xl)', padding: '16px',
           background: 'linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(77,166,255,0.08) 100%)',
           border: '1px solid rgba(139,92,246,0.28)',
           position: 'relative', overflow: 'hidden',
@@ -597,7 +597,7 @@ export default function ProfilPage({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
-                width: 44, height: 44, borderRadius: 12,
+                width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)',
                 background: 'linear-gradient(135deg, #8b5cf6, #4da6ff)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: '0 0 16px rgba(139,92,246,0.4)',
@@ -614,7 +614,7 @@ export default function ProfilPage({
               </div>
             </div>
             <div style={{
-              padding: '4px 12px', borderRadius: 999,
+              padding: '4px 12px', borderRadius: 'var(--sl-radius-full)',
               background: 'linear-gradient(135deg, #8b5cf6, #4da6ff)',
               fontSize: 16, fontWeight: 900, color: '#fff',
               fontFamily: 'var(--sl-font-brand)',
@@ -623,7 +623,7 @@ export default function ProfilPage({
               {xpTotal} XP
             </div>
           </div>
-          <div style={{ height: 6, borderRadius: 3, backgroundColor: 'var(--sl-border)', overflow: 'hidden' }}>
+          <div style={{ height: 6, borderRadius: 'var(--sl-radius-xs)', backgroundColor: 'var(--sl-border)', overflow: 'hidden' }}>
             <div
               className="sl-xp-bar"
               style={{ width: `${Math.round(levelInfo.progress * 100)}%` }}
@@ -753,7 +753,7 @@ export default function ProfilPage({
               {rideNotifCount > 0 && (
                 <span style={{
                   position: 'absolute', top: -4, right: -4,
-                  minWidth: 18, height: 18, borderRadius: 999, padding: '0 4px',
+                  minWidth: 18, height: 18, borderRadius: 'var(--sl-radius-full)', padding: '0 4px',
                   backgroundColor: '#ef4444', color: '#fff',
                   fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
@@ -781,7 +781,7 @@ export default function ProfilPage({
               {convocationsPendingCount > 0 && (
                 <span style={{
                   position: 'absolute', top: -4, right: -4,
-                  minWidth: 18, height: 18, borderRadius: 999, padding: '0 4px',
+                  minWidth: 18, height: 18, borderRadius: 'var(--sl-radius-full)', padding: '0 4px',
                   backgroundColor: '#f59e0b', color: '#fff',
                   fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
@@ -910,7 +910,7 @@ export default function ProfilPage({
                 return (
                   <div key={clubId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
-                      width: 32, height: 32, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 32, height: 32, borderRadius: 'var(--sl-radius-md)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       backgroundColor: 'var(--sl-surface)', fontWeight: 700, fontSize: 11, color: 'var(--sl-t2)', fontFamily: 'var(--sl-font-ui)',
                     }}>
                       {club.name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)}
@@ -922,7 +922,7 @@ export default function ProfilPage({
                     <button
                       onClick={() => unfollowClub(clubId)}
                       aria-label={`Ne plus suivre ${club.name}`}
-                      style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', backgroundColor: 'transparent' }}
+                      style={{ padding: '4px 10px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border-s)', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', backgroundColor: 'transparent' }}
                     >
                       Retirer
                     </button>
@@ -1021,7 +1021,7 @@ export default function ProfilPage({
 
         {/* Confidentialité — toggle analytics */}
         {analyticsConsent !== null && (
-          <div style={{ padding: '14px 16px', borderRadius: 16, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)' }}>
+          <div style={{ padding: '14px 16px', borderRadius: 'var(--sl-radius-3xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', boxShadow: 'var(--sl-shadow)' }}>
             <p className="text-xs font-bold mb-3" style={{ color: 'var(--sl-t3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Confidentialité</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ flex: 1 }}>
@@ -1033,7 +1033,7 @@ export default function ProfilPage({
                 aria-pressed={!!analyticsConsent}
                 aria-label={analyticsConsent ? 'Désactiver les statistiques d\'utilisation' : 'Activer les statistiques d\'utilisation'}
                 style={{
-                  width: 52, height: 36, borderRadius: 18, border: 'none', cursor: 'pointer',
+                  width: 52, height: 36, borderRadius: 'var(--sl-radius-3xl)', border: 'none', cursor: 'pointer',
                   backgroundColor: analyticsConsent ? 'var(--sl-green)' : 'var(--sl-border)',
                   position: 'relative', flexShrink: 0, transition: 'background-color 0.2s',
                 }}
@@ -1052,7 +1052,7 @@ export default function ProfilPage({
         {currentUser && <RgpdExportButton userId={currentUser.id} userEmail={currentUser.email ?? ''} />}
 
         {/* Zone dangereuse — suppression de compte */}
-        <div style={{ marginTop: 8, padding: '14px', borderRadius: 16, border: '1px solid rgba(239,68,68,0.2)', backgroundColor: 'rgba(239,68,68,0.04)' }}>
+        <div style={{ marginTop: 8, padding: '14px', borderRadius: 'var(--sl-radius-3xl)', border: '1px solid rgba(239,68,68,0.2)', backgroundColor: 'rgba(239,68,68,0.04)' }}>
           <p className="text-xs font-bold mb-2" style={{ color: '#ef4444', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Zone dangereuse</p>
           <button
             onClick={() => setShowDeleteModal(true)}
@@ -1110,14 +1110,14 @@ export default function ProfilPage({
                   value={deleteConfirm}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeleteConfirm(e.target.value)}
                   placeholder="SUPPRIMER"
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 12, fontSize: 14, border: `1.5px solid ${deleteConfirm === 'SUPPRIMER' ? '#ef4444' : 'var(--sl-border)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }}
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 'var(--sl-radius-xl)', fontSize: 14, border: `1.5px solid ${deleteConfirm === 'SUPPRIMER' ? '#ef4444' : 'var(--sl-border)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }}
                 />
               </div>
 
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
                   onClick={() => { setShowDeleteModal(false); setDeleteConfirm(''); }}
-                  style={{ flex: 1, padding: '13px', borderRadius: 14, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '13px', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t2)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
                 >
                   Annuler
                 </button>
@@ -1142,7 +1142,7 @@ export default function ProfilPage({
                     }
                   }}
                   style={{
-                    flex: 1, padding: '13px', borderRadius: 14, border: 'none',
+                    flex: 1, padding: '13px', borderRadius: 'var(--sl-radius-2xl)', border: 'none',
                     backgroundColor: deleteConfirm === 'SUPPRIMER' && !deleteLoading ? '#ef4444' : 'var(--sl-surface)',
                     color: deleteConfirm === 'SUPPRIMER' && !deleteLoading ? '#fff' : 'var(--sl-t3)',
                     fontSize: 14, fontWeight: 700, cursor: deleteConfirm === 'SUPPRIMER' ? 'pointer' : 'not-allowed',

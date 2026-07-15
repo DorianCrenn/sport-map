@@ -41,7 +41,7 @@ function HomeAwaySelector({ value, onChange }: { value: 'home' | 'away'; onChang
           <button
             key={opt.value} type="button" onClick={() => onChange(opt.value)}
             style={{
-              padding: '11px 8px', borderRadius: 12, cursor: 'pointer',
+              padding: '11px 8px', borderRadius: 'var(--sl-radius-xl)', cursor: 'pointer',
               border: `1.5px solid ${value === opt.value ? 'var(--sl-green)' : 'var(--sl-border)'}`,
               backgroundColor: value === opt.value ? 'var(--sl-green-dim)' : 'var(--sl-surface)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -409,7 +409,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const champLevels = (CHAMPIONSHIP_LEVELS as any)[form.sport] ?? (CHAMPIONSHIP_LEVELS as any).default;
   const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box',
-    borderRadius: 12, padding: '10px 12px', fontSize: 13,
+    borderRadius: 'var(--sl-radius-xl)', padding: '10px 12px', fontSize: 13,
     backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
     color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)',
   };
@@ -442,7 +442,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
             onTouchStart={handleHandleDown}
             style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0', cursor: 'grab', touchAction: 'none' }}
           >
-            <div style={{ width: 36, height: 3, borderRadius: 999, backgroundColor: 'var(--sl-border-s)' }} />
+            <div style={{ width: 36, height: 3, borderRadius: 'var(--sl-radius-full)', backgroundColor: 'var(--sl-border-s)' }} />
           </div>
 
           <div style={{ flexShrink: 0, borderBottom: '1px solid var(--sl-border)' }}>
@@ -459,13 +459,13 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                     </div>
                   )}
                   {event?._isNew && event?.defaultTeam && (
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.25)' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--sl-radius-full)', backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.25)' }}>
                       {event.defaultTeam}{event.defaultLevel ? ` · ${event.defaultLevel}` : ''}
                     </span>
                   )}
                 </div>
               </div>
-              <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
+              <button onClick={onClose} aria-label="Fermer" style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -478,7 +478,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
           <form id="event-form" onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 8px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {isDemoMode() && !isEdit && (
-              <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 8, padding: '6px 12px', fontSize: 11, color: 'var(--demo-indigo-text, #818cf8)', display: 'flex', gap: 6, alignItems: 'center' }}>
+              <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 'var(--sl-radius-md)', padding: '6px 12px', fontSize: 11, color: 'var(--demo-indigo-text, #818cf8)', display: 'flex', gap: 6, alignItems: 'center' }}>
                 <span>✨</span>
                 <span>Données pré-remplies — modifiez ou validez directement</span>
               </div>
@@ -492,7 +492,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
 
               {useSmartMode && myClub ? (
                 <Field label="Sport">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 'var(--sl-radius-xl)', backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)' }}>
                     <SportIcon sport={myClub.sport} size={16} color="var(--sl-green)" />
                     <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-t1)' }}>{myClub.sport}</span>
                     <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--sl-green)', fontWeight: 700 }}>AUTO</span>
@@ -527,7 +527,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                             return next.length ? next : ['all'];
                           });
                         }}
-                        style={{ padding: '8px 14px', borderRadius: 10, cursor: 'pointer', border: `1.5px solid ${sel ? '#10b981' : 'var(--sl-border)'}`, backgroundColor: sel ? 'rgba(16,185,129,0.12)' : 'var(--sl-surface)', color: sel ? '#10b981' : 'var(--sl-t2)', fontSize: 12, fontWeight: sel ? 700 : 500, transition: 'all 0.12s' }}
+                        style={{ padding: '8px 14px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer', border: `1.5px solid ${sel ? '#10b981' : 'var(--sl-border)'}`, backgroundColor: sel ? 'rgba(16,185,129,0.12)' : 'var(--sl-surface)', color: sel ? '#10b981' : 'var(--sl-t2)', fontSize: 12, fontWeight: sel ? 700 : 500, transition: 'all 0.12s' }}
                       >
                         {label}
                       </button>
@@ -560,7 +560,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                     </Field>
 
                     {form.category && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 10, backgroundColor: 'var(--sl-green-dim)', border: '1px solid rgba(34,217,106,0.2)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-green-dim)', border: '1px solid rgba(34,217,106,0.2)' }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         <span style={{ fontSize: 12, color: 'var(--sl-green)', fontWeight: 600 }}>Catégorie : {form.category}</span>
                       </div>
@@ -658,7 +658,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                     </Field>
 
                     {form.category && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 10, backgroundColor: 'var(--sl-green-dim)', border: '1px solid rgba(34,217,106,0.2)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-green-dim)', border: '1px solid rgba(34,217,106,0.2)' }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sl-green)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         <span style={{ fontSize: 12, color: 'var(--sl-green)', fontWeight: 600 }}>Catégorie : {form.category}</span>
                       </div>
@@ -758,7 +758,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
             </div>
 
             {!isEdit && (
-              <div style={{ borderRadius: 14, border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
+              <div style={{ borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
                 <button
                   type="button"
                   onClick={() => set('recurrenceEnabled', !form.recurrenceEnabled)}
@@ -768,7 +768,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.82"/></svg>
                     <span style={{ fontSize: 13, fontWeight: 600 }}>Récurrence</span>
                   </div>
-                  <div style={{ width: 36, height: 20, borderRadius: 999, backgroundColor: form.recurrenceEnabled ? '#3b82f6' : 'var(--sl-border)', position: 'relative', transition: 'background-color 0.2s', flexShrink: 0 }}>
+                  <div style={{ width: 36, height: 20, borderRadius: 'var(--sl-radius-full)', backgroundColor: form.recurrenceEnabled ? '#3b82f6' : 'var(--sl-border)', position: 'relative', transition: 'background-color 0.2s', flexShrink: 0 }}>
                     <div style={{ position: 'absolute', top: 2, left: form.recurrenceEnabled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', backgroundColor: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                   </div>
                 </button>
@@ -864,7 +864,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
 
           <div style={{ flexShrink: 0, padding: '14px 20px calc(14px + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
             {submitError && (
-              <div style={{ marginBottom: 10, padding: '8px 12px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', fontSize: 12, color: '#ef4444', fontWeight: 600 }}>
+              <div style={{ marginBottom: 10, padding: '8px 12px', borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', fontSize: 12, color: '#ef4444', fontWeight: 600 }}>
                 {submitError}
               </div>
             )}
@@ -873,7 +873,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                 <button
                   type="button"
                   onClick={goPrev}
-                  style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  style={{ flex: 1, padding: '13px 0', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
                   Précédent
@@ -883,7 +883,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                   type="button"
                   onClick={onClose}
                   disabled={submitting}
-                  style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+                  style={{ flex: 1, padding: '13px 0', borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border-s)', color: 'var(--sl-t2)', backgroundColor: 'var(--sl-surface)', fontSize: 13, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1 }}
                 >
                   Annuler
                 </button>
@@ -893,7 +893,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                 <button
                   type="button"
                   onClick={goNext}
-                  style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: 'none', backgroundColor: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 14px rgba(99,102,241,0.35)' }}
+                  style={{ flex: 1, padding: '13px 0', borderRadius: 'var(--sl-radius-2xl)', border: 'none', backgroundColor: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 14px rgba(99,102,241,0.35)' }}
                 >
                   Suivant
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -903,7 +903,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
                   type="submit"
                   form="event-form"
                   disabled={submitting}
-                  style={{ flex: 1, padding: '13px 0', borderRadius: 14, border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, boxShadow: submitting ? 'none' : '0 4px 12px rgba(34,217,106,0.3)' }}
+                  style={{ flex: 1, padding: '13px 0', borderRadius: 'var(--sl-radius-2xl)', border: 'none', backgroundColor: 'var(--sl-green)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, boxShadow: submitting ? 'none' : '0 4px 12px rgba(34,217,106,0.3)' }}
                 >
                   {submitting ? 'Enregistrement…' : isEdit ? 'Enregistrer' : form.eventType === 'training' ? '🏃 Créer l\'entraînement' : 'Créer l\'événement'}
                 </button>

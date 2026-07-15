@@ -16,7 +16,7 @@ export default function ClubInvitePanel({ clubId, clubName }: ClubInvitePanelPro
   }
 
   return (
-    <div style={{ borderRadius: 16, border: '1px solid var(--sl-border)', background: 'var(--sl-card)', overflow: 'hidden' }}>
+    <div style={{ borderRadius: 'var(--sl-radius-3xl)', border: '1px solid var(--sl-border)', background: 'var(--sl-card)', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid var(--sl-border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -31,7 +31,7 @@ export default function ClubInvitePanel({ clubId, clubName }: ClubInvitePanelPro
       <div style={{ padding: 16, display: 'flex', gap: 16, alignItems: 'flex-start' }}>
         {/* QR code */}
         <div style={{ flexShrink: 0 }}>
-          <div style={{ width: 120, height: 120, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--sl-border)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 120, height: 120, borderRadius: 'var(--sl-radius-xl)', overflow: 'hidden', border: '1px solid var(--sl-border)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {qrUrl
               ? <img src={qrUrl} alt="QR code invitation" width={112} height={112} style={{ display: 'block' }} />
               : <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>—</span>
@@ -47,7 +47,7 @@ export default function ClubInvitePanel({ clubId, clubName }: ClubInvitePanelPro
           </p>
 
           {/* Lien */}
-          <div style={{ background: 'var(--sl-surface)', borderRadius: 8, padding: '6px 10px', marginBottom: 10, border: '1px solid var(--sl-border)' }}>
+          <div style={{ background: 'var(--sl-surface)', borderRadius: 'var(--sl-radius-md)', padding: '6px 10px', marginBottom: 10, border: '1px solid var(--sl-border)' }}>
             <p style={{ fontSize: 10, color: 'var(--sl-t3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</p>
           </div>
 
@@ -55,14 +55,14 @@ export default function ClubInvitePanel({ clubId, clubName }: ClubInvitePanelPro
           <div style={{ display: 'flex', gap: 6 }}>
             <button
               onClick={handleCopy}
-              style={{ flex: 1, padding: '8px 0', borderRadius: 10, border: '1px solid var(--sl-border)', background: copied ? '#22c55e' : 'var(--sl-surface)', color: copied ? '#fff' : 'var(--sl-t1)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+              style={{ flex: 1, padding: '8px 0', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', background: copied ? '#22c55e' : 'var(--sl-surface)', color: copied ? '#fff' : 'var(--sl-t1)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
             >
               {copied ? '✓ Copié !' : '📋 Copier'}
             </button>
             {typeof navigator !== 'undefined' && navigator.share && (
               <button
                 onClick={share}
-                style={{ flex: 1, padding: '8px 0', borderRadius: 10, border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                style={{ flex: 1, padding: '8px 0', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
               >
                 📤 Partager
               </button>
