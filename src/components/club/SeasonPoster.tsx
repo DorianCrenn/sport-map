@@ -189,16 +189,20 @@ function ScorersPoster({ scorers, accent }: { scorers: PlayerSeasonStat[]; accen
     <div>
       <SectionTitle accent={accent}>⚽ TOP BUTEURS</SectionTitle>
       {hero && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: `linear-gradient(120deg, ${accent}33, ${accent}11)`, border: `1px solid ${accent}55`, borderRadius: 16, padding: '14px 16px', marginBottom: 10 }}>
-          <span style={{ fontSize: 28 }}>🥇</span>
-          {hero.jerseyNumber != null && <JerseyBadge number={hero.jerseyNumber} accent={accent} size={34} numberColor="#fff" fill={`${accent}44`} stroke="rgba(255,255,255,0.7)" />}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ color: '#fff', fontSize: 17, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hero.playerName}</div>
-            {hero.position && <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: 600 }}>{hero.position}</div>}
+        <div style={{ background: `linear-gradient(120deg, ${accent}33, ${accent}11)`, border: `1px solid ${accent}55`, borderRadius: 16, padding: '12px 16px 14px', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 9 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', color: '#fbbf24' }}>🥇 MEILLEUR BUTEUR</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{ color: accent, fontSize: 30, fontWeight: 900, lineHeight: 1 }}>{hero.totalGoals}</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 700 }}>buts</span>
+            </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ color: accent, fontSize: 30, fontWeight: 900, lineHeight: 1 }}>{hero.totalGoals}</div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: 700 }}>BUTS</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {hero.jerseyNumber != null && <JerseyBadge number={hero.jerseyNumber} accent={accent} size={36} numberColor="#fff" fill={`${accent}44`} stroke="rgba(255,255,255,0.7)" />}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: '#fff', fontSize: 18, fontWeight: 900, lineHeight: 1.12, wordBreak: 'break-word' }}>{hero.playerName}</div>
+              {hero.position && <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: 600, marginTop: 1 }}>{hero.position}</div>}
+            </div>
           </div>
         </div>
       )}
@@ -222,13 +226,15 @@ function MotmPoster({ motm, accent }: { motm: Motm[]; accent: string }) {
     <div>
       <SectionTitle accent={accent}>⭐ HOMME DU MATCH</SectionTitle>
       {hero && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: `linear-gradient(120deg, ${accent}33, ${accent}11)`, border: `1px solid ${accent}55`, borderRadius: 16, padding: '14px 16px', marginBottom: 10 }}>
-          <span style={{ fontSize: 30 }}>🥇</span>
-          <div style={{ flex: 1, minWidth: 0, color: '#fff', fontSize: 17, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hero.name}</div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ color: accent, fontSize: 26, fontWeight: 900, lineHeight: 1 }}>×{hero.count}</div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: 700 }}>ÉLU</div>
+        <div style={{ background: `linear-gradient(120deg, ${accent}33, ${accent}11)`, border: `1px solid ${accent}55`, borderRadius: 16, padding: '12px 16px 14px', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 9 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', color: '#fbbf24' }}>🥇 LE PLUS ÉLU</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{ color: accent, fontSize: 28, fontWeight: 900, lineHeight: 1 }}>×{hero.count}</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 700 }}>fois</span>
+            </div>
           </div>
+          <div style={{ color: '#fff', fontSize: 18, fontWeight: 900, lineHeight: 1.12, wordBreak: 'break-word' }}>{hero.name}</div>
         </div>
       )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
