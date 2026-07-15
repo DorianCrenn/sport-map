@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import { rankBy } from './tabs/seasonRanking.js';
+import JerseyBadge from './JerseyBadge.js';
 import type { PlayerSeasonStat } from '../../hooks/usePlayerStats.js';
 
 type Bilan = { played: number; wins: number; draws: number; losses: number; gf: number; ga: number };
@@ -188,8 +189,9 @@ function ScorersPoster({ scorers, accent }: { scorers: PlayerSeasonStat[]; accen
     <div>
       <SectionTitle accent={accent}>⚽ TOP BUTEURS</SectionTitle>
       {hero && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: `linear-gradient(120deg, ${accent}33, ${accent}11)`, border: `1px solid ${accent}55`, borderRadius: 16, padding: '14px 16px', marginBottom: 10 }}>
-          <span style={{ fontSize: 30 }}>🥇</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: `linear-gradient(120deg, ${accent}33, ${accent}11)`, border: `1px solid ${accent}55`, borderRadius: 16, padding: '14px 16px', marginBottom: 10 }}>
+          <span style={{ fontSize: 28 }}>🥇</span>
+          {hero.jerseyNumber != null && <JerseyBadge number={hero.jerseyNumber} accent={accent} size={34} numberColor="#fff" fill={`${accent}44`} stroke="rgba(255,255,255,0.7)" />}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ color: '#fff', fontSize: 17, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hero.playerName}</div>
             {hero.position && <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: 600 }}>{hero.position}</div>}
@@ -202,8 +204,9 @@ function ScorersPoster({ scorers, accent }: { scorers: PlayerSeasonStat[]; accen
       )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         {scorers.slice(1).map((p, i) => (
-          <div key={p.playerId} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '9px 12px' }}>
+          <div key={p.playerId} style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '8px 12px' }}>
             <span style={{ width: 20, textAlign: 'center', fontSize: 14, fontWeight: 900, color: 'rgba(255,255,255,0.6)' }}>{i + 2 <= 3 ? MEDALS[i + 1] : i + 2}</span>
+            {p.jerseyNumber != null && <JerseyBadge number={p.jerseyNumber} accent={accent} size={22} numberColor="#fff" fill={`${accent}33`} stroke="rgba(255,255,255,0.55)" />}
             <span style={{ flex: 1, minWidth: 0, color: '#fff', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.playerName}</span>
             <span style={{ color: accent, fontSize: 16, fontWeight: 900 }}>{p.totalGoals}</span>
           </div>
