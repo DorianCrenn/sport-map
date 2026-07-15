@@ -20,6 +20,8 @@ const { mockUseAuth, mockUseRides, mockUseClubFeatures } = vi.hoisted(() => ({
 vi.mock('../../contexts/AuthContext.jsx', () => ({ useAuth: mockUseAuth }));
 vi.mock('../../hooks/useRides.js',        () => ({ useRides: mockUseRides }));
 vi.mock('../../hooks/useClubFeatures.js', () => ({ useClubFeatures: mockUseClubFeatures }));
+// Par défaut, l'utilisateur est membre du club de l'EVENT (covoit visible).
+vi.mock('../../hooks/useMyClubMemberships.js', () => ({ useMyClubMemberships: () => new Set(['club-1']) }));
 
 vi.mock('../ui/PlanGate.jsx', () => ({ default: ({ children }) => <div data-testid="plan-gate">{children}</div> }));
 vi.mock('../../components/ui/PlanGate.jsx', () => ({ default: ({ children }) => <div data-testid="plan-gate">{children}</div> }));
@@ -97,6 +99,18 @@ describe('RideSection — mode compact (snapPoint != full)', () => {
     setup({ rides: [ride({ availableSeatsLeft: 0 })] });
     render(<RideSection event={EVENT} snapPoint="peek" />);
     expect(screen.getByText(/complet/i)).toBeInTheDocument();
+  });
+
+  it('ne rend RIEN si l\'utilisateur n\'est pas membre du club de l\'événement', () => {
+    setup({ rides: [ride()] });
+    const { container } = render(<RideSection event={{ id: 'evt-x', clubId: 'club-autre' }} snapPoint="full" />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('ne rend RIEN pour un événement sans club (personnel)', () => {
+    setup({ rides: [ride()] });
+    const { container } = render(<RideSection event={{ id: 'evt-y' }} snapPoint="full" />);
+    expect(container).toBeEmptyDOMElement();
   });
 });
 

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { useRides } from '../../hooks/useRides.js';
 import { useClubFeatures } from '../../hooks/useClubFeatures.js';
+import { useMyClubMemberships } from '../../hooks/useMyClubMemberships.js';
 import { isEventPast } from '../../lib/eventTime.js';
 import PlanGate from '../ui/PlanGate.jsx';
 import UpgradePrompt from '../ui/UpgradePrompt.jsx';
@@ -19,6 +20,7 @@ interface RideSectionProps {
 export default function RideSection({ event, snapPoint }: RideSectionProps) {
   const { currentUser } = useAuth() as any;
   const features = useClubFeatures(event?.clubId) as any;
+  const memberClubIds = useMyClubMemberships();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showPlans,   setShowPlans]   = useState(false);
   const { rides, loading, createRide, cancelRide, requestRide, cancelRequest, acceptRequest, refuseRequest } = useRides(event.id) as any;
@@ -27,6 +29,10 @@ export default function RideSection({ event, snapPoint }: RideSectionProps) {
 
   // Covoiturage masqué dès que l'événement est terminé ou passé.
   if (isEventPast(event)) return null;
+  // Réservé à la communauté du club (joueur / famille / staff), pas aux
+  // supporters ni visiteurs : on n'affiche que pour un membre du club de l'event.
+  const clubId = event?.clubId ? String(event.clubId) : null;
+  if (!clubId || !memberClubIds.has(clubId)) return null;
 
   const activeRides = (rides as any[]).filter((r: any) => r.status !== 'cancelled');
   const totalSeats  = activeRides.reduce((s: number, r: any) => s + r.availableSeatsLeft, 0);
