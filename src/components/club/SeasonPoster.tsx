@@ -17,6 +17,9 @@ const TYPES: { id: PosterType; label: string }[] = [
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
+// Modal plein écran : doit recouvrir aussi le calque démo (bandeau z:10000, guide z:10001)
+const DEMO_OVERLAY_Z = 10050;
+
 interface SeasonPosterProps {
   club: Record<string, any>;
   teamName: string | null;
@@ -73,7 +76,7 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
   return createPortal(
     <AnimatePresence>
       <motion.div role="dialog" aria-modal="true" className="fixed inset-0 flex flex-col bg-black/70 overscroll-contain"
-        style={{ zIndex: 'var(--sl-z-modal)' } as React.CSSProperties}
+        style={{ zIndex: DEMO_OVERLAY_Z } as React.CSSProperties}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <div className="flex items-center justify-between px-4 py-3 bg-black/80 flex-shrink-0">
           <button onClick={onClose} aria-label="Fermer" className="text-white/70 text-sm font-semibold">✕ Fermer</button>
