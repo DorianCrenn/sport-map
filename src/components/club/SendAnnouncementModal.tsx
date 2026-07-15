@@ -42,7 +42,7 @@ const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
   borderRadius: 12, padding: '10px 12px', fontSize: 13,
   backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
-  color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif',
+  color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)',
   resize: 'none',
 };
 
@@ -209,7 +209,7 @@ export default function SendAnnouncementModal({ club, onSend, onClose }: SendAnn
             {aiSuggestions.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {aiSuggestions.map((s, i) => (
-                  <button key={i} onClick={() => { setMessage(s); setAiSuggestions([]); }} style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${selectedType?.color ?? '#a855f7'}30`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 12, cursor: 'pointer', lineHeight: 1.5, fontFamily: 'Inter, sans-serif', transition: 'all 0.12s' }}>
+                  <button key={i} onClick={() => { setMessage(s); setAiSuggestions([]); }} style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${selectedType?.color ?? '#a855f7'}30`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 12, cursor: 'pointer', lineHeight: 1.5, fontFamily: 'var(--sl-font-ui)', transition: 'all 0.12s' }}>
                     {s}
                   </button>
                 ))}

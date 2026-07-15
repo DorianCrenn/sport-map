@@ -239,7 +239,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             style={{
               width: '100%', boxSizing: 'border-box',
               paddingLeft: 34, paddingRight: 12, paddingTop: 9, paddingBottom: 9,
-              borderRadius: 12, fontSize: 13, fontFamily: 'Inter, sans-serif',
+              borderRadius: 12, fontSize: 13, fontFamily: 'var(--sl-font-ui)',
               backgroundColor: 'var(--sl-input-bg)',
               border: '1px solid var(--sl-input-border)',
               color: 'var(--sl-t1)', outline: 'none',
@@ -466,7 +466,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                   width: 44, height: 44, borderRadius: 12, flexShrink: 0,
                   overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   backgroundColor: club.logo ? 'transparent' : sportColor,
-                  fontWeight: 700, fontSize: 13, color: '#fff', fontFamily: 'Inter, sans-serif',
+                  fontWeight: 700, fontSize: 13, color: '#fff', fontFamily: 'var(--sl-font-ui)',
                   boxShadow: `0 0 0 2px var(--sl-card), 0 0 0 3px var(--sl-border-s)`,
                 }}>
                   {club.logo

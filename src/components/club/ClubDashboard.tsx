@@ -420,7 +420,7 @@ function ChallengesSection({ club }: { club: Record<string, any> }) {
                   </button>
                 ))}
               </div>
-              <input value={chalMsg} onChange={e => setChalMsg(e.target.value)} placeholder="Message optionnel (ex : match retour, terrain neutre…)" style={{ width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 10, fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+              <input value={chalMsg} onChange={e => setChalMsg(e.target.value)} placeholder="Message optionnel (ex : match retour, terrain neutre…)" style={{ width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 10, fontSize: 12, border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }} />
               <button onClick={handleSend} disabled={!targetClubId || sending} style={{ padding: '11px', borderRadius: 10, border: 'none', backgroundColor: !targetClubId || sending ? 'var(--sl-surface)' : '#3b82f6', color: !targetClubId || sending ? 'var(--sl-t3)' : '#fff', fontSize: 12, fontWeight: 700, cursor: !targetClubId || sending ? 'default' : 'pointer' }}>
                 {sending ? 'Envoi…' : <><IconTarget size={14} /> Lancer le défi</>}
               </button>

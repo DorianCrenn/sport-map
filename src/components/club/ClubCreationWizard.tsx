@@ -34,7 +34,7 @@ const inputStyle: React.CSSProperties = {
   padding: '11px 14px', borderRadius: 12, fontSize: 14,
   border: '1.5px solid var(--sl-border)',
   backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)',
-  outline: 'none', fontFamily: 'Inter, sans-serif',
+  outline: 'none', fontFamily: 'var(--sl-font-ui)',
   transition: 'border-color 0.15s',
 };
 

@@ -36,7 +36,7 @@ export default function OnboardingFirstSteps({ jobRole, onNavigate, onClose }: O
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: Z.onboarding, background: 'linear-gradient(160deg, #0F1E3A 0%, #1a3460 100%)', display: 'flex', flexDirection: 'column', padding: '28px 20px calc(28px + env(safe-area-inset-bottom, 0px))' }}>
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 280, damping: 18 }} style={{ width: 64, height: 64, borderRadius: 18, backgroundColor: 'rgba(34,197,94,0.2)', border: '1px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 30 }}>🚀</motion.div>
-        <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ fontSize: 22, fontWeight: 800, color: 'white', fontFamily: 'Poppins, sans-serif', marginBottom: 6 }}>Vos premiers pas</motion.h1>
+        <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ fontSize: 22, fontWeight: 800, color: 'white', fontFamily: 'var(--sl-font-brand)', marginBottom: 6 }}>Vos premiers pas</motion.h1>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} style={{ fontSize: 13, color: '#64748b' }}>Quelques actions pour démarrer sur SportLink</motion.p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, overflowY: 'auto' }}>
@@ -56,7 +56,7 @@ export default function OnboardingFirstSteps({ jobRole, onNavigate, onClose }: O
           })}
         </AnimatePresence>
       </div>
-      <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} onClick={onClose} style={{ marginTop: 20, width: '100%', padding: '15px 0', borderRadius: 16, border: 'none', cursor: 'pointer', backgroundColor: '#22C55E', color: 'white', fontSize: 14, fontWeight: 700, fontFamily: 'Poppins, sans-serif', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}>
+      <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} onClick={onClose} style={{ marginTop: 20, width: '100%', padding: '15px 0', borderRadius: 16, border: 'none', cursor: 'pointer', backgroundColor: '#22C55E', color: 'white', fontSize: 14, fontWeight: 700, fontFamily: 'var(--sl-font-brand)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}>
         {allDone ? 'Parfait, commencer →' : 'Explorer SportLink →'}
       </motion.button>
     </motion.div>

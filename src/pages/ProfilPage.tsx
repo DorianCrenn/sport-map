@@ -379,7 +379,7 @@ export default function ProfilPage({
             <div style={{
               width: 56, height: 56, borderRadius: 14, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: 20, fontFamily: 'Inter, sans-serif',
+              fontWeight: 800, fontSize: 20, fontFamily: 'var(--sl-font-ui)',
               backgroundColor: '#22d96a', color: '#fff',
               boxShadow: '0 0 0 2px rgba(34,217,106,0.4)',
             }}>
@@ -388,7 +388,7 @@ export default function ProfilPage({
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: '#eef2ef', letterSpacing: '-0.02em', lineHeight: 1.2, fontFamily: 'Inter, sans-serif', margin: 0 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: '#eef2ef', letterSpacing: '-0.02em', lineHeight: 1.2, fontFamily: 'var(--sl-font-ui)', margin: 0 }}>
                 {currentUser.name}
               </h2>
               <motion.span
@@ -519,7 +519,7 @@ export default function ProfilPage({
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
             >
               <div style={{ width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
-                <span style={{ fontSize: 18, fontWeight: 800, color, fontFamily: 'Inter, sans-serif' }}>{value}</span>
+                <span style={{ fontSize: 18, fontWeight: 800, color, fontFamily: 'var(--sl-font-ui)' }}>{value}</span>
               </div>
               <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
             </motion.div>
@@ -911,7 +911,7 @@ export default function ProfilPage({
                   <div key={clubId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
                       width: 32, height: 32, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      backgroundColor: 'var(--sl-surface)', fontWeight: 700, fontSize: 11, color: 'var(--sl-t2)', fontFamily: 'Inter, sans-serif',
+                      backgroundColor: 'var(--sl-surface)', fontWeight: 700, fontSize: 11, color: 'var(--sl-t2)', fontFamily: 'var(--sl-font-ui)',
                     }}>
                       {club.name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)}
                     </div>
@@ -1110,7 +1110,7 @@ export default function ProfilPage({
                   value={deleteConfirm}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeleteConfirm(e.target.value)}
                   placeholder="SUPPRIMER"
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 12, fontSize: 14, border: `1.5px solid ${deleteConfirm === 'SUPPRIMER' ? '#ef4444' : 'var(--sl-border)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif' }}
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 12, fontSize: 14, border: `1.5px solid ${deleteConfirm === 'SUPPRIMER' ? '#ef4444' : 'var(--sl-border)'}`, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }}
                 />
               </div>
 

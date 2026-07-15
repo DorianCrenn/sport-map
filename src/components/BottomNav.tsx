@@ -197,7 +197,7 @@ export default function BottomNav({ activeTab, onTabChange, badgeCounts = {}, on
                   </motion.div>
                 )}
               </div>
-              <span className="sl-bottom-nav-label" style={{ fontSize: 13, fontWeight: 600, fontFamily: 'Inter, sans-serif', letterSpacing: '0.01em', color }}>{tab.label}</span>
+              <span className="sl-bottom-nav-label" style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--sl-font-ui)', letterSpacing: '0.01em', color }}>{tab.label}</span>
             </motion.button>
           );
         })}

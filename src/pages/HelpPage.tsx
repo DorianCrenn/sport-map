@@ -127,7 +127,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
       style={{
         position: 'absolute', inset: 0, zIndex: Z.helpPage,
         display: 'flex', flexDirection: 'column',
-        backgroundColor: 'var(--sl-bg)', fontFamily: 'Inter, sans-serif',
+        backgroundColor: 'var(--sl-bg)', fontFamily: 'var(--sl-font-ui)',
       }}
       role="dialog"
       aria-modal="true"

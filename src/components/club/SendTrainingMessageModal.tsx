@@ -62,7 +62,7 @@ export default function SendTrainingMessageModal({
     padding: '10px 12px', borderRadius: 12, fontSize: 13,
     backgroundColor: 'var(--sl-surface)',
     border: `1.5px solid ${content ? selected?.color : 'var(--sl-border)'}`,
-    color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif',
+    color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)',
     resize: 'none',
   };
 

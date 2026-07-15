@@ -63,13 +63,13 @@ function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCar
       <div style={{ padding: '22px 20px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
           <span style={{ fontSize: 20, lineHeight: 1 }}>{meta.badge}</span>
-          <span style={{ fontSize: 16, fontWeight: 800, color, fontFamily: 'var(--font-poppins, sans-serif)' }}>{meta.name}</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color, fontFamily: 'var(--sl-font-brand)' }}>{meta.name}</span>
         </div>
         <div style={{ marginBottom: 8 }}>
           {meta.price_monthly === 0 ? (
-            <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--sl-t1)', fontFamily: 'var(--font-poppins, sans-serif)' }}>Gratuit</span>
+            <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--sl-t1)', fontFamily: 'var(--sl-font-brand)' }}>Gratuit</span>
           ) : (
-            <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--sl-t1)', fontFamily: 'var(--font-poppins, sans-serif)' }}>{meta.price_monthly}€<span style={{ fontSize: 13, fontWeight: 500, color: 'var(--sl-t3)' }}>/mois</span></span>
+            <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--sl-t1)', fontFamily: 'var(--sl-font-brand)' }}>{meta.price_monthly}€<span style={{ fontSize: 13, fontWeight: 500, color: 'var(--sl-t3)' }}>/mois</span></span>
           )}
         </div>
         <p style={{ fontSize: 12, color: 'var(--sl-t3)', margin: 0, lineHeight: 1.4 }}>{meta.tagline}</p>
@@ -108,7 +108,7 @@ function PlanCard({ planId, index, meta, quotas, canUseFeature, onCta }: PlanCar
         </>
       )}
       <div style={{ padding: '12px 20px 20px' }}>
-        <motion.button whileTap={{ scale: 0.97 }} whileHover={{ y: -1 }} onClick={() => onCta(planId)} style={{ width: '100%', padding: '12px 0', borderRadius: 12, border: isPopular ? 'none' : `1.5px solid ${color}50`, backgroundColor: isPopular ? color : `${color}10`, color: isPopular ? onColor : color, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-poppins, sans-serif)', boxShadow: isPopular ? `0 4px 16px ${color}35` : 'none', transition: 'all 0.12s' }}>
+        <motion.button whileTap={{ scale: 0.97 }} whileHover={{ y: -1 }} onClick={() => onCta(planId)} style={{ width: '100%', padding: '12px 0', borderRadius: 12, border: isPopular ? 'none' : `1.5px solid ${color}50`, backgroundColor: isPopular ? color : `${color}10`, color: isPopular ? onColor : color, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sl-font-brand)', boxShadow: isPopular ? `0 4px 16px ${color}35` : 'none', transition: 'all 0.12s' }}>
           {meta.cta_label}
         </motion.button>
       </div>
@@ -133,7 +133,7 @@ export default function PlansSection({ onCta }: PlansSectionProps) {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 999, backgroundColor: 'rgba(34,217,106,0.10)', border: '1px solid rgba(34,217,106,0.20)', marginBottom: 14 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: '#22d96a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Plans &amp; Tarifs</span>
         </div>
-        <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--sl-t1)', fontFamily: 'var(--font-poppins, sans-serif)', lineHeight: 1.2, margin: '0 0 10px' }}>Choisissez votre plan</h2>
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--sl-t1)', fontFamily: 'var(--sl-font-brand)', lineHeight: 1.2, margin: '0 0 10px' }}>Choisissez votre plan</h2>
         <p style={{ fontSize: 14, color: 'var(--sl-t2)', margin: 0, lineHeight: 1.6, maxWidth: 460, marginInline: 'auto' }}>Commencez gratuitement. Passez à un plan supérieur quand votre club est prêt.</p>
       </motion.div>
 

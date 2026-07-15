@@ -172,7 +172,7 @@ export default function Header({
               onBlur={() => setInputFocused(false)}
               onKeyDown={handleKeyDown}
               placeholder="Ville, club, événement…"
-              style={{ width: '100%', paddingLeft: 36, paddingRight: 34, paddingTop: 9, paddingBottom: 9, borderRadius: 14, backgroundColor: inputFocused ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.07)', border: `1.5px solid ${inputFocused ? 'rgba(34,217,106,0.45)' : 'rgba(255,255,255,0.13)'}`, color: '#deeeff', fontSize: 13, fontWeight: 500, fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box', boxShadow: inputFocused ? '0 0 0 3px rgba(34,217,106,0.12), 0 2px 12px rgba(0,0,0,0.3)' : '0 1px 4px rgba(0,0,0,0.25)', transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s' }}
+              style={{ width: '100%', paddingLeft: 36, paddingRight: 34, paddingTop: 9, paddingBottom: 9, borderRadius: 14, backgroundColor: inputFocused ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.07)', border: `1.5px solid ${inputFocused ? 'rgba(34,217,106,0.45)' : 'rgba(255,255,255,0.13)'}`, color: '#deeeff', fontSize: 13, fontWeight: 500, fontFamily: 'var(--sl-font-ui)', outline: 'none', boxSizing: 'border-box', boxShadow: inputFocused ? '0 0 0 3px rgba(34,217,106,0.12), 0 2px 12px rgba(0,0,0,0.3)' : '0 1px 4px rgba(0,0,0,0.25)', transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s' }}
             />
             {query && (
               <button onClick={() => { setQuery(''); setSearchOpen(false); inputRef.current?.focus(); }} aria-label="Effacer la recherche" style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 44, height: 44, borderRadius: '50%', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -328,7 +328,7 @@ export default function Header({
       {/* Profile button */}
       <div ref={profileRef} style={{ position: 'relative', flexShrink: 0 }}>
         {currentUser ? (
-          <motion.button whileTap={{ scale: 0.92 }} whileHover={{ scale: 1.06 }} onClick={() => setProfileOpen((o: boolean) => !o)} aria-label={`Menu profil — ${currentUser.name}`} aria-expanded={profileOpen} style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontWeight: 800, fontSize: 13, fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: profileOpen ? '0 0 0 2px var(--sl-green), 0 0 0 4px rgba(34,217,106,0.2)' : 'none', transition: 'box-shadow 0.15s', position: 'relative' }}>
+          <motion.button whileTap={{ scale: 0.92 }} whileHover={{ scale: 1.06 }} onClick={() => setProfileOpen((o: boolean) => !o)} aria-label={`Menu profil — ${currentUser.name}`} aria-expanded={profileOpen} style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: 'var(--sl-green)', color: '#fff', fontWeight: 800, fontSize: 13, fontFamily: 'var(--sl-font-ui)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: profileOpen ? '0 0 0 2px var(--sl-green), 0 0 0 4px rgba(34,217,106,0.2)' : 'none', transition: 'box-shadow 0.15s', position: 'relative' }}>
             {initials}
             {totalBadge > 0 && (
               <motion.span

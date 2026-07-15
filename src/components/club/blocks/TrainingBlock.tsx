@@ -241,7 +241,7 @@ function MonthCalendar({ sessions, clubId, onOpenDetail }: { sessions: Session[]
                   const shortTime = s.time.replace('h00', 'h').replace('h0', 'h');
                   return (
                     <div key={si} className="flex items-center justify-center rounded" style={{ backgroundColor: selected ? `${catColor}35` : `${catColor}20`, padding: '1px 3px' }}>
-                      <span style={{ fontSize: 7, fontWeight: 700, color: selected ? 'rgba(255,255,255,0.9)' : catColor, lineHeight: 1.3, fontFamily: 'Poppins, sans-serif', whiteSpace: 'nowrap' }}>{shortTime}</span>
+                      <span style={{ fontSize: 7, fontWeight: 700, color: selected ? 'rgba(255,255,255,0.9)' : catColor, lineHeight: 1.3, fontFamily: 'var(--sl-font-brand)', whiteSpace: 'nowrap' }}>{shortTime}</span>
                     </div>
                   );
                 })}

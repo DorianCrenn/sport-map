@@ -89,7 +89,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }: SportFo
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
       style={{ borderRadius: 16, border: '1px solid var(--sl-border)', padding: 12, backgroundColor: 'var(--sl-card)' }}>
-      <h3 style={{ fontWeight: 700, fontSize: 12, marginBottom: 12, color: 'var(--sl-t1)', fontFamily: 'Inter, sans-serif' }}>
+      <h3 style={{ fontWeight: 700, fontSize: 12, marginBottom: 12, color: 'var(--sl-t1)', fontFamily: 'var(--sl-font-ui)' }}>
         {saveLabel === 'Ajouter' ? 'Nouveau sport' : 'Modifier le sport'}
       </h3>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -97,7 +97,7 @@ function SportForm({ initial, saveLabel = 'Ajouter', onSave, onCancel }: SportFo
           <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--sl-t3)', marginBottom: 6, display: 'block' }}>Nom du sport *</label>
           <input value={form.label} onChange={e => { set('label')(e.target.value); setError(''); }}
             placeholder="Ex: Natation"
-            style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+            style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 13, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }} />
           {error && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{error}</p>}
         </div>
         <div>
@@ -538,7 +538,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
               </svg>
               <input value={clubSearch} onChange={(e: ChangeEvent<HTMLInputElement>) => setClubSearch(e.target.value)}
                 placeholder="Rechercher un club…" aria-label="Rechercher un club"
-                style={{ width: '100%', boxSizing: 'border-box', paddingLeft: 32, paddingRight: 12, paddingTop: 9, paddingBottom: 9, borderRadius: 12, fontSize: 13, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+                style={{ width: '100%', boxSizing: 'border-box', paddingLeft: 32, paddingRight: 12, paddingTop: 9, paddingBottom: 9, borderRadius: 12, fontSize: 13, backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)', color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)' }} />
             </div>
 
             {/* Filtres statut */}
@@ -639,7 +639,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                         id="admin-note" aria-label="Note pour le club (optionnelle, visible par le club)"
                         placeholder="Note optionnelle (visible par le club)…"
                         rows={2}
-                        style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', resize: 'none', fontFamily: 'Inter, sans-serif' }} />
+                        style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 12, backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', outline: 'none', resize: 'none', fontFamily: 'var(--sl-font-ui)' }} />
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         <button onClick={() => { setReviewingClubId(null); setAdminNote(''); }}
                           style={{ flex: 1, padding: '9px 8px', borderRadius: 12, border: '1px solid var(--sl-border)', fontSize: 11, color: 'var(--sl-t2)', fontWeight: 600, backgroundColor: 'var(--sl-surface)', cursor: 'pointer', minWidth: 60 }}>

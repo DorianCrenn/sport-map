@@ -229,7 +229,7 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
     <div style={{
       height: '100%',
       display: 'flex', flexDirection: 'column',
-      backgroundColor: 'var(--sl-bg)', fontFamily: 'Inter, sans-serif',
+      backgroundColor: 'var(--sl-bg)', fontFamily: 'var(--sl-font-ui)',
     }}>
       <div style={{
         flexShrink: 0, backgroundColor: 'var(--sl-card)',

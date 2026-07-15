@@ -193,7 +193,7 @@ export default function MobileEventSheet({ event, club, onClose, onEdit, onDelet
           </button>
         </div>
 
-        <h2 style={{ fontWeight: 800, fontSize: 20, lineHeight: 1.2, letterSpacing: '-0.02em', color: 'var(--sl-t1)', marginBottom: 4, fontFamily: 'Inter, sans-serif', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{event.title}</h2>
+        <h2 style={{ fontWeight: 800, fontSize: 20, lineHeight: 1.2, letterSpacing: '-0.02em', color: 'var(--sl-t1)', marginBottom: 4, fontFamily: 'var(--sl-font-ui)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{event.title}</h2>
 
         {event.eventType === 'championship' && event.teamName && <div style={{ fontSize: 13, fontWeight: 700, color: '#3b82f6', marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.teamName}</div>}
         {event.eventType === 'cup' && event.cupType && <div style={{ fontSize: 13, fontWeight: 700, color: '#f97316', marginBottom: 10, opacity: 0.9, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.cupType}</div>}

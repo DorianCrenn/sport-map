@@ -411,7 +411,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
     width: '100%', boxSizing: 'border-box',
     borderRadius: 12, padding: '10px 12px', fontSize: 13,
     backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border-s)',
-    color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif',
+    color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)',
   };
   const selectStyle: React.CSSProperties = { ...inputStyle, cursor: 'pointer' };
 

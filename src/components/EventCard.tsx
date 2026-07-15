@@ -653,7 +653,7 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
               </div>
 
               {/* Title */}
-              <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 2, fontFamily: 'Inter, sans-serif', textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
+              <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3, color: status === 'cancelled' ? 'var(--sl-t3)' : 'var(--sl-t1)', marginBottom: 2, fontFamily: 'var(--sl-font-ui)', textDecoration: status === 'cancelled' ? 'line-through' : 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
                 {event.title}
               </div>
 

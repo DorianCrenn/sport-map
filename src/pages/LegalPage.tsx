@@ -20,7 +20,7 @@ interface SectionProps {
 function Section({ title, children }: SectionProps) {
   return (
     <div style={{ marginBottom: 28 }}>
-      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 8, fontFamily: 'Poppins, sans-serif' }}>
+      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 8, fontFamily: 'var(--sl-font-brand)' }}>
         {title}
       </h3>
       <div style={{ fontSize: 13, color: 'var(--sl-t2)', lineHeight: 1.75 }}>
@@ -231,7 +231,7 @@ export default function LegalPage({ initialTab = 'mentions', onClose }: LegalPag
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
-        <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--sl-t1)', fontFamily: 'Poppins, sans-serif', margin: 0 }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--sl-t1)', fontFamily: 'var(--sl-font-brand)', margin: 0 }}>
           Informations légales
         </h1>
       </div>
@@ -250,7 +250,7 @@ export default function LegalPage({ initialTab = 'mentions', onClose }: LegalPag
             style={{
               flexShrink: 0,
               padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
-              fontWeight: 600, fontSize: 13, fontFamily: 'Inter, sans-serif',
+              fontWeight: 600, fontSize: 13, fontFamily: 'var(--sl-font-ui)',
               transition: 'background-color 0.15s, color 0.15s',
               backgroundColor: activeTab === tab.id ? 'var(--sl-green)' : 'var(--sl-hover)',
               color: activeTab === tab.id ? '#fff' : 'var(--sl-t2)',

@@ -92,7 +92,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
       style={{
         position: 'absolute', inset: 0, zIndex: 10,
         display: 'flex', flexDirection: 'column',
-        backgroundColor: 'var(--sl-bg)', fontFamily: 'Inter, sans-serif',
+        backgroundColor: 'var(--sl-bg)', fontFamily: 'var(--sl-font-ui)',
       }}
     >
       <div style={{
@@ -229,7 +229,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
                 borderRadius: 10, border: '1px solid var(--sl-border)',
                 backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)',
                 fontSize: 13, resize: 'vertical', outline: 'none',
-                fontFamily: 'Inter, sans-serif',
+                fontFamily: 'var(--sl-font-ui)',
               }}
             />
           </div>
@@ -410,7 +410,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
     <div style={{
       height: '100%', position: 'relative',
       display: 'flex', flexDirection: 'column',
-      backgroundColor: 'var(--sl-bg)', fontFamily: 'Inter, sans-serif',
+      backgroundColor: 'var(--sl-bg)', fontFamily: 'var(--sl-font-ui)',
     }}>
       <div style={{
         flexShrink: 0, backgroundColor: 'var(--sl-card)',
@@ -516,7 +516,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
               paddingLeft: 32, paddingRight: 12, paddingTop: 8, paddingBottom: 8,
               borderRadius: 10, fontSize: 13,
               backgroundColor: 'var(--sl-surface)', border: '1px solid var(--sl-border)',
-              color: 'var(--sl-t1)', outline: 'none', fontFamily: 'Inter, sans-serif',
+              color: 'var(--sl-t1)', outline: 'none', fontFamily: 'var(--sl-font-ui)',
             }}
           />
         </div>
