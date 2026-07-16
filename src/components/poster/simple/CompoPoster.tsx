@@ -117,11 +117,19 @@ function CompoDesign({ players, club, event, accent, t, demo, dim }: { players: 
   const away = String(event?.home_or_away ?? 'home') === 'away';
   const home = away ? adversaire : clubName;
   const visitor = away ? clubName : adversaire;
-  const d = event?.date ? new Date(event.date) : null;
-  const valid = !!d && !isNaN(d.getTime());
-  const dateStr = valid ? d!.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).replace('.', '') : '';
-  const timeStr = valid ? d!.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : '';
-  const venue = event?.venue || event?.lieu || event?.city || '';
+  // Date/heure : même convention que le reste de l'app (useSeasonPlanning) —
+  // l'heure est un champ séparé OU les caractères 11-16 de l'ISO, JAMAIS
+  // new Date().toLocaleTimeString() (qui décalerait selon le fuseau). La date
+  // est construite depuis Y/M/D locaux pour éviter tout glissement de jour.
+  const rawDate = String(event?.date ?? '');
+  const datePart = rawDate.slice(0, 10);
+  const isoTime = rawDate.length > 11 ? rawDate.slice(11, 16) : '';
+  const rawTime = (String(event?.time ?? '').slice(0, 5) || (isoTime !== '00:00' ? isoTime : '')).trim();
+  const [Y, M, D] = datePart.split('-').map(Number);
+  const dObj = Y && M && D ? new Date(Y, M - 1, D) : null;
+  const dateStr = dObj ? dObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '') : '';
+  const timeStr = rawTime ? rawTime.replace(':', 'h') : '';
+  const venue = event?.venue || event?.location || event?.lieu || event?.city || '';
   const category = event?.category || event?.team_name || '';
   const comp = competitionLabel(event);
   const logo = club?.logoUrl ?? club?.logo_url ?? null;
