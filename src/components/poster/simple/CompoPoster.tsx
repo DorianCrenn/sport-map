@@ -135,7 +135,7 @@ function PlayerCard({ p, accent, t, photo, nameFs }: { p: Player; accent: string
           <div style={{ position: 'absolute', bottom: -2, right: -2, minWidth: 15, height: 15, padding: '0 3px', borderRadius: 8, background: accent, color: '#000', fontSize: 8.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1.5px solid ${t.bg.includes('#0b') ? '#0b1220' : '#fff'}` }}>{p.number}</div>
         )}
       </div>
-      <span style={{ fontSize: nameFs, fontWeight: 700, color: t.text, textAlign: 'center', lineHeight: 1.1, maxWidth: photo + 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+      <span style={{ fontSize: nameFs, fontWeight: 700, color: t.text, textAlign: 'center', lineHeight: 1.12, maxWidth: photo + 26, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', wordBreak: 'break-word' } as React.CSSProperties}>{p.name}</span>
     </div>
   );
 }
