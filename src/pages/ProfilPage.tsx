@@ -18,6 +18,7 @@ import { usePlan } from '../hooks/usePlan.js';
 import { useAnalyticsConsent } from '../hooks/useAnalyticsConsent.js';
 import ClubLeaderboard from '../components/ClubLeaderboard.jsx';
 import UserLeaderboard from '../components/UserLeaderboard.jsx';
+import type { SportLinkClub } from '../types/sportlink.js';
 import { useMyPlayerStats } from '../hooks/usePlayerStats.js';
 
 const BadgeUnlockModal = lazy(() => import('../components/BadgeUnlockModal.jsx'));
@@ -85,7 +86,7 @@ function SimpleModeToggle() {
 
 // ── Theme toggle switch ────────────────────────────────────────────────────────
 function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme() as any;
+  const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 
   return (
@@ -251,13 +252,13 @@ export default function ProfilPage({
   onMyConvocations,
   convocationsPendingCount = 0,
 }: ProfilPageProps) {
-  const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs, requestPasswordReset } = useAuth() as any;
-  const { toast } = useToast() as any;
-  const { favorites } = useFavoritesContext() as any;
+  const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs, requestPasswordReset } = useAuth();
+  const { toast } = useToast();
+  const { favorites } = useFavoritesContext();
   const { allSports } = useSports() as any;
-  const { userClubs } = useClubs() as any;
-  const { planId, plan: planInfo, isUpgradeable: canUpgrade } = usePlan() as any;
-  const allClubs: Record<string, any>[] = userClubs;
+  const { userClubs } = useClubs();
+  const { planId, plan: planInfo, isUpgradeable: canUpgrade } = usePlan();
+  const allClubs: SportLinkClub[] = userClubs;
   const followedClubIds: string[] = followedClubs;
   const [editingSports, setEditingSports] = useState<boolean>(false);
   const [selectedSports, setSelectedSports] = useState<Set<string>>(new Set());
@@ -267,7 +268,7 @@ export default function ProfilPage({
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const [pwResetSent, setPwResetSent] = useState<boolean>(false);
-  const { consent: analyticsConsent, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent() as any;
+  const { consent: analyticsConsent, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent();
   const favCount: number = favorites?.size ?? 0;
   const eventCount: number = userEvents?.length ?? 0;
   const favSports: string[] = currentUser?.favoriteSports ?? [];
@@ -905,7 +906,7 @@ export default function ProfilPage({
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {followedClubIds.map((clubId: string) => {
-                const club = allClubs.find((c: Record<string, any>) => c.id === clubId);
+                const club = allClubs.find((c) => c.id === clubId);
                 if (!club) return null;
                 return (
                   <div key={clubId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

@@ -90,10 +90,10 @@ interface TrainingManagerPageProps {
 }
 
 export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps) {
-  const { currentUser } = useAuth() as any;
-  const isManager = ['club_admin', 'admin', 'superadmin'].includes(currentUser?.role);
+  const { currentUser } = useAuth();
+  const isManager = ['club_admin', 'admin', 'superadmin'].includes(currentUser?.role ?? '');
 
-  const { managedClubs, loading: clubsLoading } = useManagedClubs() as any;
+  const { managedClubs, loading: clubsLoading } = useManagedClubs();
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
   }, [managedClubs, selectedClubId]);
 
   const myClub = useMemo(
-    () => managedClubs.find((c: any) => String(c.id) === selectedClubId) ?? null,
+    () => managedClubs.find((c) => String(c.id) === selectedClubId) ?? null,
     [managedClubs, selectedClubId]
   );
 
@@ -126,7 +126,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
     for (const club of managedClubs) {
       if (String(club.id) !== String(playerClubId)) continue;
       for (const cat of (club.categories ?? [])) {
-        const t = (cat.teams ?? []).find((t: any) => String(t.id) === String(playerTeamId));
+        const t = (cat.teams ?? []).find((t) => String(t.id) === String(playerTeamId));
         if (t) return t.name;
       }
     }
@@ -145,15 +145,15 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
 
   const clubTeams = useMemo(() => {
-    const fromCategories = (myClub?.categories ?? []).flatMap((cat: any) =>
-      (cat.teams ?? []).map((t: any) => ({
+    const fromCategories = (myClub?.categories ?? []).flatMap((cat) =>
+      (cat.teams ?? []).map((t) => ({
         id:      String(t.id),
         name:    t.name,
         catName: cat.name,
         level:   t.level ?? '',
       }))
     );
-    const fromKeys = Object.keys(trainings).filter((k: string) => !fromCategories.some((t: any) => t.id === k));
+    const fromKeys = Object.keys(trainings).filter((k: string) => !fromCategories.some((t) => t.id === k));
     const extra    = fromKeys.map((k: string) => ({ id: k, name: k === 'default' ? 'Mon équipe' : k, catName: '' }));
     const all      = [...fromCategories, ...extra];
     return all.length > 0 ? all : [{ id: 'default', name: 'Mon équipe', catName: '' }];
@@ -291,7 +291,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
         {/* Sélecteur de club (multi-club manager) */}
         {isManager && managedClubs.length > 1 && (
           <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-            {managedClubs.map((club: any) => (
+            {managedClubs.map((club) => (
               <button
                 key={club.id}
                 onClick={() => { setSelectedClubId(String(club.id)); setSelectedTeam('all'); }}
