@@ -23,12 +23,13 @@ const FORMATS: { id: Format; label: string; w: number; h: number; rows: number }
   { id: 'square', label: 'Carré',       w: 360, h: 360, rows: 3 }, // 1:1
 ];
 
-type Bg = 'halos' | 'rayures' | 'spot' | 'bande' | 'epure';
+type Bg = 'spot' | 'rayures' | 'bande' | 'terrain' | 'vif' | 'epure';
 const BGS: { id: Bg; label: string }[] = [
-  { id: 'halos',   label: 'Halos' },
-  { id: 'rayures', label: 'Rayures' },
   { id: 'spot',    label: 'Spot' },
+  { id: 'rayures', label: 'Rayures' },
   { id: 'bande',   label: 'Bande' },
+  { id: 'terrain', label: 'Terrain' },
+  { id: 'vif',     label: 'Vif' },
   { id: 'epure',   label: 'Épuré' },
 ];
 
@@ -73,7 +74,7 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
 
   const [type, setType]     = useState<PosterType>(available[0]);
   const [format, setFormat] = useState<Format>('post');
-  const [bg, setBg]         = useState<Bg>('halos');
+  const [bg, setBg]         = useState<Bg>('spot');
   const [accent, setAccent] = useState<string>(clubAccent);
   const [exporting, setExporting] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
@@ -196,29 +197,39 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
 function PosterBg({ bg, accent }: { bg: Bg; accent: string }) {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {bg === 'epure' && (
-        <div style={{ position: 'absolute', top: '-25%', left: '50%', transform: 'translateX(-50%)', width: 320, height: 320, borderRadius: '50%', background: accent, opacity: 0.13, filter: 'blur(14px)' }} />
-      )}
+      {/* Épuré : fond plat, aucun décor (juste le liseré commun) */}
 
-      {bg === 'halos' && <>
-        <div style={{ position: 'absolute', top: -90, right: -70, width: 280, height: 280, borderRadius: '50%', background: accent, opacity: 0.22, filter: 'blur(10px)' }} />
-        <div style={{ position: 'absolute', bottom: -100, left: -80, width: 250, height: 250, borderRadius: '50%', background: accent, opacity: 0.11, filter: 'blur(10px)' }} />
+      {bg === 'spot' && <>
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 75% 55% at 50% -12%, ${accent}66, transparent 60%)` }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 120% 75% at 50% 130%, rgba(0,0,0,0.7), transparent 55%)' }} />
+        <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 90px 20px rgba(0,0,0,0.5)' }} />
       </>}
 
       {bg === 'rayures' && <>
         <div style={{ position: 'absolute', top: -80, right: -60, width: 240, height: 240, borderRadius: '50%', background: accent, opacity: 0.16, filter: 'blur(10px)' }} />
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(45deg, ${accent}0f 0 2px, transparent 2px 16px)` }} />
-      </>}
-
-      {bg === 'spot' && <>
-        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 70% 55% at 50% -8%, ${accent}40, transparent 65%)` }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 90% 60% at 50% 115%, rgba(0,0,0,0.55), transparent 60%)' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(45deg, ${accent}1a 0 3px, transparent 3px 18px)` }} />
       </>}
 
       {bg === 'bande' && <>
-        <div style={{ position: 'absolute', top: -80, right: -60, width: 230, height: 230, borderRadius: '50%', background: accent, opacity: 0.15, filter: 'blur(10px)' }} />
-        <div style={{ position: 'absolute', top: '18%', left: '-20%', width: '140%', height: 120, background: `linear-gradient(90deg, transparent, ${accent}33, transparent)`, transform: 'rotate(-22deg)' }} />
-        <div style={{ position: 'absolute', top: '46%', left: '-20%', width: '140%', height: 60, background: `linear-gradient(90deg, transparent, ${accent}1a, transparent)`, transform: 'rotate(-22deg)' }} />
+        <div style={{ position: 'absolute', top: '12%', left: '-25%', width: '150%', height: 130, background: `linear-gradient(90deg, transparent, ${accent}55, transparent)`, transform: 'rotate(-24deg)' }} />
+        <div style={{ position: 'absolute', top: '40%', left: '-25%', width: '150%', height: 70, background: `linear-gradient(90deg, transparent, ${accent}2e, transparent)`, transform: 'rotate(-24deg)' }} />
+        <div style={{ position: 'absolute', top: '60%', left: '-25%', width: '150%', height: 40, background: `linear-gradient(90deg, transparent, ${accent}1c, transparent)`, transform: 'rotate(-24deg)' }} />
+      </>}
+
+      {bg === 'terrain' && <>
+        {/* Marquages de terrain de foot */}
+        <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 2, background: `${accent}22` }} />
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 170, height: 170, borderRadius: '50%', border: `2px solid ${accent}22` }} />
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 7, height: 7, borderRadius: '50%', background: `${accent}44` }} />
+        <div style={{ position: 'absolute', top: -34, left: '50%', transform: 'translate(-50%,-50%)', width: 90, height: 90, borderRadius: '50%', border: `2px solid ${accent}1e` }} />
+        <div style={{ position: 'absolute', bottom: -34, left: '50%', transform: 'translate(-50%,50%)', width: 90, height: 90, borderRadius: '50%', border: `2px solid ${accent}1e` }} />
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${accent}20, transparent 60%)` }} />
+      </>}
+
+      {bg === 'vif' && <>
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(145deg, ${accent}dd 0%, ${accent}55 28%, transparent 58%)` }} />
+        <div style={{ position: 'absolute', bottom: -110, right: -80, width: 260, height: 260, borderRadius: '50%', background: accent, opacity: 0.3, filter: 'blur(12px)' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 20px)` }} />
       </>}
 
       {/* Liseré accent en bas (commun) */}
