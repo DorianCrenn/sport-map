@@ -15,6 +15,7 @@ import FeedRecentResults         from '../components/home/FeedRecentResults.js';
 
 
 const PosterStudio             = lazy(() => import('../components/PosterStudio.jsx'));
+const CompoPoster              = lazy(() => import('../components/poster/simple/CompoPoster.jsx'));
 const EventFormStepConvocation = lazy(() => import('../components/event/EventFormStepConvocation.jsx'));
 
 interface ActualitesPageProps {
@@ -57,6 +58,7 @@ export default function ActualitesPage({
 
 
   const [studioConfig,     setStudioConfig]     = useState<Record<string, any> | null>(null);
+  const [compoEvent,       setCompoEvent]       = useState<Record<string, any> | null>(null);
   const [convocationEvent, setConvocationEvent] = useState<Record<string, any> | null>(null);
   const [posterStatuses,   setPosterStatuses]   = useState<Record<string, 'draft' | 'saved'>>({});
 
@@ -127,20 +129,10 @@ export default function ActualitesPage({
     return () => window.removeEventListener('sl-demo-navigate', onDemoNav);
   }, [demo]);
 
-  const handleOpenPoster = useCallback(async ({ event, score, mode }: { event: any; score: any; mode: string }) => {
-    let convPlayers: string[] | null = null;
-    if (mode === 'convocation' && event?.id) {
-      const { data: convocRows } = await supabase
-        .from('event_convocations').select('player_id').eq('event_id', event.id).eq('status', 'accepted');
-      const playerIds = (convocRows ?? []).map((r: any) => r.player_id);
-      if (playerIds.length) {
-        const { data: playerRows } = await supabase.from('club_players').select('name').in('id', playerIds);
-        convPlayers = (playerRows ?? []).map((p: any) => p.name);
-      } else {
-        convPlayers = [];
-      }
-    }
-    setStudioConfig({ event, resultMode: score ?? null, quickMode: !!score, convocationPlayers: convPlayers });
+  const handleOpenPoster = useCallback(({ event, score, mode }: { event: any; score: any; mode: string }) => {
+    // Compo / convocation → affiche « du groupe » (grille adaptative cohérente).
+    if (mode === 'convocation' && event?.id) { setCompoEvent(event); return; }
+    setStudioConfig({ event, resultMode: score ?? null, quickMode: !!score, convocationPlayers: null });
   }, []);
 
   // Ne pas décider isNewUser tant que l'auth charge (évite un flash "nouveau compte")
@@ -427,6 +419,17 @@ export default function ActualitesPage({
             resultMode={studioConfig.resultMode}
             quickMode={studioConfig.quickMode}
             convocationPlayers={studioConfig.convocationPlayers}
+          />
+        </Suspense>
+      )}
+
+      {/* Affiche du groupe (compo) — grille adaptative, cadre partagé */}
+      {compoEvent && (
+        <Suspense fallback={null}>
+          <CompoPoster
+            event={compoEvent}
+            club={managedClubs.find((c: any) => String(c.id) === String(compoEvent?.club_id)) ?? null}
+            onClose={() => setCompoEvent(null)}
           />
         </Suspense>
       )}

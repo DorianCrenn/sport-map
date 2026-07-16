@@ -8,7 +8,7 @@ import MatchPlanningCard          from './MatchPlanningCard.jsx';
 import AnnouncementPlanningCard   from './AnnouncementPlanningCard.jsx';
 
 
-const CompositionPoster = lazy(() => import('./CompositionPoster.jsx'));
+const CompositionPoster = lazy(() => import('../poster/simple/CompoPoster.jsx'));
 
 const WEEKDAYS_FULL = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const MONTHS_FR     = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
