@@ -15,8 +15,10 @@ const ctx = await browser.newContext({
 const page = await ctx.newPage();
 page.on('console', m => { if (m.type() === 'error') console.log('PAGE ERR:', m.text()); });
 
+const MODAL = process.env.COMPO_MODAL ?? 'CompoPoster';
+const PREFIX = process.env.COMPO_PREFIX ?? 'compo';
 await page.addInitScript(() => localStorage.setItem('sl-theme', 'light'));
-await page.goto('http://localhost:5173/?devmodals=CompoPoster', { waitUntil: 'networkidle', timeout: 40000 });
+await page.goto(`http://localhost:5173/?devmodals=${MODAL}`, { waitUntil: 'networkidle', timeout: 40000 });
 await page.waitForTimeout(1500);
 
 // Le harnais auto-ouvre la modale via `initial`. Si pas ouverte, on clique.
@@ -37,7 +39,7 @@ for (const f of formats) {
   const seg = page.locator('button', { hasText: f.label }).first();
   if (await seg.count()) { await seg.click().catch(() => {}); }
   await page.waitForTimeout(1200);
-  await page.screenshot({ path: resolve(OUT, `compo-${f.file}.png`) });
+  await page.screenshot({ path: resolve(OUT, `${PREFIX}-${f.file}.png`) });
   console.log('captured', f.file);
 }
 

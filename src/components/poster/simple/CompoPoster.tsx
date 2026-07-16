@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEventConvocations } from '../../../hooks/useEventConvocations.js';
@@ -80,6 +80,32 @@ export default function CompoPoster({ event, club, accentColor = '', onClose }: 
   );
 }
 
+// Libellés des tours de coupe (mêmes clés que les données événements).
+const CUP_ROUNDS: Record<string, string> = {
+  round_of_64: '64es de finale', round_of_32: '32es de finale', round_of_16: '16es de finale',
+  round_of_8: '8es de finale', eighth_final: '8es de finale',
+  quarter_final: 'Quarts de finale', semi_final: 'Demi-finale',
+  final: 'Finale', third_place: 'Petite finale',
+};
+
+// Compétition (bandeau) — même convention que EventCard/MobileEventSheet :
+// event_type + level (championnat) / cup_type (coupe) / tournament_name (tournoi).
+function competitionLabel(ev: Record<string, any>): { icon: string; text: string } | null {
+  const type  = String(ev?.event_type ?? ev?.eventType ?? '');
+  const level = String(ev?.level ?? '').trim();
+  const cup   = String(ev?.cup_type ?? ev?.cupType ?? '').trim();
+  const tour  = String(ev?.tournament_name ?? '').trim();
+  if (type === 'championship') return { icon: '🏆', text: `Championnat${level ? ` · ${level}` : ''}` };
+  if (type === 'cup') {
+    const round = CUP_ROUNDS[cup] ?? (cup && !/coupe/i.test(cup) ? cup : '');
+    const base  = /coupe/i.test(cup) ? cup : 'Coupe';
+    return { icon: '🥇', text: base === 'Coupe' && round ? `Coupe · ${round}` : base };
+  }
+  if (type === 'friendly')   return { icon: '🤝', text: 'Match amical' };
+  if (type === 'tournament') return { icon: '🏟️', text: tour || 'Tournoi' };
+  return level ? { icon: '🏆', text: level } : null;
+}
+
 function CompoDesign({ players, club, event, accent, t, demo, dim }: { players: Player[]; club: Record<string, any>; event: Record<string, any>; accent: string; t: Theme; demo: boolean; dim: { id: Format; w: number; h: number } }) {
   const n = players.length;
   const confirmed = players.filter(p => p.status === 'accepted').length;
@@ -97,48 +123,78 @@ function CompoDesign({ players, club, event, accent, t, demo, dim }: { players: 
   const timeStr = valid ? d!.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : '';
   const venue = event?.venue || event?.lieu || event?.city || '';
   const category = event?.category || event?.team_name || '';
+  const comp = competitionLabel(event);
   const logo = club?.logoUrl ?? club?.logo_url ?? null;
 
   // ── Dimensionnement anti-débordement ─────────────────────────────────────
-  // On calcule la place verticale réelle disponible d'après le format, puis on
-  // choisit colonnes + hauteur de ligne pour que TOUT rentre (jamais coupé).
-  const HEADER = 118, FOOTER = 30, VPAD = 12;
-  const availH = Math.max(80, dim.h - HEADER - FOOTER - VPAD);
-  const gap = 5;
-  const minRow = 26, maxRow = 46;
-  let cols = dim.h < 400 && n > 8 ? 3 : 2;
-  const rowHFor = (c: number) => { const pc = Math.ceil(n / c); return (availH - (pc - 1) * gap) / pc; };
-  while (rowHFor(cols) < minRow && cols < 4) cols++;
-  const perCol = Math.ceil(n / cols);
-  const rowH = Math.max(minRow - 4, Math.min(rowHFor(cols), maxRow));
-  const av = Math.max(20, Math.min(rowH - 8, cols === 2 ? 40 : 34));
-  const lastFs = Math.max(10, Math.min(Math.round(rowH * 0.32), 14));
-  const lines = rowH >= 40 ? 2 : 1;
+  // On MESURE la hauteur réelle de l'en-tête (le nom du club/adversaire peut le
+  // faire varier), puis on répartit les joueurs dans la place restante → jamais
+  // coupé, quel que soit le format/effectif. offsetHeight = px de layout (non
+  // affecté par le transform:scale de l'aperçu).
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerH, setHeaderH] = useState(150);
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const measure = () => setHeaderH(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
-  const Chip = ({ icon, children }: { icon: string; children: React.ReactNode }) => (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: t.surface, border: `1px solid ${accent}22`, borderRadius: 999, padding: '3px 9px', fontSize: 10, fontWeight: 700, color: t.text, maxWidth: '100%', minWidth: 0 }}>
-      <span style={{ fontSize: 10, flexShrink: 0 }}>{icon}</span>
+  const FOOTER = 30, VPAD = 12;
+  const availH = Math.max(80, dim.h - headerH - FOOTER - VPAD);
+  const gap = 5, maxRow = 46;
+  // Colonnes fixées par format : formats hauts (Publication/Story) = 2 colonnes
+  // LARGES → noms entiers ; Carré (court) = 3 colonnes ; +1 colonne si gros
+  // effectif. La hauteur de ligne s'adapte ensuite pour tout faire tenir.
+  const tall = dim.h >= 440;
+  let cols = tall ? 2 : 3;
+  if (n > (tall ? 22 : 21)) cols += 1;
+  cols = Math.min(cols, 4);
+  const perCol = Math.ceil(n / cols);
+  const rowH = Math.max(18, Math.min((availH - (perCol - 1) * gap) / perCol, maxRow));
+  const av = Math.max(18, Math.min(rowH - 8, cols === 2 ? 40 : 32));
+  const lastFs = Math.max(10, Math.min(Math.round(rowH * 0.32), 14));
+  const lines = rowH >= 38 ? 2 : 1;
+
+  // En-tête compact sur format court (Carré) → rend de la place aux joueurs.
+  const H = tall
+    ? { padTop: 14, bannerFs: 11, bannerPad: '4px 12px', bannerMb: 10, logoSz: 42, matchFs: 15.5, chipMt: 10 }
+    : { padTop: 10, bannerFs: 9.5, bannerPad: '3px 10px', bannerMb: 6, logoSz: 34, matchFs: 13, chipMt: 7 };
+
+  const Chip = ({ icon, children, strong }: { icon: string; children: React.ReactNode; strong?: boolean }) => (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: strong ? `${accent}1f` : t.surface, border: `1px solid ${strong ? `${accent}59` : `${accent}22`}`, borderRadius: 999, padding: strong ? '4px 11px' : '3px 9px', fontSize: strong ? 11.5 : 10, fontWeight: strong ? 800 : 700, color: t.text, maxWidth: '100%', minWidth: 0 }}>
+      <span style={{ fontSize: strong ? 11 : 10, flexShrink: 0 }}>{icon}</span>
       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{children}</span>
     </span>
   );
 
   return (
     <>
-      {/* En-tête : identité + confrontation + infos match */}
-      <div style={{ position: 'relative', flexShrink: 0, padding: '16px 18px 8px' }}>
+      {/* En-tête : compétition (bandeau) + confrontation + infos match */}
+      <div ref={headerRef} style={{ position: 'relative', flexShrink: 0, padding: `${H.padTop}px 18px 8px` }}>
+        {/* Bandeau compétition — accent plein, bien visible */}
+        {comp && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: accent, color: '#fff', borderRadius: 999, padding: H.bannerPad, fontSize: H.bannerFs, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: H.bannerMb, maxWidth: '100%', boxShadow: `0 3px 10px ${accent}59` }}>
+            <span style={{ fontSize: H.bannerFs + 1, flexShrink: 0 }}>{comp.icon}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{comp.text}</span>
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
           {logo
-            ? <img src={logo} alt="" {...(demo ? {} : { crossOrigin: 'anonymous' as const })} style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 11, background: t.surface, flexShrink: 0 }} />
-            : <div style={{ width: 40, height: 40, borderRadius: 11, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: 17, flexShrink: 0 }}>{(clubName ?? 'FC')[0]}</div>}
+            ? <img src={logo} alt="" {...(demo ? {} : { crossOrigin: 'anonymous' as const })} style={{ width: H.logoSz, height: H.logoSz, objectFit: 'contain', borderRadius: 11, background: t.surface, flexShrink: 0 }} />
+            : <div style={{ width: H.logoSz, height: H.logoSz, borderRadius: 11, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: H.logoSz * 0.43, flexShrink: 0 }}>{(clubName ?? 'FC')[0]}</div>}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ color: accent, fontSize: 9.5, fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Le groupe {category && `· ${category}`}</div>
-            <div style={{ color: t.text, fontSize: 15, fontWeight: 900, lineHeight: 1.12, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>
+            <div style={{ color: t.text, fontSize: H.matchFs, fontWeight: 900, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>
               {home}{visitor && <span style={{ color: t.dim }}> vs {visitor}</span>}
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 9 }}>
-          {dateStr && <Chip icon="🗓">{dateStr}{timeStr ? ` · ${timeStr}` : ''}</Chip>}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: H.chipMt }}>
+          {dateStr && <Chip icon="🗓" strong>{dateStr}{timeStr ? ` · ${timeStr}` : ''}</Chip>}
           {venue && <Chip icon="📍">{venue}</Chip>}
           <Chip icon="✅">{confirmed} présent{confirmed > 1 ? 's' : ''}{pending > 0 ? ` · ${pending} en attente` : ''}</Chip>
         </div>
