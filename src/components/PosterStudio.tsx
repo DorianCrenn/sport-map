@@ -10,6 +10,7 @@ import StylePanelTab     from './poster/panels/StylePanelTab.jsx';
 import PlayersPanelTab   from './poster/panels/PlayersPanelTab.jsx';
 import BackgroundPanelTab from './poster/panels/BackgroundPanelTab.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
+import MatchPoster from './poster/simple/MatchPoster.js';
 import AiElementEditor from './poster/AiElementEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useAndroidBack } from '../hooks/useAndroidBack.js';
@@ -392,6 +393,21 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
+
+  // Mode Simple = générateur d'affiche épuré (contenu × format × thème dark/light
+  // × couleur × fond). Tout le studio complet reste accessible en mode Expert.
+  if (simpleMode && !convocationPlayers?.length) {
+    return (
+      <MatchPoster
+        event={event}
+        club={club}
+        accentColor={accentColor}
+        score={scoreHome !== undefined && scoreAway !== undefined ? { home: scoreHome, away: scoreAway } : null}
+        onClose={onClose}
+        onExpert={canExpert ? () => setSimpleMode(false) : undefined}
+      />
+    );
+  }
 
   return (
     <>
