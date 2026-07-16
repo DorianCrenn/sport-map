@@ -47,9 +47,10 @@ const MODALS: Record<string, (close: () => void) => ReactNode> = {
 };
 
 // Événements démo (id réel des convocations démo) pour tester l'affiche du groupe.
-// Champs alignés sur demo/data/events.ts : event_type / level / cup_type / category.
-const mockCompoEvent = { id: 'demo-event-001', date: '2026-08-15T15:00:00', venue: 'Stade Francis-Le Blé', city: 'Brest', adversaire: 'AS Plougastel', home_or_away: 'home', event_type: 'championship', level: 'Régional 2', category: 'Seniors', team_name: 'Équipe 1' };
-const mockCompoCup   = { id: 'demo-event-001', date: '2026-09-07T14:00:00', venue: "Stade de l'Elorn", city: 'Brest', adversaire: 'Stade Brestois B', home_or_away: 'away', event_type: 'cup', cup_type: 'quarter_final', category: 'Seniors', team_name: 'Équipe 1' };
+// Forme d'un item de planning (useSeasonPlanning) : date SEULE + time séparé +
+// location (pas venue). C'est ce que reçoit réellement CompoPoster.
+const mockCompoEvent = { id: 'demo-event-001', date: '2026-08-15', time: '15:00', location: 'Stade Francis-Le Blé', adversaire: 'AS Plougastel', home_or_away: 'home', event_type: 'championship', level: 'Régional 2', category: 'Seniors', team_name: 'Équipe 1' };
+const mockCompoCup   = { id: 'demo-event-001', date: '2026-09-07', time: '14:00', location: "Stade de l'Elorn", adversaire: 'Stade Brestois B', home_or_away: 'away', event_type: 'cup', cup_type: 'quarter_final', category: 'Seniors', team_name: 'Équipe 1' };
 
 export default function DevModalsHarness({ initial = null }: { initial?: string | null }) {
   const [active, setActive] = useState<string | null>(initial && MODALS[initial] ? initial : null);
