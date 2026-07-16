@@ -16,24 +16,28 @@ import { formatDate, formatTime } from '../lib/dateUtils.js';
 import { IconMap } from '../components/icons.js';
 import { useDynamicMeta } from '../hooks/useDynamicMeta.js';
 import { generateEventUrl } from '../lib/eventShare.js';
+import type { SportLinkClub } from '../types/sportlink.js';
 
 const EventFormModal = lazy(() => import('../components/EventFormModal.jsx'));
 
 interface MapPageProps {
+  // Tableau hétérogène par conception : événements utilisateur (SportLinkEvent)
+  // + matchs de club (ClubMatchEvent, shape différent), consommés en aval par
+  // des composants carte au type propre (EventItem). D'où un type large assumé.
   allEvents: any[];
   activeDepartment: any;
   canAddEvent: boolean;
-  onAddEvent: (formData: any) => Promise<any>;
-  onUpdateEvent: (id: any, formData: any) => Promise<any>;
-  onDeleteEvent: (id: any) => void;
+  onAddEvent: (formData: Record<string, any>) => Promise<any>;
+  onUpdateEvent: (id: string, formData: Record<string, any>) => Promise<any>;
+  onDeleteEvent: (id: string) => void;
   onGoToFavoris: () => void;
-  cityFilter: any;
-  focusEventId: any;
+  cityFilter: string | null;
+  focusEventId: string | null;
   onFocusDone: () => void;
   eventsLoading: boolean;
-  initialSportFilter?: any;
+  initialSportFilter?: string | null;
   onInitialFilterApplied?: () => void;
-  allClubs?: any[];
+  allClubs?: SportLinkClub[];
 }
 
 export default function MapPage({
@@ -45,9 +49,9 @@ export default function MapPage({
   initialSportFilter, onInitialFilterApplied,
   allClubs = [],
 }: MapPageProps) {
-  const { currentUser } = useAuth() as any;
+  const { currentUser } = useAuth();
   const { allSports: SPORTS } = useSports() as any;
-  const { favorites } = useFavoritesContext() as any;
+  const { favorites } = useFavoritesContext();
   const favoritesCount = favorites.size;
   const [sportFilter, setSportFilter] = useState<any>(null);
   const [ahaSport, setAhaSport] = useState<any>(null);
@@ -89,7 +93,7 @@ export default function MapPage({
   useEffect(() => {
     if (!currentUser?.id) return;
     // Priorité 1 : home_city depuis la DB (profiles.home_city)
-    const dbCity = (currentUser as any).homeCity;
+    const dbCity = currentUser.homeCity;
     if (dbCity?.lat && dbCity?.lng) {
       setFlyTarget({ coords: { lat: dbCity.lat, lng: dbCity.lng }, zoom: 12 });
       // Synchroniser le cache local
@@ -105,7 +109,7 @@ export default function MapPage({
         setFlyTarget({ coords: { lat: city.lat, lng: city.lng }, zoom: 12 });
       }
     } catch { /* JSON malformé — silencieux */ }
-  }, [currentUser?.id, (currentUser as any)?.homeCity]);
+  }, [currentUser?.id, currentUser?.homeCity]);
 
   function handleRecentrer() {
     if (userCoords) {
@@ -126,7 +130,7 @@ export default function MapPage({
     departmentId: activeDepartment,
     sportScope,
     cityFilter,
-  }) as any[];
+  });
 
   const displayEvents = useMemo(() => {
     if (!upcomingOnly) return filteredEvents;
@@ -143,14 +147,14 @@ export default function MapPage({
   );
 
   const selectedClub = useMemo(
-    () => selectedEvent?.clubId ? allClubs.find((c: any) => c.id === selectedEvent.clubId) ?? null : null,
+    () => selectedEvent?.clubId ? allClubs.find((c) => c.id === selectedEvent.clubId) ?? null : null,
     [allClubs, selectedEvent]
   );
 
   useDynamicMeta(selectedEvent ? {
     title:       selectedEvent.title ?? `${selectedEvent.homeTeam ?? selectedEvent.sport} — ${selectedEvent.awayTeam ?? selectedEvent.city}`,
     description: `${selectedEvent.sport} · ${formatDate(selectedEvent.date)}${selectedEvent.city ? ` · ${selectedEvent.city}` : ''}`,
-    image:       selectedEvent.poster_url || selectedClub?.logo_url || undefined,
+    image:       selectedEvent.poster_url || selectedClub?.logo || undefined,
     url:         generateEventUrl(selectedEvent.id),
   } : {});
 

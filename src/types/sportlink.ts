@@ -30,6 +30,7 @@ export interface CurrentUser {
   plan: PlanId;
   xp: number;
   jobRole: Nullable<string>;
+  homeCity: Nullable<CitySelection>;
   createdAt: string;
 }
 
@@ -112,6 +113,20 @@ export type ClubStatus =
   | 'rejected'
   | 'suspended';
 
+// Une équipe au sein d'une catégorie (ex. « Équipe 1 » niveau « R2 »).
+export interface ClubTeam {
+  id: string;
+  name: string;
+  level: string;
+}
+
+// Une catégorie du club regroupant des équipes (ex. « Seniors », « Jeunes »).
+export interface ClubCategory {
+  id: string;
+  name: string;
+  teams: ClubTeam[];
+}
+
 export interface SportLinkClub {
   id: string;
   name: string;
@@ -123,7 +138,7 @@ export interface SportLinkClub {
   website: string;
   phone: string;
   email: string;
-  categories: string[];
+  categories: ClubCategory[];
   userId: string;
   status: ClubStatus;
   verificationNote: Nullable<string>;
@@ -484,6 +499,17 @@ export interface Commune {
   departement?: string;
 }
 
+// Ville sélectionnée via CityAutocomplete (geo.api.gouv.fr) — persistée dans
+// profiles.home_city et relue par la carte pour centrer la vue.
+export interface CitySelection {
+  nom: string;
+  lat: number;
+  lng: number;
+  codesPostaux: string[];
+  codeRegion: string;
+  codeDepartement: string;
+}
+
 // ── Sport ─────────────────────────────────────────────────────────────────────
 
 export interface Sport {
@@ -524,7 +550,7 @@ export interface ClubManager {
 
 // ── Convocation ───────────────────────────────────────────────────────────────
 
-export type ConvocationStatus = 'pending' | 'accepted' | 'declined' | 'maybe';
+export type ConvocationStatus = 'pending' | 'accepted' | 'declined' | 'unavailable';
 
 export interface Convocation {
   id: string;

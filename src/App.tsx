@@ -243,7 +243,7 @@ function AppInner() {
   const { allSports } = useSports() as any;
   const [cityFilter, setCityFilter] = useState<string | null>(null);
   const [selectedSearchClub, setSelectedSearchClub] = useState<Record<string, any> | null>(null);
-  const [focusEventId, setFocusEventId] = useState<string | number | null>(null);
+  const [focusEventId, setFocusEventId] = useState<string | null>(null);
   const pendingDeepLink = useRef<string | null>(null);
 
   // Invitation joueur (email club → auto-rattachement de la fiche). Voir

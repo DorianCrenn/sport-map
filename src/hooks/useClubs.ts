@@ -19,7 +19,7 @@ function mapFromDB(row: DBRow): SportLinkClub {
     website:         (row.website as string)           ?? '',
     phone:           (row.phone as string)             ?? '',
     email:           (row.email as string)             ?? '',
-    categories:      (row.categories as string[])      ?? [],
+    categories:      (row.categories as SportLinkClub['categories']) ?? [],
     userId:          row.user_id as string,
     status:          ((row.status as string) ?? 'pending_verification') as any,
     verificationNote: (row.verification_note as string | null) ?? null,
@@ -43,7 +43,7 @@ function mapFromDB(row: DBRow): SportLinkClub {
     facebook:        (row.facebook as string)          ?? '',
     instagram:       (row.instagram as string)         ?? '',
     tiktok:          (row.tiktok as string)            ?? '',
-    isUserCreated:   true,
+    isUserCreated:   row.user_id != null,
   };
 }
 

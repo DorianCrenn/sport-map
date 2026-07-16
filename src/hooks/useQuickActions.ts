@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
+import type { ManagedClub } from './useManagedClubs.js';
 
 type DBRow = Record<string, unknown>;
-
-interface ManagedClub { id: string | number; logo_url?: string | null; logoUrl?: string | null; [key: string]: unknown; }
 interface TrainingSession { id: string; club_id: string; team_id?: string; time?: string; location?: string; status?: string; }
 interface EventRow { id: string; title?: string; date?: string; adversaire?: string; home_or_away?: string; team_name?: string; club_id?: string; score?: unknown; event_type?: string; sport?: string; }
 interface MatchScoreRow { event_id: string; score_home?: number | null; score_away?: number | null; status?: string; }
@@ -95,7 +94,7 @@ export function useQuickActions({ currentUser, managedClubs, followedClubIds, is
     const liveScoreMap: Record<string, MatchScoreRow> = {};
     for (const s of (liveScoreRows ?? [])) liveScoreMap[s.event_id] = s;
     const clubLogoMap: Record<string, string | null> = {};
-    for (const c of managedClubs) clubLogoMap[String(c.id)] = (c.logo_url ?? c.logoUrl ?? null) as string | null;
+    for (const c of managedClubs) clubLogoMap[String(c.id)] = c.logoUrl ?? c.logo ?? null;
 
     const builtLive = liveEventRows
       .filter(e => followedSet.has(String(e.club_id)) || allManagedIds.includes(String(e.club_id)))

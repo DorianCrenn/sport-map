@@ -17,9 +17,9 @@ function mapClub(row: DBRow | null): SportLinkClub | null {
     website:       (row.website as string)       ?? '',
     phone:         (row.phone as string)         ?? '',
     email:         (row.email as string)         ?? '',
-    categories:    (row.categories as string[])  ?? [],
+    categories:    (row.categories as SportLinkClub['categories']) ?? [],
     userId:        row.user_id as string,
-    isUserCreated: true,
+    isUserCreated: row.user_id != null,
   } as SportLinkClub;
 }
 

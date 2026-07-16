@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, isDemoMode } from '../lib/supabase.js';
+import type { ConvocationStatus } from '../types/sportlink.js';
 
 type DBRow = Record<string, unknown>;
 
 export interface MyConvocation {
   id:             string;
-  status:         'pending' | 'accepted' | 'declined' | 'unavailable';
+  status:         ConvocationStatus;
   note?:          string | null;
   transport_mode?: string | null;
   driver_seats?:  number | null;

@@ -11,6 +11,7 @@ const ClubFormModal      = lazy(() => import('../components/club/ClubFormModal.j
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { SkeletonClubCard } from '../components/Skeleton.jsx';
 import { generateDemoData } from '../lib/demoDataGenerator.js';
+import type { SportLinkClub } from '../types/sportlink.js';
 
 interface ClubsPageProps {
   allEvents?: Record<string, any>[];
@@ -23,19 +24,19 @@ interface ClubsPageProps {
 
 export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent, onClubOverlayChange, onArchiveSeason }: ClubsPageProps) {
   const { allSports: SPORTS } = useSports() as any;
-  const { userClubs, loading: clubsLoading, addClubAndNotify, updateClub, deleteClub } = useClubs() as any;
-  const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub, refetchProfile } = useAuth() as any;
+  const { userClubs, loading: clubsLoading, addClubAndNotify, updateClub, deleteClub } = useClubs();
+  const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub, refetchProfile } = useAuth();
 
   const [search, setSearch]               = useState('');
   const [sportFilter, setSportFilter]     = useState<string | null>(null);
   const [showDemoDialog, setShowDemoDialog] = useState(false);
-  const newClubRef = useRef<Record<string, any> | null>(null);
+  const newClubRef = useRef<SportLinkClub | null>(null);
   const { leaderboard } = useClubLeaderboard({ limit: 5, sportFilter }) as any;
   const [showAllSports, setShowAllSports]       = useState(false);
-  const [selectedClub, setSelectedClub]         = useState<Record<string, any> | null>(null);
+  const [selectedClub, setSelectedClub]         = useState<SportLinkClub | null>(null);
   const [leaderboardOpen, setLeaderboardOpen]   = useState(false);
-  const [formClub, setFormClub]           = useState<Record<string, any> | boolean | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<Record<string, any> | null>(null);
+  const [formClub, setFormClub]           = useState<SportLinkClub | boolean | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<SportLinkClub | null>(null);
 
   useEffect(() => {
     onClubOverlayChange?.(!!selectedClub);
@@ -51,15 +52,15 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
     }
   }, [currentUser]);
 
-  const allClubs: Record<string, any>[] = userClubs;
+  const allClubs: SportLinkClub[] = userClubs;
   const favoriteSports: string[] = currentUser?.favoriteSports || [];
   const inFavoritesMode = favoriteSports.length > 0 && !showAllSports;
 
   const myClub = isClubAdmin && currentUser?.clubId
-    ? userClubs.find((c: Record<string, any>) => c.id === currentUser.clubId)
+    ? userClubs.find((c) => c.id === currentUser.clubId)
     : null;
 
-  const filtered = allClubs.filter((c: Record<string, any>) => {
+  const filtered = allClubs.filter((c) => {
     if (myClub && c.id === myClub.id) return false;
     const matchSearch = (c.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
       (c.city ?? '').toLowerCase().includes(search.toLowerCase());
@@ -67,7 +68,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
       : inFavoritesMode ? favoriteSports.includes(c.sport)
       : true;
     return matchSearch && matchSport;
-  }).sort((a: Record<string, any>, b: Record<string, any>) => {
+  }).sort((a, b) => {
     const aF = isFollowingClub(a.id) ? 0 : 1;
     const bF = isFollowingClub(b.id) ? 0 : 1;
     return aF - bF;
@@ -104,15 +105,16 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
     newClubRef.current = null;
   }
 
-  function handleDelete(club: Record<string, any>) {
+  function handleDelete(club: SportLinkClub) {
     deleteClub(club.id);
     setConfirmDelete(null);
     if (selectedClub?.id === club.id) setSelectedClub(null);
   }
 
-  function isOwnClub(club: Record<string, any>): boolean {
-    if (isAdmin) return club.isUserCreated;
-    if (currentUser) return club.userId === currentUser.id || club.ownerId === currentUser.id;
+  function isOwnClub(club: SportLinkClub): boolean {
+    // Un admin gère tous les clubs (badge « Géré » + actions éditer/supprimer).
+    if (isAdmin) return true;
+    if (currentUser) return club.userId === currentUser.id;
     return false;
   }
 
@@ -140,9 +142,9 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
               onAddEvent={onAddEvent}
               canAddEvent={canAddEvent}
               onArchiveSeason={onArchiveSeason}
-              onUpdateClub={async (data: Record<string, any>) => {
+              onUpdateClub={async (data: Partial<SportLinkClub>) => {
                 await updateClub(selectedClub.id, data);
-                setSelectedClub((prev: Record<string, any> | null) => prev ? ({ ...prev, ...data }) : prev);
+                setSelectedClub((prev) => prev ? { ...prev, ...data } : prev);
               }}
             />
           </Suspense>
@@ -163,7 +165,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
       <AnimatePresence>
         {formClub !== null && formClub !== true && (
           <ClubFormModal
-            club={formClub as any}
+            club={formClub as SportLinkClub}
             onSave={handleSave}
             onClose={() => setFormClub(null)}
           />
@@ -440,7 +442,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))', gap: 8 }}>
-        {filtered.map((club: Record<string, any>, i: number) => {
+        {filtered.map((club: SportLinkClub, i: number) => {
           const sport = SPORTS[club.sport];
           const sportColor = sport?.color ?? '#64748b';
           const own = isOwnClub(club);
@@ -498,10 +500,10 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <span style={{ fontSize: 11, color: 'var(--sl-t2)' }}>{club.city}</span>
-                    {club.members > 0 && (
+                    {(club.memberCount ?? 0) > 0 && (
                       <>
                         <span style={{ color: 'var(--sl-t3)', fontSize: 10 }}>·</span>
-                        <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{club.members} membres</span>
+                        <span style={{ fontSize: 11, color: 'var(--sl-t3)' }}>{club.memberCount} membres</span>
                       </>
                     )}
                   </div>
@@ -512,7 +514,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                     }}>
                       {club.sport}
                     </span>
-                    {club.categories?.slice(0, 4).map((cat: any) => (
+                    {club.categories?.slice(0, 4).map((cat) => (
                       <span key={cat.id} style={{
                         fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 'var(--sl-radius-sm)',
                         backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t3)', flexShrink: 0,
@@ -603,10 +605,10 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
                         </>
                       );
                     })()}
-                    {club.contact && (
+                    {club.email && (
                       <>
                         <a
-                          href={`mailto:${club.contact}`}
+                          href={`mailto:${club.email}`}
                           style={{
                             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                             gap: 5, padding: '12px 0', fontSize: 12, fontWeight: 600,

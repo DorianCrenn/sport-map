@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 interface DemoConvocation {
   id: string;
-  status: 'pending' | 'accepted' | 'declined';
+  status: 'pending' | 'accepted' | 'declined' | 'unavailable';
   event: { id: string; title: string; date: string; team_name: string; adversaire: string; city: string };
   player: { name: string };
 }

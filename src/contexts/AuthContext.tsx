@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useMemo, R
 import { User } from '@supabase/supabase-js';
 import { supabase, isDemoMode } from '../lib/supabase.js';
 import { translateSupabaseError } from '../lib/translateSupabaseError.js';
-import type { CurrentUser, ClubFollow, PlanId, UserRole } from '../types/sportlink.js';
+import type { CurrentUser, ClubFollow, PlanId, UserRole, CitySelection } from '../types/sportlink.js';
 
 // ── DB profile row type ───────────────────────────────────────────────────────
 
@@ -21,6 +21,7 @@ interface DBProfile {
   plan?: PlanId;
   xp?: number;
   job_role?: string | null;
+  home_city?: CitySelection | null;
   analytics_consent?: boolean | null;
 }
 
@@ -77,6 +78,7 @@ function mapProfile(authUser: User | null, dbProfile: DBProfile | null): Current
     plan:           (dbProfile?.plan ?? 'free') as PlanId,
     xp:             dbProfile?.xp ?? 0,
     jobRole:        dbProfile?.job_role ?? null,
+    homeCity:       dbProfile?.home_city ?? null,
     createdAt:      authUser.created_at,
   };
 }

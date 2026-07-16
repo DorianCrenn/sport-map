@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
 import { Z } from '../constants/zIndex.js';
 import { AnimatePresence, motion } from 'framer-motion';
+import type { CitySelection } from '../types/sportlink.js';
 
-interface CitySelection { nom: string; lat: number; lng: number; codesPostaux: string[]; codeRegion: string; codeDepartement: string; }
 interface CityAutocompleteProps {
   value:            string;
   onChange:         (v: string) => void;

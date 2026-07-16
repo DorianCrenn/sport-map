@@ -27,9 +27,9 @@ export default function ActualitesPage({
   followedClubIds = [],
   onNavigate,
 }: ActualitesPageProps) {
-  const { currentUser, isAdmin, isClubAdmin, loading: authLoading } = useAuth() as any;
-  const { managedClubs, isCoachOrManager, isCommunicant, teamFilters } = useManagedClubs() as any;
-  const { announcements, readIds, markRead } = useMyAnnouncements() as any;
+  const { currentUser, isAdmin, isClubAdmin, loading: authLoading } = useAuth();
+  const { managedClubs, isCoachOrManager, isCommunicant, teamFilters } = useManagedClubs();
+  const { announcements, readIds, markRead } = useMyAnnouncements();
   const demo = isDemoMode();
 
   const managedClubIds = useMemo(() => managedClubs.map((c: any) => String(c.id)), [managedClubs]);
@@ -45,7 +45,7 @@ export default function ActualitesPage({
     followedClubIds: feedClubIds,
     isCoachOrManager,
     isCommunicant,
-  }) as any;
+  });
   const effectiveLiveMatches = demo ? demoLiveMatches : quickActions.liveMatches;
   const liveWeekendMatches   = useWeekendPosters();
   const weekendMatches       = demo ? getMockWeekendMatches() : liveWeekendMatches;

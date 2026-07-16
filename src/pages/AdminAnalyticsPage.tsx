@@ -194,7 +194,7 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
         backgroundColor: color.dim,
         borderColor: color.solid,
         borderWidth: 1.5,
-        borderRadius: 'var(--sl-radius-xs)',
+        borderRadius: 4, // px — Chart.js attend un nombre (cf. --sl-radius-xs)
       }],
     };
   }
@@ -218,7 +218,7 @@ export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) 
       backgroundColor: CHART_COLORS.indigo.dim,
       borderColor: CHART_COLORS.indigo.solid,
       borderWidth: 1.5,
-      borderRadius: 'var(--sl-radius-xs)',
+      borderRadius: 4, // px — Chart.js attend un nombre (cf. --sl-radius-xs)
     }],
   } : null;
 
