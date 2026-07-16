@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEventConvocations } from '../../../hooks/useEventConvocations.js';
 import { isDemoMode } from '../../../lib/supabase.js';
 import SimplePosterFrame from './SimplePosterFrame.js';
-import { DEMO_OVERLAY_Z, type Theme } from './posterKit.js';
+import { DEMO_OVERLAY_Z, type Theme, type Format } from './posterKit.js';
 
 const FILTERS = [{ id: 'all', label: '👥 Tous' }, { id: 'confirmed', label: '✅ Confirmés' }];
 
@@ -72,7 +72,7 @@ export default function CompoPoster({ event, club, accentColor = '', onClose }: 
           contentTabs={FILTERS}
           content={filter}
           onContent={setFilter}
-          renderPoster={({ t, accent }) => <CompoDesign players={players} club={club} event={event} accent={accent} t={t} demo={isDemoMode()} />}
+          renderPoster={({ t, accent, dim }) => <CompoDesign players={players} club={club} event={event} accent={accent} t={t} demo={isDemoMode()} dim={dim} />}
         />
       </motion.div>
     </AnimatePresence>,
@@ -80,52 +80,87 @@ export default function CompoPoster({ event, club, accentColor = '', onClose }: 
   );
 }
 
-function CompoDesign({ players, club, event, accent, t, demo }: { players: Player[]; club: Record<string, any>; event: Record<string, any>; accent: string; t: Theme; demo: boolean }) {
+function CompoDesign({ players, club, event, accent, t, demo, dim }: { players: Player[]; club: Record<string, any>; event: Record<string, any>; accent: string; t: Theme; demo: boolean; dim: { id: Format; w: number; h: number } }) {
   const n = players.length;
   const confirmed = players.filter(p => p.status === 'accepted').length;
   const pending = n - confirmed;
-  // Liste sur 2 colonnes (3 si très gros effectif) — avatar + nom aligné à gauche.
-  const cols = n > 20 ? 3 : 2;
-  const perCol = Math.ceil(n / cols);
-  const compact = perCol > 7;                    // resserre pour tenir en Publication/Carré
-  const av = compact ? 32 : cols === 2 ? 40 : 34;
-  const lastFs = compact ? 11 : cols === 2 ? 13 : 11;
 
+  // ── Infos match ──────────────────────────────────────────────────────────
+  const clubName = club?.name ?? 'Notre équipe';
   const adversaire = event?.adversaire || event?.awayTeam || '';
+  const away = String(event?.home_or_away ?? 'home') === 'away';
+  const home = away ? adversaire : clubName;
+  const visitor = away ? clubName : adversaire;
   const d = event?.date ? new Date(event.date) : null;
-  const dateStr = d && !isNaN(d.getTime()) ? d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : '';
+  const valid = !!d && !isNaN(d.getTime());
+  const dateStr = valid ? d!.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).replace('.', '') : '';
+  const timeStr = valid ? d!.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : '';
+  const venue = event?.venue || event?.lieu || event?.city || '';
+  const category = event?.category || event?.team_name || '';
   const logo = club?.logoUrl ?? club?.logo_url ?? null;
+
+  // ── Dimensionnement anti-débordement ─────────────────────────────────────
+  // On calcule la place verticale réelle disponible d'après le format, puis on
+  // choisit colonnes + hauteur de ligne pour que TOUT rentre (jamais coupé).
+  const HEADER = 118, FOOTER = 30, VPAD = 12;
+  const availH = Math.max(80, dim.h - HEADER - FOOTER - VPAD);
+  const gap = 5;
+  const minRow = 26, maxRow = 46;
+  let cols = dim.h < 400 && n > 8 ? 3 : 2;
+  const rowHFor = (c: number) => { const pc = Math.ceil(n / c); return (availH - (pc - 1) * gap) / pc; };
+  while (rowHFor(cols) < minRow && cols < 4) cols++;
+  const perCol = Math.ceil(n / cols);
+  const rowH = Math.max(minRow - 4, Math.min(rowHFor(cols), maxRow));
+  const av = Math.max(20, Math.min(rowH - 8, cols === 2 ? 40 : 34));
+  const lastFs = Math.max(10, Math.min(Math.round(rowH * 0.32), 14));
+  const lines = rowH >= 40 ? 2 : 1;
+
+  const Chip = ({ icon, children }: { icon: string; children: React.ReactNode }) => (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: t.surface, border: `1px solid ${accent}22`, borderRadius: 999, padding: '3px 9px', fontSize: 10, fontWeight: 700, color: t.text, maxWidth: '100%', minWidth: 0 }}>
+      <span style={{ fontSize: 10, flexShrink: 0 }}>{icon}</span>
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{children}</span>
+    </span>
+  );
 
   return (
     <>
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '18px 20px 6px', flexShrink: 0 }}>
-        {logo
-          ? <img src={logo} alt="" crossOrigin="anonymous" style={{ width: 44, height: 44, objectFit: 'contain', borderRadius: 12, background: t.surface }} />
-          : <div style={{ width: 44, height: 44, borderRadius: 12, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: 18 }}>{(club?.name ?? 'FC')[0]}</div>}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: t.text, fontSize: 15, fontWeight: 900, lineHeight: 1.1 }}>Le groupe {adversaire && <span style={{ color: t.dim, fontWeight: 700 }}>vs {adversaire}</span>}</div>
-          <div style={{ color: accent, fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 2 }}>
-            {confirmed} confirmé{confirmed > 1 ? 's' : ''}{pending > 0 ? ` · ${pending} en attente` : ''}{dateStr ? ` · ${dateStr}` : ''}
+      {/* En-tête : identité + confrontation + infos match */}
+      <div style={{ position: 'relative', flexShrink: 0, padding: '16px 18px 8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+          {logo
+            ? <img src={logo} alt="" {...(demo ? {} : { crossOrigin: 'anonymous' as const })} style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 11, background: t.surface, flexShrink: 0 }} />
+            : <div style={{ width: 40, height: 40, borderRadius: 11, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: 17, flexShrink: 0 }}>{(clubName ?? 'FC')[0]}</div>}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ color: accent, fontSize: 9.5, fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Le groupe {category && `· ${category}`}</div>
+            <div style={{ color: t.text, fontSize: 15, fontWeight: 900, lineHeight: 1.12, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>
+              {home}{visitor && <span style={{ color: t.dim }}> vs {visitor}</span>}
+            </div>
           </div>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 9 }}>
+          {dateStr && <Chip icon="🗓">{dateStr}{timeStr ? ` · ${timeStr}` : ''}</Chip>}
+          {venue && <Chip icon="📍">{venue}</Chip>}
+          <Chip icon="✅">{confirmed} présent{confirmed > 1 ? 's' : ''}{pending > 0 ? ` · ${pending} en attente` : ''}</Chip>
         </div>
       </div>
 
-      <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px 14px', overflow: 'hidden' }}>
+      {/* Liste des joueurs — dimensionnée pour tenir dans le format */}
+      <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: `0 14px ${VPAD}px`, overflow: 'hidden' }}>
         {n === 0
           ? <div style={{ color: t.dim, fontSize: 12, fontWeight: 600 }}>Aucun joueur convoqué</div>
-          : <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: compact ? 5 : 7, width: '100%' }}>
-              {players.map((p, i) => <PlayerCard key={p.id ?? i} p={p} accent={accent} t={t} av={av} lastFs={lastFs} compact={compact} demo={demo} />)}
+          : <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gridAutoRows: `${rowH}px`, gap, width: '100%' }}>
+              {players.map((p, i) => <PlayerCard key={p.id ?? i} p={p} accent={accent} t={t} av={av} lastFs={lastFs} lines={lines} demo={demo} />)}
             </div>}
       </div>
 
       <div style={{ position: 'relative', textAlign: 'center', color: t.foot, fontSize: 8.5, paddingBottom: 12, letterSpacing: '0.12em', fontWeight: 700, flexShrink: 0 }}>
-        {club?.name ?? 'SportLink'} · SPORTLINK
+        {clubName} · SPORTLINK
       </div>
     </>
   );
 }
 
-function PlayerCard({ p, accent, t, av, lastFs, compact, demo }: { p: Player; accent: string; t: Theme; av: number; lastFs: number; compact: boolean; demo: boolean }) {
+function PlayerCard({ p, accent, t, av, lastFs, lines, demo }: { p: Player; accent: string; t: Theme; av: number; lastFs: number; lines: number; demo: boolean }) {
   const conf = p.status === 'accepted';
   const parts = String(p.name).trim().split(/\s+/);
   const first = parts[0] ?? '';
@@ -135,22 +170,22 @@ function PlayerCard({ p, accent, t, av, lastFs, compact, demo }: { p: Player; ac
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: compact ? 7 : 9, padding: compact ? '4px 8px 4px 5px' : '6px 9px 6px 6px',
-      borderRadius: 11, minWidth: 0, opacity: conf ? 1 : 0.72,
+      display: 'flex', alignItems: 'center', gap: 8, padding: '3px 8px 3px 4px', height: '100%', boxSizing: 'border-box',
+      borderRadius: 10, minWidth: 0, opacity: conf ? 1 : 0.72,
       background: conf ? `${accent}12` : t.surface,
       border: `1px solid ${conf ? `${accent}38` : `${accent}18`}`,
     }}>
-      <div style={{ position: 'relative', width: av, height: av, borderRadius: 10, overflow: 'hidden', background: `${accent}22`, border: `1.5px ${conf ? 'solid' : 'dashed'} ${conf ? accent : t.dim}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ position: 'relative', width: av, height: av, borderRadius: 9, overflow: 'hidden', background: `${accent}22`, border: `1.5px ${conf ? 'solid' : 'dashed'} ${conf ? accent : t.dim}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ position: 'absolute', color: accent, fontWeight: 900, fontSize: av * 0.36 }}>{initials}</span>
         {/* En démo : pas de crossOrigin (photos externes s'affichent) ; en prod : crossOrigin pour l'export. */}
         {p.photo && <img src={p.photo} alt="" {...(demo ? {} : { crossOrigin: 'anonymous' as const })} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
         {p.number != null && p.number !== '' && (
-          <div style={{ position: 'absolute', bottom: -3, right: -3, minWidth: 16, height: 16, padding: '0 3px', borderRadius: 8, background: accent, color: '#000', fontSize: 9, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${badgeRing}` }}>{p.number}</div>
+          <div style={{ position: 'absolute', bottom: -3, right: -3, minWidth: 15, height: 15, padding: '0 3px', borderRadius: 8, background: accent, color: '#000', fontSize: 8.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${badgeRing}` }}>{p.number}</div>
         )}
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
         <div style={{ fontSize: lastFs - 2.5, fontWeight: 600, color: t.dim, lineHeight: 1.05, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{first}</div>
-        <div style={{ fontSize: lastFs, fontWeight: 900, color: t.text, textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 1.1, wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>{last}</div>
+        <div style={{ fontSize: lastFs, fontWeight: 900, color: t.text, textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 1.08, wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: lines, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>{last}</div>
       </div>
     </div>
   );

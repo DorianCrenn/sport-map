@@ -9,6 +9,8 @@ import ClubFormModal from '../components/club/ClubFormModal.jsx';
 import SendAnnouncementModal from '../components/club/SendAnnouncementModal.jsx';
 import PushBroadcastModal from '../components/club/PushBroadcastModal.jsx';
 import ConvocReplyPanel from '../components/ConvocReplyPanel.jsx';
+import CompoPoster from '../components/poster/simple/CompoPoster.jsx';
+import { setDemoMode } from '../lib/supabase.js';
 
 // ── Harnais DEV pour tester visuellement les modales en isolation (overflow,
 // safe-area, viewport court). Accès : #dev-modals (menu) ou #dev-modals=Nom.
@@ -40,7 +42,11 @@ const MODALS: Record<string, (close: () => void) => ReactNode> = {
   SendAnnouncementModal:(c) => <SendAnnouncementModal club={mockClub as any} onSend={asyncNoop} onClose={c} />,
   PushBroadcastModal:   (c) => <PushBroadcastModal clubId="club-1" clubName="FC Démo" onClose={c} />,
   ConvocReplyPanel:     (c) => <ConvocReplyPanel token="dev-token" onClose={c} />,
+  CompoPoster:          (c) => { setDemoMode(true); return <CompoPoster event={mockCompoEvent as any} club={mockClub as any} onClose={() => { setDemoMode(false); c(); }} />; },
 };
+
+// Événement démo (id réel des convocations démo) pour tester l'affiche du groupe.
+const mockCompoEvent = { id: 'demo-event-001', date: '2026-08-15T15:00:00', venue: 'Stade Francis-Le Blé', city: 'Brest', adversaire: 'AS Plougastel', home_or_away: 'home', category: 'Seniors', team_name: 'Équipe 1' };
 
 export default function DevModalsHarness({ initial = null }: { initial?: string | null }) {
   const [active, setActive] = useState<string | null>(initial && MODALS[initial] ? initial : null);
