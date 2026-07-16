@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import { deriveInitialFields } from '../../../lib/posterVariables.js';
@@ -43,28 +43,48 @@ export default function SimplePosterBody({ event, club, accentColor = '', score 
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [exporting, setExporting]   = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  const posterRef = useRef<HTMLDivElement>(null);
+  const posterRef  = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
 
   const t = useMemo(() => makeTheme(mode), [mode]);
   const dim = FORMATS.find(f => f.id === format)!;
+
+  // Adapte l'affiche pour qu'elle tienne ENTIÈRE dans la zone d'aperçu.
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el) return;
+    const compute = () => {
+      const availW = el.clientWidth - 28;
+      const availH = el.clientHeight - 28;
+      setScale(Math.min(1, availW / dim.w, availH / dim.h));
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [dim.w, dim.h]);
   const fileName = `match-${type}-${format}-${(awayName || 'match').toLowerCase().replace(/\s+/g, '-')}.png`;
+
+  // Export : on capture l'affiche à sa taille réelle (transform d'aperçu neutralisé).
+  const exportOpts = { pixelRatio: 3, cacheBust: true, width: dim.w, height: dim.h, style: { transform: 'none', transformOrigin: 'top left' } };
 
   const getBlob = useCallback(async (): Promise<Blob | null> => {
     if (!posterRef.current) return null;
     const { toBlob } = await import('html-to-image');
-    return toBlob(posterRef.current, { pixelRatio: 3, cacheBust: true });
-  }, []);
+    return toBlob(posterRef.current, exportOpts);
+  }, [dim.w, dim.h]);
 
   const handleDownload = useCallback(async () => {
     setExporting(true);
     try {
-      const dataUrl = await toPng(posterRef.current!, { pixelRatio: 3, cacheBust: true });
+      const dataUrl = await toPng(posterRef.current!, exportOpts);
       const link = document.createElement('a');
       link.download = fileName; link.href = dataUrl; link.click();
       setExportOpen(false);
     } catch (err) { console.error('[SimplePoster] download failed:', err); }
     finally { setExporting(false); }
-  }, [fileName]);
+  }, [fileName, dim.w, dim.h]);
 
   const handleShare = useCallback(async () => {
     setExporting(true);
@@ -91,19 +111,37 @@ export default function SimplePosterBody({ event, club, accentColor = '', score 
   });
 
   const tabs = [
-    ...(available.length > 1 ? [{ id: 'contenu', label: 'Contenu', icon: '🏷️' }] : []),
-    { id: 'format',  label: 'Format',  icon: '📐' },
-    { id: 'theme',   label: 'Thème',   icon: '🌓' },
     { id: 'couleur', label: 'Couleur', icon: '🎨' },
     { id: 'fond',    label: 'Fond',    icon: '✨' },
   ];
 
   return (
     <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Aperçu — plein cadre */}
-      <div style={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: 'var(--sl-card-hi, #eef2f7)' }}>
+      {/* Barre haute — format toujours visible (+ contenu + thème), 1 clic */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: 8, alignItems: 'center', overflowX: 'auto' }}>
+          {available.length > 1 && (
+            <div style={SEG_BOX}>
+              <button onClick={() => setType('annonce')} style={seg(type === 'annonce', accent)}>📣 Annonce</button>
+              <button onClick={() => setType('result')}  style={seg(type === 'result', accent)}>🏆 Résultat</button>
+            </div>
+          )}
+          <div style={SEG_BOX}>
+            {FORMATS.map(f => <button key={f.id} onClick={() => setFormat(f.id)} style={seg(format === f.id, accent)}>{f.label}</button>)}
+          </div>
+        </div>
+        <button onClick={() => setMode(m => (m === 'dark' ? 'light' : 'dark'))} title="Basculer thème clair / sombre" aria-label="Basculer thème"
+          style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '7px 10px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>
+          {mode === 'dark' ? '🌙' : '☀️'}
+        </button>
+      </div>
+
+      {/* Aperçu — affiche entière (mise à l'échelle pour tenir) */}
+      <div ref={previewRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14, backgroundColor: 'var(--sl-card-hi, #eef2f7)' }}>
+        <div style={{ width: dim.w * scale, height: dim.h * scale, flexShrink: 0 }}>
         <div ref={posterRef} style={{
-          width: dim.w, height: dim.h, flexShrink: 0, position: 'relative', overflow: 'hidden',
+          width: dim.w, height: dim.h, position: 'relative', overflow: 'hidden',
+          transform: `scale(${scale})`, transformOrigin: 'top left',
           display: 'flex', flexDirection: 'column', background: t.bg, borderRadius: 22, fontFamily: "'Inter', sans-serif",
           boxShadow: '0 8px 30px rgba(0,0,0,0.18)',
         }}>
@@ -141,6 +179,7 @@ export default function SimplePosterBody({ event, club, accentColor = '', score 
             {club?.name ?? 'SportLink'} · SPORTLINK
           </div>
         </div>
+        </div>
       </div>
 
       {/* Panneau d'options (à la demande) */}
@@ -149,15 +188,6 @@ export default function SimplePosterBody({ event, club, accentColor = '', score 
           <motion.div key={activePanel} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             style={{ flexShrink: 0, borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', overflow: 'hidden' }}>
             <div style={{ padding: '12px 14px', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-              {activePanel === 'contenu' && <>
-                {available.includes('annonce') && <button onClick={() => setType('annonce')} style={chip(type === 'annonce')}>📣 Annonce</button>}
-                {available.includes('result') && <button onClick={() => setType('result')} style={chip(type === 'result')}>🏆 Résultat</button>}
-              </>}
-              {activePanel === 'format' && FORMATS.map(f => <button key={f.id} onClick={() => setFormat(f.id)} style={chip(format === f.id)}>{f.label}</button>)}
-              {activePanel === 'theme' && <>
-                <button onClick={() => setMode('dark')}  style={chip(mode === 'dark')}>🌙 Sombre</button>
-                <button onClick={() => setMode('light')} style={chip(mode === 'light')}>☀️ Clair</button>
-              </>}
               {activePanel === 'couleur' && <>
                 {palette.map(c => (
                   <button key={c} onClick={() => setAccent(c)} aria-label={`Couleur ${c}`}
@@ -225,6 +255,19 @@ export default function SimplePosterBody({ event, club, accentColor = '', score 
       </AnimatePresence>
     </div>
   );
+}
+
+const SEG_BOX: React.CSSProperties = {
+  display: 'inline-flex', gap: 2, flexShrink: 0,
+  backgroundColor: 'var(--sl-surface)', borderRadius: 'var(--sl-radius-xl)', padding: 3, border: '1px solid var(--sl-border)',
+};
+
+function seg(active: boolean, accent: string): React.CSSProperties {
+  return {
+    padding: '6px 11px', borderRadius: 'var(--sl-radius-lg)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+    border: 'none', whiteSpace: 'nowrap', transition: 'all 0.15s',
+    background: active ? accent : 'transparent', color: active ? '#fff' : 'var(--sl-t2)',
+  };
 }
 
 function TeamSide({ name, logo, accent, t }: { name: string; logo: string | null; accent: string; t: Theme }) {
