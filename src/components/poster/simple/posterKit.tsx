@@ -3,7 +3,7 @@
 // pour l'export html-to-image (aucune var() CSS, couleurs concrètes).
 
 export type Format = 'post' | 'story' | 'square';
-export type Bg = 'spot' | 'rayures' | 'bande' | 'terrain' | 'vif' | 'epure';
+export type Bg = 'spot' | 'rayures' | 'bande' | 'terrain' | 'vif' | 'epure' | 'halo' | 'points' | 'ondes' | 'diagonale';
 export type Mode = 'dark' | 'light';
 
 export interface Theme {
@@ -18,12 +18,16 @@ export const FORMATS: { id: Format; label: string; w: number; h: number; rows: n
 ];
 
 export const BGS: { id: Bg; label: string }[] = [
-  { id: 'spot',    label: 'Spot' },
-  { id: 'rayures', label: 'Rayures' },
-  { id: 'bande',   label: 'Bande' },
-  { id: 'terrain', label: 'Terrain' },
-  { id: 'vif',     label: 'Vif' },
-  { id: 'epure',   label: 'Épuré' },
+  { id: 'spot',      label: 'Spot' },
+  { id: 'halo',      label: 'Halo' },
+  { id: 'rayures',   label: 'Rayures' },
+  { id: 'bande',     label: 'Bande' },
+  { id: 'diagonale', label: 'Diagonale' },
+  { id: 'terrain',   label: 'Terrain' },
+  { id: 'points',    label: 'Points' },
+  { id: 'ondes',     label: 'Ondes' },
+  { id: 'vif',       label: 'Vif' },
+  { id: 'epure',     label: 'Épuré' },
 ];
 
 // Modal plein écran : doit recouvrir le calque démo (bandeau z:10000, guide z:10001)
@@ -127,6 +131,28 @@ export function PosterBg({ bg, accent, t }: { bg: Bg; accent: string; t: Theme }
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(145deg, ${accent}dd 0%, ${accent}55 28%, transparent 58%)` }} />
         <div style={{ position: 'absolute', bottom: -110, right: -80, width: 260, height: 260, borderRadius: '50%', background: accent, opacity: 0.3, filter: 'blur(12px)' }} />
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 20px)` }} />
+      </>}
+
+      {bg === 'halo' && <>
+        <div style={{ position: 'absolute', top: -90, right: -70, width: 280, height: 280, borderRadius: '50%', background: accent, opacity: 0.22, filter: 'blur(11px)' }} />
+        <div style={{ position: 'absolute', bottom: -100, left: -80, width: 250, height: 250, borderRadius: '50%', background: accent, opacity: 0.12, filter: 'blur(11px)' }} />
+      </>}
+
+      {bg === 'points' && <>
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 70% 45% at 50% -5%, ${accent}22, transparent 65%)` }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `radial-gradient(${accent}33 1.6px, transparent 1.7px)`, backgroundSize: '18px 18px', opacity: 0.9 }} />
+      </>}
+
+      {bg === 'ondes' && <>
+        {[0, 1, 2, 3, 4].map(i => (
+          <div key={i} style={{ position: 'absolute', top: -70, left: '50%', transform: 'translateX(-50%)', width: 150 + i * 115, height: 150 + i * 115, borderRadius: '50%', border: `1.5px solid ${accent}${['40', '2e', '20', '15', '0d'][i]}` }} />
+        ))}
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 80% 50% at 50% 0%, ${accent}1c, transparent 60%)` }} />
+      </>}
+
+      {bg === 'diagonale' && <>
+        <div style={{ position: 'absolute', top: '-35%', left: '-30%', width: '170%', height: '85%', background: `linear-gradient(135deg, ${accent}4d 0%, ${accent}12 55%, transparent 75%)`, transform: 'rotate(-11deg)', transformOrigin: 'top left' }} />
+        <div style={{ position: 'absolute', top: -70, right: -50, width: 200, height: 200, borderRadius: '50%', background: accent, opacity: 0.16, filter: 'blur(10px)' }} />
       </>}
 
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 4, background: `linear-gradient(90deg, ${accent}, ${accent}44)` }} />

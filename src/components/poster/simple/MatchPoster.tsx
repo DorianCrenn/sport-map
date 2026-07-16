@@ -130,10 +130,10 @@ export default function SimplePosterBody({ event, club, accentColor = '', score 
             {FORMATS.map(f => <button key={f.id} onClick={() => setFormat(f.id)} style={seg(format === f.id, accent)}>{f.label}</button>)}
           </div>
         </div>
-        <button onClick={() => setMode(m => (m === 'dark' ? 'light' : 'dark'))} title="Basculer thème clair / sombre" aria-label="Basculer thème"
-          style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '7px 10px', borderRadius: 'var(--sl-radius-lg)', border: '1px solid var(--sl-border)', background: 'var(--sl-surface)', color: 'var(--sl-t2)', cursor: 'pointer', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>
-          {mode === 'dark' ? '🌙' : '☀️'}
-        </button>
+        <div style={{ ...SEG_BOX, flexShrink: 0 }}>
+          <button onClick={() => setMode('dark')}  style={seg(mode === 'dark', accent)}  aria-label="Thème sombre">🌙 Sombre</button>
+          <button onClick={() => setMode('light')} style={seg(mode === 'light', accent)} aria-label="Thème clair">☀️ Clair</button>
+        </div>
       </div>
 
       {/* Aperçu — affiche entière (mise à l'échelle pour tenir) */}
