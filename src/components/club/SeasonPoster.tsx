@@ -5,13 +5,15 @@ import { toPng } from 'html-to-image';
 import { rankBy } from './tabs/seasonRanking.js';
 import JerseyBadge from './JerseyBadge.js';
 import type { PlayerSeasonStat } from '../../hooks/usePlayerStats.js';
+import {
+  FORMATS, BGS, DEMO_OVERLAY_Z, resolveClubAccent, buildPalette, makeTheme,
+  chipStyle, ControlRow, ColorControl, PosterBg,
+  type Theme, type Format, type Bg, type Mode,
+} from '../poster/simple/posterKit.js';
 
 type Bilan = { played: number; wins: number; draws: number; losses: number; gf: number; ga: number };
 type Motm = { name: string; count: number };
 type PosterType = 'scorers' | 'bilan' | 'motm';
-type Format = 'post' | 'story' | 'square';
-type Bg = 'spot' | 'rayures' | 'bande' | 'terrain' | 'vif' | 'epure';
-type Mode = 'dark' | 'light';
 
 const TYPES: { id: PosterType; label: string }[] = [
   { id: 'scorers', label: '⚽ Buteurs' },
@@ -19,47 +21,7 @@ const TYPES: { id: PosterType; label: string }[] = [
   { id: 'motm',    label: '⭐ Homme du match' },
 ];
 
-const FORMATS: { id: Format; label: string; w: number; h: number; rows: number }[] = [
-  { id: 'post',   label: 'Publication', w: 360, h: 450, rows: 5 },
-  { id: 'story',  label: 'Story',       w: 360, h: 640, rows: 7 },
-  { id: 'square', label: 'Carré',       w: 360, h: 360, rows: 3 },
-];
-
-const BGS: { id: Bg; label: string }[] = [
-  { id: 'spot',    label: 'Spot' },
-  { id: 'rayures', label: 'Rayures' },
-  { id: 'bande',   label: 'Bande' },
-  { id: 'terrain', label: 'Terrain' },
-  { id: 'vif',     label: 'Vif' },
-  { id: 'epure',   label: 'Épuré' },
-];
-
 const MEDALS = ['🥇', '🥈', '🥉'];
-const DEMO_OVERLAY_Z = 10050;
-const isHex = (c: unknown): c is string => typeof c === 'string' && /^#[0-9a-fA-F]{6}$/.test(c);
-
-interface Theme {
-  bg: string; text: string; dim: string; faint: string; surface: string;
-  foot: string; jStroke: string; jNum: string; vignette: string; inset: string;
-}
-
-function makeTheme(mode: Mode): Theme {
-  return mode === 'dark'
-    ? {
-        bg: 'linear-gradient(160deg, #0b1220 0%, #13233f 55%, #0b1220 100%)',
-        text: '#fff', dim: 'rgba(255,255,255,0.55)', faint: 'rgba(255,255,255,0.5)',
-        surface: 'rgba(255,255,255,0.05)', foot: 'rgba(255,255,255,0.28)',
-        jStroke: 'rgba(255,255,255,0.7)', jNum: '#fff',
-        vignette: 'rgba(0,0,0,0.7)', inset: 'rgba(0,0,0,0.5)',
-      }
-    : {
-        bg: 'linear-gradient(160deg, #ffffff 0%, #eef2f7 55%, #f6f9fc 100%)',
-        text: '#0f1e3a', dim: 'rgba(15,30,58,0.6)', faint: 'rgba(15,30,58,0.42)',
-        surface: 'rgba(15,30,58,0.05)', foot: 'rgba(15,30,58,0.4)',
-        jStroke: 'rgba(15,30,58,0.35)', jNum: '#0f1e3a',
-        vignette: 'rgba(0,0,0,0.14)', inset: 'rgba(0,0,0,0.1)',
-      };
-}
 
 interface SeasonPosterProps {
   club: Record<string, any>;
@@ -73,9 +35,7 @@ interface SeasonPosterProps {
 }
 
 export default function SeasonPoster({ club, teamName, accentColor, players, bilan, form, motm, onClose }: SeasonPosterProps) {
-  const clubAccent = isHex(accentColor) ? accentColor
-    : (isHex(club?.theme?.primary) ? club.theme.primary
-    : isHex(club?.primary_color) ? club.primary_color : '#22c55e');
+  const clubAccent = resolveClubAccent(accentColor, club);
 
   const available: PosterType[] = useMemo(() => {
     const t: PosterType[] = [];
@@ -85,12 +45,7 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
     return t.length ? t : ['scorers'];
   }, [players, bilan.played, motm.length]);
 
-  const palette = useMemo(() => {
-    const raw = [clubAccent, club?.primary_color, club?.theme?.primary, club?.theme?.accent, club?.colors?.accent,
-      '#22c55e', '#2563eb', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#ec4899'];
-    const seen = new Set<string>();
-    return raw.filter(c => isHex(c) && !seen.has(c.toLowerCase()) && seen.add(c.toLowerCase())) as string[];
-  }, [clubAccent, club]);
+  const palette = useMemo(() => buildPalette(clubAccent, club), [clubAccent, club]);
 
   const [type, setType]     = useState<PosterType>(available[0]);
   const [format, setFormat] = useState<Format>('post');
@@ -155,15 +110,7 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
             <button onClick={() => setMode('dark')}  style={chipStyle(mode === 'dark', accent)}>🌙 Sombre</button>
             <button onClick={() => setMode('light')} style={chipStyle(mode === 'light', accent)}>☀️ Clair</button>
           </ControlRow>
-          <ControlRow label="Couleur">
-            {palette.map(c => (
-              <button key={c} onClick={() => setAccent(c)} aria-label={`Couleur ${c}`}
-                style={{ width: 22, height: 22, borderRadius: '50%', background: c, cursor: 'pointer', border: accent.toLowerCase() === c.toLowerCase() ? '2px solid #fff' : '2px solid rgba(255,255,255,0.15)' }} />
-            ))}
-            <label title="Couleur personnalisée" style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', cursor: 'pointer', position: 'relative', display: 'inline-block', background: 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' }}>
-              <input type="color" value={accent} onChange={e => setAccent(e.target.value)} style={{ position: 'absolute', inset: -4, opacity: 0, cursor: 'pointer' }} />
-            </label>
-          </ControlRow>
+          <ControlRow label="Couleur"><ColorControl palette={palette} accent={accent} setAccent={setAccent} /></ControlRow>
           <ControlRow label="Fond">
             {BGS.map(b => (
               <button key={b.id} onClick={() => setBg(b.id)} style={chipStyle(bg === b.id, accent)}>{b.label}</button>
@@ -203,64 +150,6 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
       </motion.div>
     </AnimatePresence>,
     document.body,
-  );
-}
-
-function chipStyle(active: boolean, accent: string): React.CSSProperties {
-  return {
-    fontSize: 10.5, fontWeight: 800, padding: '5px 11px', borderRadius: 999, cursor: 'pointer',
-    border: 'none', whiteSpace: 'nowrap', transition: 'background 0.15s, color 0.15s',
-    background: active ? accent : 'rgba(255,255,255,0.1)',
-    color: active ? '#000' : 'rgba(255,255,255,0.65)',
-  };
-}
-
-function ControlRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-      <span style={{ width: 52, flexShrink: 0, paddingTop: 6, fontSize: 9, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>{label}</span>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>{children}</div>
-    </div>
-  );
-}
-
-function PosterBg({ bg, accent, t }: { bg: Bg; accent: string; t: Theme }) {
-  return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {bg === 'spot' && <>
-        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 75% 55% at 50% -12%, ${accent}66, transparent 60%)` }} />
-        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 120% 75% at 50% 130%, ${t.vignette}, transparent 55%)` }} />
-        <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 90px 20px ${t.inset}` }} />
-      </>}
-
-      {bg === 'rayures' && <>
-        <div style={{ position: 'absolute', top: -80, right: -60, width: 240, height: 240, borderRadius: '50%', background: accent, opacity: 0.16, filter: 'blur(10px)' }} />
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(45deg, ${accent}1a 0 3px, transparent 3px 18px)` }} />
-      </>}
-
-      {bg === 'bande' && <>
-        <div style={{ position: 'absolute', top: '12%', left: '-25%', width: '150%', height: 130, background: `linear-gradient(90deg, transparent, ${accent}55, transparent)`, transform: 'rotate(-24deg)' }} />
-        <div style={{ position: 'absolute', top: '40%', left: '-25%', width: '150%', height: 70, background: `linear-gradient(90deg, transparent, ${accent}2e, transparent)`, transform: 'rotate(-24deg)' }} />
-        <div style={{ position: 'absolute', top: '60%', left: '-25%', width: '150%', height: 40, background: `linear-gradient(90deg, transparent, ${accent}1c, transparent)`, transform: 'rotate(-24deg)' }} />
-      </>}
-
-      {bg === 'terrain' && <>
-        <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 2, background: `${accent}22` }} />
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 170, height: 170, borderRadius: '50%', border: `2px solid ${accent}22` }} />
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 7, height: 7, borderRadius: '50%', background: `${accent}44` }} />
-        <div style={{ position: 'absolute', top: -34, left: '50%', transform: 'translate(-50%,-50%)', width: 90, height: 90, borderRadius: '50%', border: `2px solid ${accent}1e` }} />
-        <div style={{ position: 'absolute', bottom: -34, left: '50%', transform: 'translate(-50%,50%)', width: 90, height: 90, borderRadius: '50%', border: `2px solid ${accent}1e` }} />
-        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${accent}20, transparent 60%)` }} />
-      </>}
-
-      {bg === 'vif' && <>
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(145deg, ${accent}dd 0%, ${accent}55 28%, transparent 58%)` }} />
-        <div style={{ position: 'absolute', bottom: -110, right: -80, width: 260, height: 260, borderRadius: '50%', background: accent, opacity: 0.3, filter: 'blur(12px)' }} />
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 20px)` }} />
-      </>}
-
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 4, background: `linear-gradient(90deg, ${accent}, ${accent}44)` }} />
-    </div>
   );
 }
 
