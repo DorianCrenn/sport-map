@@ -72,7 +72,7 @@ export default function CompoPoster({ event, club, accentColor = '', onClose }: 
           contentTabs={FILTERS}
           content={filter}
           onContent={setFilter}
-          renderPoster={({ t, accent }) => <CompoDesign players={players} club={club} event={event} accent={accent} t={t} />}
+          renderPoster={({ t, accent }) => <CompoDesign players={players} club={club} event={event} accent={accent} t={t} demo={isDemoMode()} />}
         />
       </motion.div>
     </AnimatePresence>,
@@ -80,13 +80,16 @@ export default function CompoPoster({ event, club, accentColor = '', onClose }: 
   );
 }
 
-function CompoDesign({ players, club, event, accent, t }: { players: Player[]; club: Record<string, any>; event: Record<string, any>; accent: string; t: Theme }) {
+function CompoDesign({ players, club, event, accent, t, demo }: { players: Player[]; club: Record<string, any>; event: Record<string, any>; accent: string; t: Theme; demo: boolean }) {
   const n = players.length;
   const confirmed = players.filter(p => p.status === 'accepted').length;
   const pending = n - confirmed;
-  const cols = n <= 8 ? 2 : n <= 15 ? 3 : n <= 24 ? 4 : 5;
-  const photo  = cols === 2 ? 54 : cols === 3 ? 46 : cols === 4 ? 38 : 32;
-  const lastFs = cols === 2 ? 13 : cols === 3 ? 11 : cols === 4 ? 9.5 : 8.5;
+  // Liste sur 2 colonnes (3 si très gros effectif) — avatar + nom aligné à gauche.
+  const cols = n > 20 ? 3 : 2;
+  const perCol = Math.ceil(n / cols);
+  const compact = perCol > 7;                    // resserre pour tenir en Publication/Carré
+  const av = compact ? 32 : cols === 2 ? 40 : 34;
+  const lastFs = compact ? 11 : cols === 2 ? 13 : 11;
 
   const adversaire = event?.adversaire || event?.awayTeam || '';
   const d = event?.date ? new Date(event.date) : null;
@@ -110,8 +113,8 @@ function CompoDesign({ players, club, event, accent, t }: { players: Player[]; c
       <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px 14px', overflow: 'hidden' }}>
         {n === 0
           ? <div style={{ color: t.dim, fontSize: 12, fontWeight: 600 }}>Aucun joueur convoqué</div>
-          : <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: cols >= 4 ? 7 : 9, width: '100%' }}>
-              {players.map((p, i) => <PlayerCard key={p.id ?? i} p={p} accent={accent} t={t} photo={photo} lastFs={lastFs} />)}
+          : <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: compact ? 5 : 7, width: '100%' }}>
+              {players.map((p, i) => <PlayerCard key={p.id ?? i} p={p} accent={accent} t={t} av={av} lastFs={lastFs} compact={compact} demo={demo} />)}
             </div>}
       </div>
 
@@ -122,7 +125,7 @@ function CompoDesign({ players, club, event, accent, t }: { players: Player[]; c
   );
 }
 
-function PlayerCard({ p, accent, t, photo, lastFs }: { p: Player; accent: string; t: Theme; photo: number; lastFs: number }) {
+function PlayerCard({ p, accent, t, av, lastFs, compact, demo }: { p: Player; accent: string; t: Theme; av: number; lastFs: number; compact: boolean; demo: boolean }) {
   const conf = p.status === 'accepted';
   const parts = String(p.name).trim().split(/\s+/);
   const first = parts[0] ?? '';
@@ -132,21 +135,22 @@ function PlayerCard({ p, accent, t, photo, lastFs }: { p: Player; accent: string
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '9px 4px 10px',
-      borderRadius: 14, minWidth: 0, opacity: conf ? 1 : 0.72,
-      background: conf ? `${accent}14` : t.surface,
-      border: `1px solid ${conf ? `${accent}44` : `${accent}1f`}`,
+      display: 'flex', alignItems: 'center', gap: compact ? 7 : 9, padding: compact ? '4px 8px 4px 5px' : '6px 9px 6px 6px',
+      borderRadius: 11, minWidth: 0, opacity: conf ? 1 : 0.72,
+      background: conf ? `${accent}12` : t.surface,
+      border: `1px solid ${conf ? `${accent}38` : `${accent}18`}`,
     }}>
-      <div style={{ position: 'relative', width: photo, height: photo, borderRadius: 12, overflow: 'hidden', background: `${accent}22`, border: `1.5px ${conf ? 'solid' : 'dashed'} ${conf ? accent : t.dim}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <span style={{ position: 'absolute', color: accent, fontWeight: 900, fontSize: photo * 0.34 }}>{initials}</span>
-        {p.photo && <img src={p.photo} alt="" crossOrigin="anonymous" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+      <div style={{ position: 'relative', width: av, height: av, borderRadius: 10, overflow: 'hidden', background: `${accent}22`, border: `1.5px ${conf ? 'solid' : 'dashed'} ${conf ? accent : t.dim}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <span style={{ position: 'absolute', color: accent, fontWeight: 900, fontSize: av * 0.36 }}>{initials}</span>
+        {/* En démo : pas de crossOrigin (photos externes s'affichent) ; en prod : crossOrigin pour l'export. */}
+        {p.photo && <img src={p.photo} alt="" {...(demo ? {} : { crossOrigin: 'anonymous' as const })} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
         {p.number != null && p.number !== '' && (
-          <div style={{ position: 'absolute', bottom: -3, right: -3, minWidth: 17, height: 17, padding: '0 4px', borderRadius: 9, background: accent, color: '#000', fontSize: 9.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${badgeRing}` }}>{p.number}</div>
+          <div style={{ position: 'absolute', bottom: -3, right: -3, minWidth: 16, height: 16, padding: '0 3px', borderRadius: 8, background: accent, color: '#000', fontSize: 9, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${badgeRing}` }}>{p.number}</div>
         )}
       </div>
-      <div style={{ width: '100%', minWidth: 0, textAlign: 'center' }}>
-        <div style={{ fontSize: lastFs - 2, fontWeight: 600, color: t.dim, lineHeight: 1.05, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{first}</div>
-        <div style={{ fontSize: lastFs, fontWeight: 900, color: t.text, textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 1.08, wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>{last}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: lastFs - 2.5, fontWeight: 600, color: t.dim, lineHeight: 1.05, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{first}</div>
+        <div style={{ fontSize: lastFs, fontWeight: 900, color: t.text, textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 1.1, wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>{last}</div>
       </div>
     </div>
   );
