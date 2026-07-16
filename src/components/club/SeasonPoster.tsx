@@ -10,6 +10,8 @@ type Bilan = { played: number; wins: number; draws: number; losses: number; gf: 
 type Motm = { name: string; count: number };
 type PosterType = 'scorers' | 'bilan' | 'motm';
 type Format = 'post' | 'story' | 'square';
+type Bg = 'spot' | 'rayures' | 'bande' | 'terrain' | 'vif' | 'epure';
+type Mode = 'dark' | 'light';
 
 const TYPES: { id: PosterType; label: string }[] = [
   { id: 'scorers', label: '⚽ Buteurs' },
@@ -18,12 +20,11 @@ const TYPES: { id: PosterType; label: string }[] = [
 ];
 
 const FORMATS: { id: Format; label: string; w: number; h: number; rows: number }[] = [
-  { id: 'post',   label: 'Publication', w: 360, h: 450, rows: 5 }, // 4:5
-  { id: 'story',  label: 'Story',       w: 360, h: 640, rows: 7 }, // 9:16
-  { id: 'square', label: 'Carré',       w: 360, h: 360, rows: 3 }, // 1:1
+  { id: 'post',   label: 'Publication', w: 360, h: 450, rows: 5 },
+  { id: 'story',  label: 'Story',       w: 360, h: 640, rows: 7 },
+  { id: 'square', label: 'Carré',       w: 360, h: 360, rows: 3 },
 ];
 
-type Bg = 'spot' | 'rayures' | 'bande' | 'terrain' | 'vif' | 'epure';
 const BGS: { id: Bg; label: string }[] = [
   { id: 'spot',    label: 'Spot' },
   { id: 'rayures', label: 'Rayures' },
@@ -34,11 +35,31 @@ const BGS: { id: Bg; label: string }[] = [
 ];
 
 const MEDALS = ['🥇', '🥈', '🥉'];
-
-// Modal plein écran : doit recouvrir aussi le calque démo (bandeau z:10000, guide z:10001)
 const DEMO_OVERLAY_Z = 10050;
-
 const isHex = (c: unknown): c is string => typeof c === 'string' && /^#[0-9a-fA-F]{6}$/.test(c);
+
+interface Theme {
+  bg: string; text: string; dim: string; faint: string; surface: string;
+  foot: string; jStroke: string; jNum: string; vignette: string; inset: string;
+}
+
+function makeTheme(mode: Mode): Theme {
+  return mode === 'dark'
+    ? {
+        bg: 'linear-gradient(160deg, #0b1220 0%, #13233f 55%, #0b1220 100%)',
+        text: '#fff', dim: 'rgba(255,255,255,0.55)', faint: 'rgba(255,255,255,0.5)',
+        surface: 'rgba(255,255,255,0.05)', foot: 'rgba(255,255,255,0.28)',
+        jStroke: 'rgba(255,255,255,0.7)', jNum: '#fff',
+        vignette: 'rgba(0,0,0,0.7)', inset: 'rgba(0,0,0,0.5)',
+      }
+    : {
+        bg: 'linear-gradient(160deg, #ffffff 0%, #eef2f7 55%, #f6f9fc 100%)',
+        text: '#0f1e3a', dim: 'rgba(15,30,58,0.6)', faint: 'rgba(15,30,58,0.42)',
+        surface: 'rgba(15,30,58,0.05)', foot: 'rgba(15,30,58,0.4)',
+        jStroke: 'rgba(15,30,58,0.35)', jNum: '#0f1e3a',
+        vignette: 'rgba(0,0,0,0.14)', inset: 'rgba(0,0,0,0.1)',
+      };
+}
 
 interface SeasonPosterProps {
   club: Record<string, any>;
@@ -52,7 +73,6 @@ interface SeasonPosterProps {
 }
 
 export default function SeasonPoster({ club, teamName, accentColor, players, bilan, form, motm, onClose }: SeasonPosterProps) {
-  // Couleur du club par défaut (concrète — évite les var() CSS dans html-to-image)
   const clubAccent = isHex(accentColor) ? accentColor
     : (isHex(club?.theme?.primary) ? club.theme.primary
     : isHex(club?.primary_color) ? club.primary_color : '#22c55e');
@@ -75,6 +95,7 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
   const [type, setType]     = useState<PosterType>(available[0]);
   const [format, setFormat] = useState<Format>('post');
   const [bg, setBg]         = useState<Bg>('spot');
+  const [mode, setMode]     = useState<Mode>('dark');
   const [accent, setAccent] = useState<string>(clubAccent);
   const [exporting, setExporting] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
@@ -85,6 +106,7 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
     return () => document.removeEventListener('keydown', h);
   }, [onClose]);
 
+  const t = useMemo(() => makeTheme(mode), [mode]);
   const dim = FORMATS.find(f => f.id === format)!;
   const scorers = useMemo(() => rankBy(players, 'goals').slice(0, dim.rows), [players, dim.rows]);
   const logoUrl = club?.logoUrl ?? club?.logo_url ?? null;
@@ -104,6 +126,10 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
     } finally { setExporting(false); }
   }, [type, format, teamName]);
 
+  const chip = (active: boolean) => active
+    ? { background: accent, color: '#000' }
+    : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.62)' };
+
   return createPortal(
     <AnimatePresence>
       <motion.div role="dialog" aria-modal="true" className="fixed inset-0 flex flex-col bg-black/70 overscroll-contain"
@@ -119,30 +145,24 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
 
         {/* Type */}
         <div className="flex justify-center gap-2 pt-2 bg-black/60 flex-shrink-0 flex-wrap px-3">
-          {TYPES.filter(t => available.includes(t.id)).map(t => (
-            <button key={t.id} onClick={() => setType(t.id)} className="text-[11px] font-bold px-3 py-1.5 rounded-full"
-              style={type === t.id ? { background: accent, color: '#000' } : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
-              {t.label}
-            </button>
+          {TYPES.filter(x => available.includes(x.id)).map(x => (
+            <button key={x.id} onClick={() => setType(x.id)} className="text-[11px] font-bold px-3 py-1.5 rounded-full" style={chip(type === x.id)}>{x.label}</button>
           ))}
         </div>
 
-        {/* Format + couleur */}
+        {/* Format + thème, fond, couleur */}
         <div className="bg-black/60 flex-shrink-0 px-3 py-2 flex flex-col items-center gap-2">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap justify-center items-center">
             {FORMATS.map(f => (
-              <button key={f.id} onClick={() => setFormat(f.id)} className="text-[10px] font-bold px-2.5 py-1 rounded-full"
-                style={format === f.id ? { background: accent, color: '#000' } : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
-                {f.label}
-              </button>
+              <button key={f.id} onClick={() => setFormat(f.id)} className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={chip(format === f.id)}>{f.label}</button>
             ))}
+            <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.18)' }} />
+            <button onClick={() => setMode('dark')}  className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={chip(mode === 'dark')}>🌙 Sombre</button>
+            <button onClick={() => setMode('light')} className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={chip(mode === 'light')}>☀️ Clair</button>
           </div>
           <div className="flex gap-2 flex-wrap justify-center">
             {BGS.map(b => (
-              <button key={b.id} onClick={() => setBg(b.id)} className="text-[10px] font-bold px-2.5 py-1 rounded-full"
-                style={bg === b.id ? { background: accent, color: '#000' } : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
-                {b.label}
-              </button>
+              <button key={b.id} onClick={() => setBg(b.id)} className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={chip(bg === b.id)}>{b.label}</button>
             ))}
           </div>
           <div className="flex items-center gap-1.5 flex-wrap justify-center">
@@ -159,31 +179,28 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
         <div className="flex-1 overflow-y-auto flex items-start justify-center p-4">
           <div ref={posterRef} style={{
             width: dim.w, height: dim.h, flexShrink: 0, position: 'relative', overflow: 'hidden',
-            display: 'flex', flexDirection: 'column',
-            background: 'linear-gradient(160deg, #0b1220 0%, #13233f 55%, #0b1220 100%)',
-            borderRadius: 22, fontFamily: "'Inter', sans-serif",
+            display: 'flex', flexDirection: 'column', background: t.bg, borderRadius: 22, fontFamily: "'Inter', sans-serif",
           }}>
-            {/* Fond décoratif */}
-            <PosterBg bg={bg} accent={accent} />
+            <PosterBg bg={bg} accent={accent} t={t} />
 
             {/* En-tête club */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 8px', flexShrink: 0 }}>
               {logoUrl
-                ? <img src={logoUrl} alt="" crossOrigin="anonymous" style={{ width: 46, height: 46, objectFit: 'contain', borderRadius: 12, background: 'rgba(255,255,255,0.08)' }} />
+                ? <img src={logoUrl} alt="" crossOrigin="anonymous" style={{ width: 46, height: 46, objectFit: 'contain', borderRadius: 12, background: t.surface }} />
                 : <div style={{ width: 46, height: 46, borderRadius: 12, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: 18 }}>{(club?.name ?? 'FC')[0]}</div>}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: '#fff', fontSize: 15, fontWeight: 900, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club?.name ?? 'Mon club'}</div>
+                <div style={{ color: t.text, fontSize: 15, fontWeight: 900, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club?.name ?? 'Mon club'}</div>
                 <div style={{ color: accent, fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 2 }}>Saison · {subtitle}</div>
               </div>
             </div>
 
             <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 20px' }}>
-              {type === 'scorers' && <ScorersPoster scorers={scorers} accent={accent} />}
-              {type === 'bilan'   && <BilanPoster bilan={bilan} form={form} accent={accent} />}
-              {type === 'motm'    && <MotmPoster motm={motm.slice(0, dim.rows)} accent={accent} />}
+              {type === 'scorers' && <ScorersPoster scorers={scorers} accent={accent} t={t} />}
+              {type === 'bilan'   && <BilanPoster bilan={bilan} form={form} accent={accent} t={t} />}
+              {type === 'motm'    && <MotmPoster motm={motm.slice(0, dim.rows)} accent={accent} t={t} />}
             </div>
 
-            <div style={{ position: 'relative', textAlign: 'center', color: 'rgba(255,255,255,0.28)', fontSize: 8.5, paddingBottom: 12, letterSpacing: '0.12em', fontWeight: 700, flexShrink: 0 }}>
+            <div style={{ position: 'relative', textAlign: 'center', color: t.foot, fontSize: 8.5, paddingBottom: 12, letterSpacing: '0.12em', fontWeight: 700, flexShrink: 0 }}>
               {club?.name ?? 'SportLink'} · SPORTLINK
             </div>
           </div>
@@ -194,15 +211,13 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
   );
 }
 
-function PosterBg({ bg, accent }: { bg: Bg; accent: string }) {
+function PosterBg({ bg, accent, t }: { bg: Bg; accent: string; t: Theme }) {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* Épuré : fond plat, aucun décor (juste le liseré commun) */}
-
       {bg === 'spot' && <>
         <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 75% 55% at 50% -12%, ${accent}66, transparent 60%)` }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 120% 75% at 50% 130%, rgba(0,0,0,0.7), transparent 55%)' }} />
-        <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 90px 20px rgba(0,0,0,0.5)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 120% 75% at 50% 130%, ${t.vignette}, transparent 55%)` }} />
+        <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 90px 20px ${t.inset}` }} />
       </>}
 
       {bg === 'rayures' && <>
@@ -217,7 +232,6 @@ function PosterBg({ bg, accent }: { bg: Bg; accent: string }) {
       </>}
 
       {bg === 'terrain' && <>
-        {/* Marquages de terrain de foot */}
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 2, background: `${accent}22` }} />
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 170, height: 170, borderRadius: '50%', border: `2px solid ${accent}22` }} />
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 7, height: 7, borderRadius: '50%', background: `${accent}44` }} />
@@ -232,49 +246,48 @@ function PosterBg({ bg, accent }: { bg: Bg; accent: string }) {
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 20px)` }} />
       </>}
 
-      {/* Liseré accent en bas (commun) */}
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 4, background: `linear-gradient(90deg, ${accent}, ${accent}44)` }} />
     </div>
   );
 }
 
-function SectionTitle({ children, accent }: { children: React.ReactNode; accent: string }) {
+function SectionTitle({ children, accent, t }: { children: React.ReactNode; accent: string; t: Theme }) {
   return (
-    <div style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: 6, background: `${accent}22`, border: `1px solid ${accent}55`, color: '#fff', fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', padding: '5px 12px', borderRadius: 999, marginBottom: 14 }}>
+    <div style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: 6, background: `${accent}22`, border: `1px solid ${accent}55`, color: t.text, fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', padding: '5px 12px', borderRadius: 999, marginBottom: 14 }}>
       {children}
     </div>
   );
 }
 
-function ScorersPoster({ scorers, accent }: { scorers: PlayerSeasonStat[]; accent: string }) {
+function ScorersPoster({ scorers, accent, t }: { scorers: PlayerSeasonStat[]; accent: string; t: Theme }) {
   const hero = scorers[0];
   return (
     <div>
-      <SectionTitle accent={accent}>⚽ TOP BUTEURS</SectionTitle>
+      <SectionTitle accent={accent} t={t}>⚽ TOP BUTEURS</SectionTitle>
       {hero && (
         <div style={{ background: `linear-gradient(120deg, ${accent}33, ${accent}11)`, border: `1px solid ${accent}55`, borderRadius: 16, padding: '12px 16px 14px', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 9 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', color: '#fbbf24' }}>🥇 MEILLEUR BUTEUR</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', color: '#d97706' }}>🥇 MEILLEUR BUTEUR</span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
               <span style={{ color: accent, fontSize: 30, fontWeight: 900, lineHeight: 1 }}>{hero.totalGoals}</span>
-              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 700 }}>buts</span>
+              <span style={{ color: t.dim, fontSize: 10, fontWeight: 700 }}>buts</span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {hero.jerseyNumber != null && <JerseyBadge number={hero.jerseyNumber} accent={accent} size={36} numberColor="#fff" fill={`${accent}44`} stroke="rgba(255,255,255,0.7)" />}
+            {hero.jerseyNumber != null && <JerseyBadge number={hero.jerseyNumber} accent={accent} size={36} numberColor={t.jNum} fill={`${accent}44`} stroke={t.jStroke} />}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: '#fff', fontSize: 18, fontWeight: 900, lineHeight: 1.12, wordBreak: 'break-word' }}>{hero.playerName}</div>
-              {hero.position && <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: 600, marginTop: 1 }}>{hero.position}</div>}
+              <div style={{ color: t.text, fontSize: 18, fontWeight: 900, lineHeight: 1.12, wordBreak: 'break-word' }}>{hero.playerName}</div>
+              {hero.position && <div style={{ color: t.dim, fontSize: 11, fontWeight: 600, marginTop: 1 }}>{hero.position}</div>}
             </div>
           </div>
         </div>
       )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         {scorers.slice(1).map((p, i) => (
-          <div key={p.playerId} style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '8px 12px' }}>
-            <span style={{ width: 20, textAlign: 'center', fontSize: 14, fontWeight: 900, color: 'rgba(255,255,255,0.6)' }}>{i + 2 <= 3 ? MEDALS[i + 1] : i + 2}</span>
-            {p.jerseyNumber != null && <JerseyBadge number={p.jerseyNumber} accent={accent} size={22} numberColor="#fff" fill={`${accent}33`} stroke="rgba(255,255,255,0.55)" />}
-            <span style={{ flex: 1, minWidth: 0, color: '#fff', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.playerName}</span>
+          <div key={p.playerId} style={{ display: 'flex', alignItems: 'center', gap: 9, background: t.surface, borderRadius: 12, padding: '8px 12px' }}>
+            <span style={{ width: 20, textAlign: 'center', fontSize: 14, fontWeight: 900, color: t.faint }}>{i + 2 <= 3 ? MEDALS[i + 1] : i + 2}</span>
+            {p.jerseyNumber != null && <JerseyBadge number={p.jerseyNumber} accent={accent} size={22} numberColor={t.jNum} fill={`${accent}33`} stroke={t.jStroke} />}
+            <span style={{ flex: 1, minWidth: 0, color: t.text, fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.playerName}</span>
             <span style={{ color: accent, fontSize: 16, fontWeight: 900 }}>{p.totalGoals}</span>
           </div>
         ))}
@@ -283,28 +296,28 @@ function ScorersPoster({ scorers, accent }: { scorers: PlayerSeasonStat[]; accen
   );
 }
 
-function MotmPoster({ motm, accent }: { motm: Motm[]; accent: string }) {
+function MotmPoster({ motm, accent, t }: { motm: Motm[]; accent: string; t: Theme }) {
   const hero = motm[0];
   return (
     <div>
-      <SectionTitle accent={accent}>⭐ HOMME DU MATCH</SectionTitle>
+      <SectionTitle accent={accent} t={t}>⭐ HOMME DU MATCH</SectionTitle>
       {hero && (
         <div style={{ background: `linear-gradient(120deg, ${accent}33, ${accent}11)`, border: `1px solid ${accent}55`, borderRadius: 16, padding: '12px 16px 14px', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 9 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', color: '#fbbf24' }}>🥇 LE PLUS ÉLU</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', color: '#d97706' }}>🥇 LE PLUS ÉLU</span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
               <span style={{ color: accent, fontSize: 28, fontWeight: 900, lineHeight: 1 }}>×{hero.count}</span>
-              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 700 }}>fois</span>
+              <span style={{ color: t.dim, fontSize: 10, fontWeight: 700 }}>fois</span>
             </div>
           </div>
-          <div style={{ color: '#fff', fontSize: 18, fontWeight: 900, lineHeight: 1.12, wordBreak: 'break-word' }}>{hero.name}</div>
+          <div style={{ color: t.text, fontSize: 18, fontWeight: 900, lineHeight: 1.12, wordBreak: 'break-word' }}>{hero.name}</div>
         </div>
       )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         {motm.slice(1).map((m, i) => (
-          <div key={m.name + i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '9px 12px' }}>
-            <span style={{ width: 20, textAlign: 'center', fontSize: 14, fontWeight: 900, color: 'rgba(255,255,255,0.6)' }}>{i + 2 <= 3 ? MEDALS[i + 1] : i + 2}</span>
-            <span style={{ flex: 1, minWidth: 0, color: '#fff', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
+          <div key={m.name + i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: t.surface, borderRadius: 12, padding: '9px 12px' }}>
+            <span style={{ width: 20, textAlign: 'center', fontSize: 14, fontWeight: 900, color: t.faint }}>{i + 2 <= 3 ? MEDALS[i + 1] : i + 2}</span>
+            <span style={{ flex: 1, minWidth: 0, color: t.text, fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
             <span style={{ color: accent, fontSize: 15, fontWeight: 900 }}>⭐ ×{m.count}</span>
           </div>
         ))}
@@ -313,47 +326,47 @@ function MotmPoster({ motm, accent }: { motm: Motm[]; accent: string }) {
   );
 }
 
-function BilanPoster({ bilan, form, accent }: { bilan: Bilan; form: ('W' | 'D' | 'L')[]; accent: string }) {
+function BilanPoster({ bilan, form, accent, t }: { bilan: Bilan; form: ('W' | 'D' | 'L')[]; accent: string; t: Theme }) {
   const diff = bilan.gf - bilan.ga;
-  const fmap: Record<string, [string, string]> = { W: ['#22c55e', 'V'], D: ['#f59e0b', 'N'], L: ['#ef4444', 'D'] };
+  const fmap: Record<string, [string, string]> = { W: ['#16a34a', 'V'], D: ['#d97706', 'N'], L: ['#dc2626', 'D'] };
   return (
     <div>
-      <SectionTitle accent={accent}>📊 BILAN · {bilan.played} MATCHS</SectionTitle>
+      <SectionTitle accent={accent} t={t}>📊 BILAN · {bilan.played} MATCHS</SectionTitle>
       <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
         {[
-          { n: bilan.wins,   label: 'Victoires', color: '#22c55e' },
-          { n: bilan.draws,  label: 'Nuls',      color: '#f59e0b' },
-          { n: bilan.losses, label: 'Défaites',  color: '#ef4444' },
+          { n: bilan.wins,   label: 'Victoires', color: '#16a34a' },
+          { n: bilan.draws,  label: 'Nuls',      color: '#d97706' },
+          { n: bilan.losses, label: 'Défaites',  color: '#dc2626' },
         ].map(x => (
-          <div key={x.label} style={{ flex: 1, textAlign: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '16px 4px' }}>
+          <div key={x.label} style={{ flex: 1, textAlign: 'center', background: t.surface, borderRadius: 14, padding: '16px 4px' }}>
             <div style={{ fontSize: 34, fontWeight: 900, color: x.color, lineHeight: 1 }}>{x.n}</div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)', marginTop: 5 }}>{x.label}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: t.dim, marginTop: 5 }}>{x.label}</div>
           </div>
         ))}
       </div>
       {form.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Forme</span>
+          <span style={{ color: t.faint, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Forme</span>
           <div style={{ display: 'flex', gap: 5 }}>
             {form.map((r, i) => {
-              const [bg, label] = fmap[r] ?? fmap.D;
-              return <span key={i} style={{ width: 22, height: 22, borderRadius: 6, background: bg, color: '#fff', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{label}</span>;
+              const [bgc, label] = fmap[r] ?? fmap.D;
+              return <span key={i} style={{ width: 22, height: 22, borderRadius: 6, background: bgc, color: '#fff', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{label}</span>;
             })}
           </div>
         </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'space-around', background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '12px 8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-around', background: t.surface, borderRadius: 14, padding: '12px 8px' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ color: '#fff', fontSize: 20, fontWeight: 900 }}>{bilan.gf}</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: 700 }}>MARQUÉS</div>
+          <div style={{ color: t.text, fontSize: 20, fontWeight: 900 }}>{bilan.gf}</div>
+          <div style={{ color: t.faint, fontSize: 9, fontWeight: 700 }}>MARQUÉS</div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ color: '#fff', fontSize: 20, fontWeight: 900 }}>{bilan.ga}</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: 700 }}>ENCAISSÉS</div>
+          <div style={{ color: t.text, fontSize: 20, fontWeight: 900 }}>{bilan.ga}</div>
+          <div style={{ color: t.faint, fontSize: 9, fontWeight: 700 }}>ENCAISSÉS</div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ color: diff >= 0 ? '#22c55e' : '#ef4444', fontSize: 20, fontWeight: 900 }}>{diff >= 0 ? '+' : ''}{diff}</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: 700 }}>DIFF.</div>
+          <div style={{ color: diff >= 0 ? '#16a34a' : '#dc2626', fontSize: 20, fontWeight: 900 }}>{diff >= 0 ? '+' : ''}{diff}</div>
+          <div style={{ color: t.faint, fontSize: 9, fontWeight: 700 }}>DIFF.</div>
         </div>
       </div>
     </div>
