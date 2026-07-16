@@ -380,6 +380,14 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
               </motion.div>
             )}
 
+            {/* Affiche « du groupe » (convoqués) — staff, matchs à venir */}
+            {(cardState === 'pre_match' || cardState === 'match_day') && isStaff && (
+              <button onClick={() => onOpenPoster?.({ event: item, club, mode: 'convocation' })} data-demo="compo-btn" className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm text-white active:opacity-80 transition-opacity" style={{ background: '#8b5cf6' }}>
+                <span className="flex items-center gap-2"><span>👥</span><span>Affiche du groupe</span></span>
+                <span className="text-white/50 text-lg">↗</span>
+              </button>
+            )}
+
             {/* Covoiturage inline — pour staff, joueurs et parents */}
             {(cardState === 'pre_match' || cardState === 'match_day') && (isStaff || item.isPlayerClub || isGuardian) && rides && rides.total > 0 && (
               <motion.div key="rides" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

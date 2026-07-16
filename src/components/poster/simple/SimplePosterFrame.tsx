@@ -100,21 +100,25 @@ export default function SimplePosterFrame({ club, accentColor = '', fileBase, co
 
   return (
     <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Barre haute — 1 clic */}
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: 8, alignItems: 'center', overflowX: 'auto' }}>
-          {contentTabs && contentTabs.length > 1 && (
+      {/* Barre haute — Contenu sur sa propre ligne (tout visible), puis Format + Thème */}
+      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 12px', borderBottom: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+        {contentTabs && contentTabs.length > 1 && (
+          <div style={{ display: 'flex', overflowX: 'auto' }}>
             <div style={SEG_BOX}>
               {contentTabs.map(c => <button key={c.id} onClick={() => onContent?.(c.id)} style={seg(content === c.id, accent)}>{c.label}</button>)}
             </div>
-          )}
-          <div style={SEG_BOX}>
-            {FORMATS.map(f => <button key={f.id} onClick={() => setFormat(f.id)} style={seg(format === f.id, accent)}>{f.label}</button>)}
           </div>
-        </div>
-        <div style={{ ...SEG_BOX, flexShrink: 0 }}>
-          <button onClick={() => setMode('dark')}  style={seg(mode === 'dark', accent)}  aria-label="Thème sombre">🌙 Sombre</button>
-          <button onClick={() => setMode('light')} style={seg(mode === 'light', accent)} aria-label="Thème clair">☀️ Clair</button>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', overflowX: 'auto' }}>
+            <div style={SEG_BOX}>
+              {FORMATS.map(f => <button key={f.id} onClick={() => setFormat(f.id)} style={seg(format === f.id, accent)}>{f.label}</button>)}
+            </div>
+          </div>
+          <div style={{ ...SEG_BOX, flexShrink: 0 }}>
+            <button onClick={() => setMode('dark')}  style={seg(mode === 'dark', accent)}  aria-label="Thème sombre">🌙 Sombre</button>
+            <button onClick={() => setMode('light')} style={seg(mode === 'light', accent)} aria-label="Thème clair">☀️ Clair</button>
+          </div>
         </div>
       </div>
 

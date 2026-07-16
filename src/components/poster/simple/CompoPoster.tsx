@@ -128,9 +128,9 @@ function PlayerCard({ p, accent, t, photo, nameFs }: { p: Player; accent: string
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, opacity: conf ? 1 : 0.62, minWidth: 0 }}>
       <div style={{ position: 'relative', width: photo, height: photo, borderRadius: 12, overflow: 'hidden', background: `${accent}18`, border: `1.5px ${conf ? 'solid' : 'dashed'} ${conf ? accent : t.dim}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        {p.photo
-          ? <img src={p.photo} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <span style={{ color: accent, fontWeight: 900, fontSize: photo * 0.32 }}>{initials}</span>}
+        {/* Initiales en fond → visibles si pas de photo ou si l'image échoue */}
+        <span style={{ position: 'absolute', color: accent, fontWeight: 900, fontSize: photo * 0.32 }}>{initials}</span>
+        {p.photo && <img src={p.photo} alt="" crossOrigin="anonymous" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
         {p.number != null && p.number !== '' && (
           <div style={{ position: 'absolute', bottom: -2, right: -2, minWidth: 15, height: 15, padding: '0 3px', borderRadius: 8, background: accent, color: '#000', fontSize: 8.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1.5px solid ${t.bg.includes('#0b') ? '#0b1220' : '#fff'}` }}>{p.number}</div>
         )}
