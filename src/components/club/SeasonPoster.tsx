@@ -126,10 +126,6 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
     } finally { setExporting(false); }
   }, [type, format, teamName]);
 
-  const chip = (active: boolean) => active
-    ? { background: accent, color: '#000' }
-    : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.62)' };
-
   return createPortal(
     <AnimatePresence>
       <motion.div role="dialog" aria-modal="true" className="fixed inset-0 flex flex-col bg-black/70 overscroll-contain"
@@ -143,29 +139,23 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
           </button>
         </div>
 
-        {/* Type */}
-        <div className="flex justify-center gap-2 pt-2 bg-black/60 flex-shrink-0 flex-wrap px-3">
-          {TYPES.filter(x => available.includes(x.id)).map(x => (
-            <button key={x.id} onClick={() => setType(x.id)} className="text-[11px] font-bold px-3 py-1.5 rounded-full" style={chip(type === x.id)}>{x.label}</button>
-          ))}
-        </div>
-
-        {/* Format + thème, fond, couleur */}
-        <div className="bg-black/60 flex-shrink-0 px-3 py-2 flex flex-col items-center gap-2">
-          <div className="flex gap-2 flex-wrap justify-center items-center">
+        {/* Contrôles — du « quoi » vers le « style » */}
+        <div className="bg-black/70 flex-shrink-0 px-3 py-3 flex flex-col gap-2.5 overflow-y-auto" style={{ maxHeight: '38vh' }}>
+          <ControlRow label="Contenu">
+            {TYPES.filter(x => available.includes(x.id)).map(x => (
+              <button key={x.id} onClick={() => setType(x.id)} style={chipStyle(type === x.id, accent)}>{x.label}</button>
+            ))}
+          </ControlRow>
+          <ControlRow label="Format">
             {FORMATS.map(f => (
-              <button key={f.id} onClick={() => setFormat(f.id)} className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={chip(format === f.id)}>{f.label}</button>
+              <button key={f.id} onClick={() => setFormat(f.id)} style={chipStyle(format === f.id, accent)}>{f.label}</button>
             ))}
-            <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.18)' }} />
-            <button onClick={() => setMode('dark')}  className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={chip(mode === 'dark')}>🌙 Sombre</button>
-            <button onClick={() => setMode('light')} className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={chip(mode === 'light')}>☀️ Clair</button>
-          </div>
-          <div className="flex gap-2 flex-wrap justify-center">
-            {BGS.map(b => (
-              <button key={b.id} onClick={() => setBg(b.id)} className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={chip(bg === b.id)}>{b.label}</button>
-            ))}
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+          </ControlRow>
+          <ControlRow label="Thème">
+            <button onClick={() => setMode('dark')}  style={chipStyle(mode === 'dark', accent)}>🌙 Sombre</button>
+            <button onClick={() => setMode('light')} style={chipStyle(mode === 'light', accent)}>☀️ Clair</button>
+          </ControlRow>
+          <ControlRow label="Couleur">
             {palette.map(c => (
               <button key={c} onClick={() => setAccent(c)} aria-label={`Couleur ${c}`}
                 style={{ width: 22, height: 22, borderRadius: '50%', background: c, cursor: 'pointer', border: accent.toLowerCase() === c.toLowerCase() ? '2px solid #fff' : '2px solid rgba(255,255,255,0.15)' }} />
@@ -173,7 +163,12 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
             <label title="Couleur personnalisée" style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', cursor: 'pointer', position: 'relative', display: 'inline-block', background: 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' }}>
               <input type="color" value={accent} onChange={e => setAccent(e.target.value)} style={{ position: 'absolute', inset: -4, opacity: 0, cursor: 'pointer' }} />
             </label>
-          </div>
+          </ControlRow>
+          <ControlRow label="Fond">
+            {BGS.map(b => (
+              <button key={b.id} onClick={() => setBg(b.id)} style={chipStyle(bg === b.id, accent)}>{b.label}</button>
+            ))}
+          </ControlRow>
         </div>
 
         <div className="flex-1 overflow-y-auto flex items-start justify-center p-4">
@@ -208,6 +203,24 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
       </motion.div>
     </AnimatePresence>,
     document.body,
+  );
+}
+
+function chipStyle(active: boolean, accent: string): React.CSSProperties {
+  return {
+    fontSize: 10.5, fontWeight: 800, padding: '5px 11px', borderRadius: 999, cursor: 'pointer',
+    border: 'none', whiteSpace: 'nowrap', transition: 'background 0.15s, color 0.15s',
+    background: active ? accent : 'rgba(255,255,255,0.1)',
+    color: active ? '#000' : 'rgba(255,255,255,0.65)',
+  };
+}
+
+function ControlRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+      <span style={{ width: 52, flexShrink: 0, paddingTop: 6, fontSize: 9, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>{label}</span>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>{children}</div>
+    </div>
   );
 }
 
