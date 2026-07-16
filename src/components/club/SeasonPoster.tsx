@@ -1,15 +1,11 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toPng } from 'html-to-image';
 import { rankBy } from './tabs/seasonRanking.js';
 import JerseyBadge from './JerseyBadge.js';
 import type { PlayerSeasonStat } from '../../hooks/usePlayerStats.js';
-import {
-  FORMATS, BGS, DEMO_OVERLAY_Z, resolveClubAccent, buildPalette, makeTheme,
-  chipStyle, ControlRow, ColorControl, PosterBg,
-  type Theme, type Format, type Bg, type Mode,
-} from '../poster/simple/posterKit.js';
+import { DEMO_OVERLAY_Z, type Theme } from '../poster/simple/posterKit.js';
+import SimplePosterFrame from '../poster/simple/SimplePosterFrame.js';
 
 type Bilan = { played: number; wins: number; draws: number; losses: number; gf: number; ga: number };
 type Motm = { name: string; count: number };
@@ -34,52 +30,26 @@ interface SeasonPosterProps {
   onClose: () => void;
 }
 
+// Affiche de saison : même cadre partagé que l'affiche match (SimplePosterFrame),
+// dans un modal ouvert depuis l'onglet Saison → UX 100% cohérente avec le studio.
 export default function SeasonPoster({ club, teamName, accentColor, players, bilan, form, motm, onClose }: SeasonPosterProps) {
-  const clubAccent = resolveClubAccent(accentColor, club);
-
   const available: PosterType[] = useMemo(() => {
-    const t: PosterType[] = [];
-    if (rankBy(players, 'goals').length) t.push('scorers');
-    if (bilan.played > 0) t.push('bilan');
-    if (motm.length) t.push('motm');
-    return t.length ? t : ['scorers'];
+    const a: PosterType[] = [];
+    if (rankBy(players, 'goals').length) a.push('scorers');
+    if (bilan.played > 0) a.push('bilan');
+    if (motm.length) a.push('motm');
+    return a.length ? a : ['scorers'];
   }, [players, bilan.played, motm.length]);
 
-  const palette = useMemo(() => buildPalette(clubAccent, club), [clubAccent, club]);
-
-  const [type, setType]     = useState<PosterType>(available[0]);
-  const [format, setFormat] = useState<Format>('post');
-  const [bg, setBg]         = useState<Bg>('spot');
-  const [mode, setMode]     = useState<Mode>('dark');
-  const [accent, setAccent] = useState<string>(clubAccent);
-  const [exporting, setExporting] = useState(false);
-  const posterRef = useRef<HTMLDivElement>(null);
+  const [type, setType] = useState<PosterType>(available[0]);
+  const logoUrl = club?.logoUrl ?? club?.logo_url ?? null;
+  const subtitle = teamName ?? club?.name ?? '';
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', h);
     return () => document.removeEventListener('keydown', h);
   }, [onClose]);
-
-  const t = useMemo(() => makeTheme(mode), [mode]);
-  const dim = FORMATS.find(f => f.id === format)!;
-  const scorers = useMemo(() => rankBy(players, 'goals').slice(0, dim.rows), [players, dim.rows]);
-  const logoUrl = club?.logoUrl ?? club?.logo_url ?? null;
-  const subtitle = teamName ?? club?.name ?? '';
-
-  const handleExport = useCallback(async () => {
-    if (!posterRef.current) return;
-    setExporting(true);
-    try {
-      const dataUrl = await toPng(posterRef.current, { pixelRatio: 3, cacheBust: true });
-      const link = document.createElement('a');
-      link.download = `saison-${type}-${format}-${(teamName ?? 'club').toLowerCase().replace(/\s+/g, '-')}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('[SeasonPoster] export failed:', err);
-    } finally { setExporting(false); }
-  }, [type, format, teamName]);
 
   return createPortal(
     <AnimatePresence>
@@ -89,64 +59,40 @@ export default function SeasonPoster({ club, teamName, accentColor, players, bil
         <div className="flex items-center justify-between px-4 py-3 bg-black/80 flex-shrink-0">
           <button onClick={onClose} aria-label="Fermer" className="text-white/70 text-sm font-semibold">✕ Fermer</button>
           <h2 className="text-white font-bold text-sm">Affiche de la saison</h2>
-          <button onClick={handleExport} disabled={exporting} className="text-xs font-bold px-3 py-1.5 rounded-lg text-black disabled:opacity-40" style={{ background: accent }}>
-            {exporting ? '…' : '⬇ Exporter'}
-          </button>
+          <div style={{ width: 56 }} />
         </div>
 
-        {/* Contrôles — du « quoi » vers le « style » */}
-        <div className="bg-black/70 flex-shrink-0 px-3 py-3 flex flex-col gap-2.5 overflow-y-auto" style={{ maxHeight: '38vh' }}>
-          <ControlRow label="Contenu">
-            {TYPES.filter(x => available.includes(x.id)).map(x => (
-              <button key={x.id} onClick={() => setType(x.id)} style={chipStyle(type === x.id, accent)}>{x.label}</button>
-            ))}
-          </ControlRow>
-          <ControlRow label="Format">
-            {FORMATS.map(f => (
-              <button key={f.id} onClick={() => setFormat(f.id)} style={chipStyle(format === f.id, accent)}>{f.label}</button>
-            ))}
-          </ControlRow>
-          <ControlRow label="Thème">
-            <button onClick={() => setMode('dark')}  style={chipStyle(mode === 'dark', accent)}>🌙 Sombre</button>
-            <button onClick={() => setMode('light')} style={chipStyle(mode === 'light', accent)}>☀️ Clair</button>
-          </ControlRow>
-          <ControlRow label="Couleur"><ColorControl palette={palette} accent={accent} setAccent={setAccent} /></ControlRow>
-          <ControlRow label="Fond">
-            {BGS.map(b => (
-              <button key={b.id} onClick={() => setBg(b.id)} style={chipStyle(bg === b.id, accent)}>{b.label}</button>
-            ))}
-          </ControlRow>
-        </div>
-
-        <div className="flex-1 overflow-y-auto flex items-start justify-center p-4">
-          <div ref={posterRef} style={{
-            width: dim.w, height: dim.h, flexShrink: 0, position: 'relative', overflow: 'hidden',
-            display: 'flex', flexDirection: 'column', background: t.bg, borderRadius: 22, fontFamily: "'Inter', sans-serif",
-          }}>
-            <PosterBg bg={bg} accent={accent} t={t} />
-
-            {/* En-tête club */}
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 8px', flexShrink: 0 }}>
-              {logoUrl
-                ? <img src={logoUrl} alt="" crossOrigin="anonymous" style={{ width: 46, height: 46, objectFit: 'contain', borderRadius: 12, background: t.surface }} />
-                : <div style={{ width: 46, height: 46, borderRadius: 12, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: 18 }}>{(club?.name ?? 'FC')[0]}</div>}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: t.text, fontSize: 15, fontWeight: 900, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club?.name ?? 'Mon club'}</div>
-                <div style={{ color: accent, fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 2 }}>Saison · {subtitle}</div>
+        <SimplePosterFrame
+          club={club}
+          accentColor={accentColor}
+          fileBase={`saison-${type}-${(teamName ?? 'club').toLowerCase().replace(/\s+/g, '-')}`}
+          contentTabs={TYPES.filter(x => available.includes(x.id))}
+          content={type}
+          onContent={id => setType(id as PosterType)}
+          renderPoster={({ t, accent, dim }) => (
+            <>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 8px', flexShrink: 0 }}>
+                {logoUrl
+                  ? <img src={logoUrl} alt="" crossOrigin="anonymous" style={{ width: 46, height: 46, objectFit: 'contain', borderRadius: 12, background: t.surface }} />
+                  : <div style={{ width: 46, height: 46, borderRadius: 12, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 900, fontSize: 18 }}>{(club?.name ?? 'FC')[0]}</div>}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ color: t.text, fontSize: 15, fontWeight: 900, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{club?.name ?? 'Mon club'}</div>
+                  <div style={{ color: accent, fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 2 }}>Saison · {subtitle}</div>
+                </div>
               </div>
-            </div>
 
-            <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 20px' }}>
-              {type === 'scorers' && <ScorersPoster scorers={scorers} accent={accent} t={t} />}
-              {type === 'bilan'   && <BilanPoster bilan={bilan} form={form} accent={accent} t={t} />}
-              {type === 'motm'    && <MotmPoster motm={motm.slice(0, dim.rows)} accent={accent} t={t} />}
-            </div>
+              <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 20px' }}>
+                {type === 'scorers' && <ScorersPoster scorers={rankBy(players, 'goals').slice(0, dim.rows)} accent={accent} t={t} />}
+                {type === 'bilan'   && <BilanPoster bilan={bilan} form={form} accent={accent} t={t} />}
+                {type === 'motm'    && <MotmPoster motm={motm.slice(0, dim.rows)} accent={accent} t={t} />}
+              </div>
 
-            <div style={{ position: 'relative', textAlign: 'center', color: t.foot, fontSize: 8.5, paddingBottom: 12, letterSpacing: '0.12em', fontWeight: 700, flexShrink: 0 }}>
-              {club?.name ?? 'SportLink'} · SPORTLINK
-            </div>
-          </div>
-        </div>
+              <div style={{ position: 'relative', textAlign: 'center', color: t.foot, fontSize: 8.5, paddingBottom: 12, letterSpacing: '0.12em', fontWeight: 700, flexShrink: 0 }}>
+                {club?.name ?? 'SportLink'} · SPORTLINK
+              </div>
+            </>
+          )}
+        />
       </motion.div>
     </AnimatePresence>,
     document.body,

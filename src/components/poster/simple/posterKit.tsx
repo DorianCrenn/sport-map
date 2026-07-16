@@ -66,38 +66,6 @@ export function makeTheme(mode: Mode): Theme {
       };
 }
 
-export function chipStyle(active: boolean, accent: string): React.CSSProperties {
-  return {
-    fontSize: 10.5, fontWeight: 800, padding: '5px 11px', borderRadius: 999, cursor: 'pointer',
-    border: 'none', whiteSpace: 'nowrap', transition: 'background 0.15s, color 0.15s',
-    background: active ? accent : 'rgba(255,255,255,0.1)',
-    color: active ? '#000' : 'rgba(255,255,255,0.65)',
-  };
-}
-
-export function ControlRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-      <span style={{ width: 52, flexShrink: 0, paddingTop: 6, fontSize: 9, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>{label}</span>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>{children}</div>
-    </div>
-  );
-}
-
-export function ColorControl({ palette, accent, setAccent }: { palette: string[]; accent: string; setAccent: (c: string) => void }) {
-  return (
-    <>
-      {palette.map(c => (
-        <button key={c} onClick={() => setAccent(c)} aria-label={`Couleur ${c}`}
-          style={{ width: 22, height: 22, borderRadius: '50%', background: c, cursor: 'pointer', border: accent.toLowerCase() === c.toLowerCase() ? '2px solid #fff' : '2px solid rgba(255,255,255,0.15)' }} />
-      ))}
-      <label title="Couleur personnalisée" style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', cursor: 'pointer', position: 'relative', display: 'inline-block', background: 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' }}>
-        <input type="color" value={accent} onChange={e => setAccent(e.target.value)} style={{ position: 'absolute', inset: -4, opacity: 0, cursor: 'pointer' }} />
-      </label>
-    </>
-  );
-}
-
 export function PosterBg({ bg, accent, t }: { bg: Bg; accent: string; t: Theme }) {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
