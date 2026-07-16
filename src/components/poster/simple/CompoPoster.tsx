@@ -84,9 +84,9 @@ function CompoDesign({ players, club, event, accent, t }: { players: Player[]; c
   const n = players.length;
   const confirmed = players.filter(p => p.status === 'accepted').length;
   const pending = n - confirmed;
-  const cols = n <= 6 ? 3 : n <= 12 ? 4 : n <= 20 ? 5 : 6;
-  const photo = cols === 3 ? 48 : cols === 4 ? 40 : cols === 5 ? 34 : 28;
-  const nameFs = cols <= 4 ? 10 : cols === 5 ? 8.5 : 7.5;
+  const cols = n <= 8 ? 2 : n <= 15 ? 3 : n <= 24 ? 4 : 5;
+  const photo  = cols === 2 ? 54 : cols === 3 ? 46 : cols === 4 ? 38 : 32;
+  const lastFs = cols === 2 ? 13 : cols === 3 ? 11 : cols === 4 ? 9.5 : 8.5;
 
   const adversaire = event?.adversaire || event?.awayTeam || '';
   const d = event?.date ? new Date(event.date) : null;
@@ -110,8 +110,8 @@ function CompoDesign({ players, club, event, accent, t }: { players: Player[]; c
       <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px 14px', overflow: 'hidden' }}>
         {n === 0
           ? <div style={{ color: t.dim, fontSize: 12, fontWeight: 600 }}>Aucun joueur convoqué</div>
-          : <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: cols >= 5 ? 6 : 9, width: '100%' }}>
-              {players.map((p, i) => <PlayerCard key={p.id ?? i} p={p} accent={accent} t={t} photo={photo} nameFs={nameFs} />)}
+          : <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: cols >= 4 ? 7 : 9, width: '100%' }}>
+              {players.map((p, i) => <PlayerCard key={p.id ?? i} p={p} accent={accent} t={t} photo={photo} lastFs={lastFs} />)}
             </div>}
       </div>
 
@@ -122,20 +122,32 @@ function CompoDesign({ players, club, event, accent, t }: { players: Player[]; c
   );
 }
 
-function PlayerCard({ p, accent, t, photo, nameFs }: { p: Player; accent: string; t: Theme; photo: number; nameFs: number }) {
+function PlayerCard({ p, accent, t, photo, lastFs }: { p: Player; accent: string; t: Theme; photo: number; lastFs: number }) {
   const conf = p.status === 'accepted';
-  const initials = String(p.name).split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  const parts = String(p.name).trim().split(/\s+/);
+  const first = parts[0] ?? '';
+  const last  = parts.length > 1 ? parts.slice(1).join(' ') : first;
+  const initials = ((first[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase();
+  const badgeRing = t.bg.includes('#0b') ? '#0b1220' : '#fff';
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, opacity: conf ? 1 : 0.62, minWidth: 0 }}>
-      <div style={{ position: 'relative', width: photo, height: photo, borderRadius: 12, overflow: 'hidden', background: `${accent}18`, border: `1.5px ${conf ? 'solid' : 'dashed'} ${conf ? accent : t.dim}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        {/* Initiales en fond → visibles si pas de photo ou si l'image échoue */}
-        <span style={{ position: 'absolute', color: accent, fontWeight: 900, fontSize: photo * 0.32 }}>{initials}</span>
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '9px 4px 10px',
+      borderRadius: 14, minWidth: 0, opacity: conf ? 1 : 0.72,
+      background: conf ? `${accent}14` : t.surface,
+      border: `1px solid ${conf ? `${accent}44` : `${accent}1f`}`,
+    }}>
+      <div style={{ position: 'relative', width: photo, height: photo, borderRadius: 12, overflow: 'hidden', background: `${accent}22`, border: `1.5px ${conf ? 'solid' : 'dashed'} ${conf ? accent : t.dim}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <span style={{ position: 'absolute', color: accent, fontWeight: 900, fontSize: photo * 0.34 }}>{initials}</span>
         {p.photo && <img src={p.photo} alt="" crossOrigin="anonymous" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
         {p.number != null && p.number !== '' && (
-          <div style={{ position: 'absolute', bottom: -2, right: -2, minWidth: 15, height: 15, padding: '0 3px', borderRadius: 8, background: accent, color: '#000', fontSize: 8.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1.5px solid ${t.bg.includes('#0b') ? '#0b1220' : '#fff'}` }}>{p.number}</div>
+          <div style={{ position: 'absolute', bottom: -3, right: -3, minWidth: 17, height: 17, padding: '0 4px', borderRadius: 9, background: accent, color: '#000', fontSize: 9.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${badgeRing}` }}>{p.number}</div>
         )}
       </div>
-      <span style={{ fontSize: nameFs, fontWeight: 700, color: t.text, textAlign: 'center', lineHeight: 1.12, maxWidth: photo + 26, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', wordBreak: 'break-word' } as React.CSSProperties}>{p.name}</span>
+      <div style={{ width: '100%', minWidth: 0, textAlign: 'center' }}>
+        <div style={{ fontSize: lastFs - 2, fontWeight: 600, color: t.dim, lineHeight: 1.05, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{first}</div>
+        <div style={{ fontSize: lastFs, fontWeight: 900, color: t.text, textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 1.08, wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>{last}</div>
+      </div>
     </div>
   );
 }
