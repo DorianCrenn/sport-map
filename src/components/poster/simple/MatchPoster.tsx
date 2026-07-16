@@ -47,6 +47,7 @@ export default function MatchPoster({ event, club, accentColor = '', score = nul
   const [mode, setMode]     = useState<Mode>('dark');
   const [accent, setAccent] = useState<string>(clubAccent);
   const [exporting, setExporting] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,29 +59,57 @@ export default function MatchPoster({ event, club, accentColor = '', score = nul
   const t = useMemo(() => makeTheme(mode), [mode]);
   const dim = FORMATS.find(f => f.id === format)!;
 
-  const handleExport = useCallback(async () => {
-    if (!posterRef.current) return;
+  const fileName = `match-${type}-${format}-${(awayName || 'match').toLowerCase().replace(/\s+/g, '-')}.png`;
+
+  const getBlob = useCallback(async (): Promise<Blob | null> => {
+    if (!posterRef.current) return null;
+    const { toBlob } = await import('html-to-image');
+    return toBlob(posterRef.current, { pixelRatio: 3, cacheBust: true });
+  }, []);
+
+  const handleDownload = useCallback(async () => {
     setExporting(true);
     try {
-      const dataUrl = await toPng(posterRef.current, { pixelRatio: 3, cacheBust: true });
+      const dataUrl = await toPng(posterRef.current!, { pixelRatio: 3, cacheBust: true });
       const link = document.createElement('a');
-      link.download = `match-${type}-${format}-${(awayName || 'match').toLowerCase().replace(/\s+/g, '-')}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('[MatchPoster] export failed:', err);
-    } finally { setExporting(false); }
-  }, [type, format, awayName]);
+      link.download = fileName; link.href = dataUrl; link.click();
+      setExportOpen(false);
+    } catch (err) { console.error('[MatchPoster] download failed:', err); }
+    finally { setExporting(false); }
+  }, [fileName]);
+
+  const handleShare = useCallback(async () => {
+    setExporting(true);
+    try {
+      const blob = await getBlob();
+      if (blob) {
+        const file = new File([blob], fileName, { type: 'image/png' });
+        const nav = navigator as Navigator & { canShare?: (d: any) => boolean };
+        if (nav.canShare?.({ files: [file] }) && typeof navigator.share === 'function') {
+          await navigator.share({ files: [file], title: 'Affiche du match' });
+          setExportOpen(false);
+          return;
+        }
+      }
+      await handleDownload();
+    } catch (err) { if ((err as Error)?.name !== 'AbortError') console.error('[MatchPoster] share failed:', err); }
+    finally { setExporting(false); }
+  }, [getBlob, fileName, handleDownload]);
 
   return createPortal(
     <AnimatePresence>
       <motion.div role="dialog" aria-modal="true" className="fixed inset-0 flex flex-col bg-black/70 overscroll-contain"
         style={{ zIndex: DEMO_OVERLAY_Z } as React.CSSProperties}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <div className="flex items-center justify-between px-4 py-3 bg-black/80 flex-shrink-0">
-          <button onClick={onClose} aria-label="Fermer" className="text-white/70 text-sm font-semibold">✕ Fermer</button>
-          <h2 className="text-white font-bold text-sm">Affiche du match</h2>
-          <button onClick={handleExport} disabled={exporting} className="text-xs font-bold px-3 py-1.5 rounded-lg text-black disabled:opacity-40" style={{ background: accent }}>
+        <div className="flex items-center justify-between px-3 py-3 bg-black/80 flex-shrink-0 gap-2">
+          <button onClick={onClose} aria-label="Fermer" className="text-white/70 text-lg font-semibold px-1 leading-none">✕</button>
+          {onExpert ? (
+            <div style={{ display: 'flex', gap: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 999, padding: 3 }}>
+              <span style={{ padding: '5px 13px', borderRadius: 999, fontSize: 11, fontWeight: 800, background: accent, color: '#000' }}>☀️ Simple</span>
+              <button onClick={onExpert} style={{ padding: '5px 13px', borderRadius: 999, fontSize: 11, fontWeight: 800, background: 'transparent', color: 'rgba(255,255,255,0.7)', border: 'none', cursor: 'pointer' }}>⚡ Expert</button>
+            </div>
+          ) : <h2 className="text-white font-bold text-sm">Affiche du match</h2>}
+          <button onClick={() => setExportOpen(true)} disabled={exporting} className="text-xs font-bold px-3 py-1.5 rounded-lg text-black disabled:opacity-40" style={{ background: accent }}>
             {exporting ? '…' : '⬇ Exporter'}
           </button>
         </div>
@@ -103,11 +132,6 @@ export default function MatchPoster({ event, club, accentColor = '', score = nul
           <ControlRow label="Fond">
             {BGS.map(b => <button key={b.id} onClick={() => setBg(b.id)} style={chipStyle(bg === b.id, accent)}>{b.label}</button>)}
           </ControlRow>
-          {onExpert && (
-            <button onClick={onExpert} className="self-center mt-1 text-[11px] font-bold px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.15)' }}>
-              🎛️ Mode expert — tous les outils
-            </button>
-          )}
         </div>
 
         <div className="flex-1 overflow-y-auto flex items-start justify-center p-4">
@@ -155,10 +179,49 @@ export default function MatchPoster({ event, club, accentColor = '', score = nul
             </div>
           </div>
         </div>
+
+        <AnimatePresence>
+          {exportOpen && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 flex flex-col justify-end" style={{ zIndex: 5, background: 'rgba(0,0,0,0.5)' }}
+              onClick={() => setExportOpen(false)}>
+              <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+                transition={{ type: 'spring', stiffness: 320, damping: 34 }} onClick={e => e.stopPropagation()}
+                style={{ background: '#0f1a2e', borderTop: '1px solid rgba(255,255,255,0.1)', borderRadius: '18px 18px 0 0', padding: '12px 16px calc(20px + env(safe-area-inset-bottom,0px))' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+                  <div style={{ width: 36, height: 4, borderRadius: 999, background: 'rgba(255,255,255,0.2)' }} />
+                </div>
+                <div style={{ color: '#fff', fontSize: 13, fontWeight: 800, marginBottom: 12 }}>Exporter l'affiche</div>
+                <button onClick={handleShare} disabled={exporting} style={exportRowStyle(accent, true)}>
+                  <span style={{ fontSize: 18 }}>📤</span>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 800, color: '#000' }}>Partager</div>
+                    <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(0,0,0,0.6)' }}>WhatsApp, Instagram… (image)</div>
+                  </div>
+                </button>
+                <button onClick={handleDownload} disabled={exporting} style={exportRowStyle(accent, false)}>
+                  <span style={{ fontSize: 18 }}>⬇</span>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 800, color: '#fff' }}>Télécharger en PNG</div>
+                    <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>HD 3× — {FORMATS.find(f => f.id === format)?.label}</div>
+                  </div>
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </AnimatePresence>,
     document.body,
   );
+}
+
+function exportRowStyle(accent: string, primary: boolean): React.CSSProperties {
+  return {
+    display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 14px',
+    borderRadius: 14, marginBottom: 8, cursor: 'pointer', border: 'none',
+    background: primary ? accent : 'rgba(255,255,255,0.06)',
+  };
 }
 
 function TeamSide({ name, logo, accent, t }: { name: string; logo: string | null; accent: string; t: Theme }) {
