@@ -410,7 +410,7 @@ interface OnboardingPageProps { onDone: (sports: string[]) => void; }
 
 export default function OnboardingPage({ onDone }: OnboardingPageProps) {
   const { currentUser, updateProfile } = useAuth() as any;
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const [step, setStep] = useState(1);
   const [jobRole, setJobRole] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());

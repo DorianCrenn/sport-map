@@ -23,7 +23,7 @@ interface ClubsPageProps {
 }
 
 export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEvent, onClubOverlayChange, onArchiveSeason }: ClubsPageProps) {
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const { userClubs, loading: clubsLoading, addClubAndNotify, updateClub, deleteClub } = useClubs();
   const { currentUser, isAdmin, isClubAdmin, followClub, unfollowClub, isFollowingClub, refetchProfile } = useAuth();
 

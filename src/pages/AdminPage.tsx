@@ -183,7 +183,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
   const { isAdmin, currentUser } = useAuth() as any;
   const { toast } = useToast();
   const { verifyClub, rejectClub, requestClubInfo, suspendClub } = useClubs() as any;
-  const { allSports, customSports, deletedDefaults, addSport, updateSport, deleteSport, restoreSport, toggleArchive } = useSports() as any;
+  const { allSports, customSports, deletedDefaults, addSport, updateSport, deleteSport, restoreSport, toggleArchive } = useSports();
 
   const [tab, setTab] = useState<string>('overview');
 

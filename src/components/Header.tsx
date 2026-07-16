@@ -33,7 +33,7 @@ export default function Header({
   onTabChange, onShowAuth, onMyRides, rideNotifCount = 0,
   onShowAnnouncements, announcementsUnreadCount = 0,
 }: HeaderProps) {
-  const { allSports } = useSports() as any;
+  const { allSports } = useSports();
   const { currentUser, isAdmin, isClubAdmin, logout, devRole, setDevRole, devClubId, setDevClubId } = useAuth() as any;
   const { unreadCount: clubNotifUnread } = useClubNotifications() as any;
   const totalBadge = (clubNotifUnread as number) + rideNotifCount;

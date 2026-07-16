@@ -539,7 +539,7 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
   { event, club, isSelected, onSelect, onEdit, onDelete, onDuplicate, onUpdateEvent },
   ref
 ) {
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const { currentUser, isAdmin } = useAuth() as any;
   const { toast } = useToast() as any;
   const { isFavorite, toggleFavorite } = useFavoritesContext() as any;

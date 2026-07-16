@@ -25,7 +25,7 @@ interface ClubsTabProps {
 }
 
 export default function ClubsTab({ allEvents, allClubs, follows, onUnfollowClub, onUpdateFollow }: ClubsTabProps) {
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const [editingClubId, setEditingClubId] = useState<any>(null);
   const [expandedClubId, setExpandedClubId] = useState<any>(null);
 

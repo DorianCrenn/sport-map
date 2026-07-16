@@ -44,7 +44,7 @@ interface LogoUploadProps { logo?: string | null; name?: string; sport?: string;
 
 function LogoUpload({ logo, name, sport, clubId, userId, onChange }: LogoUploadProps) {
   const ref = useRef<HTMLInputElement>(null);
-  const { allSports } = useSports() as any;
+  const { allSports } = useSports();
   const { toast } = useToast() as any;
   const [uploading, setUploading] = useState(false);
   const sportColor = allSports[sport ?? '']?.color ?? '#64748b';
@@ -148,7 +148,7 @@ interface ClubFormModalProps {
 }
 
 export default function ClubFormModal({ club, onSave, onClose }: ClubFormModalProps) {
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const { currentUser } = useAuth() as any;
   const isEdit = !!club;
 

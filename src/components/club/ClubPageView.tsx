@@ -106,7 +106,7 @@ export default function ClubPageView({
   canAddEvent: canAddEventProp, onUpdateClub, onArchiveSeason,
   initialAction, onInitialActionConsumed,
 }: ClubPageViewProps) {
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const { toast } = useToast() as any;
   const {
     isAdmin, isClubAdmin, currentUser, isLoggedIn,

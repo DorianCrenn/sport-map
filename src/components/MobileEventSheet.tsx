@@ -42,7 +42,7 @@ interface FollowClubButtonProps { event: Record<string, any>; compact?: boolean;
 
 function FollowClubButton({ event, compact = false }: FollowClubButtonProps) {
   const { isLoggedIn, isFollowingClub, followClub, unfollowClub } = useAuth() as any;
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   if (!isLoggedIn || !event.clubId) return null;
   const following = isFollowingClub(event.clubId);
   const sportColor = (SPORTS[event.sport] as any)?.color ?? '#22d96a';
@@ -76,7 +76,7 @@ interface MobileEventSheetProps {
 type SnapPoint = 'peek' | 'detail' | 'full';
 
 export default function MobileEventSheet({ event, club, onClose, onEdit, onDelete, onUpdateEvent }: MobileEventSheetProps) {
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const { share } = useShare() as any;
   const { currentUser, isAdmin } = useAuth() as any;
   const { isFavorite, toggleFavorite } = useFavoritesContext() as any;

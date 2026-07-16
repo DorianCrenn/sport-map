@@ -10,7 +10,7 @@ interface UpcomingEventsBlockProps {
 }
 
 export default function UpcomingEventsBlock({ data, allEvents, club, isEditing, onUpdate }: UpcomingEventsBlockProps) {
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const now = new Date();
   const events = (allEvents ?? [])
     .filter(e =>

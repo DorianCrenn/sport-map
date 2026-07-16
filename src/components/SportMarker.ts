@@ -34,7 +34,7 @@ export function createClusterMarker(count, color = '#64748b', icon = null) {
   });
 }
 
-export function createSportMarker(sport, isSelected = false, isFavorite = false, allSports = DEFAULT_SPORTS) {
+export function createSportMarker(sport, isSelected = false, isFavorite = false, allSports: Record<string, { color?: string }> = DEFAULT_SPORTS) {
   const sportData = allSports[sport];
   const color = sportData?.color ?? '#6b7280';
   const fill = toPastel(color);

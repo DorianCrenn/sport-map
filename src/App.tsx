@@ -240,7 +240,7 @@ function AppInner() {
   const hasShownBadge = useRef(false);
   const clubMatchEvents = useClubMatches() as any;
   const { userClubs, updateClub } = useClubs() as any;
-  const { allSports } = useSports() as any;
+  const { allSports } = useSports();
   const [cityFilter, setCityFilter] = useState<string | null>(null);
   const [selectedSearchClub, setSelectedSearchClub] = useState<Record<string, any> | null>(null);
   const [focusEventId, setFocusEventId] = useState<string | null>(null);

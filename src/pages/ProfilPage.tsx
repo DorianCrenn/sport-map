@@ -255,7 +255,7 @@ export default function ProfilPage({
   const { currentUser, logout, isAdmin, isClubAdmin, updateProfile, unfollowClub, followedClubs, requestPasswordReset } = useAuth();
   const { toast } = useToast();
   const { favorites } = useFavoritesContext();
-  const { allSports } = useSports() as any;
+  const { allSports } = useSports();
   const { userClubs } = useClubs();
   const { planId, plan: planInfo, isUpgradeable: canUpgrade } = usePlan();
   const allClubs: SportLinkClub[] = userClubs;
@@ -858,7 +858,7 @@ export default function ProfilPage({
             ) : (
               <motion.div key="edit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="grid grid-cols-2 gap-2">
-                {Object.values(allSports).filter((s: any) => !s.isArchived).map((sport: any) => {
+                {Object.values(allSports).filter((s) => !s.isArchived).map((sport) => {
                   const on = selectedSports.has(sport.id);
                   return (
                     <button

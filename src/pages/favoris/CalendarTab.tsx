@@ -36,7 +36,7 @@ interface CalendarTabProps {
 }
 
 export default function CalendarTab({ allEvents, favorites }: CalendarTabProps) {
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const [viewMonth, setViewMonth] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);

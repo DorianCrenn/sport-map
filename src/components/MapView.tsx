@@ -85,7 +85,7 @@ interface MapViewProps {
 }
 
 function MapView({ events, selectedEventId, onMarkerClick, activeDepartment, userCoords, flyTarget, onBoundsChange, selectedEvent, onMapClick }: MapViewProps) {
-  const { allSports } = useSports() as any;
+  const { allSports } = useSports();
   const { isFavorite } = useFavoritesContext() as any;
   const dept = (DEPARTMENTS as any)[activeDepartment] ?? (DEPARTMENTS as any).finistere;
 

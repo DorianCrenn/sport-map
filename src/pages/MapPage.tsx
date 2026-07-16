@@ -50,7 +50,7 @@ export default function MapPage({
   allClubs = [],
 }: MapPageProps) {
   const { currentUser } = useAuth();
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const { favorites } = useFavoritesContext();
   const favoritesCount = favorites.size;
   const [sportFilter, setSportFilter] = useState<any>(null);

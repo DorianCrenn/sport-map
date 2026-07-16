@@ -68,7 +68,7 @@ export default function EventFormModal({ event, onSave, onClose, onBulkSave, onO
   const { currentUser, isClubAdmin } = useAuth() as any;
   // Demo: coach/president profiles can create convocations
   const demoIsCoach = isDemoMode() && ['coach', 'president'].includes(sessionStorage.getItem('sl-demo-profile') ?? '');
-  const { allSports } = useSports() as any;
+  const { allSports } = useSports();
   const { userClubs } = useClubs() as any;
   const allClubs = userClubs;
   const myClub = allClubs.find((c: any) => String(c.id) === String(currentUser?.clubId))

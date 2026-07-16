@@ -70,7 +70,7 @@ interface FavoriteCardProps {
 }
 
 function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }: FavoriteCardProps) {
-  const { allSports: SPORTS } = useSports() as any;
+  const { allSports: SPORTS } = useSports();
   const sportColor    = SPORTS[event.sport]?.color ?? '#22d96a';
   const attendeeCount = useAttendeeCount(event.id) as any;
   const dateObj   = new Date(event.date);
