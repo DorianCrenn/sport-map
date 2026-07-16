@@ -10,7 +10,7 @@ import StylePanelTab     from './poster/panels/StylePanelTab.jsx';
 import PlayersPanelTab   from './poster/panels/PlayersPanelTab.jsx';
 import BackgroundPanelTab from './poster/panels/BackgroundPanelTab.jsx';
 import PosterEditor from './poster/PosterEditor.jsx';
-import MatchPoster from './poster/simple/MatchPoster.js';
+import SimplePosterBody from './poster/simple/MatchPoster.js';
 import AiElementEditor from './poster/AiElementEditor.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useAndroidBack } from '../hooks/useAndroidBack.js';
@@ -394,20 +394,9 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  // Mode Simple = générateur d'affiche épuré (contenu × format × thème dark/light
-  // × couleur × fond). Tout le studio complet reste accessible en mode Expert.
-  if (simpleMode && !convocationPlayers?.length) {
-    return (
-      <MatchPoster
-        event={event}
-        club={club}
-        accentColor={accentColor}
-        score={scoreHome !== undefined && scoreAway !== undefined ? { home: scoreHome, away: scoreAway } : null}
-        onClose={onClose}
-        onExpert={canExpert ? () => setSimpleMode(false) : undefined}
-      />
-    );
-  }
+  // Mode Simple = générateur d'affiche épuré rendu DANS la coquille du studio
+  // (même en-tête + toggle). La convocation garde le corps studio (compo).
+  const simpleBody = simpleMode && !convocationPlayers?.length;
 
   return (
     <>
@@ -644,7 +633,8 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               )}
             </AnimatePresence>
 
-            {/* Bouton Partager — icône + texte sur desktop, icône seule sur mobile */}
+            {/* Bouton Partager — masqué en mode simple (export propre dans le corps) */}
+            {!simpleBody && (
             <button
               onClick={() => { setActiveTab(null); setExportOpen(prev => !prev); }}
               title="Partager / Exporter"
@@ -656,6 +646,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
               </svg>
               {isDesktop && 'Partager'}
             </button>
+            )}
 
             <button onClick={onClose} aria-label="Fermer PosterStudio"
               style={{ width: 44, height: 44, borderRadius: 'var(--sl-radius-lg)', backgroundColor: 'var(--sl-surface)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sl-t2)', flexShrink: 0 }}>
@@ -667,7 +658,7 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
         </div>
 
         {/* ── QUICK MODE BANNER ───────────────────────────────────────────────── */}
-        {quickMode && !quickBannerDismissed && (
+        {quickMode && !quickBannerDismissed && !simpleBody && (
           <motion.div
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
             style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', backgroundColor: 'rgba(34,217,106,0.07)', borderBottom: '1px solid rgba(34,217,106,0.18)' }}
@@ -693,7 +684,18 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           </motion.div>
         )}
 
+        {/* ── Mode Simple : générateur épuré dans la coquille du studio ── */}
+        {simpleBody && (
+          <SimplePosterBody
+            event={event}
+            club={club}
+            accentColor={accentColor}
+            score={scoreHome !== undefined && scoreAway !== undefined ? { home: scoreHome, away: scoreAway } : null}
+          />
+        )}
+
         {/* ── Static content wrapper — overlays contained here, no Framer Motion transform ── */}
+        {!simpleBody && (
         <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: isDesktop && !simpleMode ? 'row' : 'column' }}>
 
         {/* Platform preview overlay — DISTRIB-001c */}
@@ -1040,10 +1042,11 @@ export default function PosterStudio({ event, onClose, club, quickMode = false, 
           })()}
         </div>}
 
-        {/* ── Wizard footer — mode Simple ──────────────────────────────────────── */}
+        {/* ── Wizard footer — convocation compo (corps studio) ─────────────────── */}
         {simpleMode && <WizardFooter ps={{ wizardStep, setWizardStep, onClose, accentColor, handleDownload, downloading }} />}
 
         </div>
+        )}
 
       </motion.div>
     </motion.div>

@@ -1,26 +1,25 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useCallback, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import { deriveInitialFields } from '../../../lib/posterVariables.js';
 import {
-  FORMATS, BGS, DEMO_OVERLAY_Z, resolveClubAccent, buildPalette, makeTheme,
+  FORMATS, BGS, resolveClubAccent, buildPalette, makeTheme,
   chipStyle, ControlRow, ColorControl, PosterBg,
   type Format, type Bg, type Mode, type Theme,
 } from './posterKit.js';
 
 type MatchType = 'annonce' | 'result';
 
-interface MatchPosterProps {
+interface SimplePosterBodyProps {
   event: Record<string, any>;
   club: Record<string, any>;
   accentColor?: string;
   score?: { home: number | string; away: number | string } | null;
-  onClose: () => void;
-  onExpert?: () => void;
 }
 
-export default function MatchPoster({ event, club, accentColor = '', score = null, onClose, onExpert }: MatchPosterProps) {
+// Corps du mode Simple, intégré DANS la coquille du PosterStudio (en-tête + toggle
+// Simple/Expert fournis par le studio). Contrôles épurés + aperçu + export.
+export default function SimplePosterBody({ event, club, accentColor = '', score = null }: SimplePosterBodyProps) {
   const clubAccent = resolveClubAccent(accentColor, club);
   const palette = useMemo(() => buildPalette(clubAccent, club), [clubAccent, club]);
 
@@ -38,7 +37,6 @@ export default function MatchPoster({ event, club, accentColor = '', score = nul
 
   const sc = score ?? (event?.score && event.score.home != null ? event.score : null);
   const hasScore = !!(sc && sc.home != null && sc.away != null);
-
   const available: MatchType[] = hasScore ? ['result', 'annonce'] : ['annonce'];
 
   const [type, setType]     = useState<MatchType>(available[0]);
@@ -46,19 +44,12 @@ export default function MatchPoster({ event, club, accentColor = '', score = nul
   const [bg, setBg]         = useState<Bg>('spot');
   const [mode, setMode]     = useState<Mode>('dark');
   const [accent, setAccent] = useState<string>(clubAccent);
-  const [exporting, setExporting] = useState(false);
+  const [exporting, setExporting]   = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', h);
-    return () => document.removeEventListener('keydown', h);
-  }, [onClose]);
-
   const t = useMemo(() => makeTheme(mode), [mode]);
   const dim = FORMATS.find(f => f.id === format)!;
-
   const fileName = `match-${type}-${format}-${(awayName || 'match').toLowerCase().replace(/\s+/g, '-')}.png`;
 
   const getBlob = useCallback(async (): Promise<Blob | null> => {
@@ -74,7 +65,7 @@ export default function MatchPoster({ event, club, accentColor = '', score = nul
       const link = document.createElement('a');
       link.download = fileName; link.href = dataUrl; link.click();
       setExportOpen(false);
-    } catch (err) { console.error('[MatchPoster] download failed:', err); }
+    } catch (err) { console.error('[SimplePoster] download failed:', err); }
     finally { setExporting(false); }
   }, [fileName]);
 
@@ -92,127 +83,114 @@ export default function MatchPoster({ event, club, accentColor = '', score = nul
         }
       }
       await handleDownload();
-    } catch (err) { if ((err as Error)?.name !== 'AbortError') console.error('[MatchPoster] share failed:', err); }
+    } catch (err) { if ((err as Error)?.name !== 'AbortError') console.error('[SimplePoster] share failed:', err); }
     finally { setExporting(false); }
   }, [getBlob, fileName, handleDownload]);
 
-  return createPortal(
-    <AnimatePresence>
-      <motion.div role="dialog" aria-modal="true" className="fixed inset-0 flex flex-col bg-black/70 overscroll-contain"
-        style={{ zIndex: DEMO_OVERLAY_Z } as React.CSSProperties}
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <div className="flex items-center justify-between px-3 py-3 bg-black/80 flex-shrink-0 gap-2">
-          <button onClick={onClose} aria-label="Fermer" className="text-white/70 text-lg font-semibold px-1 leading-none">✕</button>
-          {onExpert ? (
-            <div style={{ display: 'flex', gap: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 999, padding: 3 }}>
-              <span style={{ padding: '5px 13px', borderRadius: 999, fontSize: 11, fontWeight: 800, background: accent, color: '#000' }}>☀️ Simple</span>
-              <button onClick={onExpert} style={{ padding: '5px 13px', borderRadius: 999, fontSize: 11, fontWeight: 800, background: 'transparent', color: 'rgba(255,255,255,0.7)', border: 'none', cursor: 'pointer' }}>⚡ Expert</button>
-            </div>
-          ) : <h2 className="text-white font-bold text-sm">Affiche du match</h2>}
-          <button onClick={() => setExportOpen(true)} disabled={exporting} className="text-xs font-bold px-3 py-1.5 rounded-lg text-black disabled:opacity-40" style={{ background: accent }}>
-            {exporting ? '…' : '⬇ Exporter'}
-          </button>
-        </div>
-
-        <div className="bg-black/70 flex-shrink-0 px-3 py-3 flex flex-col gap-2.5 overflow-y-auto" style={{ maxHeight: '38vh' }}>
-          {available.length > 1 && (
-            <ControlRow label="Contenu">
-              {available.includes('annonce') && <button onClick={() => setType('annonce')} style={chipStyle(type === 'annonce', accent)}>📣 Annonce</button>}
-              {available.includes('result') && <button onClick={() => setType('result')} style={chipStyle(type === 'result', accent)}>🏆 Résultat</button>}
-            </ControlRow>
-          )}
-          <ControlRow label="Format">
-            {FORMATS.map(f => <button key={f.id} onClick={() => setFormat(f.id)} style={chipStyle(format === f.id, accent)}>{f.label}</button>)}
+  return (
+    <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Contrôles */}
+      <div className="bg-black/85 flex-shrink-0 px-3 py-3 flex flex-col gap-2.5 overflow-y-auto" style={{ maxHeight: '42%' }}>
+        {available.length > 1 && (
+          <ControlRow label="Contenu">
+            {available.includes('annonce') && <button onClick={() => setType('annonce')} style={chipStyle(type === 'annonce', accent)}>📣 Annonce</button>}
+            {available.includes('result') && <button onClick={() => setType('result')} style={chipStyle(type === 'result', accent)}>🏆 Résultat</button>}
           </ControlRow>
-          <ControlRow label="Thème">
-            <button onClick={() => setMode('dark')}  style={chipStyle(mode === 'dark', accent)}>🌙 Sombre</button>
-            <button onClick={() => setMode('light')} style={chipStyle(mode === 'light', accent)}>☀️ Clair</button>
-          </ControlRow>
-          <ControlRow label="Couleur"><ColorControl palette={palette} accent={accent} setAccent={setAccent} /></ControlRow>
-          <ControlRow label="Fond">
-            {BGS.map(b => <button key={b.id} onClick={() => setBg(b.id)} style={chipStyle(bg === b.id, accent)}>{b.label}</button>)}
-          </ControlRow>
-        </div>
+        )}
+        <ControlRow label="Format">
+          {FORMATS.map(f => <button key={f.id} onClick={() => setFormat(f.id)} style={chipStyle(format === f.id, accent)}>{f.label}</button>)}
+        </ControlRow>
+        <ControlRow label="Thème">
+          <button onClick={() => setMode('dark')}  style={chipStyle(mode === 'dark', accent)}>🌙 Sombre</button>
+          <button onClick={() => setMode('light')} style={chipStyle(mode === 'light', accent)}>☀️ Clair</button>
+        </ControlRow>
+        <ControlRow label="Couleur"><ColorControl palette={palette} accent={accent} setAccent={setAccent} /></ControlRow>
+        <ControlRow label="Fond">
+          {BGS.map(b => <button key={b.id} onClick={() => setBg(b.id)} style={chipStyle(bg === b.id, accent)}>{b.label}</button>)}
+        </ControlRow>
+      </div>
 
-        <div className="flex-1 overflow-y-auto flex items-start justify-center p-4">
-          <div ref={posterRef} style={{
-            width: dim.w, height: dim.h, flexShrink: 0, position: 'relative', overflow: 'hidden',
-            display: 'flex', flexDirection: 'column', background: t.bg, borderRadius: 22, fontFamily: "'Inter', sans-serif",
-          }}>
-            <PosterBg bg={bg} accent={accent} t={t} />
+      {/* Aperçu */}
+      <div className="flex-1 overflow-y-auto flex items-start justify-center p-4" style={{ backgroundColor: 'var(--sl-card-hi, #eef2f7)' }}>
+        <div ref={posterRef} style={{
+          width: dim.w, height: dim.h, flexShrink: 0, position: 'relative', overflow: 'hidden',
+          display: 'flex', flexDirection: 'column', background: t.bg, borderRadius: 22, fontFamily: "'Inter', sans-serif",
+        }}>
+          <PosterBg bg={bg} accent={accent} t={t} />
 
-            {/* En-tête */}
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 0', flexShrink: 0 }}>
-              <span style={{ color: accent, fontSize: 10, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                {type === 'result' ? 'Résultat' : 'Match à venir'}
-              </span>
-              {championship && <span style={{ color: t.dim, fontSize: 10, fontWeight: 700, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right' }}>{championship}</span>}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 0', flexShrink: 0 }}>
+            <span style={{ color: accent, fontSize: 10, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{type === 'result' ? 'Résultat' : 'Match à venir'}</span>
+            {championship && <span style={{ color: t.dim, fontSize: 10, fontWeight: 700, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right' }}>{championship}</span>}
+          </div>
+
+          <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '8px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 16 }}>
+              <TeamSide name={homeName} logo={homeLogo} accent={accent} t={t} />
+              <div style={{ flexShrink: 0, alignSelf: 'center', textAlign: 'center', minWidth: 70 }}>
+                {type === 'result' && hasScore
+                  ? <div style={{ color: t.text, fontSize: 34, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{sc!.home}<span style={{ color: accent, margin: '0 4px' }}>–</span>{sc!.away}</div>
+                  : <div style={{ color: accent, fontSize: 26, fontWeight: 900, letterSpacing: '0.04em' }}>VS</div>}
+              </div>
+              <TeamSide name={awayName} logo={awayLogo} accent={accent} t={t} />
             </div>
 
-            {/* Confrontation */}
-            <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '8px 18px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 16 }}>
-                <TeamSide name={homeName} logo={homeLogo} accent={accent} t={t} />
-                <div style={{ flexShrink: 0, alignSelf: 'center', textAlign: 'center', minWidth: 70 }}>
-                  {type === 'result' && hasScore
-                    ? <div style={{ color: t.text, fontSize: 34, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{sc!.home}<span style={{ color: accent, margin: '0 4px' }}>–</span>{sc!.away}</div>
-                    : <div style={{ color: accent, fontSize: 26, fontWeight: 900, letterSpacing: '0.04em' }}>VS</div>}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+              {(dateStr || timeStr) && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: `${accent}1f`, border: `1px solid ${accent}44`, borderRadius: 999, padding: '6px 14px' }}>
+                  <span style={{ color: t.text, fontSize: 12.5, fontWeight: 800, textTransform: 'capitalize' }}>{dateStr}</span>
+                  {timeStr && <span style={{ color: accent, fontSize: 12.5, fontWeight: 900 }}>{timeStr}</span>}
                 </div>
-                <TeamSide name={awayName} logo={awayLogo} accent={accent} t={t} />
-              </div>
-
-              {/* Date / lieu */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-                {(dateStr || timeStr) && (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: `${accent}1f`, border: `1px solid ${accent}44`, borderRadius: 999, padding: '6px 14px' }}>
-                    <span style={{ color: t.text, fontSize: 12.5, fontWeight: 800, textTransform: 'capitalize' }}>{dateStr}</span>
-                    {timeStr && <span style={{ color: accent, fontSize: 12.5, fontWeight: 900 }}>{timeStr}</span>}
-                  </div>
-                )}
-                {venue && <div style={{ color: t.dim, fontSize: 11, fontWeight: 600 }}>📍 {venue}</div>}
-                {type === 'annonce' && <div style={{ color: t.faint, fontSize: 11, fontWeight: 700, marginTop: 2 }}>Venez nombreux !</div>}
-              </div>
-            </div>
-
-            <div style={{ position: 'relative', textAlign: 'center', color: t.foot, fontSize: 8.5, paddingBottom: 12, letterSpacing: '0.12em', fontWeight: 700, flexShrink: 0 }}>
-              {club?.name ?? 'SportLink'} · SPORTLINK
+              )}
+              {venue && <div style={{ color: t.dim, fontSize: 11, fontWeight: 600 }}>📍 {venue}</div>}
+              {type === 'annonce' && <div style={{ color: t.faint, fontSize: 11, fontWeight: 700, marginTop: 2 }}>Venez nombreux !</div>}
             </div>
           </div>
-        </div>
 
-        <AnimatePresence>
-          {exportOpen && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col justify-end" style={{ zIndex: 5, background: 'rgba(0,0,0,0.5)' }}
-              onClick={() => setExportOpen(false)}>
-              <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                transition={{ type: 'spring', stiffness: 320, damping: 34 }} onClick={e => e.stopPropagation()}
-                style={{ background: '#0f1a2e', borderTop: '1px solid rgba(255,255,255,0.1)', borderRadius: '18px 18px 0 0', padding: '12px 16px calc(20px + env(safe-area-inset-bottom,0px))' }}>
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-                  <div style={{ width: 36, height: 4, borderRadius: 999, background: 'rgba(255,255,255,0.2)' }} />
+          <div style={{ position: 'relative', textAlign: 'center', color: t.foot, fontSize: 8.5, paddingBottom: 12, letterSpacing: '0.12em', fontWeight: 700, flexShrink: 0 }}>
+            {club?.name ?? 'SportLink'} · SPORTLINK
+          </div>
+        </div>
+      </div>
+
+      {/* Barre d'export */}
+      <div style={{ flexShrink: 0, padding: '10px 14px calc(10px + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)' }}>
+        <button onClick={() => setExportOpen(true)} disabled={exporting} style={{ width: '100%', padding: '12px', borderRadius: 'var(--sl-radius-lg)', border: 'none', cursor: 'pointer', background: accent, color: '#000', fontSize: 14, fontWeight: 800 }}>
+          {exporting ? 'Export…' : '⬇ Exporter l’affiche'}
+        </button>
+      </div>
+
+      {/* Menu d'export */}
+      <AnimatePresence>
+        {exportOpen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="absolute inset-0 flex flex-col justify-end" style={{ zIndex: 5, background: 'rgba(0,0,0,0.5)' }}
+            onClick={() => setExportOpen(false)}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 320, damping: 34 }} onClick={e => e.stopPropagation()}
+              style={{ background: '#0f1a2e', borderTop: '1px solid rgba(255,255,255,0.1)', borderRadius: '18px 18px 0 0', padding: '12px 16px calc(20px + env(safe-area-inset-bottom,0px))' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+                <div style={{ width: 36, height: 4, borderRadius: 999, background: 'rgba(255,255,255,0.2)' }} />
+              </div>
+              <div style={{ color: '#fff', fontSize: 13, fontWeight: 800, marginBottom: 12 }}>Exporter l'affiche</div>
+              <button onClick={handleShare} disabled={exporting} style={exportRowStyle(accent, true)}>
+                <span style={{ fontSize: 18 }}>📤</span>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: '#000' }}>Partager</div>
+                  <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(0,0,0,0.6)' }}>WhatsApp, Instagram… (image)</div>
                 </div>
-                <div style={{ color: '#fff', fontSize: 13, fontWeight: 800, marginBottom: 12 }}>Exporter l'affiche</div>
-                <button onClick={handleShare} disabled={exporting} style={exportRowStyle(accent, true)}>
-                  <span style={{ fontSize: 18 }}>📤</span>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 800, color: '#000' }}>Partager</div>
-                    <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(0,0,0,0.6)' }}>WhatsApp, Instagram… (image)</div>
-                  </div>
-                </button>
-                <button onClick={handleDownload} disabled={exporting} style={exportRowStyle(accent, false)}>
-                  <span style={{ fontSize: 18 }}>⬇</span>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 800, color: '#fff' }}>Télécharger en PNG</div>
-                    <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>HD 3× — {FORMATS.find(f => f.id === format)?.label}</div>
-                  </div>
-                </button>
-              </motion.div>
+              </button>
+              <button onClick={handleDownload} disabled={exporting} style={exportRowStyle(accent, false)}>
+                <span style={{ fontSize: 18 }}>⬇</span>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: '#fff' }}>Télécharger en PNG</div>
+                  <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>HD 3× — {dim.label}</div>
+                </div>
+              </button>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </AnimatePresence>,
-    document.body,
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
