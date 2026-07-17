@@ -41,7 +41,7 @@ function getEffectiveStatus(event: Record<string, any>): string {
 interface FollowClubButtonProps { event: Record<string, any>; compact?: boolean; }
 
 function FollowClubButton({ event, compact = false }: FollowClubButtonProps) {
-  const { isLoggedIn, isFollowingClub, followClub, unfollowClub } = useAuth() as any;
+  const { isLoggedIn, isFollowingClub, followClub, unfollowClub } = useAuth();
   const { allSports: SPORTS } = useSports();
   if (!isLoggedIn || !event.clubId) return null;
   const following = isFollowingClub(event.clubId);
@@ -78,9 +78,9 @@ type SnapPoint = 'peek' | 'detail' | 'full';
 export default function MobileEventSheet({ event, club, onClose, onEdit, onDelete, onUpdateEvent }: MobileEventSheetProps) {
   const { allSports: SPORTS } = useSports();
   const { share } = useShare() as any;
-  const { currentUser, isAdmin } = useAuth() as any;
-  const { isFavorite, toggleFavorite } = useFavoritesContext() as any;
-  const { isAttending, toggle: toggleAttend } = useAttendanceContext() as any;
+  const { currentUser, isAdmin } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavoritesContext();
+  const { isAttending, toggle: toggleAttend } = useAttendanceContext();
   const attendeeCount = useAttendeeCount(event.id) as number;
   const [copied, setCopied] = useState(false);
   const [snapPoint, setSnapPoint] = useState<SnapPoint>('detail');

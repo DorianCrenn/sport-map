@@ -12,7 +12,7 @@ interface Club {
 }
 
 function ClubRow({ club, onNavigate }: { club: Club; onNavigate?: (page: string) => void }) {
-  const { followClub } = useAuth() as any;
+  const { followClub } = useAuth();
   const [followed, setFollowed] = useState(false);
 
   const initials = club.name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);

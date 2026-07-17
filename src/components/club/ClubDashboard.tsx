@@ -364,7 +364,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
 
 function ChallengesSection({ club }: { club: Record<string, any> }) {
   const { challenges, received, sent, pendingReceived, loading, sendChallenge, respond } = useClubChallenges(club.id) as any;
-  const { userClubs } = useClubs() as any;
+  const { userClubs } = useClubs();
   const otherClubs = (userClubs ?? []).filter((c: any) => String(c.id) !== String(club.id));
 
   const [showForm, setShowForm]           = useState(false);

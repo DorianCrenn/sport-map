@@ -42,7 +42,7 @@ interface OAuthMockModalProps {
 }
 
 function OAuthMockModal({ provider, onDone, onClose }: OAuthMockModalProps) {
-  const { loginWithProvider } = useAuth() as any;
+  const { loginWithProvider } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -123,7 +123,7 @@ interface ForgotPasswordViewProps {
 }
 
 function ForgotPasswordView({ onBack }: ForgotPasswordViewProps) {
-  const { requestPasswordReset } = useAuth() as any;
+  const { requestPasswordReset } = useAuth();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState<any>(null);
   const [error, setError] = useState('');
@@ -219,8 +219,8 @@ interface AuthPageProps {
 }
 
 export default function AuthPage({ onClose, onNeedOnboarding, onShowLegal, initialMode = 'login' }: AuthPageProps) {
-  const { login, register, loginWithGoogle } = useAuth() as any;
-  const { toast } = useToast() as any;
+  const { login, register, loginWithGoogle } = useAuth();
+  const { toast } = useToast();
   const [mode, setMode] = useState(initialMode);
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');

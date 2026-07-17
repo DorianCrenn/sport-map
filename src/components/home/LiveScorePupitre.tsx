@@ -13,7 +13,7 @@ export default function LiveScorePupitre({ event, matchScore, onFinished }: Live
   const [scoreHome, setScoreHome] = useState(matchScore?.score_home ?? 0);
   const [scoreAway, setScoreAway] = useState(matchScore?.score_away ?? 0);
   const [ending,    setEnding]    = useState(false);
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
 
   const homeTeam = event?.team_name  || 'Domicile';
   const awayTeam = event?.adversaire || 'Visiteur';

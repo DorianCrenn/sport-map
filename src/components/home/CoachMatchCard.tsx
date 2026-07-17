@@ -49,7 +49,7 @@ function ScoreInputInline({ event, onSaved }: { event: Record<string, any>; onSa
   const [away,   setAway]   = useState('');
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState<string | null>(null);
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
   const homeTeam = event?.team_name  || 'Domicile';
   const awayTeam = event?.adversaire || 'Visiteur';
 
@@ -107,7 +107,7 @@ export default function CoachMatchCard({ event, matchScore, convocationCounts, o
   const [showScoreInput, setShowScoreInput] = useState(false);
   const [localScore,     setLocalScore]     = useState<Record<string, any> | null>(null);
   const [launching,      setLaunching]      = useState(false);
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
 
   const effectiveScore = localScore ?? matchScore;
   const state = useMemo(() => deriveMatchState(event, effectiveScore, convocationCounts), [event, effectiveScore, convocationCounts]);

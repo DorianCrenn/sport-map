@@ -132,7 +132,7 @@ interface ClubCreationWizardProps {
 
 export default function ClubCreationWizard({ onSave, onClose }: ClubCreationWizardProps) {
   const { allSports: SPORTS } = useSports();
-  const { currentUser } = useAuth() as any;
+  const { currentUser } = useAuth();
   const { toast } = useToast();
 
   const panelRef = useRef<HTMLDivElement>(null);

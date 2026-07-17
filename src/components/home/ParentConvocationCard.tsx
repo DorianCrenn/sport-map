@@ -17,7 +17,7 @@ interface ParentConvocationCardProps {
 }
 
 export default function ParentConvocationCard({ convocation, onDismiss, onRespond }: ParentConvocationCardProps) {
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
   const [phase, setPhase]   = useState<Phase>('idle');
   const [reason, setReason] = useState('');
   const [seats,  setSeats]  = useState(3);

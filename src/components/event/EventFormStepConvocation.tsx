@@ -84,7 +84,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
   const [emailCount, setEmailCount]     = useState(0);
   const [emailResult, setEmailResult]   = useState<{ sent: number; total: number } | null>(null);
 
-  const { currentUser } = useAuth() as any;
+  const { currentUser } = useAuth();
   const { sendConvocations } = useEventConvocations(event?.id) as any;
   const { sendEmails } = useConvocationEmail();
 

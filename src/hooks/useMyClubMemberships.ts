@@ -8,7 +8,7 @@ import { DEMO_CLUB_ID } from '../demo/data/club.js';
 // (club_managers). Sert à réserver le covoiturage à cette communauté (les
 // supporters/visiteurs ne le voient pas).
 export function useMyClubMemberships(): Set<string> {
-  const { currentUser } = useAuth() as any;
+  const { currentUser } = useAuth();
   const [clubIds, setClubIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {

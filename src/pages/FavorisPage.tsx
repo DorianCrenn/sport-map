@@ -26,9 +26,9 @@ interface FavorisPageProps {
 }
 
 export default function FavorisPage({ allEvents, allClubs = [], onNavigate }: FavorisPageProps) {
-  const { follows, unfollowClub, updateFollow } = useAuth() as any;
-  const { favorites, toggleFavorite: onToggleFavorite } = useFavoritesContext() as any;
-  const { isAttending, toggle: onToggleAttend } = useAttendanceContext() as any;
+  const { follows, unfollowClub, updateFollow } = useAuth();
+  const { favorites, toggleFavorite: onToggleFavorite } = useFavoritesContext();
+  const { isAttending, toggle: onToggleAttend } = useAttendanceContext();
   const [activeTab, setActiveTab] = useState('matchs');
 
   const favoriteEvents = useMemo(

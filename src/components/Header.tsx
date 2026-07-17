@@ -4,6 +4,7 @@ import { useSports } from '../hooks/useSports.js';
 import { useAuth } from '../contexts/AuthContext.js';
 import { useTheme } from '../contexts/ThemeContext.js';
 import { useClubNotifications } from '../hooks/useClubNotifications.js';
+import type { UserRole } from '../types/sportlink.js';
 import SportLinkLogo from './SportLinkLogo.jsx';
 
 interface Club { id: string | number; name: string; city: string; sport: string; }
@@ -34,7 +35,7 @@ export default function Header({
   onShowAnnouncements, announcementsUnreadCount = 0,
 }: HeaderProps) {
   const { allSports } = useSports();
-  const { currentUser, isAdmin, isClubAdmin, logout, devRole, setDevRole, devClubId, setDevClubId } = useAuth() as any;
+  const { currentUser, isAdmin, isClubAdmin, logout, devRole, setDevRole, devClubId, setDevClubId } = useAuth();
   const { unreadCount: clubNotifUnread } = useClubNotifications() as any;
   const totalBadge = (clubNotifUnread as number) + rideNotifCount;
   const { theme, toggleTheme } = useTheme() as any;
@@ -285,7 +286,7 @@ export default function Header({
             {([
               { role: null, label: '👤 Réel' }, { role: 'user', label: 'User' },
               { role: 'club_admin', label: 'Club' }, { role: 'admin', label: 'Admin' }, { role: 'superadmin', label: 'Super' },
-            ] as { role: string | null; label: string }[]).map(({ role, label }) => {
+            ] as { role: UserRole | null; label: string }[]).map(({ role, label }) => {
               const active = devRole === role;
               return (
                 <button key={String(role)} onClick={() => { setDevRole(role); if (role !== 'club_admin') setDevClubId(null); }} style={{ padding: '2px 7px', borderRadius: 'var(--sl-radius-lg)', fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none', transition: 'all 0.1s', backgroundColor: active ? '#eab308' : 'transparent', color: active ? '#000' : 'rgba(234,179,8,0.8)', whiteSpace: 'nowrap', flexShrink: 0 }}>

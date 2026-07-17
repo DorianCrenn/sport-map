@@ -64,7 +64,7 @@ function FeedbackDetail({ item, onClose, onSave }: FeedbackDetailProps) {
   const [status, setStatus]       = useState(item.status);
   const [adminNote, setAdminNote] = useState(item.admin_note ?? '');
   const [saving, setSaving]       = useState(false);
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
 
   const changed = status !== item.status || adminNote !== (item.admin_note ?? '');
 

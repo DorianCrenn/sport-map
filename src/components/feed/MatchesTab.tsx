@@ -79,7 +79,7 @@ function EditIcon() {
 // ─── MatchRow ─────────────────────────────────────────────────────────────────
 
 function MatchRowInner({ event, children }: { event: Record<string, any>; children?: React.ReactNode }) {
-  const { isFavorite, toggleFavorite } = useFavoritesContext() as any;
+  const { isFavorite, toggleFavorite } = useFavoritesContext();
   const { home, away } = parseTeams(event.title);
   const score   = parseScore(event.score);
   const status  = getStatus(event);
@@ -323,7 +323,7 @@ const STATUS_FILTERS = [
 interface MatchesTabProps { followedClubIds?: string[]; onNavigateClubs?: () => void; }
 
 export default function MatchesTab({ followedClubIds = [], onNavigateClubs }: MatchesTabProps) {
-  const { currentUser } = useAuth() as any;
+  const { currentUser } = useAuth();
   const { managedClubs } = useManagedClubs() as any;
   const favoriteSports: string[] = currentUser?.favoriteSports ?? [];
   const hasFollowedClubs = followedClubIds.length > 0;

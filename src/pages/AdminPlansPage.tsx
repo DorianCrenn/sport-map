@@ -288,7 +288,7 @@ interface AdminPlansPageProps { onBack: () => void; }
 
 export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
   const { loading, features, quotas, planMeta, planOrder, updateFeatureGate, updateQuota, updatePricing } = usePlanConfig() as any;
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
 
   const [activeTab,       setActiveTab]       = useState('features');
   const [planStats,       setPlanStats]       = useState<Record<string, number>>({});

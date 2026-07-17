@@ -100,7 +100,7 @@ export default function SideNav({
   activeTab, onTabChange, badgeCounts = {},
   onAddEvent, onImportCSV, onOpenTrainings, onClubAdminAction,
 }: SideNavProps) {
-  const { isAdmin, isClubAdmin, currentUser } = useAuth() as any;
+  const { isAdmin, isClubAdmin, currentUser } = useAuth();
   const { managedClubs = [] } = useManagedClubs() as any;
   const { can, isSimulating } = useCanDo() as any;
 
@@ -120,7 +120,7 @@ export default function SideNav({
     onClubAdminAction?.(action);
   }
 
-  const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || '';
+  const displayName = currentUser?.name || currentUser?.email?.split('@')[0] || '';
   const initials = displayName[0]?.toUpperCase() ?? '?';
   const role = isAdmin ? 'Admin' : isClubAdminOnly ? 'Gestionnaire' : isCoach ? 'Coach' : 'Membre';
 

@@ -28,7 +28,7 @@ interface MyRidesPageProps {
 }
 
 export default function MyRidesPage({ onBack }: MyRidesPageProps) {
-  const { currentUser } = useAuth() as any;
+  const { currentUser } = useAuth();
   const { myDriving, myPassenger, loading, refetch } = useMyRides() as any;
   const { notifications, unreadCount, markAllRead, markRead } = useRideNotifications() as any;
   const [activeTab, setActiveTab] = useState('driving');

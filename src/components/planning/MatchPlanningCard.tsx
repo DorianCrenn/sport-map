@@ -77,7 +77,7 @@ function ScoreInputInline({ eventId, sport, homeTeam, awayTeam, onSaved }: { eve
   const [away,   setAway]   = useState('');
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState<string | null>(null);
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
 
   async function handleSave() {
     if (home === '' || away === '') return;
@@ -175,7 +175,7 @@ export default function MatchPlanningCard({ item, userId, club, isStaff, isCoach
   const [showStatsModal,  setShowStatsModal]  = useState(false);
   const [localMatchScore, setLocalMatchScore] = useState<Record<string, any> | null>(null);
   const [launching,       setLaunching]       = useState(false);
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
 
   const cardState     = deriveCardState(item, localMatchScore);
   const effectiveScore = getEffectiveScore(item, localMatchScore);

@@ -96,7 +96,7 @@ interface CSVImportModalProps {
 }
 
 export default function CSVImportModal({ onBulkSave, onClose }: CSVImportModalProps) {
-  const { userClubs } = useClubs() as any;
+  const { userClubs } = useClubs();
   const { allSports: SPORTS } = useSports();
   const myClub = userClubs[0] ?? null;
   const sportColor = myClub ? (SPORTS[myClub.sport]?.color ?? '#22d96a') : '#22d96a';

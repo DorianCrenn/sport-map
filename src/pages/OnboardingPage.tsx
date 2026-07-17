@@ -120,7 +120,7 @@ interface ClubSuggestionsStepProps {
   onBack: () => void;
 }
 function ClubSuggestionsStep({ sports, selectedCity: initialCity, onFinish, onBack }: ClubSuggestionsStepProps) {
-  const { followClub } = useAuth() as any;
+  const { followClub } = useAuth();
   const [clubs, setClubs] = useState<Record<string, any>[]>([]);
   const [loading, setLoading] = useState(true);
   const [followed, setFollowed] = useState<Set<string>>(new Set());
@@ -409,7 +409,7 @@ function ClubSuggestionsStep({ sports, selectedCity: initialCity, onFinish, onBa
 interface OnboardingPageProps { onDone: (sports: string[]) => void; }
 
 export default function OnboardingPage({ onDone }: OnboardingPageProps) {
-  const { currentUser, updateProfile } = useAuth() as any;
+  const { currentUser, updateProfile } = useAuth();
   const { allSports: SPORTS } = useSports();
   const [step, setStep] = useState(1);
   const [jobRole, setJobRole] = useState<string | null>(null);

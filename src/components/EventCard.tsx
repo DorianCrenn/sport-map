@@ -205,10 +205,10 @@ function ShareBtn({ event }: { event: Record<string, any> }) {
 // ─── AttendBtn ────────────────────────────────────────────────────────────────
 
 function AttendBtn({ event }: { event: Record<string, any> }) {
-  const { isAttending, toggle } = useAttendanceContext() as any;
+  const { isAttending, toggle } = useAttendanceContext();
   const attending = isAttending(event.id) as boolean;
   const past = isEventPast(event); // terminé/passé → présence figée (visible mais inactive)
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
   function handleClick(e: React.MouseEvent) {
     e.stopPropagation();
     if (past) return;
@@ -368,7 +368,7 @@ function ICSBtn({ event }: { event: Record<string, any> }) {
 // ─── FollowClubPill ───────────────────────────────────────────────────────────
 
 function FollowClubPill({ event }: { event: Record<string, any> }) {
-  const { isLoggedIn, isFollowingClub, followClub, unfollowClub } = useAuth() as any;
+  const { isLoggedIn, isFollowingClub, followClub, unfollowClub } = useAuth();
   const [confirmUnfollow, setConfirmUnfollow] = useState(false);
   if (!isLoggedIn || !event.clubId) return null;
   const following = isFollowingClub(event.clubId) as boolean;
@@ -540,9 +540,9 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
   ref
 ) {
   const { allSports: SPORTS } = useSports();
-  const { currentUser, isAdmin } = useAuth() as any;
-  const { toast } = useToast() as any;
-  const { isFavorite, toggleFavorite } = useFavoritesContext() as any;
+  const { currentUser, isAdmin } = useAuth();
+  const { toast } = useToast();
+  const { isFavorite, toggleFavorite } = useFavoritesContext();
   const attendeeCount = useAttendeeCount(event.id) as number;
   const INDIVIDUAL_SPORTS_EC = ['Trail', 'Running', 'Cyclisme', 'Natation', 'Triathlon', 'Athlétisme'];
   const canHavePrediction = !INDIVIDUAL_SPORTS_EC.includes(event.sport) && !!event.adversaire && new Date(event.date) > new Date();

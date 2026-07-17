@@ -124,7 +124,7 @@ function UpdateBanner() {
 }
 
 function AppInner() {
-  const { currentUser, isAdmin, isClubAdmin, loading, followedClubs, followClub, isFollowingClub } = useAuth() as any;
+  const { currentUser, isAdmin, isClubAdmin, loading, followedClubs, followClub, isFollowingClub } = useAuth();
   const { isCoachOrManager } = useManagedClubs();
   const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent() as any;
   const { track } = useAnalytics(consent) as any;
@@ -146,7 +146,7 @@ function AppInner() {
   const [studioQuickMode, setStudioQuickMode] = useState(false);
   const lastDemoCreatedEventRef = useRef<Record<string, any> | null>(null);
 
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
 
   // Contexte utilisateur pour Sentry → savoir QUI a rencontré un crash (triage).
   // No-op si Sentry non initialisé (DSN absent).
@@ -234,12 +234,12 @@ function AppInner() {
     toast({ message: `${saved.length} événement${saved.length > 1 ? 's' : ''} importé${saved.length > 1 ? 's' : ''} !` });
     return saved;
   }, [addEventsBatch, toast]);
-  const { favorites } = useFavoritesContext() as any;
-  const { attending } = useAttendanceContext() as any;
+  const { favorites } = useFavoritesContext();
+  const { attending } = useAttendanceContext();
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasShownBadge = useRef(false);
   const clubMatchEvents = useClubMatches() as any;
-  const { userClubs, updateClub } = useClubs() as any;
+  const { userClubs, updateClub } = useClubs();
   const { allSports } = useSports();
   const [cityFilter, setCityFilter] = useState<string | null>(null);
   const [selectedSearchClub, setSelectedSearchClub] = useState<Record<string, any> | null>(null);

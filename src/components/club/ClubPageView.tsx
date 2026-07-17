@@ -107,11 +107,11 @@ export default function ClubPageView({
   initialAction, onInitialActionConsumed,
 }: ClubPageViewProps) {
   const { allSports: SPORTS } = useSports();
-  const { toast } = useToast() as any;
+  const { toast } = useToast();
   const {
     isAdmin, isClubAdmin, currentUser, isLoggedIn,
     followClub, updateFollow, isFollowingClub, getFollow,
-  } = useAuth() as any;
+  } = useAuth();
   const { share } = useShare() as any;
 
   const isOwner = isAdmin
