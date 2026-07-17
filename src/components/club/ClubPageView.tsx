@@ -117,7 +117,7 @@ export default function ClubPageView({
   const isOwner = isAdmin
     || club.userId === currentUser?.id
     || (isClubAdmin && currentUser?.clubId === club.id);
-  const { managers, addManager, removeManager, updateManagerRole, isManager } = useClubManagers(club.id) as any;
+  const { managers, addManager, removeManager, updateManagerRole, isManager } = useClubManagers(club.id);
   const canEdit     = isOwner || isManager(currentUser?.email);
   const canAddEvent = (canAddEventProp ?? (isAdmin || isClubAdmin)) || isManager(currentUser?.email);
 
@@ -163,7 +163,7 @@ export default function ClubPageView({
   const [checklistDismissed, setChecklistDismissed] = useState(() => !!localStorage.getItem(checklistKey));
 
   const { announcements, sendAnnouncement } = useClubAnnouncements(club.id);
-  const [teamTrainings, setTeamTrainings]   = useClubTrainings(club.id) as any;
+  const [teamTrainings, setTeamTrainings]   = useClubTrainings(club.id);
 
   const liveEvents = useClubEvents(club.id, club.name ?? '') as any[];
   const effectiveEvents = useMemo(() => {
