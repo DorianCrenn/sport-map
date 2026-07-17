@@ -89,7 +89,7 @@ export interface SponsorFeedItem extends BaseFeedItem {
 // ── Plan d'abonnement "À la Une" ──────────────────────────────────────────────
 // Featured events disponibles à partir du plan Pro uniquement.
 // Quotas alignés sur PLAN_QUOTAS dans subscriptionFeatures.ts.
-export type FeaturedPlan = 'pro' | 'elite';
+export type FeaturedPlan = 'starter' | 'pro' | 'elite';
 
 /** Config visuelle + limites métier par plan */
 export const PLAN_CONFIG: Record<FeaturedPlan, {
@@ -107,6 +107,15 @@ export const PLAN_CONFIG: Record<FeaturedPlan, {
   /** Halo CSS */
   glow: string;
 }> = {
+  starter: {
+    label:        'Starter',
+    maxFeatured:  1,
+    durationDays: 7,
+    accent:       '#3b82f6',
+    bg:           'rgba(59,130,246,0.07)',
+    border:       'rgba(59,130,246,0.3)',
+    glow:         'rgba(59,130,246,0.12)',
+  },
   pro: {
     label:        'Club Pro',
     maxFeatured:  5,

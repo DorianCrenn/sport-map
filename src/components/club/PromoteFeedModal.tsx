@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFeaturedEventsAdmin } from '../../hooks/useFeaturedEventsAdmin.ts';
-import { PLAN_CONFIG } from '../feed/feed.types.ts';
+import { PLAN_CONFIG, type FeaturedPlan } from '../feed/feed.types.ts';
 
-const PLANS = [
-  { id: 'starter', emoji: '⭐', desc: '1 événement · 7 jours',  price: 'Gratuit' },
+const PLANS: { id: FeaturedPlan; emoji: string; desc: string; price: string }[] = [
+  { id: 'starter', emoji: '⭐', desc: '1 événement · 7 jours',  price: 'Starter' },
   { id: 'pro',     emoji: '🔥', desc: '3 événements · 30 jours', price: 'Club Pro' },
   { id: 'elite',   emoji: '👑', desc: '5 événements · 60 jours', price: 'Élite' },
 ];
@@ -14,15 +14,15 @@ function fmtDate(iso?: string | null) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function computeEndsAt(plan: string) {
-  const days = (PLAN_CONFIG as any)[plan].durationDays;
+function computeEndsAt(plan: FeaturedPlan) {
+  const days = PLAN_CONFIG[plan].durationDays;
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d.toISOString();
 }
 
-function PlanCard({ plan, selected, onSelect }: { plan: { id: string; emoji: string; desc: string; price: string }; selected: boolean; onSelect: (id: string) => void }) {
-  const cfg = (PLAN_CONFIG as any)[plan.id];
+function PlanCard({ plan, selected, onSelect }: { plan: { id: FeaturedPlan; emoji: string; desc: string; price: string }; selected: boolean; onSelect: (id: FeaturedPlan) => void }) {
+  const cfg = PLAN_CONFIG[plan.id];
   return (
     <button
       onClick={() => onSelect(plan.id)}
@@ -39,10 +39,10 @@ function PlanCard({ plan, selected, onSelect }: { plan: { id: string; emoji: str
 }
 
 export function FeaturedSection({ club, upcomingEvents = [] }: { club: Record<string, any>; upcomingEvents?: Record<string, any>[] }) {
-  const { active, loading, saving, error, promote, cancel } = useFeaturedEventsAdmin(club.id) as any;
+  const { active, loading, saving, error, promote, cancel } = useFeaturedEventsAdmin(club.id);
   const [showForm, setShowForm]     = useState(false);
   const [selectedEvent, setSelectedEvent] = useState('');
-  const [selectedPlan, setSelectedPlan]   = useState('starter');
+  const [selectedPlan, setSelectedPlan]   = useState<FeaturedPlan>('starter');
   const [submitting, setSubmitting]       = useState(false);
   const [success, setSuccess]             = useState(false);
 
@@ -62,7 +62,7 @@ export function FeaturedSection({ club, upcomingEvents = [] }: { club: Record<st
     setTimeout(() => setSuccess(false), 3000);
   }
 
-  const cfg = (plan: string) => (PLAN_CONFIG as any)[plan];
+  const cfg = (plan: FeaturedPlan) => PLAN_CONFIG[plan];
 
   return (
     <div style={{ borderRadius: 'var(--sl-radius-2xl)', backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', overflow: 'hidden' }}>
@@ -149,7 +149,7 @@ export function FeaturedSection({ club, upcomingEvents = [] }: { club: Record<st
                   {PLANS.map(plan => <PlanCard key={plan.id} plan={plan} selected={selectedPlan === plan.id} onSelect={setSelectedPlan} />)}
                 </div>
                 <div style={{ fontSize: 10, color: 'var(--sl-t3)', marginTop: 8 }}>
-                  Durée : <strong style={{ color: cfg(selectedPlan).accent }}>{(PLAN_CONFIG as any)[selectedPlan].durationDays} jours</strong>{' · '}Expire le{' '}<strong>{fmtDate(computeEndsAt(selectedPlan))}</strong>
+                  Durée : <strong style={{ color: cfg(selectedPlan).accent }}>{PLAN_CONFIG[selectedPlan].durationDays} jours</strong>{' · '}Expire le{' '}<strong>{fmtDate(computeEndsAt(selectedPlan))}</strong>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
