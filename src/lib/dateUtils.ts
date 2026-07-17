@@ -18,6 +18,10 @@ export function formatDate(iso: string, showYear = false): string {
 }
 
 export function formatTime(iso: string): string {
+  // Garde-fou : une chaîne « HH:MM » nue ou une date seule donnerait Invalid Date
+  // / une heure décalée. On n'affiche l'heure que si l'entrée porte bien un temps.
+  if (/^\d{2}:\d{2}/.test(iso)) return iso.slice(0, 5);
+  if (!iso.includes('T')) return '';
   return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
