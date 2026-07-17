@@ -35,7 +35,7 @@ export const DEMO_PROFILE_ROW = {
   name:            'Alexandre Martin',
   role:            'club_admin',
   club_id:         DEMO_CLUB_ID,
-  avatar_url:      null,
+  avatar_url:      'https://randomuser.me/api/portraits/men/32.jpg',
   favorite_sports: ['Football'],
   followed_clubs:  [DEMO_CLUB_ID],
   onboarding_done: true,
@@ -86,7 +86,7 @@ export function buildDemoTables() {
 
   // ── Profils pré-intégrés — le demoClient ne résout pas les FK joins ────────
   const PROFILE_MAP: Record<string, { name: string; avatar_url: string | null }> = {
-    [DEMO_USER_ID]:       { name: 'Alexandre Martin',     avatar_url: null },
+    [DEMO_USER_ID]:       { name: 'Alexandre Martin',     avatar_url: 'https://randomuser.me/api/portraits/men/32.jpg' },
     'fake-user-p02':      { name: 'Romain Quéméner',      avatar_url: null },
     'fake-user-p03':      { name: 'Maxime Briand',         avatar_url: null },
     'fake-user-p04':      { name: 'Kevin Le Goff',         avatar_url: null },
@@ -130,10 +130,58 @@ export function buildDemoTables() {
     'fake-parent-006':    { name: 'Stéphane Mével',        avatar_url: null },
   };
 
+  // Logo déterministe (monogramme sigle + couleur brand) pour les clubs sans
+  // logo → toute l'app ET les affiches affichent un vrai visuel de club.
+  const clubLogo = (sigle: string, color: string | null | undefined) => {
+    const bg   = String(color ?? '#22C55E').replace('#', '');
+    const name = encodeURIComponent(String(sigle || 'SL').split('').join(' '));
+    return `https://ui-avatars.com/api/?name=${name}&background=${bg}&color=fff&bold=true&size=256&length=4&format=png`;
+  };
+  const withLogo = (c: any) => ({ ...c, logo_url: c.logo_url ?? clubLogo(c.sigle, c.primary_color) });
+
   // Mutable copies — modifiable during sandbox mode
   const tables = {
     events:                [...demoEvents, ...extraEvents, ...franceEvents],
-    clubs:                 [{ ...demoClubRow }, ...extraClubs, ...franceClubs],
+    clubs:                 [{ ...demoClubRow }, ...extraClubs, ...franceClubs].map(withLogo),
+
+    // Classement mensuel des clubs (vue agrégée en prod) — reconstruit ici pour
+    // que le podium de la page Clubs soit peuplé en démo (logos inclus).
+    club_monthly_leaderboard: [{ ...demoClubRow }, ...extraClubs, ...franceClubs].slice(0, 10).map((c: any, i: number) => ({
+      club_id:     c.id,
+      name:        c.name,
+      sport:       c.sport,
+      city:        c.city,
+      logo_url:    c.logo_url ?? clubLogo(c.sigle, c.primary_color),
+      event_count: Math.max(2, 22 - i * 2),
+      rank:        i + 1,
+    })),
+
+    // Classement des supporters (vue agrégée en prod). Le user démo (free, 450 xp)
+    // reste cohérent avec son profil ; les autres sont des supporters fictifs.
+    user_leaderboard: [
+      { id: 'fake-fan-101', name: 'Yannick Le Bris',  avatar_url: 'https://randomuser.me/api/portraits/men/60.jpg',   xp: 920, badges: ['streak_30', 'super_fan', 'predictor'], plan_tier: 'elite' },
+      { id: 'fake-fan-102', name: 'Sophie Tanguy',    avatar_url: 'https://randomuser.me/api/portraits/women/58.jpg', xp: 780, badges: ['streak_14', 'super_fan'],            plan_tier: 'pro' },
+      { id: 'fake-fan-103', name: 'Mathieu Coïc',     avatar_url: 'https://randomuser.me/api/portraits/men/71.jpg',   xp: 640, badges: ['loyal_fan', 'predictor'],            plan_tier: 'pro' },
+      { id: 'fake-fan-104', name: 'Émilie Prigent',   avatar_url: 'https://randomuser.me/api/portraits/women/63.jpg', xp: 520, badges: ['loyal_fan'],                        plan_tier: 'starter' },
+      { id: DEMO_USER_ID,   name: 'Alexandre Martin', avatar_url: 'https://randomuser.me/api/portraits/men/32.jpg',   xp: 450, badges: ['first_step', 'explorer', 'loyal_fan'], plan_tier: 'free' },
+      { id: 'fake-fan-105', name: 'Gaël Riou',        avatar_url: 'https://randomuser.me/api/portraits/men/12.jpg',   xp: 360, badges: ['explorer'],                         plan_tier: 'free' },
+      { id: 'fake-fan-106', name: 'Nolwenn Salaün',   avatar_url: 'https://randomuser.me/api/portraits/women/24.jpg', xp: 240, badges: ['first_step'],                      plan_tier: 'free' },
+      { id: 'fake-fan-107', name: 'Erwan Guivarch',   avatar_url: 'https://randomuser.me/api/portraits/men/83.jpg',   xp: 180, badges: ['first_step'],                      plan_tier: 'free' },
+    ],
+
+    // Compteurs de pronostics (vue agrégée en prod) — barres non nulles sur les
+    // matchs à venir.
+    event_prediction_counts: [
+      { event_id: 'demo-event-001', prediction: 'home', count: 34 },
+      { event_id: 'demo-event-001', prediction: 'draw', count: 9 },
+      { event_id: 'demo-event-001', prediction: 'away', count: 12 },
+      { event_id: 'demo-event-002', prediction: 'home', count: 18 },
+      { event_id: 'demo-event-002', prediction: 'draw', count: 14 },
+      { event_id: 'demo-event-002', prediction: 'away', count: 21 },
+      { event_id: 'demo-event-006', prediction: 'home', count: 41 },
+      { event_id: 'demo-event-006', prediction: 'draw', count: 7 },
+      { event_id: 'demo-event-006', prediction: 'away', count: 10 },
+    ],
     profiles: [
       { ...DEMO_PROFILE_ROW },
       // ── Parents fictifs — pour les lookups de profils directs ──────────────
