@@ -13,7 +13,7 @@ async function fetchProfileNames(userIds: string[]): Promise<Record<string, { na
   return map;
 }
 
-type AttStatus = 'present' | 'absent' | 'unsure';
+export type AttStatus = 'present' | 'absent' | 'unsure';
 type DBRow = Record<string, unknown>;
 
 interface AttEntry { id: string; user_id: string; player_id?: string; status: AttStatus; updated_at?: string; profiles?: { name?: string; avatar_url?: string } | null; }

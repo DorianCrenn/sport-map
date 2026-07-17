@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-type TrainingMap = Record<string, unknown>;
+// Valeurs = tableaux de sessions (blobs JSON localStorage, non typés finement).
+type TrainingMap = Record<string, any>;
 type Updater<T> = T | ((prev: T) => T);
 
 export function useClubTrainings(clubId: string | null | undefined): [TrainingMap, (updater: Updater<TrainingMap>) => void] {

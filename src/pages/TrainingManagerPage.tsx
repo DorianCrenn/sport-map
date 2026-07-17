@@ -7,7 +7,7 @@ import { useManagedClubs } from '../hooks/useManagedClubs.js';
 import { useMyPlayerProfile } from '../hooks/useMyPlayerProfile.js';
 import { useClubTrainings } from '../hooks/useClubTrainings.js';
 import { useTrainingSessions } from '../hooks/useTrainingSessions.js';
-import { useTrainingAttendance } from '../hooks/useTrainingAttendance.js';
+import { useTrainingAttendance, type AttStatus } from '../hooks/useTrainingAttendance.js';
 import TrainingBlock from '../components/club/blocks/TrainingBlock.jsx';
 
 const BackIcon = () => (
@@ -36,7 +36,7 @@ interface UpcomingSessionCardProps {
 }
 
 function UpcomingSessionCard({ session, currentUser }: UpcomingSessionCardProps) {
-  const { counts, myStatus, respond } = useTrainingAttendance(session.id, currentUser?.id) as any;
+  const { counts, myStatus, respond } = useTrainingAttendance(session.id, currentUser?.id);
   return (
     <div style={{
       borderRadius: 'var(--sl-radius-2xl)', border: '1px solid var(--sl-border)',
@@ -64,7 +64,7 @@ function UpcomingSessionCard({ session, currentUser }: UpcomingSessionCardProps)
           {Object.entries(STATUS_CFG).map(([s, cfg]) => (
             <button
               key={s}
-              onClick={() => respond(s)}
+              onClick={() => respond(s as AttStatus)}
               style={{
                 flex: 1, padding: '7px 4px', borderRadius: 'var(--sl-radius-lg)', cursor: 'pointer',
                 border: `1.5px solid ${myStatus === s ? cfg.color : 'var(--sl-border)'}`,
@@ -114,11 +114,11 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
     return () => document.removeEventListener('keydown', onKey);
   }, [onBack]);
 
-  const [trainings, setTrainings] = useClubTrainings(isManager ? selectedClubId : null) as any;
+  const [trainings, setTrainings] = useClubTrainings(isManager ? selectedClubId : null);
   const { generateFromRecurring } =
-    useTrainingSessions(isManager ? selectedClubId : null, null) as any;
+    useTrainingSessions(isManager ? selectedClubId : null, null);
 
-  const { profile: playerProfile, loading: playerLoading } = useMyPlayerProfile() as any;
+  const { profile: playerProfile, loading: playerLoading } = useMyPlayerProfile();
   const playerClubId  = playerProfile?.club_id  ?? null;
   const playerTeamId  = playerProfile?.team_id  ?? null;
   const playerTeamName = useMemo(() => {
@@ -134,8 +134,8 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
   }, [playerProfile, playerClubId, playerTeamId, managedClubs]);
 
   const { sessions: playerDbSessions, generateFromRecurring: playerGenerateFromRecurring } =
-    useTrainingSessions(!isManager ? playerClubId : null, !isManager ? playerTeamId : null) as any;
-  const [playerTrainings] = useClubTrainings(!isManager ? playerClubId : null) as any;
+    useTrainingSessions(!isManager ? playerClubId : null, !isManager ? playerTeamId : null);
+  const [playerTrainings] = useClubTrainings(!isManager ? playerClubId : null);
 
   const [mode, setMode] = useState(isManager ? 'calendar' : 'upcoming');
   const [selectedTeam, setSelectedTeam] = useState('all');
