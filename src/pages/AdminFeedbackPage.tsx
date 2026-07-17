@@ -340,15 +340,17 @@ function StatsRow({ stats }: StatsRowProps) {
 
 interface AdminFeedbackPageProps { onBack: () => void; }
 
+type SortKey = 'recent' | 'votes' | 'updated';
+
 export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
   const {
     items, loading, total, stats,
     fetchAll, fetchStats, updateFeedback,
-  } = useFeedbackAdmin() as any;
+  } = useFeedbackAdmin();
 
   const [typeFilter,   setTypeFilter]   = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [sort,         setSort]         = useState('recent');
+  const [sort,         setSort]         = useState<SortKey>('recent');
   const [search,       setSearch]       = useState('');
   const [page,         setPage]         = useState(0);
   const [selected,     setSelected]     = useState<Record<string, any> | null>(null);
@@ -398,7 +400,7 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
     fetchAll({ type: typeFilter, status: next, sort, search, page: 0 });
   }
 
-  function applySort(s: string) {
+  function applySort(s: SortKey) {
     setSort(s);
     setPage(0);
     fetchAll({ type: typeFilter, status: statusFilter, sort: s, search, page: 0 });
@@ -479,11 +481,11 @@ export default function AdminFeedbackPage({ onBack }: AdminFeedbackPageProps) {
             );
           })}
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
-            {[
+            {([
               { id: 'recent',  label: 'Récents' },
               { id: 'votes',   label: 'Votes' },
               { id: 'updated', label: 'Mis à jour' },
-            ].map(({ id, label }) => (
+            ] as { id: SortKey; label: string }[]).map(({ id, label }) => (
               <button key={id} onClick={() => applySort(id)}
                 style={{
                   padding: '5px 10px', borderRadius: 'var(--sl-radius-4xl)', border: 'none', cursor: 'pointer',
