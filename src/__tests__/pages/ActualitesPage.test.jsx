@@ -61,14 +61,8 @@ vi.mock('../../components/planning/PlanningTimeline.jsx', () => ({
   default: () => <div data-testid="planning-timeline">Planning</div>,
 }));
 
-vi.mock('../../components/home/QuickActionsSection.jsx', () => ({
-  default: () => null,
-}));
 vi.mock('../../components/home/LiveMultiplexSection.jsx', () => ({
   default: () => <div data-testid="live-multiplex" />,
-}));
-vi.mock('../../components/home/ParentConvocationCard.jsx', () => ({
-  default: () => <div data-testid="parent-card" />,
 }));
 
 import ActualitesPage from '../../pages/ActualitesPage.jsx';

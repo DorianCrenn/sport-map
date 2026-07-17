@@ -591,20 +591,6 @@ export interface ClubSponsor {
   isActive: boolean;
 }
 
-// ── Featured Event ────────────────────────────────────────────────────────────
-
-export type FeaturedPlan = 'pro' | 'elite';
-
-export interface FeaturedEvent {
-  id: string;
-  eventId: string;
-  clubId: string;
-  plan: FeaturedPlan;
-  endsAt: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
 // ── Brand Kit ─────────────────────────────────────────────────────────────────
 
 export interface ClubBrandKit {

@@ -26,36 +26,6 @@ vi.mock('framer-motion', () => ({
   useAnimation: () => ({ start: vi.fn() }),
 }));
 
-// ── ConvocationsList ──────────────────────────────────────────────────────────
-
-import ConvocationsList from '../../components/convocations/ConvocationsList.jsx';
-
-const CONV = {
-  id: 'c-1', status: 'pending', responded_by: null, note: null,
-  event: { id: 'e-1', homeTeam: 'FC Brest', awayTeam: 'Quimper', date: '2026-07-10T18:00:00Z', city: 'Brest' },
-  player: { id: 'p-1', name: 'Jean Dupont' },
-};
-
-describe('Accessibilité — ConvocationsList', () => {
-  it('aucune violation axe critique sur la liste', async () => {
-    const { container } = render(
-      <ConvocationsList convocations={[CONV]} onRespond={vi.fn()} />
-    );
-    const results = await axe(container);
-    expect(results).toHaveNoViolations();
-  });
-
-  it('boutons de réponse ont un nom accessible', async () => {
-    const { container } = render(
-      <ConvocationsList convocations={[CONV]} onRespond={vi.fn()} />
-    );
-    const results = await axe(container, {
-      rules: { 'button-name': { enabled: true } },
-    });
-    expect(results).toHaveNoViolations();
-  });
-});
-
 // ── HelpFab ───────────────────────────────────────────────────────────────────
 
 vi.mock('../../constants/zIndex.js', () => ({ Z: { helpFab: 900 } }));
