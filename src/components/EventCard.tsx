@@ -547,7 +547,7 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
   const INDIVIDUAL_SPORTS_EC = ['Trail', 'Running', 'Cyclisme', 'Natation', 'Triathlon', 'Athlétisme'];
   const canHavePrediction = !INDIVIDUAL_SPORTS_EC.includes(event.sport) && !!event.adversaire && new Date(event.date) > new Date();
   const predictionCount = useEventPredictionCount(canHavePrediction ? event.id : null) as number;
-  const { sendAnnouncement } = useClubAnnouncements(event.clubId) as any;
+  const { sendAnnouncement } = useClubAnnouncements(event.clubId);
   const [showPoster, setShowPoster] = useState(false);
   const [posterInitBg, setPosterInitBg] = useState<string | null>(null);
   const [resultScore, setResultScore] = useState<{ home: number; away: number } | null>(null);
@@ -725,7 +725,7 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
                           const parts = (event.title ?? '').split(/\svs\.?\s/i);
                           const homeTeam = parts[0]?.trim() || (event.title ?? 'Domicile');
                           const awayTeam = parts[1]?.trim() || 'Extérieur';
-                          await (sendAnnouncement as (opts: any) => Promise<void>)({
+                          await sendAnnouncement({
                             type: 'result',
                             title: `Résultat — ${event.title ?? ''}`,
                             message: `${homeTeam} ${score.home} – ${score.away} ${awayTeam}`,

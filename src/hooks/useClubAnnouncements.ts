@@ -48,7 +48,7 @@ function mapAnn(row: DBRow): ClubAnnouncement {
   };
 }
 
-interface SendOptions {
+export interface SendOptions {
   type: string;
   title?: string;
   message: string;

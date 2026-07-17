@@ -154,7 +154,7 @@ function TrainingsSection({ clubId }: { clubId: string | number }) {
 }
 
 function AnnouncementsSection({ club }: { club: Record<string, any> }) {
-  const { announcements, loading, sendAnnouncement, deleteAnnouncement } = useClubAnnouncements(club.id) as any;
+  const { announcements, loading, sendAnnouncement, deleteAnnouncement } = useClubAnnouncements(club.id);
   const { can } = useCanDo();
   const [showModal, setShowModal] = useState(false);
   const [success, setSuccess]     = useState(false);

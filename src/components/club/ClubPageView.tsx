@@ -15,7 +15,7 @@ import ClubSponsorsPanel from './ClubSponsorsPanel.jsx';
 import SendAnnouncementModal from './SendAnnouncementModal.jsx';
 import PushBroadcastModal from './PushBroadcastModal.jsx';
 import ICSImportModal from '../ICSImportModal.jsx';
-import { useClubAnnouncements } from '../../hooks/useClubAnnouncements.js';
+import { useClubAnnouncements, type SendOptions } from '../../hooks/useClubAnnouncements.js';
 import ClubFormModal from './ClubFormModal.jsx';
 import QuickAddTeamModal from './QuickAddTeamModal.jsx';
 import { getRows } from './ClubPageBuilder.jsx';
@@ -162,7 +162,7 @@ export default function ClubPageView({
   const checklistKey = `sl-club-checklist-dismissed-${club.id}`;
   const [checklistDismissed, setChecklistDismissed] = useState(() => !!localStorage.getItem(checklistKey));
 
-  const { announcements, sendAnnouncement } = useClubAnnouncements(club.id) as any;
+  const { announcements, sendAnnouncement } = useClubAnnouncements(club.id);
   const [teamTrainings, setTeamTrainings]   = useClubTrainings(club.id) as any;
 
   const liveEvents = useClubEvents(club.id, club.name ?? '') as any[];
@@ -615,7 +615,7 @@ export default function ClubPageView({
           <SendAnnouncementModal
             key="send-announcement"
             club={club}
-            onSend={async (data: Record<string, any>) => {
+            onSend={async (data: SendOptions) => {
               await sendAnnouncement(data);
               const msg = data.scheduledFor
                 ? 'Annonce programmée avec succès'
