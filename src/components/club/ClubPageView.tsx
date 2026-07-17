@@ -121,7 +121,7 @@ export default function ClubPageView({
   const canEdit     = isOwner || isManager(currentUser?.email);
   const canAddEvent = (canAddEventProp ?? (isAdmin || isClubAdmin)) || isManager(currentUser?.email);
 
-  const { periodEnd: clubPeriodEnd, plan: clubPlan, planMeta: clubPlanMeta } = useClubPlan(club.id) as any;
+  const { periodEnd: clubPeriodEnd, plan: clubPlan, planMeta: clubPlanMeta } = useClubPlan(club.id);
 
   const isFollowing    = isFollowingClub(club.id);
   const currentFollow  = getFollow(club.id);

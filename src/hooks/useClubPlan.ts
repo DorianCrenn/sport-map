@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { PLAN_TIERS } from '../lib/plans.js';
 
 const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, elite: 3 };
+
+type PlanMeta = { name: string; price: number; color: string; badge: string };
 
 interface ClubPlanSubscription {
   plan?: string;
@@ -20,6 +23,7 @@ interface UseClubPlanResult {
   isTrial: boolean;
   periodEnd: string | null;
   carpoolAllowedTeamId: string | null;
+  planMeta: PlanMeta;
 }
 
 export function useClubPlan(clubId: string | null | undefined): UseClubPlanResult {
@@ -60,5 +64,6 @@ export function useClubPlan(clubId: string | null | undefined): UseClubPlanResul
     isTrial:              status === 'trialing',
     periodEnd:            sub?.current_period_end ?? null,
     carpoolAllowedTeamId: sub?.carpool_allowed_team_id ?? null,
+    planMeta:             (PLAN_TIERS as Record<string, PlanMeta>)[plan] ?? (PLAN_TIERS as Record<string, PlanMeta>).free,
   };
 }
