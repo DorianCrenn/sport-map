@@ -259,7 +259,7 @@ interface QuickScoreEditProps {
 function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult }: QuickScoreEditProps) {
   const [home, setHome] = useState(String(event.score?.home ?? ''));
   const [away, setAway] = useState(String(event.score?.away ?? ''));
-  const [motm, setMotm] = useState<string>(event.man_of_match ?? '');
+  const [motm, setMotm] = useState<string>(event.manOfMatch ?? '');
   const [saved, setSaved] = useState(false);
   const [motmOpen, setMotmOpen] = useState(false);
   const [scoreForAnnounce, setScoreForAnnounce] = useState<{ home: number; away: number } | null>(null);
@@ -270,15 +270,15 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
   useEffect(() => {
     setHome(String(event.score?.home ?? ''));
     setAway(String(event.score?.away ?? ''));
-    setMotm(event.man_of_match ?? '');
-  }, [event.score?.home, event.score?.away, event.man_of_match]);
+    setMotm(event.manOfMatch ?? '');
+  }, [event.score?.home, event.score?.away, event.manOfMatch]);
 
   function handleSave(e: React.MouseEvent) {
     e.stopPropagation();
     const h = parseInt(home, 10);
     const a = parseInt(away, 10);
     if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
-    onUpdateEvent(event.id, { score: { home: h, away: a }, man_of_match: motm.trim() || null });
+    onUpdateEvent(event.id, { score: { home: h, away: a }, manOfMatch: motm.trim() || null });
     setSaved(true);
     setScoreForAnnounce({ home: h, away: a });
     setTimeout(() => setSaved(false), 5000);
