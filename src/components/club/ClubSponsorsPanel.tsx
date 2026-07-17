@@ -56,7 +56,7 @@ interface ClubSponsorsPanelProps {
 }
 
 export default function ClubSponsorsPanel({ clubId, onClose }: ClubSponsorsPanelProps) {
-  const { sponsors, loading, addSponsor, updateSponsor, removeSponsor } = useClubSponsorsAdmin(String(clubId)) as any;
+  const { sponsors, loading, addSponsor, updateSponsor, removeSponsor } = useClubSponsorsAdmin(String(clubId));
   const [form, setForm]           = useState({ ...BLANK });
   const [showForm, setShowForm]   = useState(false);
   const [adding, setAdding]       = useState(false);
@@ -164,7 +164,7 @@ export default function ClubSponsorsPanel({ clubId, onClose }: ClubSponsorsPanel
           </div>
         )}
 
-        {!loading && (sponsors as any[]).map(s => {
+        {!loading && sponsors.map(s => {
           const meta = TIER_META[s.tier] ?? TIER_META.partner;
           return (
             <div key={s.id} style={{ borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', backgroundColor: 'var(--sl-card)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>

@@ -34,7 +34,7 @@ export default function RideSection({ event, snapPoint }: RideSectionProps) {
   const clubId = event?.clubId ? String(event.clubId) : null;
   if (!clubId || !memberClubIds.has(clubId)) return null;
 
-  const activeRides = (rides as any[]).filter((r: any) => r.status !== 'cancelled');
+  const activeRides = rides.filter((r: any) => r.status !== 'cancelled');
   const totalSeats  = activeRides.reduce((s: number, r: any) => s + r.availableSeatsLeft, 0);
   const myRide      = activeRides.find((r: any) => r.driverId === currentUser?.id);
 

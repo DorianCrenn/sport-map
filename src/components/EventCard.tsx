@@ -175,7 +175,7 @@ function ShareBtn({ event }: { event: Record<string, any> }) {
 
   async function handleShare(e: React.MouseEvent) {
     e.stopPropagation();
-    const result = await (share as (opts: any) => Promise<any>)({ title: event.title, text: description, url: eventUrl });
+    const result = await share({ title: event.title, text: description, url: eventUrl });
     if (result.success && result.method === 'clipboard') { setCopied(true); setTimeout(() => setCopied(false), 2000); }
   }
   function handleWA(e: React.MouseEvent) { e.stopPropagation(); openWhatsAppShare(description); }
@@ -214,7 +214,7 @@ function AttendBtn({ event }: { event: Record<string, any> }) {
     if (past) return;
     toggle(event.id);
     if (!attending) hapticSuccess(); else hapticLight();
-    (toast as (opts: any) => void)({ message: attending ? 'Inscription retirée' : "Tu y seras ! 🎉" });
+    toast({ message: attending ? 'Inscription retirée' : "Tu y seras ! 🎉" });
   }
   return (
     <motion.button
@@ -293,7 +293,7 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
     finally { setAnnouncing(false); }
   }
 
-  const filteredPlayers = (players as any[]).filter((p: any) => !motm || p.name.toLowerCase().includes(motm.toLowerCase()));
+  const filteredPlayers = players.filter((p) => !motm || p.name.toLowerCase().includes(motm.toLowerCase()));
 
   return (
     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)' }} onClick={e => e.stopPropagation()}>
@@ -313,10 +313,10 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
         <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
           Joueur du match <span style={{ fontWeight: 400 }}>(optionnel)</span>
         </div>
-        <input type="text" value={motm} onChange={e => { setMotm(e.target.value); setMotmOpen(true); }} onFocus={() => setMotmOpen(true)} onBlur={() => setTimeout(() => setMotmOpen(false), 150)} placeholder={(players as any[]).length ? 'Sélectionner dans le roster…' : 'ex. Kevin Dupont'} autoComplete="off" style={{ width: '100%', padding: '7px 12px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box' }} />
-        {motmOpen && (players as any[]).length > 0 && (
+        <input type="text" value={motm} onChange={e => { setMotm(e.target.value); setMotmOpen(true); }} onFocus={() => setMotmOpen(true)} onBlur={() => setTimeout(() => setMotmOpen(false), 150)} placeholder={players.length ? 'Sélectionner dans le roster…' : 'ex. Kevin Dupont'} autoComplete="off" style={{ width: '100%', padding: '7px 12px', borderRadius: 'var(--sl-radius-md)', border: '1px solid var(--sl-border-s)', backgroundColor: 'var(--sl-surface)', color: 'var(--sl-t1)', fontSize: 13, boxSizing: 'border-box' }} />
+        {motmOpen && players.length > 0 && (
           <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, backgroundColor: 'var(--sl-card)', border: '1px solid var(--sl-border)', borderRadius: 'var(--sl-radius-lg)', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', maxHeight: 180, overflowY: 'auto', marginTop: 4 }}>
-            {filteredPlayers.slice(0, 8).map((p: any) => (
+            {filteredPlayers.slice(0, 8).map((p) => (
               <button key={p.id} type="button" onMouseDown={() => { setMotm(p.name); setMotmOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '11px 12px', fontSize: 12, textAlign: 'left', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--sl-text)', minHeight: 44 }} onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--sl-surface)'} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                 <span style={{ width: 24, textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--sl-t3)' }}>#{p.number ?? '—'}</span>
                 <span style={{ flex: 1, fontWeight: 600 }}>{p.name}</span>
@@ -774,7 +774,7 @@ const EventCard = forwardRef<HTMLElement, EventCardProps>(function EventCard(
               e.stopPropagation();
               const adding = !fav;
               toggleFavorite(event.id);
-              (toast as (opts: any) => void)({ message: adding ? 'Ajouté aux favoris' : 'Retiré des favoris' });
+              toast({ message: adding ? 'Ajouté aux favoris' : 'Retiré des favoris' });
             }}
             aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             aria-pressed={fav}

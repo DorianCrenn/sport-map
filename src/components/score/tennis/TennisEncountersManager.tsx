@@ -26,7 +26,7 @@ export default function TennisEncountersManager({ event, onUpdateEvent }: Tennis
         score_away:   away,
         score_detail: {
           encounters_summary: Object.fromEntries(
-            (encounters as any[]).map((e: any) => [e.encounter_type, e.winner_side])
+            encounters.map((e: any) => [e.encounter_type, e.winner_side])
           ),
           final_score: { home, away },
         },
@@ -60,7 +60,7 @@ export default function TennisEncountersManager({ event, onUpdateEvent }: Tennis
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {(config.encounterTypes ?? []).map((type: any) => {
-          const enc = (encounters as any[]).find((e: any) => e.encounter_type === type.key) ?? {
+          const enc = encounters.find((e: any) => e.encounter_type === type.key) ?? {
             encounter_type: type.key, encounter_order: type.order, winner_side: null,
             score_detail: { sets: [], sets_won: { home: 0, away: 0 } },
             home_player1_id: null, home_player1_data: {},

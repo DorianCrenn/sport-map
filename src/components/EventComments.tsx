@@ -49,7 +49,7 @@ export default function EventComments({ eventId }: EventCommentsProps) {
     else { setText(''); }
   }
 
-  const count = (comments as any[]).length;
+  const count = comments.length;
 
   return (
     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--sl-border)' }} onClick={e => e.stopPropagation()}>

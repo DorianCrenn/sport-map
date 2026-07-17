@@ -30,7 +30,7 @@ interface ClubRosterPanelProps {
 }
 
 export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub }: ClubRosterPanelProps) {
-  const { players, loading, claims, addPlayer, removePlayer, approveClaim, rejectClaim } = useClubPlayers(String(clubId)) as any;
+  const { players, loading, claims, addPlayer, removePlayer, approveClaim, rejectClaim } = useClubPlayers(String(clubId));
   const { can } = useCanDo();
   const { toast } = useToast();
   // RBAC réel : seuls coach/manager/owner (pas communicant) gèrent l'effectif.
@@ -38,7 +38,7 @@ export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub
   const canManage = can('teams', 'create');
   const [inviting, setInviting] = useState(false);
 
-  const invitable = (players as any[]).filter(p => p.email && !p.user_id);
+  const invitable = players.filter(p => p.email && !p.user_id);
   async function handleInviteAll() {
     if (!invitable.length || inviting) return;
     setInviting(true);
@@ -114,7 +114,7 @@ export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub
     setAdding(false);
   }
 
-  const filtered: any[] = filterTeam === 'all' ? players : players.filter((p: any) => p.team_id === filterTeam);
+  const filtered = filterTeam === 'all' ? players : players.filter((p) => p.team_id === filterTeam);
 
   return (
     <div className="space-y-5" style={{ position: 'relative' }}>
@@ -134,7 +134,7 @@ export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub
             {claims.length} demande{claims.length > 1 ? 's' : ''} de rattachement
           </p>
           <div className="space-y-2">
-            {(claims as any[]).map(c => (
+            {claims.map(c => (
               <div key={c.id} className="flex items-center gap-3 bg-white rounded-xl px-4 py-2.5">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: '#0F1E3A' }}>
@@ -179,7 +179,7 @@ export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub
         ? <p className="text-sm text-gray-400 text-center py-4">Chargement…</p>
         : (
           <div className="space-y-1.5">
-            {filtered.map((p: any) => (
+            {filtered.map((p) => (
               <div key={p.id} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
                 <span className="w-8 text-center text-xs font-bold text-gray-400">{p.number ?? '—'}</span>
                 <span className="flex-1 text-sm font-semibold" style={{ color: '#0F1E3A' }}>{p.name}</span>

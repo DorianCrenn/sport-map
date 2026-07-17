@@ -65,7 +65,7 @@ export default function FeedRecentResults({ clubIds }: FeedRecentResultsProps) {
         const scoreMap: Record<string, { score_home: number; score_away: number }> = {};
         for (const s of scores ?? []) scoreMap[s.event_id] = s;
 
-        const built: ResultItem[] = (events as any[])
+        const built: ResultItem[] = events
           .filter(e => scoreMap[e.id])
           .map(e => ({
             id:         String(e.id),

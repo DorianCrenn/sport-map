@@ -115,7 +115,7 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
     ? clubs.filter(c => c.name.toLowerCase().includes(clubSearch.toLowerCase())).slice(0, 8)
     : [];
 
-  const filteredGrants = (grants as any[]).filter(g => {
+  const filteredGrants = grants.filter(g => {
     const now = new Date();
     const active  = !g.revoked_at && (!g.ends_at || new Date(g.ends_at) > now);
     const expired = !g.revoked_at && g.ends_at && new Date(g.ends_at) <= now;
@@ -154,8 +154,8 @@ export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
     } finally { setSubmitting(false); }
   }
 
-  const activeCount  = (grants as any[]).filter(g => !g.revoked_at && (!g.ends_at || new Date(g.ends_at) > new Date())).length;
-  const expiredCount = (grants as any[]).filter(g => !g.revoked_at && g.ends_at && new Date(g.ends_at) <= new Date()).length;
+  const activeCount  = grants.filter(g => !g.revoked_at && (!g.ends_at || new Date(g.ends_at) > new Date())).length;
+  const expiredCount = grants.filter(g => !g.revoked_at && g.ends_at && new Date(g.ends_at) <= new Date()).length;
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--sl-bg)', overflow: 'hidden' }}>

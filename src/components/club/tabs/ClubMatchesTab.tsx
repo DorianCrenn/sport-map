@@ -8,7 +8,7 @@ import type { LiveScore } from '../../../hooks/useClubLiveScores.js';
 const EventFormStepConvocation = lazy(() => import('../../event/EventFormStepConvocation.jsx'));
 
 function ConvocBadge({ eventId }: { eventId: string | number }) {
-  const { stats, loading } = useEventConvocations(String(eventId)) as any;
+  const { stats, loading } = useEventConvocations(String(eventId));
   if (loading || stats.total === 0) return null;
   return (
     <div style={{

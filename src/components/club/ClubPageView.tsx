@@ -659,7 +659,7 @@ export default function ClubPageView({
             clubId={String(club.id)}
             clubName={club.name ?? ''}
             teams={allTeams}
-            upcomingEvents={(effectiveEvents as any[])
+            upcomingEvents={effectiveEvents
               .filter(e => new Date(e.date) >= new Date() && String(e.clubId) === String(club.id))
               .slice(0, 20)}
             onClose={() => setModal(null)}

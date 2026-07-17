@@ -40,7 +40,7 @@ export function useFeedRides(clubIds: string[], teamFilters: string[] = []) {
         if (!ridesByEvent[ride.event_id]) ridesByEvent[ride.event_id] = [];
         ridesByEvent[ride.event_id].push(ride);
       }
-      const items: MatchWithRides[] = (demoEvents as any[])
+      const items: MatchWithRides[] = demoEvents
         .filter(e => {
           const d = new Date(e.date).toISOString().slice(0, 10);
           const filtered = teamFilters.length ? teamFilters.some((f: string) => e.team_name === f || e.category === f) : true;

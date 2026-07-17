@@ -284,7 +284,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
             >
               {inFavoritesMode ? 'Mes sports' : 'Tous'}
             </button>
-            {(visibleSports as any[]).map((sport: any) => (
+            {visibleSports.map((sport: any) => (
               <button
                 key={sport.id}
                 onClick={() => setSportFilter(sportFilter === sport.id ? null : sport.id)}

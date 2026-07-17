@@ -115,7 +115,7 @@ function CalendrierEditorial({ upcomingEvents, scheduledAnnouncements }: { upcom
 const DAY_TO_JS: Record<string, number> = { Lundi: 1, Mardi: 2, Mercredi: 3, Jeudi: 4, Vendredi: 5, Samedi: 6, Dimanche: 0 };
 
 function TrainingsSection({ clubId }: { clubId: string | number }) {
-  const [trainings] = useClubTrainings(String(clubId)) as any;
+  const [trainings] = useClubTrainings(String(clubId));
   const allSessions: any[] = Object.entries(trainings as Record<string, any[]>).flatMap(([, sessions]) => sessions ?? []);
   if (allSessions.length === 0) return null;
 
@@ -210,7 +210,7 @@ function AnnouncementsSection({ club }: { club: Record<string, any> }) {
 }
 
 function SubscriptionSection({ clubId }: { clubId: string | number }) {
-  const features = useClubFeatures(String(clubId)) as any;
+  const features = useClubFeatures(String(clubId));
   const [showPlans, setShowPlans] = useState(false);
   if (features.loading) return null;
 
@@ -328,8 +328,8 @@ const NOTIF_ITEMS = [
 ];
 
 function NotifPrefsSection({ clubId }: { clubId: string | number }) {
-  const { kit, saving, save } = useClubBrandKit(String(clubId)) as any;
-  const prefs = kit?.admin_notif_prefs ?? { match_j1: true, match_today: true, post_match_score: true };
+  const { kit, saving, save } = useClubBrandKit(String(clubId));
+  const prefs = (kit?.admin_notif_prefs as Record<string, boolean> | undefined) ?? { match_j1: true, match_today: true, post_match_score: true };
   function toggle(key: string) { save({ admin_notif_prefs: { ...prefs, [key]: !prefs[key] } }); }
 
   return (

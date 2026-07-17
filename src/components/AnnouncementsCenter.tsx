@@ -54,7 +54,7 @@ export default function AnnouncementsCenter({ onClose }: AnnouncementsCenterProp
           </div>
         ) : (
           <AnimatePresence initial={false}>
-            {(announcements as any[]).map((ann) => (
+            {announcements.map((ann) => (
               <AnnouncementCard key={ann.id} ann={ann} variant="center" isRead={(readIds as Set<any>).has(ann.id)} onRead={markRead as (id: any) => void} />
             ))}
           </AnimatePresence>

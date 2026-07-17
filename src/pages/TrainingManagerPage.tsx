@@ -214,7 +214,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
 
   const upcomingSessions = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
-    return (playerDbSessions as any[])
+    return playerDbSessions
       .filter((s: any) => s.date >= today && s.cancelled !== true)
       .slice(0, 8);
   }, [playerDbSessions]);
@@ -422,7 +422,7 @@ export default function TrainingManagerPage({ onBack }: TrainingManagerPageProps
               </div>
             )}
 
-            {(filteredTemplateSessions as any[]).length === 0 ? (
+            {filteredTemplateSessions.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 24px' }}>
                 <p style={{ fontSize: 36, marginBottom: 12 }}>🏋️</p>
                 <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-t1)', marginBottom: 6 }}>

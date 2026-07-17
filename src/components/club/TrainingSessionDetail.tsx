@@ -94,11 +94,11 @@ export default function TrainingSessionDetail({ session, clubId, currentUser, is
           </div>
         )}
 
-        {(attendance as any[]).filter(a => a.status === 'present').length > 0 && (
+        {attendance.filter(a => a.status === 'present').length > 0 && (
           <div className="px-6 py-4 border-b border-gray-100">
             <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">Présents ({counts.present})</p>
             <div className="flex flex-wrap gap-2">
-              {(attendance as any[]).filter(a => a.status === 'present').map(a => (
+              {attendance.filter(a => a.status === 'present').map(a => (
                 <div key={a.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50">
                   {a.profiles?.avatar_url
                     ? <img src={a.profiles.avatar_url} className="w-5 h-5 rounded-full object-cover" alt={a.profiles?.name ?? ''} />

@@ -35,7 +35,7 @@ export default function CarpoolSection({ eventId, myStatus, isStaff, onOpenRides
 
   if (!active) return null;
 
-  const activeRides  = (rides as any[]).filter((r: any) => r.status !== 'cancelled');
+  const activeRides  = rides.filter((r: any) => r.status !== 'cancelled');
   const totalSeats   = activeRides.reduce((s: number, r: any) => s + r.availableSeatsLeft, 0);
   const hasRides     = activeRides.length > 0;
 

@@ -422,7 +422,7 @@ export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
                   {GROUP_LABELS[group] ?? group}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {(groupFeatures as any[]).map(f => {
+                  {groupFeatures.map(f => {
                     const isEditing = editingFeature === f.feature_key;
                     return (
                       <div key={f.feature_key} style={{ backgroundColor: 'var(--sl-card)', borderRadius: 'var(--sl-radius-xl)', border: '1px solid var(--sl-border)', padding: '10px 14px' }}>
