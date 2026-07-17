@@ -31,7 +31,7 @@ export default function ClubsPage({ allEvents, onShowAuth, onAddEvent, canAddEve
   const [sportFilter, setSportFilter]     = useState<string | null>(null);
   const [showDemoDialog, setShowDemoDialog] = useState(false);
   const newClubRef = useRef<SportLinkClub | null>(null);
-  const { leaderboard } = useClubLeaderboard({ limit: 5, sportFilter }) as any;
+  const { leaderboard } = useClubLeaderboard({ limit: 5, sportFilter });
   const [showAllSports, setShowAllSports]       = useState(false);
   const [selectedClub, setSelectedClub]         = useState<SportLinkClub | null>(null);
   const [leaderboardOpen, setLeaderboardOpen]   = useState(false);

@@ -121,7 +121,7 @@ interface PlansSectionProps {
 }
 
 export default function PlansSection({ onCta }: PlansSectionProps) {
-  const { planMeta, planOrder, canUseFeature, getQuotas, loading } = usePlanConfig() as any;
+  const { planMeta, planOrder, canUseFeature, getQuotas, loading } = usePlanConfig();
   const handleCta = onCta ?? ((_?: string) => {});
 
   const meta  = loading ? STATIC_PRICING as any : planMeta;

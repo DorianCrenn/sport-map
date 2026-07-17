@@ -62,7 +62,7 @@ interface ScoreEntryContainerProps {
 
 export default function ScoreEntryContainer({ event, onUpdateEvent }: ScoreEntryContainerProps) {
   const config = useMemo(() => getSportConfig(event?.sport) as any, [event?.sport]);
-  const { matchScore, saving, saved, error, saveScore } = useMatchScore(event?.id) as any;
+  const { matchScore, saving, saved, error, saveScore } = useMatchScore(event?.id);
 
   const clubId = event?.club_id ?? event?.clubId ?? null;
   const { players } = useClubPlayers(clubId) as { players: Player[] };

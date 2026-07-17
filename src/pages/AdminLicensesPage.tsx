@@ -89,7 +89,7 @@ interface AdminLicensesPageProps {
 }
 
 export default function AdminLicensesPage({ onBack }: AdminLicensesPageProps) {
-  const { grants, loading, createGrant, revokeGrant } = useAdminGrants() as any;
+  const { grants, loading, createGrant, revokeGrant } = useAdminGrants();
   const { toast } = useToast();
 
   const [showForm,    setShowForm]    = useState(false);

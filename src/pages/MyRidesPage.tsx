@@ -30,7 +30,7 @@ interface MyRidesPageProps {
 export default function MyRidesPage({ onBack }: MyRidesPageProps) {
   const { currentUser } = useAuth();
   const { myDriving, myPassenger, loading, refetch } = useMyRides() as any;
-  const { notifications, unreadCount, markAllRead, markRead } = useRideNotifications() as any;
+  const { notifications, unreadCount, markAllRead, markRead } = useRideNotifications();
   const [activeTab, setActiveTab] = useState('driving');
   const [processingIds, setProcessingIds] = useState(new Set<string>());
   const [cancelRideConfirm, setCancelRideConfirm] = useState<string | null>(null);

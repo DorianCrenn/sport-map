@@ -45,7 +45,7 @@ function StatCounter({ value, onChange, disabled }: { value: number; onChange: (
 }
 
 export default function MatchStatsModal({ event, clubId, onClose }: MatchStatsModalProps) {
-  const { players, loading: playersLoading } = useClubPlayers(clubId) as any;
+  const { players, loading: playersLoading } = useClubPlayers(clubId);
   const { stats, loading: statsLoading, bulkUpsert } = useMatchStats(event.id);
   const [rows, setRows] = useState<PlayerRow[]>([]);
   const [saving, setSaving] = useState(false);

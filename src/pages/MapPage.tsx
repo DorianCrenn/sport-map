@@ -77,7 +77,7 @@ export default function MapPage({
     setSportFilter(null);
   }, [currentUser?.id]);
 
-  const { coords: userCoords, loading: geoLoading, error: geoHookError, request: requestGeo } = useGeolocation() as any;
+  const { coords: userCoords, loading: geoLoading, error: geoHookError, request: requestGeo } = useGeolocation();
 
   const firstFix = useRef(false);
   useEffect(() => {

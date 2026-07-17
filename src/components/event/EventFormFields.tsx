@@ -326,7 +326,7 @@ interface MotmFieldProps {
 }
 
 export function MotmField({ value, onChange, clubId, inputStyle }: MotmFieldProps) {
-  const { players } = useClubPlayers(clubId) as any;
+  const { players } = useClubPlayers(clubId);
   const [open, setOpen] = useState(false);
   const filtered = (players as { id: string | number; name: string; number?: number | null; position?: string | null }[]).filter(p => !value || p.name.toLowerCase().includes(value.toLowerCase()));
 

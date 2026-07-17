@@ -155,7 +155,7 @@ function TrainingsSection({ clubId }: { clubId: string | number }) {
 
 function AnnouncementsSection({ club }: { club: Record<string, any> }) {
   const { announcements, loading, sendAnnouncement, deleteAnnouncement } = useClubAnnouncements(club.id) as any;
-  const { can } = useCanDo() as any;
+  const { can } = useCanDo();
   const [showModal, setShowModal] = useState(false);
   const [success, setSuccess]     = useState(false);
   // RBAC réel : la matrice (permission_matrix) décide. En démo / si la matrice
@@ -363,7 +363,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
 };
 
 function ChallengesSection({ club }: { club: Record<string, any> }) {
-  const { challenges, received, sent, pendingReceived, loading, sendChallenge, respond } = useClubChallenges(club.id) as any;
+  const { challenges, received, sent, pendingReceived, loading, sendChallenge, respond } = useClubChallenges(club.id);
   const { userClubs } = useClubs();
   const otherClubs = (userClubs ?? []).filter((c: any) => String(c.id) !== String(club.id));
 

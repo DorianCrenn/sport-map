@@ -38,7 +38,7 @@ export default function ActualitesPage({
     [followedClubIds, managedClubIds],
   );
 
-  const { demoLiveMatches } = useDemoFeed() as any;
+  const { demoLiveMatches } = useDemoFeed();
   const quickActions        = useQuickActions({
     currentUser,
     managedClubs,

@@ -102,7 +102,7 @@ export default function SideNav({
 }: SideNavProps) {
   const { isAdmin, isClubAdmin, currentUser } = useAuth();
   const { managedClubs = [] } = useManagedClubs() as any;
-  const { can, isSimulating } = useCanDo() as any;
+  const { can, isSimulating } = useCanDo();
 
   const isClubAdminOnly = isClubAdmin && !isAdmin;
   const isCoach = !isAdmin && !isClubAdmin && managedClubs.length > 0;

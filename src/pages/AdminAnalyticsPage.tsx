@@ -163,7 +163,7 @@ interface AdminAnalyticsPageProps { onBack: () => void; }
 
 export default function AdminAnalyticsPage({ onBack }: AdminAnalyticsPageProps) {
   const [period, setPeriod] = useState(7);
-  const { data, loading, fetchDashboard } = useAdminAnalytics() as any;
+  const { data, loading, fetchDashboard } = useAdminAnalytics();
 
   useEffect(() => {
     fetchDashboard(period);

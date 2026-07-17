@@ -287,7 +287,7 @@ function TarifTab({ planMeta, planOrder, updatePricing, toast }: TarifTabProps) 
 interface AdminPlansPageProps { onBack: () => void; }
 
 export default function AdminPlansPage({ onBack }: AdminPlansPageProps) {
-  const { loading, features, quotas, planMeta, planOrder, updateFeatureGate, updateQuota, updatePricing } = usePlanConfig() as any;
+  const { loading, features, quotas, planMeta, planOrder, updateFeatureGate, updateQuota, updatePricing } = usePlanConfig();
   const { toast } = useToast();
 
   const [activeTab,       setActiveTab]       = useState('features');

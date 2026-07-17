@@ -31,7 +31,7 @@ interface ClubRosterPanelProps {
 
 export default function ClubRosterPanel({ clubId, teams = [], club, onUpdateClub }: ClubRosterPanelProps) {
   const { players, loading, claims, addPlayer, removePlayer, approveClaim, rejectClaim } = useClubPlayers(String(clubId)) as any;
-  const { can } = useCanDo() as any;
+  const { can } = useCanDo();
   const { toast } = useToast();
   // RBAC réel : seuls coach/manager/owner (pas communicant) gèrent l'effectif.
   // useCanDo est permissif si la matrice n'est pas chargée (démo, cold start).

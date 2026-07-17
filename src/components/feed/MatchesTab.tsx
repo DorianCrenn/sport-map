@@ -344,7 +344,7 @@ export default function MatchesTab({ followedClubIds = [], onNavigateClubs }: Ma
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [sportFilter,  setSportFilter]  = useState<string | null>(null);
 
-  const { sponsors: eliteSponsors } = useEliteSponsors() as any;
+  const { sponsors: eliteSponsors } = useEliteSponsors();
 
   const goToPrevDay = useCallback(() => { setSelectedDate(d => { const n = new Date(d); n.setDate(n.getDate() - 1); return n; }); }, []);
   const goToNextDay = useCallback(() => { setSelectedDate(d => { const n = new Date(d); n.setDate(n.getDate() + 1); return n; }); }, []);
@@ -357,9 +357,9 @@ export default function MatchesTab({ followedClubIds = [], onNavigateClubs }: Ma
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sportFilter, currentUser?.favoriteSports]);
 
-  const { matches: allMatches, loading: allLoading } = useMatchesForDate({ date: selectedDate, sports: allSportsFilter, skip: subTab === 'favorites' || subTab === 'my-club' }) as any;
-  const { matches: favMatches, loading: favLoading } = useMatchesForDate({ date: selectedDate, clubIds: followedClubIds, skip: subTab !== 'favorites' }) as any;
-  const { matches: myClubMatches, loading: myClubLoading } = useMatchesForDate({ date: selectedDate, clubIds: managedClubIds, skip: subTab !== 'my-club' }) as any;
+  const { matches: allMatches, loading: allLoading } = useMatchesForDate({ date: selectedDate, sports: allSportsFilter, skip: subTab === 'favorites' || subTab === 'my-club' });
+  const { matches: favMatches, loading: favLoading } = useMatchesForDate({ date: selectedDate, clubIds: followedClubIds, skip: subTab !== 'favorites' });
+  const { matches: myClubMatches, loading: myClubLoading } = useMatchesForDate({ date: selectedDate, clubIds: managedClubIds, skip: subTab !== 'my-club' });
 
   const currentMatches: Record<string, any>[] = subTab === 'favorites' ? favMatches : subTab === 'my-club' ? myClubMatches : allMatches;
   const loading: boolean = subTab === 'favorites' ? favLoading : subTab === 'my-club' ? myClubLoading : allLoading;

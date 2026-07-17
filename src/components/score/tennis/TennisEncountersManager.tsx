@@ -10,8 +10,8 @@ interface TennisEncountersManagerProps {
 
 export default function TennisEncountersManager({ event, onUpdateEvent }: TennisEncountersManagerProps) {
   const config = getSportConfig(event?.sport) as any;
-  const { encounters, loading, upsertEncounter, computeTotalScore, isComplete } = useMatchEncounters(event?.id, event?.sport) as any;
-  const { saveScore, saving: savingTotal, saved: savedTotal } = useMatchScore(event?.id) as any;
+  const { encounters, loading, upsertEncounter, computeTotalScore, isComplete } = useMatchEncounters(event?.id, event?.sport);
+  const { saveScore, saving: savingTotal, saved: savedTotal } = useMatchScore(event?.id);
 
   async function handleEncounterSave(encounter: Record<string, any>) {
     await upsertEncounter(encounter);

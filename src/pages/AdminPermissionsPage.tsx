@@ -37,7 +37,7 @@ interface AdminPermissionsPageProps {
 }
 
 export default function AdminPermissionsPage({ onBack }: AdminPermissionsPageProps) {
-  const { matrix, loading, saving, isAllowed, togglePermission, allowAll, denyAll, copyRole } = usePermissionMatrix() as any;
+  const { matrix, loading, saving, isAllowed, togglePermission, allowAll, denyAll, copyRole } = usePermissionMatrix();
   const { toast } = useToast();
 
   const [selectedRole,   setSelectedRole]   = useState(ROLES[0].id);

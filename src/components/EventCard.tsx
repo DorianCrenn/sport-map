@@ -265,7 +265,7 @@ function QuickScoreEdit({ event, onUpdateEvent, onPosterResult, onAnnounceResult
   const [scoreForAnnounce, setScoreForAnnounce] = useState<{ home: number; away: number } | null>(null);
   const [announced, setAnnounced] = useState(false);
   const [announcing, setAnnouncing] = useState(false);
-  const { players } = useClubPlayers(event.clubId) as any;
+  const { players } = useClubPlayers(event.clubId);
 
   useEffect(() => {
     setHome(String(event.score?.home ?? ''));

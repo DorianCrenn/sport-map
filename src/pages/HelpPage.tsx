@@ -63,7 +63,7 @@ export default function HelpPage({ onClose, onOpenFeedback, notifications = [], 
   const [activeCategory, setCategory] = useState<string | null>(null);
   const [openId, setOpenId]           = useState<string | null>(null);
 
-  const { fetchIdeas, vote, unvote, ideas, loadMyVotes } = useFeedback() as any;
+  const { fetchIdeas, vote, unvote, ideas, loadMyVotes } = useFeedback();
   const [myVotes,   setMyVotes]   = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem('sl-my-votes') ?? '[]')); } catch { return new Set(); }
   });

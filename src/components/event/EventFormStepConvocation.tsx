@@ -85,7 +85,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
   const [emailResult, setEmailResult]   = useState<{ sent: number; total: number } | null>(null);
 
   const { currentUser } = useAuth();
-  const { sendConvocations } = useEventConvocations(event?.id) as any;
+  const { sendConvocations } = useEventConvocations(event?.id);
   const { sendEmails } = useConvocationEmail();
 
   useEffect(() => {
@@ -148,7 +148,7 @@ export default function EventFormStepConvocation({ event, onDone, onClose }: Eve
   async function handleSend() {
     if (!selected.size || !event?.id) return;
     setSending(true);
-    const { error } = await sendConvocations([...selected]);
+    const { error } = await sendConvocations([...selected].map(String));
     if (!error) {
       const selectedPlayers = players.filter(p => selected.has(p.id));
       triggerPushForPlayers(selectedPlayers);

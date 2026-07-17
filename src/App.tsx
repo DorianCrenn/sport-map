@@ -170,10 +170,10 @@ function AppInner() {
     });
   });
   const { events: userEvents, loading: eventsLoading, addEvent, addEventsBatch, updateEvent, deleteEvent, archiveSeason } = useLocalEvents() as any;
-  const { unreadCount: rideNotifCount } = useRideNotifications() as any;
-  const { unreadCount: announcementsUnreadCount } = useMyAnnouncements() as any;
-  const { convocations: myConvocations, pendingCount: convocationsPending, respond: respondToConvocation } = useMyConvocations(currentUser?.id) as any;
-  const { notifications: feedbackNotifs, unreadCount: feedbackNotifsCount, markRead: markFeedbackNotifRead, markAllRead: markAllFeedbackNotifsRead } = useFeedbackNotifications() as any;
+  const { unreadCount: rideNotifCount } = useRideNotifications();
+  const { unreadCount: announcementsUnreadCount } = useMyAnnouncements();
+  const { convocations: myConvocations, pendingCount: convocationsPending, respond: respondToConvocation } = useMyConvocations(currentUser?.id);
+  const { notifications: feedbackNotifs, unreadCount: feedbackNotifsCount, markRead: markFeedbackNotifRead, markAllRead: markAllFeedbackNotifsRead } = useFeedbackNotifications();
   const [adminSubView, setAdminSubView] = useState<string | null>(null);
   const [showMyRides, setShowMyRides] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -275,7 +275,7 @@ function AppInner() {
 
   allClubsRef.current = allClubs;
 
-  const { earned: earnedBadges, newBadges, markSeen } = useBadges({ attending, allEvents }) as any;
+  const { earned: earnedBadges, newBadges, markSeen } = useBadges({ attending, allEvents });
 
   const pendingEventDeepLink = useRef<string | null>(null);
 
@@ -524,7 +524,7 @@ function AppInner() {
     }
   }, [newBadges.length, currentUser?.id]);
 
-  const { communes } = useCommunes([activeDepartment]) as any;
+  const { communes } = useCommunes([activeDepartment]);
 
   useEffect(() => {
     if (!('setAppBadge' in navigator)) return;
