@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSeasonPlanning }      from '../../hooks/useSeasonPlanning.js';
 import { useFeedRides }           from '../../hooks/useFeedRides.js';
@@ -6,9 +6,6 @@ import type { MyAnnouncement }    from '../../hooks/useMyAnnouncements.js';
 import TrainingPlanningCard       from './TrainingPlanningCard.jsx';
 import MatchPlanningCard          from './MatchPlanningCard.jsx';
 import AnnouncementPlanningCard   from './AnnouncementPlanningCard.jsx';
-
-
-const CompositionPoster = lazy(() => import('../poster/simple/CompoPoster.jsx'));
 
 const WEEKDAYS_FULL = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const MONTHS_FR     = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -84,7 +81,6 @@ export default function PlanningTimeline({
   const [viewDate,   setViewDate]   = useState(() => new Date());
   const [filter,     setFilter]     = useState('all');
   const [clubFilter, setClubFilter] = useState('all');
-  const [compPoster, setCompPoster] = useState<{ event: Record<string, any>; club: Record<string, any> | null } | null>(null);
   const autoScrolledRef  = useRef(false);
   const autoAdvancedRef  = useRef(0); // nb de mois auto-avancés
 
@@ -271,14 +267,6 @@ export default function PlanningTimeline({
           </div>
         )}
       </div>
-
-      <AnimatePresence>
-        {compPoster && (
-          <Suspense fallback={null}>
-            <CompositionPoster event={compPoster.event} club={compPoster.club} onClose={() => setCompPoster(null)} />
-          </Suspense>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
