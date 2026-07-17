@@ -23,7 +23,7 @@ export default function RideSection({ event, snapPoint }: RideSectionProps) {
   const memberClubIds = useMyClubMemberships();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showPlans,   setShowPlans]   = useState(false);
-  const { rides, loading, createRide, cancelRide, requestRide, cancelRequest, acceptRequest, refuseRequest } = useRides(event.id) as any;
+  const { rides, loading, createRide, cancelRide, requestRide, cancelRequest, acceptRequest, refuseRequest } = useRides(event.id);
   const [showCreate,  setShowCreate]  = useState(false);
   const [joiningRide, setJoiningRide] = useState<Record<string, any> | null>(null);
 
@@ -116,7 +116,7 @@ export default function RideSection({ event, snapPoint }: RideSectionProps) {
                     ride={ride}
                     currentUser={currentUser}
                     onJoin={() => setJoiningRide(ride)}
-                    onAccept={(reqId: any, passId: any, passName: any) => acceptRequest(reqId, ride.id, passId, passName)}
+                    onAccept={(reqId: any, passId: any) => acceptRequest(reqId, ride.id, passId)}
                     onRefuse={(reqId: any, passId: any) => refuseRequest(reqId, ride.id, passId)}
                     onCancel={() => cancelRide(ride.id)}
                     onCancelRequest={(reqId: any) => cancelRequest(reqId, ride.id)}

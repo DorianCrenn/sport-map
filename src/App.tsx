@@ -238,7 +238,7 @@ function AppInner() {
   const { attending } = useAttendanceContext();
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasShownBadge = useRef(false);
-  const clubMatchEvents = useClubMatches() as any;
+  const clubMatchEvents = useClubMatches();
   const { userClubs, updateClub } = useClubs();
   const { allSports } = useSports();
   const [cityFilter, setCityFilter] = useState<string | null>(null);
