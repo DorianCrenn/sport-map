@@ -168,7 +168,7 @@ function StandingsRow({ team, rank, wins, draws, losses, points }: StandingsRowP
 // ─── ShareBtn ─────────────────────────────────────────────────────────────────
 
 function ShareBtn({ event }: { event: Record<string, any> }) {
-  const { share } = useShare() as any;
+  const { share } = useShare();
   const [copied, setCopied] = useState(false);
   const eventUrl = `${window.location.origin}/event-page.html?id=${event.id}`;
   const description = generateEventDescription(event as any, { includeUrl: true, url: eventUrl });

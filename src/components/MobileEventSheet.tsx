@@ -77,7 +77,7 @@ type SnapPoint = 'peek' | 'detail' | 'full';
 
 export default function MobileEventSheet({ event, club, onClose, onEdit, onDelete, onUpdateEvent }: MobileEventSheetProps) {
   const { allSports: SPORTS } = useSports();
-  const { share } = useShare() as any;
+  const { share } = useShare();
   const { currentUser, isAdmin } = useAuth();
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const { isAttending, toggle: toggleAttend } = useAttendanceContext();

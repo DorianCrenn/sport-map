@@ -112,7 +112,7 @@ export default function ClubPageView({
     isAdmin, isClubAdmin, currentUser, isLoggedIn,
     followClub, updateFollow, isFollowingClub, getFollow,
   } = useAuth();
-  const { share } = useShare() as any;
+  const { share } = useShare();
 
   const isOwner = isAdmin
     || club.userId === currentUser?.id

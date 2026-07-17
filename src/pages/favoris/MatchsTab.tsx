@@ -39,7 +39,7 @@ interface ShareBtnProps {
 }
 
 function ShareBtn({ event }: ShareBtnProps) {
-  const { share } = useShare() as any;
+  const { share } = useShare();
   const [copied, setCopied] = useState(false);
   async function handle() {
     const dateObj = new Date(event.date);
