@@ -194,14 +194,15 @@ describe('ClubPageView — rendu initial', () => {
     expect(screen.getByTestId('club-hero')).toHaveTextContent('Stade Brestois');
   });
 
-  it('affiche les 5 tabs de navigation', () => {
+  it('affiche les 6 tabs de navigation', () => {
     renderView();
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(5);
+    expect(tabs).toHaveLength(6);
     const labels = tabs.map(t => t.textContent);
     expect(labels).toContain('Accueil');
     expect(labels).toContain('Actualités');
     expect(labels).toContain('Matchs');
+    expect(labels).toContain('Saison');
     expect(labels).toContain('Effectif');
     expect(labels).toContain('Infos');
   });
