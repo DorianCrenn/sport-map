@@ -324,7 +324,7 @@ interface MatchesTabProps { followedClubIds?: string[]; onNavigateClubs?: () => 
 
 export default function MatchesTab({ followedClubIds = [], onNavigateClubs }: MatchesTabProps) {
   const { currentUser } = useAuth();
-  const { managedClubs } = useManagedClubs() as any;
+  const { managedClubs } = useManagedClubs();
   const favoriteSports: string[] = currentUser?.favoriteSports ?? [];
   const hasFollowedClubs = followedClubIds.length > 0;
 

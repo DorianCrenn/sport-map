@@ -72,7 +72,7 @@ interface FavoriteCardProps {
 function FavoriteCard({ event, onToggleFavorite, isAttending, onToggleAttend }: FavoriteCardProps) {
   const { allSports: SPORTS } = useSports();
   const sportColor    = SPORTS[event.sport]?.color ?? '#22d96a';
-  const attendeeCount = useAttendeeCount(event.id) as any;
+  const attendeeCount = useAttendeeCount(event.id);
   const dateObj   = new Date(event.date);
   const isPast    = dateObj < new Date();
   const timeStr   = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });

@@ -101,7 +101,7 @@ export default function SideNav({
   onAddEvent, onImportCSV, onOpenTrainings, onClubAdminAction,
 }: SideNavProps) {
   const { isAdmin, isClubAdmin, currentUser } = useAuth();
-  const { managedClubs = [] } = useManagedClubs() as any;
+  const { managedClubs = [] } = useManagedClubs();
   const { can, isSimulating } = useCanDo();
 
   const isClubAdminOnly = isClubAdmin && !isAdmin;

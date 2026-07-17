@@ -19,7 +19,7 @@ interface RideSectionProps {
 
 export default function RideSection({ event, snapPoint }: RideSectionProps) {
   const { currentUser } = useAuth();
-  const features = useClubFeatures(event?.clubId) as any;
+  const features = useClubFeatures(event?.clubId);
   const memberClubIds = useMyClubMemberships();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showPlans,   setShowPlans]   = useState(false);

@@ -126,8 +126,8 @@ function UpdateBanner() {
 function AppInner() {
   const { currentUser, isAdmin, isClubAdmin, loading, followedClubs, followClub, isFollowingClub } = useAuth();
   const { isCoachOrManager } = useManagedClubs();
-  const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent() as any;
-  const { track } = useAnalytics(consent) as any;
+  const { consent, showBanner: showConsentBanner, accept: acceptAnalytics, refuse: refuseAnalytics } = useAnalyticsConsent();
+  const { track } = useAnalytics(consent);
 
   // Navigation par onglets — source de vérité unique (voir hooks/useRouter.ts).
   const { tab: activeTab, tabDir, go: routerGo, clearHash, replaceOverlay } = useRouter();
@@ -264,7 +264,7 @@ function AppInner() {
     [userEvents, clubMatchEvents]
   );
 
-  const setKnownAttendeeIds = useAttendeeCountActions() as any;
+  const setKnownAttendeeIds = useAttendeeCountActions();
   useEffect(() => {
     if (allEvents.length > 0) {
       setKnownAttendeeIds(allEvents.map((e: any) => String(e.id)));
@@ -620,7 +620,7 @@ function AppInner() {
     handleTabChange(tab);
   }, [userClubs, handleTabChange]);
 
-  const upcomingFavorites = useUpcomingFavorites(allEvents, favorites) as any;
+  const upcomingFavorites = useUpcomingFavorites(allEvents, favorites);
 
   const navBadges = useMemo(() => {
     const todayCount = upcomingFavorites.today.length;

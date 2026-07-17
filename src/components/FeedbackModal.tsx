@@ -30,7 +30,7 @@ export default function FeedbackModal({ onClose, prefilled = {} }: FeedbackModal
   const { submit, fetchIdeas, searchSimilar } = useFeedback();
   const { toast } = useToast();
   const { currentUser, isAdmin, isClubAdmin } = useAuth();
-  const { plan } = usePlan() as any;
+  const { plan } = usePlan();
   const userRole = isAdmin ? 'admin' : isClubAdmin ? 'club_admin' : currentUser ? 'user' : 'anonymous';
   const panelRef = useRef<HTMLDivElement>(null);
   useAndroidBack(true, onClose);

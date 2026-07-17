@@ -38,7 +38,7 @@ export default function Header({
   const { currentUser, isAdmin, isClubAdmin, logout, devRole, setDevRole, devClubId, setDevClubId } = useAuth();
   const { unreadCount: clubNotifUnread } = useClubNotifications();
   const totalBadge = (clubNotifUnread as number) + rideNotifCount;
-  const { theme, toggleTheme } = useTheme() as any;
+  const { theme, toggleTheme } = useTheme();
   const [query, setQuery] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
