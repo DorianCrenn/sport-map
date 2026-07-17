@@ -170,113 +170,9 @@ export interface SportLinkClub {
   isUserCreated?: boolean;
 }
 
-// ── Announcement ──────────────────────────────────────────────────────────────
-
-export type AnnouncementType = 'urgent' | 'info' | 'result' | 'event';
-
-export interface ClubAnnouncement {
-  id: string;
-  clubId: string;
-  type: AnnouncementType;
-  title?: string;
-  message: string;
-  targetTeams: string[];
-  createdAt: string;
-  clubName?: string;
-  clubLogo?: string;
-  isRead?: boolean;
-}
-
-// ── Rides / Covoiturage ───────────────────────────────────────────────────────
-
-export type RideStatus = 'open' | 'full' | 'cancelled';
-export type RequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
-
-export interface Ride {
-  id: string;
-  eventId: string;
-  driverId: string;
-  driverName?: string;
-  driverAvatar?: string;
-  seats: number;
-  departure: string;
-  departureTime?: string;
-  status: RideStatus;
-  createdAt: string;
-  requests?: RideRequest[];
-  availableSeats?: number;
-}
-
-export interface RideRequest {
-  id: string;
-  rideId: string;
-  passengerId: string;
-  passengerName?: string;
-  status: RequestStatus;
-  message?: string;
-  createdAt: string;
-}
-
-export interface RideNotification {
-  id: string;
-  userId: string;
-  rideId: string;
-  type: string;
-  read: boolean;
-  createdAt: string;
-}
-
-// ── Badges / XP ───────────────────────────────────────────────────────────────
-
-export interface Badge {
-  id: string;
-  label: string;
-  icon: string;
-  description?: string;
-}
-
-// ── Club Page ─────────────────────────────────────────────────────────────────
-
-export type ClubPageBlockType =
-  | 'text'
-  | 'matches'
-  | 'trainings'
-  | 'members'
-  | 'gallery'
-  | 'sponsors'
-  | 'social'
-  | 'nextmatch'
-  | 'lineup'
-  | 'stats';
-
-export interface ClubPageBlock {
-  id: string;
-  type: ClubPageBlockType;
-  data: Record<string, unknown>;
-}
-
-export interface ClubPage {
-  clubId: string;
-  blocks: ClubPageBlock[];
-  theme?: string;
-}
-
-// ── Media ─────────────────────────────────────────────────────────────────────
-
-export interface ClubMediaAsset {
-  id: string;
-  clubId: string;
-  url: string;
-  thumbnailUrl?: string;
-  tags: string[];
-  isFavorite: boolean;
-  createdAt: string;
-}
-
 // ── Poster ────────────────────────────────────────────────────────────────────
 
 export type PosterFormat = 'story' | 'square' | 'landscape';
-export type PosterStatus = 'draft' | 'saved' | 'exported';
 
 export interface PosterTransform {
   dx?: number;
@@ -357,23 +253,6 @@ export interface PosterData {
   accentColor?: string;
 }
 
-// ── Match données brutes (calendrier importé) ─────────────────────────────────
-
-export interface RawMatch {
-  id: string;
-  date: string;
-  isHome?: boolean;
-  opponent?: string;
-  time?: string;
-  venue?: string;
-  competition?: string;
-  teamName?: string;
-  category?: string;
-  scoreHome?: number | null;
-  scoreAway?: number | null;
-  publishedOnMap?: boolean;
-}
-
 // ── Match week-end résolu (WeekendPosters) ────────────────────────────────────
 
 export interface WeekendMatch {
@@ -392,53 +271,9 @@ export interface WeekendMatch {
   posterData: PosterData;
 }
 
-// ── Push notifications ────────────────────────────────────────────────────────
-
-export interface PushSubscriptionRecord {
-  id: string;
-  userId: string;
-  endpoint: string;
-  keys: {
-    p256dh: string;
-    auth: string;
-  };
-  createdAt: string;
-}
-
 // ── Toast ─────────────────────────────────────────────────────────────────────
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
-
-export interface Toast {
-  id?: string;
-  message: string;
-  type?: ToastType;
-  duration?: number;
-}
-
-// ── Analytics ─────────────────────────────────────────────────────────────────
-
-export type AnalyticsEventType =
-  | 'user_login'
-  | 'page_view'
-  | 'event_created'
-  | 'poster_opened'
-  | 'club_created'
-  | 'poster_exported'
-  | 'ride_created'
-  | 'announcement_sent'
-  | 'training_created'
-  | 'convocation_sent'
-  | 'convocation_responded';
-
-export interface AnalyticsEvent {
-  id: string;
-  userId: string;
-  sessionId: string;
-  eventType: AnalyticsEventType;
-  properties: Record<string, unknown>;
-  createdAt: string;
-}
 
 // ── Feedback ──────────────────────────────────────────────────────────────────
 
@@ -477,14 +312,6 @@ export interface FeedbackNotification {
 // ── Export ────────────────────────────────────────────────────────────────────
 
 export type ExportAction = 'download' | 'share';
-export type ExportStatus = 'idle' | 'generating' | 'done' | 'error';
-
-// ── Supabase helpers ──────────────────────────────────────────────────────────
-
-export interface SupabaseResult<T> {
-  data: T | null;
-  error: { message: string; code?: string } | null;
-}
 
 // ── Géographie ────────────────────────────────────────────────────────────────
 
@@ -519,85 +346,6 @@ export interface Sport {
   category?: string;
 }
 
-// ── Entraînement ─────────────────────────────────────────────────────────────
-
-export type WeekDay = 'lundi' | 'mardi' | 'mercredi' | 'jeudi' | 'vendredi' | 'samedi' | 'dimanche';
-
-export interface ClubTraining {
-  id: string;
-  clubId: string;
-  teamName?: string;
-  day: WeekDay;
-  time: string;
-  location: string;
-  duration?: number;
-  notes?: string;
-}
-
-// ── Club Manager ──────────────────────────────────────────────────────────────
-
-export type ManagerRole = 'manager' | 'coach' | 'president' | 'secretary';
-export type ManagerStatus = 'pending' | 'active';
-
-export interface ClubManager {
-  id: string;
-  clubId: string;
-  email: string;
-  role: ManagerRole;
-  status: ManagerStatus;
-  name?: string;
-}
-
 // ── Convocation ───────────────────────────────────────────────────────────────
 
 export type ConvocationStatus = 'pending' | 'accepted' | 'declined' | 'unavailable';
-
-export interface Convocation {
-  id: string;
-  eventId: string;
-  playerId: string;
-  playerName?: string;
-  status: ConvocationStatus;
-  message?: string;
-  createdAt: string;
-}
-
-// ── Player ────────────────────────────────────────────────────────────────────
-
-export interface ClubPlayer {
-  id: string;
-  clubId: string;
-  name: string;
-  email?: string;
-  userId?: string;
-  number?: number;
-  position?: string;
-  category?: string;
-  isActive: boolean;
-}
-
-// ── Sponsor ───────────────────────────────────────────────────────────────────
-
-export interface ClubSponsor {
-  id: string;
-  clubId: string;
-  name: string;
-  logoUrl?: string;
-  logoWhiteUrl?: string;
-  bgColor?: string;
-  tagline: string;
-  ctaLabel?: string;
-  ctaUrl?: string;
-  isActive: boolean;
-}
-
-// ── Brand Kit ─────────────────────────────────────────────────────────────────
-
-export interface ClubBrandKit {
-  clubId: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  defaultTemplateId?: string;
-  daProfile?: Record<string, unknown>;
-  adminNotifPrefs?: Record<string, boolean>;
-}
