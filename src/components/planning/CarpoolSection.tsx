@@ -30,7 +30,7 @@ export default function CarpoolSection({ eventId, myStatus, isStaff, onOpenRides
   const clubId = (event as any)?.clubId ?? (event as any)?.club_id;
   const isMember = clubId != null && memberClubIds.has(String(clubId));
   const active = (isMember || isStaff) && !past;
-  const { rides, loading, createRide } = useRides(active ? String(eventId) : null) as any;
+  const { rides, loading, createRide } = useRides(active ? String(eventId) : null);
   const [showCreate, setShowCreate] = useState(false);
 
   if (!active) return null;

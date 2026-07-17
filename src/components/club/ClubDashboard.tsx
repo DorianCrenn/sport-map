@@ -478,7 +478,7 @@ interface ClubDashboardProps {
 }
 
 export default function ClubDashboard({ club, clubEventIds, allEvents, onClose, onArchiveSeason }: ClubDashboardProps) {
-  const data        = useClubDashboard(String(club.id), clubEventIds as string[]) as any;
+  const data        = useClubDashboard(String(club.id), clubEventIds as string[]);
   const convocStats = useConvocStats(club.id);
   const isEmpty     = !data.loading && data.followers === 0 && data.pageViews.total === 0 && data.attendees.total === 0 && data.posterExports === 0 && data.posterShares === 0;
   const [hasDemo, setHasDemo]           = useState(false);
