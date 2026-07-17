@@ -350,7 +350,7 @@ export function buildDemoTables() {
         plan: 'pro', priority: 8,
         starts_at: new Date(Date.now() - 5 * 86400000).toISOString(),
         ends_at:   futureDate(8, 23),
-        events: { id: 'demo-event-002', title: 'Coupe de Bretagne — FC SportLink vs Stade Brestois B', date: futureDate(7, 14), sport: 'Football', venue: "Stade de l'Elorn", city: 'Brest', team_name: 'FC SportLink Démo', adversaire: 'Stade Brestois B', home_or_away: 'home' },
+        events: { id: 'demo-event-002', title: 'Coupe : FC SportLink Démo @ Stade Brestois B', date: futureDate(7, 14), sport: 'Football', venue: "Stade de l'Elorn", city: 'Brest', team_name: 'Équipe 1', adversaire: 'Stade Brestois B', home_or_away: 'away' },
         clubs:  { name: 'FC SportLink Démo' },
       },
       {
@@ -358,7 +358,7 @@ export function buildDemoTables() {
         plan: 'elite', priority: 15,
         starts_at: new Date(Date.now() - 3 * 86400000).toISOString(),
         ends_at:   futureDate(11, 23),
-        events: { id: 'demo-event-003', title: 'Tournoi de la Pentecôte U17 — 8 équipes', date: futureDate(10, 9), sport: 'Football', venue: 'Complexe Sportif de la Cavale Blanche', city: 'Brest', team_name: 'FC SportLink Démo U17', adversaire: '7 clubs bretons', home_or_away: 'home' },
+        events: { id: 'demo-event-003', title: 'Tournoi de la Pentecôte — Brest', date: futureDate(10, 9), sport: 'Football', venue: 'Complexe Sportif de la Cavale Blanche', city: 'Brest', team_name: 'U17', adversaire: '7 clubs bretons', home_or_away: 'home' },
         clubs:  { name: 'FC SportLink Démo' },
       },
     ],

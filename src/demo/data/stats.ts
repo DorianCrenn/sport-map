@@ -52,7 +52,7 @@ export const demoPageViews = Array.from({ length: 8 }, (_, i) => ({
 export const demoPosterExports = Array.from({ length: 6 }, (_, i) => ({
   id:         `demo-pe-${i}`,
   club_id:    DEMO_CLUB_ID,
-  event_id:   `demo-event-0${(i % 8) + 1}`,
+  event_id:   `demo-event-${String((i % 8) + 1).padStart(3, '0')}`,
   user_id:    'demo-user-001',
   format:     ['story', 'square', 'landscape'][i % 3],
   channel:    ['whatsapp', 'instagram', 'facebook'][i % 3],
